@@ -39,7 +39,7 @@ body:
     attributes:
       label: 작업기한
       description: 작업 기한을 지정합니다.
-      placeholder: 2025-10-01
+      placeholder: "2025-10-01 수"
   - type: textarea
     id: textarea-4
     attributes:

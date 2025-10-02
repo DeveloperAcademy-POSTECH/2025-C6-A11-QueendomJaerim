@@ -51,7 +51,7 @@ body:
     id: input-5
     attributes:
       label: 작업기한
-      placeholder: 2025-10-01
+      placeholder: "2025-10-01 수"
   - type: input
     id: input-6
     attributes:
