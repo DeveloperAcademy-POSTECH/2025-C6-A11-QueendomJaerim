@@ -1,0 +1,67 @@
+name: 디자인 이슈
+title: "[Design] 태스크 요약"
+description: 디자인 관련 이슈
+labels:
+  - design
+body:
+  - type: textarea
+    id: textarea-0
+    attributes:
+      label: 개요
+      description: 문제 개요를 작성합니다.
+    validations:
+      required: true
+  - type: dropdown
+    id: dropdown-1
+    attributes:
+      label: 영역
+      description: 관련 영역을 작성합니다.
+      options:
+        - camera
+        - preview
+        - guiding
+        - other
+    validations:
+      required: true
+  - type: textarea
+    id: textarea-2
+    attributes:
+      label: TO-BE
+      description: 하이파이 디자인 스크린샷을 첨부합니다.
+    validations:
+      required: true
+  - type: textarea
+    id: textarea-3
+    attributes:
+      label: AS-IS
+      description: 현재 구현된 화면의 스크린샷을 첨부합니다.
+    validations:
+      required: false
+  - type: textarea
+    id: textarea-4
+    attributes:
+      label: 작업계획
+      value: |-
+        - [ ] 작업 1
+        - [ ] 작업 2
+        - [ ] 작업 3
+    validations:
+      required: true
+  - type: input
+    id: input-5
+    attributes:
+      label: 작업기한
+      placeholder: 2025-10-01
+  - type: input
+    id: input-6
+    attributes:
+      label: 노션링크
+      value: 없음
+  - type: textarea
+    id: textarea-7
+    attributes:
+      label: 비고
+      value: 없음
+  - type: markdown
+    attributes:
+      value: cc. @Jeongin-c (PM)

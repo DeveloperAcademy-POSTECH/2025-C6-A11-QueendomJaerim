@@ -1,0 +1,55 @@
+name: 기능 구현
+title: "[Feat] 태스크 요약"
+description: 신규 기능 구현
+labels:
+  - feature
+body:
+  - type: textarea
+    id: textarea-0
+    attributes:
+      label: 개요
+      description: 작업 개요를 작성합니다.
+    validations:
+      required: true
+  - type: dropdown
+    id: dropdown-1
+    attributes:
+      label: 영역
+      description: 작업 영역을 작성합니다.
+      options:
+        - camera
+        - preview
+        - guiding
+        - other
+    validations:
+      required: true
+  - type: textarea
+    id: textarea-2
+    attributes:
+      label: 작업내용
+      description: 작업 내용을 작성합니다.
+      value: |-
+        - [ ] 작업 1
+        - [ ] 작업 2
+        - [ ] 작업 3
+    validations:
+      required: true
+  - type: input
+    id: input-3
+    attributes:
+      label: 작업기한
+      description: 작업 기한을 지정합니다.
+      placeholder: 2025-10-01
+  - type: textarea
+    id: textarea-4
+    attributes:
+      label: 노션링크
+      value: 없음
+  - type: textarea
+    id: textarea-5
+    attributes:
+      label: 비고
+      value: 없음
+  - type: markdown
+    attributes:
+      value: cc. @Jeongin-c (PM)
