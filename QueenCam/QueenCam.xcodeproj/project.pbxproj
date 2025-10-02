@@ -27,6 +27,7 @@
 		3D5E6BEE2E7D687300A0E03A /* QueenCam.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = QueenCam.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3D5E6BFB2E7D687300A0E03A /* QueenCamTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = QueenCamTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3D5E6C052E7D687300A0E03A /* QueenCamUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = QueenCamUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		3D6CDA632E8E1DF1006C445A /* .swiftlint.yml */ = {isa = PBXFileReference; lastKnownFileType = text; path = .swiftlint.yml; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -75,6 +76,7 @@
 		3D5E6BE52E7D687300A0E03A = {
 			isa = PBXGroup;
 			children = (
+				3D6CDA632E8E1DF1006C445A /* .swiftlint.yml */,
 				3D5E6BF02E7D687300A0E03A /* QueenCam */,
 				3D5E6BFE2E7D687300A0E03A /* QueenCamTests */,
 				3D5E6C082E7D687300A0E03A /* QueenCamUITests */,
@@ -100,12 +102,14 @@
 			buildConfigurationList = 3D5E6C0F2E7D687300A0E03A /* Build configuration list for PBXNativeTarget "QueenCam" */;
 			buildPhases = (
 				3D5E6BEA2E7D687300A0E03A /* Sources */,
+				3D6CDA662E8E1ED2006C445A /* Run SwiftLint */,
 				3D5E6BEB2E7D687300A0E03A /* Frameworks */,
 				3D5E6BEC2E7D687300A0E03A /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				3D6CDA692E8E3F36006C445A /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				3D5E6BF02E7D687300A0E03A /* QueenCam */,
@@ -195,6 +199,9 @@
 			);
 			mainGroup = 3D5E6BE52E7D687300A0E03A;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				3D6CDA672E8E3EDD006C445A /* XCRemoteSwiftPackageReference "SwiftLintPlugins" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 3D5E6BEF2E7D687300A0E03A /* Products */;
 			projectDirPath = "";
@@ -231,6 +238,27 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		3D6CDA662E8E1ED2006C445A /* Run SwiftLint */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Run SwiftLint";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "SWIFT_PACKAGE_DIR=\"${BUILD_DIR%Build/*}SourcePackages/artifacts\"\nSWIFTLINT_CMD=\"$SWIFT_PACKAGE_DIR/swiftlintplugins/SwiftLintBinary/SwiftLintBinary.artifactbundle/swiftlint-0.61.0-macos/bin/swiftlint\"\n\necho $SWIFT_PACKAGE_DIR\n\nif test -f \"$SWIFTLINT_CMD\" 2>&1\nthen\n    \"$SWIFTLINT_CMD\"\nelse\n    echo \"warning: `swiftlint` command not found - See https://github.com/realm/SwiftLint#xcode-run-script-build-phase for installation instructions.\"\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		3D5E6BEA2E7D687300A0E03A /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -265,6 +293,10 @@
 			isa = PBXTargetDependency;
 			target = 3D5E6BED2E7D687300A0E03A /* QueenCam */;
 			targetProxy = 3D5E6C062E7D687300A0E03A /* PBXContainerItemProxy */;
+		};
+		3D6CDA692E8E3F36006C445A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			productRef = 3D6CDA682E8E3F36006C445A /* SwiftLintBuildToolPlugin */;
 		};
 /* End PBXTargetDependency section */
 
@@ -395,7 +427,9 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -426,7 +460,9 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -570,6 +606,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		3D6CDA672E8E3EDD006C445A /* XCRemoteSwiftPackageReference "SwiftLintPlugins" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SimplyDanny/SwiftLintPlugins";
+			requirement = {
+				kind = exactVersion;
+				version = 0.61.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		3D6CDA682E8E3F36006C445A /* SwiftLintBuildToolPlugin */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3D6CDA672E8E3EDD006C445A /* XCRemoteSwiftPackageReference "SwiftLintPlugins" */;
+			productName = "plugin:SwiftLintBuildToolPlugin";
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 3D5E6BE62E7D687300A0E03A /* Project object */;
 }
