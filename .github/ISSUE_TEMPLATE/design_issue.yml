@@ -62,6 +62,8 @@ body:
     attributes:
       label: 비고
       value: 없음
-  - type: markdown
+  - type: textarea
+    id: textarea-8
     attributes:
+      label: 참조자
       value: cc. @Jeongin-c (PM)
