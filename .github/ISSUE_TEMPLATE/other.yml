@@ -1,6 +1,6 @@
-name: 기능 구현
-title: "✨ [Feat] 태스크 요약"
-description: 신규 기능 구현
+name: 기타 작업
+title: "🎛️ [Other] 태스크 요약"
+description: 문서 작성, 테스트 추가 등 기타 작업
 labels:
   - feature
 body:
@@ -14,13 +14,13 @@ body:
   - type: dropdown
     id: dropdown-1
     attributes:
-      label: 영역
-      description: 작업 영역을 작성합니다.
+      label: 작업 유형
+      description: 작업 유형을 작성합니다.
       options:
-        - camera
-        - preview
-        - guiding
-        - other
+        - 문서 작업
+        - 테스트 추가
+        - CI/CD
+        - 기타
     validations:
       required: true
   - type: textarea

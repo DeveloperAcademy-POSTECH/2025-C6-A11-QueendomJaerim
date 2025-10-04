@@ -1,5 +1,5 @@
 name: 개선 작업
-title: "[Enhancement] 태스크 요약"
+title: "🛫 [Enhancement] 태스크 요약"
 description: 리팩토링, 구조 변경 등 내부 개선 작업
 labels:
   - enhancement
