@@ -11,7 +11,7 @@ import SwiftUI
 struct QueenCamApp: App {
   var body: some Scene {
     WindowGroup {
-      ContentView()
+      MainView()
     }
   }
 }
