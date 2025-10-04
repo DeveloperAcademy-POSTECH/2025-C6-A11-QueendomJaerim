@@ -30,9 +30,34 @@
 		3D6CDA632E8E1DF1006C445A /* .swiftlint.yml */ = {isa = PBXFileReference; lastKnownFileType = text; path = .swiftlint.yml; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		3DB20A492E90E22A00B44E9F /* Exceptions for "QueenCam" folder in "QueenCam" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Common/.gitkeep.swift,
+				Presentaion/DesignSystem/Components/.gitkeep.swift,
+				Presentaion/ViewModels/Camera/.gitkeep.swift,
+				Presentaion/ViewModels/Guiding/.gitkeep.swift,
+				Presentaion/ViewModels/Main/.gitkeep.swift,
+				Presentaion/ViewModels/Reference/.gitkeep.swift,
+				Presentaion/ViewModels/WifiAware/.gitkeep.swift,
+				Presentaion/Views/Camera/.gitkeep.swift,
+				Presentaion/Views/Guiding/.gitkeep.swift,
+				Presentaion/Views/Reference/.gitkeep.swift,
+				Presentaion/Views/WifiAware/.gitkeep.swift,
+				Services/.gitkeep.swift,
+				Services/Entities/.gitkeep.swift,
+			);
+			target = 3D5E6BED2E7D687300A0E03A /* QueenCam */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		3D5E6BF02E7D687300A0E03A /* QueenCam */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				3DB20A492E90E22A00B44E9F /* Exceptions for "QueenCam" folder in "QueenCam" target */,
+			);
 			path = QueenCam;
 			sourceTree = "<group>";
 		};
