@@ -1,10 +1,9 @@
 <!--
 PR 제목 규칙은 다음 형식을 따라주세요.
-[Type] scope: 작업 내용 요약
+✨ [Type] scope: 작업 내용 요약
 ex) [Feat] preview: 버퍼링 개선
 
-Type 리스트: Feat | Fix | Docs | Refactor | Test | Release | Chore | Hotfix | Revert
-
+Type 리스트: ✨ [Feat] | 🐛 [Fix] | 📝 [Docs] | [♻️] Refactor | [✅] Test | [🔖] Release | [🎛️] Chore |  [🚑️] Hotfix | ⏪️ [Revert]
 Scope 리스트: camera | preview | guiding | network | other
 -->
 
