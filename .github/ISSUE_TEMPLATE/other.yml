@@ -1,8 +1,8 @@
-name: 기타 작업
+name: "🎛️ 기타 작업"
 title: "🎛️ [Other] 태스크 요약"
 description: 문서 작성, 테스트 추가 등 기타 작업
 labels:
-  - feature
+  - other
 body:
   - type: textarea
     id: textarea-0
