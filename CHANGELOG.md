@@ -1,6 +1,5 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
 이 프로젝트의 중요한 변경 사항은 이 문서에 기록한다.
 
 이 문서의 형식은 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)를 따르고,
@@ -9,6 +8,8 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+
+- 기본 프로젝트 구조
 
 ### Changed
 
