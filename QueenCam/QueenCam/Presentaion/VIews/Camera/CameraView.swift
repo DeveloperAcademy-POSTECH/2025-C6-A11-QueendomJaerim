@@ -19,7 +19,47 @@ extension CameraView: View {
       case true:
         Color.black.ignoresSafeArea()
 
-        CameraPreview(session: viewModel.manager.session)
+        VStack {
+          CameraPreview(session: viewModel.manager.session)
+
+          HStack {
+            Button(action: { }) {
+              if let image = viewModel.lastImage {
+                Image(uiImage: image)
+                  .resizable()
+                  .aspectRatio(contentMode: .fit)
+                  .frame(width: 60, height: 60)
+                  .clipShape(.rect(cornerRadius: 8))
+              } else {
+                Rectangle()
+                  .fill(.gray.opacity(0.2))
+                  .frame(width: 60, height: 60)
+                  .clipShape(.rect(cornerRadius: 8))
+              }
+            }
+
+            Spacer()
+
+            Button(action: { viewModel.capturePhoto() }) {
+              Circle()
+                .fill(.white)
+                .frame(width: 70, height: 70)
+                .overlay(
+                  Circle().stroke(Color.black.opacity(0.8), lineWidth: 2)
+                )
+            }
+
+            Spacer()
+
+            Button(action: { }) {
+              Image(systemName: "arrow.triangle.2.circlepath.camera")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 60, height: 60)
+            }
+
+          }
+        }
 
       case false:
         Color.black.ignoresSafeArea()

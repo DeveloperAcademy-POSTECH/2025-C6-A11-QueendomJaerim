@@ -1,5 +1,6 @@
 import AVFoundation
 import Foundation
+import UIKit
 
 @Observable
 @MainActor
@@ -8,6 +9,14 @@ final class CameraViewModel {
 
   var isPermissionGranted = false
   var isShowSettingAlert = false
+
+  var lastImage: UIImage?
+
+  init() {
+    manager.onPhotoCapture = { [weak self] image in
+      self?.lastImage = image
+    }
+  }
 
   func checkPermission() async {
     let status = AVCaptureDevice.authorizationStatus(for: .video)
@@ -37,6 +46,10 @@ final class CameraViewModel {
   }
 
   func stopSession() {
-    manager.stop()
+    manager.stopSession()
+  }
+
+  func capturePhoto() {
+    manager.capturePhoto()
   }
 }

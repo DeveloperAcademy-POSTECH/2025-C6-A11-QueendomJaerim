@@ -1,4 +1,5 @@
 import AVFoundation
+import Photos
 import UIKit
 
 final class CameraManager: NSObject {
@@ -7,6 +8,10 @@ final class CameraManager: NSObject {
   private var videoDeviceInput: AVCaptureDeviceInput?
   private let photoOutput = AVCapturePhotoOutput()
   var position: AVCaptureDevice.Position = .back
+
+  private var cameraDelegate: CameraDelegate?
+
+  var onPhotoCapture: ((UIImage) -> Void)?
 
   func configureSession() async throws {
     try await withCheckedThrowingContinuation { continuation in
@@ -29,7 +34,7 @@ final class CameraManager: NSObject {
     }
   }
 
-  func stop() {
+  func stopSession() {
     sessionQueue.async { [weak self] in
       guard let self else { return }
       if self.session.isRunning {
@@ -37,8 +42,31 @@ final class CameraManager: NSObject {
       }
     }
   }
+
+  func capturePhoto() {
+    sessionQueue.async { [weak self] in
+      guard let self else { return }
+
+      let photoSettings = AVCapturePhotoSettings()
+      photoSettings.flashMode = .off
+
+      self.cameraDelegate = CameraDelegate { image in
+        guard let image else { return }
+
+        self.saveToPhotoLibrary(image)
+
+        DispatchQueue.main.async {
+          self.onPhotoCapture?(image)
+        }
+      }
+
+      guard let delegate = self.cameraDelegate else { return }
+      self.photoOutput.capturePhoto(with: photoSettings, delegate: delegate)
+    }
+  }
 }
 
+// MARK: Session 구성
 extension CameraManager {
   private func setupVideoInput() throws {
 
@@ -73,5 +101,20 @@ extension CameraManager {
   private func startSession() {
     guard !session.isRunning else { return }
     session.startRunning()
+  }
+}
+
+// MARK: 사진 촬영
+extension CameraManager {
+  private func saveToPhotoLibrary(_ image: UIImage) {
+    PHPhotoLibrary.shared().performChanges {
+      PHAssetChangeRequest.creationRequestForAsset(from: image)
+    } completionHandler: { success, error in
+      if success {
+        print("Image saved to gallery.")
+      } else if let error {
+        print("Error saving image to gallery: \(error.localizedDescription)")
+      }
+    }
   }
 }
