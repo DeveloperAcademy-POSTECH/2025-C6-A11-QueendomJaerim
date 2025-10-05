@@ -1,4 +1,5 @@
 import AVFoundation
+import OSLog
 import Photos
 import UIKit
 
@@ -8,6 +9,8 @@ final class CameraManager: NSObject {
   private var videoDeviceInput: AVCaptureDeviceInput?
   private let photoOutput = AVCapturePhotoOutput()
   var position: AVCaptureDevice.Position = .back
+
+  private let logger = Logger(subsystem: "com.queendom.camera", category: "CameraManager")
 
   private var cameraDelegate: CameraDelegate?
 
@@ -72,7 +75,7 @@ extension CameraManager {
 
     guard let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: position)
     else {
-      print("CameraManger: Video device is unavailable")
+      logger.error("Video device is unavailable")
       return
     }
 
@@ -86,7 +89,7 @@ extension CameraManager {
       session.addInput(input)
       videoDeviceInput = input
     } else {
-      print("CameraManager: Couldn't add video device input to the session.")
+      logger.error("Couldn't add video device input to the session.")
       return
     }
   }
@@ -111,9 +114,10 @@ extension CameraManager {
       PHAssetChangeRequest.creationRequestForAsset(from: image)
     } completionHandler: { success, error in
       if success {
-        print("Image saved to gallery.")
+        self.logger.info("Image saved to gallery.")
       } else if let error {
-        print("Error saving image to gallery: \(error.localizedDescription)")
+
+        self.logger.error("Error saving image to gallery")
       }
     }
   }
