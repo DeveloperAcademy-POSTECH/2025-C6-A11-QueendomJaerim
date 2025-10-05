@@ -1,7 +1,11 @@
+import PhotosUI
 import SwiftUI
 
 struct CameraView {
   @State private var viewModel = CameraViewModel()
+
+  @State private var selectedItem: PhotosPickerItem?
+  @State private var selectedImage: UIImage?
 }
 
 extension CameraView {
@@ -21,9 +25,27 @@ extension CameraView: View {
 
         VStack {
           CameraPreview(session: viewModel.manager.session)
+            .overlay(alignment: .topLeading) {
+              if let image = selectedImage {
+                Image(uiImage: image)
+                  .resizable()
+                  .aspectRatio(contentMode: .fit)
+                  .frame(height: 250)
+                  .clipShape(.rect(cornerRadius: 16))
+                  .overlay(alignment: .topTrailing) {
+                    Button(action: {
+                      selectedImage = nil
+                      selectedItem = nil
+                    }) {
+                      Image(systemName: "xmark.circle.fill")
+                        .imageScale(.large)
+                    }
+                  }
+              }
+            }
 
           HStack {
-            Button(action: { }) {
+            PhotosPicker(selection: $selectedItem, matching: .images) {
               if let image = viewModel.lastImage {
                 Image(uiImage: image)
                   .resizable()
@@ -51,16 +73,14 @@ extension CameraView: View {
 
             Spacer()
 
-            Button(action: { }) {
+            Button(action: {}) {
               Image(systemName: "arrow.triangle.2.circlepath.camera")
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 60, height: 60)
             }
-
           }
         }
-
       case false:
         Color.black.ignoresSafeArea()
 
@@ -90,7 +110,17 @@ extension CameraView: View {
     )
     .task {
       await viewModel.checkPermission()
+      await viewModel.checkPhotosPermission()
     }
+    .onChange(of: selectedItem) { _, new in
+      Task {
+        guard
+          let data = try await new?.loadTransferable(type: Data.self),
+          let image = UIImage(data: data)
+        else { return }
 
+        selectedImage = image
+      }
+    }
   }
 }

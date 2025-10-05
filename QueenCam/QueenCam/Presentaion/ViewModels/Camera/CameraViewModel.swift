@@ -1,5 +1,6 @@
 import AVFoundation
 import Foundation
+import Photos
 import UIKit
 
 @Observable
@@ -9,6 +10,7 @@ final class CameraViewModel {
 
   var isPermissionGranted = false
   var isShowSettingAlert = false
+  var isPhotosPermissionGranted = false
 
   var lastImage: UIImage?
 
@@ -42,6 +44,28 @@ final class CameraViewModel {
 
     @unknown default:
       isPermissionGranted = false
+    }
+  }
+
+  func checkPhotosPermission() async {
+    let status = PHPhotoLibrary.authorizationStatus(for: .readWrite)
+
+    switch status {
+    case .authorized, .limited:
+      isPhotosPermissionGranted = true
+    case .notDetermined:
+      let newStatus = await PHPhotoLibrary.requestAuthorization(for: .readWrite)
+      if newStatus == .authorized || newStatus == .limited {
+        isPhotosPermissionGranted = true
+      } else {
+        isPhotosPermissionGranted = false
+      }
+    case .denied, .restricted:
+      isPhotosPermissionGranted = false
+      isShowSettingAlert = true
+
+    @unknown default:
+      isPhotosPermissionGranted = false
     }
   }
 
