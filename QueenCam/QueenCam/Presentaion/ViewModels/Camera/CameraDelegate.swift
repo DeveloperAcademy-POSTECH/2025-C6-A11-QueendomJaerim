@@ -1,11 +1,10 @@
 import AVFoundation
-import UIKit
 import OSLog
+import UIKit
 
 final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
   private let completion: ((UIImage?) -> Void)
-  private let logger = Logger(subsystem: "com.queendom.camera", category: "CameraManager")
-
+  private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.queendom.QueenCam", category: "CameraDelegate")
 
   init(completion: @escaping (UIImage?) -> Void) {
     self.completion = completion

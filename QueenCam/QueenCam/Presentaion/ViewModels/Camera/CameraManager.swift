@@ -5,12 +5,12 @@ import UIKit
 
 final class CameraManager: NSObject {
   let session = AVCaptureSession()
-  private let sessionQueue = DispatchQueue(label: "com.queenCam.sessionQueue")
+  private let captureSessionQueue = DispatchQueue(label: "com.queendom.QueenCam.sessionQueue")
   private var videoDeviceInput: AVCaptureDeviceInput?
   private let photoOutput = AVCapturePhotoOutput()
   var position: AVCaptureDevice.Position = .back
 
-  private let logger = Logger(subsystem: "com.queendom.camera", category: "CameraManager")
+  private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.queendom.QueenCam", category: "CameraManager")
 
   private var cameraDelegate: CameraDelegate?
 
@@ -18,7 +18,7 @@ final class CameraManager: NSObject {
 
   func configureSession() async throws {
     try await withCheckedThrowingContinuation { continuation in
-      sessionQueue.async { [weak self] in
+      captureSessionQueue.async { [weak self] in
         guard let self else { return }
         do {
           self.session.beginConfiguration()
@@ -38,7 +38,7 @@ final class CameraManager: NSObject {
   }
 
   func stopSession() {
-    sessionQueue.async { [weak self] in
+    captureSessionQueue.async { [weak self] in
       guard let self else { return }
       if self.session.isRunning {
         self.session.stopRunning()
@@ -47,7 +47,7 @@ final class CameraManager: NSObject {
   }
 
   func capturePhoto() {
-    sessionQueue.async { [weak self] in
+    captureSessionQueue.async { [weak self] in
       guard let self else { return }
 
       let photoSettings = AVCapturePhotoSettings()
