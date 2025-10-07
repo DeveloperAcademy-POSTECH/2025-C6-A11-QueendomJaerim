@@ -72,8 +72,20 @@ final class CameraManager: NSObject {
 // MARK: Session 구성
 extension CameraManager {
   private func setupVideoInput() throws {
+    let deviceTypeList: [AVCaptureDevice.DeviceType] = [
+      .builtInTripleCamera,  // 프로 시리즈
+      .builtInDualWideCamera,  // 일반 모델
+      .builtInWideAngleCamera,  // 단일 렌즈
+    ]
 
-    guard let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: position)
+    // 현재 position에 해당하는 카메라 검색
+    let discoverySession = AVCaptureDevice.DiscoverySession(
+      deviceTypes: deviceTypeList,
+      mediaType: .video,
+      position: position
+    )
+
+    guard let device = discoverySession.devices.first
     else {
       logger.error("Video device is unavailable")
       return
@@ -116,9 +128,39 @@ extension CameraManager {
       if success {
         self.logger.info("Image saved to gallery.")
       } else if let error {
-
         self.logger.error("Error saving image to gallery")
       }
     }
   }
+}
+
+// MARK: - 배율
+extension CameraManager {
+  func setZoomScale(factor: CGFloat) {
+    captureSessionQueue.async { [weak self] in
+      guard let self else { return }
+      guard let device = videoDeviceInput?.device else {
+        logger.error("Zoom failed: Device not found")
+        return
+      }
+
+      do {
+        try device.lockForConfiguration()
+
+        let zoomFactor = max(
+          device.minAvailableVideoZoomFactor,
+          min(factor / device.displayVideoZoomFactorMultiplier, device.maxAvailableVideoZoomFactor)
+        )
+
+        device.ramp(toVideoZoomFactor: zoomFactor, withRate: 4)
+        device.unlockForConfiguration()
+
+        logger.info("Zoom scale set to \(zoomFactor)")
+
+      } catch {
+        logger.error("Failed to configure zoom: \(error.localizedDescription)")
+      }
+    }
+  }
+
 }

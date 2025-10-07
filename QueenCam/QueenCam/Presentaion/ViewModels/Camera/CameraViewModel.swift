@@ -14,6 +14,8 @@ final class CameraViewModel {
 
   var lastImage: UIImage?
 
+  var selectedZoom: CGFloat = 1.0
+
   init() {
     manager.onPhotoCapture = { [weak self] image in
       self?.lastImage = image
@@ -29,6 +31,7 @@ final class CameraViewModel {
       if granted {
         isPermissionGranted = true
         try? await manager.configureSession()
+        zoom(factor: 1.0)
       } else {
         isPermissionGranted = false
         isShowSettingAlert = true
@@ -41,6 +44,7 @@ final class CameraViewModel {
     case .authorized:
       isPermissionGranted = true
       try? await manager.configureSession()
+      zoom(factor: 1.0)
 
     @unknown default:
       isPermissionGranted = false
@@ -62,7 +66,6 @@ final class CameraViewModel {
       }
     case .denied, .restricted:
       isPhotosPermissionGranted = false
-      isShowSettingAlert = true
 
     @unknown default:
       isPhotosPermissionGranted = false
@@ -75,5 +78,10 @@ final class CameraViewModel {
 
   func capturePhoto() {
     manager.capturePhoto()
+  }
+
+  func zoom(factor: CGFloat) {
+    selectedZoom = factor
+    manager.setZoomScale(factor: factor)
   }
 }

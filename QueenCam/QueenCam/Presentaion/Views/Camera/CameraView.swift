@@ -6,6 +6,8 @@ struct CameraView {
 
   @State private var selectedItem: PhotosPickerItem?
   @State private var selectedImage: UIImage?
+
+  @State private var zoomScaleItemList: [CGFloat] = [0.5, 1, 2]
 }
 
 extension CameraView {
@@ -43,6 +45,18 @@ extension CameraView: View {
                   }
               }
             }
+
+          HStack(spacing: 20) {
+            ForEach(zoomScaleItemList, id: \.self) { item in
+              Button(action: { viewModel.zoom(factor: item) }) {
+                Text(String(format: "%.1fx", item))
+
+                  .foregroundStyle(viewModel.selectedZoom == item ? .yellow : .white)
+              }
+
+            }
+          }
+          .padding(.bottom, 32)
 
           HStack {
             PhotosPicker(selection: $selectedItem, matching: .images) {
@@ -98,7 +112,7 @@ extension CameraView: View {
       "카메라 접근 권한",
       isPresented: $viewModel.isShowSettingAlert,
       actions: {
-        Button(role: .cancel, action: {})
+        Button(role: .cancel, action: {}) {}
 
         Button(action: { openSetting() }) {
           Text("설정으로 이동")
