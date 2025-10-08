@@ -17,12 +17,13 @@ final class CameraViewModel {
   var selectedZoom: CGFloat = 1.0
 
   var cameraPostion: AVCaptureDevice.Position?
+  var currentFlashMode: AVCaptureDevice.FlashMode = .off
 
   init() {
     manager.onPhotoCapture = { [weak self] image in
       self?.lastImage = image
     }
-    
+
     manager.onTapCamerSwitch = { [weak self] position in
       self?.cameraPostion = position
       if position == .back {
@@ -94,5 +95,22 @@ final class CameraViewModel {
 
   func switchCamera() {
     manager.switchCamera()
+  }
+
+  func switchFlashMode() {
+
+    switch currentFlashMode {
+    case .off:
+      currentFlashMode = .on
+    case .on:
+      currentFlashMode = .auto
+    case .auto:
+      currentFlashMode = .off
+
+    @unknown default:
+      currentFlashMode = .off
+    }
+
+    manager.flashMode = currentFlashMode
   }
 }

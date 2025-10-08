@@ -16,9 +16,22 @@ extension CameraView {
       UIApplication.shared.open(url)
     }
   }
-  
+
   private var isFront: Bool {
     viewModel.cameraPostion == .front
+  }
+
+  private var flashImage: String {
+    switch viewModel.currentFlashMode {
+    case .off:
+      return "bolt.slash"
+    case .on:
+      return "bolt.fill"
+    case .auto:
+      return "bolt.badge.a"
+    @unknown default:
+      return "bolt.slash"
+    }
   }
 }
 
@@ -30,6 +43,15 @@ extension CameraView: View {
         Color.black.ignoresSafeArea()
 
         VStack {
+          HStack {
+            Button(action: { viewModel.switchFlashMode() }) {
+              Image(systemName: flashImage)
+                .foregroundStyle(viewModel.currentFlashMode == .on ? .yellow : .white)
+            }
+            Spacer()
+
+          }
+
           CameraPreview(session: viewModel.manager.session)
             .overlay(alignment: .topLeading) {
               if let image = selectedImage {
@@ -55,7 +77,7 @@ extension CameraView: View {
               ForEach(zoomScaleItemList, id: \.self) { item in
                 Button(action: { viewModel.zoom(factor: item) }) {
                   Text(String(format: "%.1fx", item))
-                  
+
                     .foregroundStyle(viewModel.selectedZoom == item ? .yellow : .white)
                 }
               }
@@ -100,7 +122,7 @@ extension CameraView: View {
             }
           }
         }
-        
+
       case false:
         Color.black.ignoresSafeArea()
 

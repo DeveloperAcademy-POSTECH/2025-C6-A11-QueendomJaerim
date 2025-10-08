@@ -9,6 +9,7 @@ final class CameraManager: NSObject {
   private var videoDeviceInput: AVCaptureDeviceInput?
   private let photoOutput = AVCapturePhotoOutput()
   var position: AVCaptureDevice.Position = .back
+  var flashMode: AVCaptureDevice.FlashMode = .off
 
   private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.queendom.QueenCam", category: "CameraManager")
 
@@ -52,7 +53,17 @@ final class CameraManager: NSObject {
       guard let self else { return }
 
       let photoSettings = AVCapturePhotoSettings()
-      photoSettings.flashMode = .off
+
+      if let device = videoDeviceInput?.device,
+        device.isFlashAvailable,
+        photoOutput.supportedFlashModes.contains(flashMode)
+      {
+        photoSettings.flashMode = flashMode
+      } else {
+        photoSettings.flashMode = .off
+      }
+
+      photoSettings.isAutoRedEyeReductionEnabled = true
 
       self.cameraDelegate = CameraDelegate { image in
         guard let image else { return }
@@ -101,7 +112,7 @@ extension CameraManager {
     if session.canAddInput(input) {
       session.addInput(input)
       videoDeviceInput = input
-      
+
       do {
         try device.lockForConfiguration()
         device.videoZoomFactor = 1.0 / device.displayVideoZoomFactorMultiplier
@@ -110,7 +121,7 @@ extension CameraManager {
       } catch {
         logger.error("Failed to set initial zoom")
       }
-      
+
     } else {
       logger.error("Couldn't add video device input to the session.")
       return
@@ -194,7 +205,7 @@ extension CameraManager {
       }
 
       session.commitConfiguration()
-      
+
       DispatchQueue.main.async {
         self.onTapCamerSwitch?(self.position)
       }
