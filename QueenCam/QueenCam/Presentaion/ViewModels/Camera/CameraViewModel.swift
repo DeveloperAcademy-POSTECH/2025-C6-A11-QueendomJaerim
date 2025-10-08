@@ -84,4 +84,8 @@ final class CameraViewModel {
     selectedZoom = factor
     manager.setZoomScale(factor: factor)
   }
+
+  func switchCamera() {
+    manager.switchCamera()
+  }
 }

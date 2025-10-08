@@ -162,5 +162,28 @@ extension CameraManager {
       }
     }
   }
+}
 
+extension CameraManager {
+  func switchCamera() {
+    captureSessionQueue.async { [weak self] in
+      guard let self else { return }
+      self.session.beginConfiguration()
+
+      if let currentInput = self.videoDeviceInput {
+        self.session.removeInput(currentInput)
+      }
+
+      position = position == .back ? .front : .back
+
+      do {
+        try self.setupVideoInput()
+
+      } catch {
+        self.logger.error("Failed to switch camera: \(error.localizedDescription)")
+      }
+
+      session.commitConfiguration()
+    }
+  }
 }

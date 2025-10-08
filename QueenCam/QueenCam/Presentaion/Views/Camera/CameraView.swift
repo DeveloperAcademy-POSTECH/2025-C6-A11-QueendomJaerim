@@ -53,7 +53,6 @@ extension CameraView: View {
 
                   .foregroundStyle(viewModel.selectedZoom == item ? .yellow : .white)
               }
-
             }
           }
           .padding(.bottom, 32)
@@ -87,7 +86,7 @@ extension CameraView: View {
 
             Spacer()
 
-            Button(action: {}) {
+            Button(action: { viewModel.switchCamera() }) {
               Image(systemName: "arrow.triangle.2.circlepath.camera")
                 .resizable()
                 .aspectRatio(contentMode: .fit)
