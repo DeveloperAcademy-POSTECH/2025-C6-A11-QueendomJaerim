@@ -101,6 +101,16 @@ extension CameraManager {
     if session.canAddInput(input) {
       session.addInput(input)
       videoDeviceInput = input
+      
+      do {
+        try device.lockForConfiguration()
+        device.videoZoomFactor = 1.0 / device.displayVideoZoomFactorMultiplier
+        device.unlockForConfiguration()
+        logger.info("Initial zoom factor set to 1.0")
+      } catch {
+        logger.error("Failed to set initial zoom")
+      }
+      
     } else {
       logger.error("Couldn't add video device input to the session.")
       return

@@ -25,6 +25,9 @@ final class CameraViewModel {
     
     manager.onTapCamerSwitch = { [weak self] position in
       self?.cameraPostion = position
+      if position == .back {
+        self?.selectedZoom = 1.0
+      }
     }
   }
 
@@ -37,7 +40,6 @@ final class CameraViewModel {
       if granted {
         isPermissionGranted = true
         try? await manager.configureSession()
-        zoom(factor: 1.0)
       } else {
         isPermissionGranted = false
         isShowSettingAlert = true
@@ -50,7 +52,6 @@ final class CameraViewModel {
     case .authorized:
       isPermissionGranted = true
       try? await manager.configureSession()
-      zoom(factor: 1.0)
 
     @unknown default:
       isPermissionGranted = false
