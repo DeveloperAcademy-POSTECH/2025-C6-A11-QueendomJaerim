@@ -15,6 +15,7 @@ final class CameraManager: NSObject {
   private var cameraDelegate: CameraDelegate?
 
   var onPhotoCapture: ((UIImage) -> Void)?
+  var onTapCamerSwitch: ((AVCaptureDevice.Position) -> Void)?
 
   func configureSession() async throws {
     try await withCheckedThrowingContinuation { continuation in
@@ -178,12 +179,15 @@ extension CameraManager {
 
       do {
         try self.setupVideoInput()
-
       } catch {
         self.logger.error("Failed to switch camera: \(error.localizedDescription)")
       }
 
       session.commitConfiguration()
+      
+      DispatchQueue.main.async {
+        self.onTapCamerSwitch?(self.position)
+      }
     }
   }
 }

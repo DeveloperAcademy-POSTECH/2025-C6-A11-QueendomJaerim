@@ -16,6 +16,10 @@ extension CameraView {
       UIApplication.shared.open(url)
     }
   }
+  
+  private var isFront: Bool {
+    viewModel.cameraPostion == .front
+  }
 }
 
 extension CameraView: View {
@@ -46,16 +50,18 @@ extension CameraView: View {
               }
             }
 
-          HStack(spacing: 20) {
-            ForEach(zoomScaleItemList, id: \.self) { item in
-              Button(action: { viewModel.zoom(factor: item) }) {
-                Text(String(format: "%.1fx", item))
-
-                  .foregroundStyle(viewModel.selectedZoom == item ? .yellow : .white)
+          if !isFront {
+            HStack(spacing: 20) {
+              ForEach(zoomScaleItemList, id: \.self) { item in
+                Button(action: { viewModel.zoom(factor: item) }) {
+                  Text(String(format: "%.1fx", item))
+                  
+                    .foregroundStyle(viewModel.selectedZoom == item ? .yellow : .white)
+                }
               }
             }
+            .padding(.bottom, 32)
           }
-          .padding(.bottom, 32)
 
           HStack {
             PhotosPicker(selection: $selectedItem, matching: .images) {
@@ -94,6 +100,7 @@ extension CameraView: View {
             }
           }
         }
+        
       case false:
         Color.black.ignoresSafeArea()
 

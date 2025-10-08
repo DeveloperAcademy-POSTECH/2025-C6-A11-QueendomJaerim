@@ -16,9 +16,15 @@ final class CameraViewModel {
 
   var selectedZoom: CGFloat = 1.0
 
+  var cameraPostion: AVCaptureDevice.Position?
+
   init() {
     manager.onPhotoCapture = { [weak self] image in
       self?.lastImage = image
+    }
+    
+    manager.onTapCamerSwitch = { [weak self] position in
+      self?.cameraPostion = position
     }
   }
 
