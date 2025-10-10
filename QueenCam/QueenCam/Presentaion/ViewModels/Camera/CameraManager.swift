@@ -149,7 +149,7 @@ extension CameraManager {
     } completionHandler: { success, error in
       if success {
         self.logger.info("Image saved to gallery.")
-      } else if let error {
+      } else if error != nil {
         self.logger.error("Error saving image to gallery")
       }
     }

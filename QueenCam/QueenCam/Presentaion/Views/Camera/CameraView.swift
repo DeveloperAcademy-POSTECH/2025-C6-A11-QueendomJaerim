@@ -8,6 +8,8 @@ struct CameraView {
   @State private var selectedImage: UIImage?
 
   @State private var zoomScaleItemList: [CGFloat] = [0.5, 1, 2]
+
+  @State private var isShowGrid: Bool = false
 }
 
 extension CameraView {
@@ -48,29 +50,42 @@ extension CameraView: View {
               Image(systemName: flashImage)
                 .foregroundStyle(viewModel.currentFlashMode == .on ? .yellow : .white)
             }
+            
             Spacer()
 
-          }
-
-          CameraPreview(session: viewModel.manager.session)
-            .overlay(alignment: .topLeading) {
-              if let image = selectedImage {
-                Image(uiImage: image)
-                  .resizable()
-                  .aspectRatio(contentMode: .fit)
-                  .frame(height: 250)
-                  .clipShape(.rect(cornerRadius: 16))
-                  .overlay(alignment: .topTrailing) {
-                    Button(action: {
-                      selectedImage = nil
-                      selectedItem = nil
-                    }) {
-                      Image(systemName: "xmark.circle.fill")
-                        .imageScale(.large)
-                    }
-                  }
-              }
+            Button(action: { isShowGrid.toggle() }) {
+              Text(isShowGrid ? "그리드 활성화" : "그리드 비활성화")
+                .foregroundStyle(isShowGrid ? .yellow : .white)
             }
+          }
+          .padding()
+
+          ZStack {
+            CameraPreview(session: viewModel.manager.session)
+              .aspectRatio(3 / 4, contentMode: .fit)
+
+            if isShowGrid {
+              GridView()
+                .aspectRatio(3 / 4, contentMode: .fit)
+            }
+
+            if let image = selectedImage {
+              Image(uiImage: image)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(height: 250)
+                .clipShape(.rect(cornerRadius: 16))
+                .overlay(alignment: .topTrailing) {
+                  Button(action: {
+                    selectedImage = nil
+                    selectedItem = nil
+                  }) {
+                    Image(systemName: "xmark.circle.fill")
+                      .imageScale(.large)
+                  }
+                }
+            }
+          }
 
           if !isFront {
             HStack(spacing: 20) {
