@@ -34,15 +34,16 @@
 		3DB20A492E90E22A00B44E9F /* Exceptions for "QueenCam" folder in "QueenCam" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Common/.gitkeep.swift,
 				Info.plist,
 				Presentaion/DesignSystem/Components/.gitkeep.swift,
 				Presentaion/ViewModels/Guiding/.gitkeep.swift,
 				Presentaion/ViewModels/Main/.gitkeep.swift,
 				Presentaion/ViewModels/Reference/.gitkeep.swift,
 				Presentaion/ViewModels/WifiAware/.gitkeep.swift,
+				Presentaion/Views/Guiding/.gitkeep.swift,
+				Presentaion/Views/Reference/.gitkeep.swift,
+				Presentaion/Views/WifiAware/.gitkeep.swift,
 				Services/.gitkeep.swift,
-				Services/Entities/.gitkeep.swift,
 			);
 			target = 3D5E6BED2E7D687300A0E03A /* QueenCam */;
 		};
