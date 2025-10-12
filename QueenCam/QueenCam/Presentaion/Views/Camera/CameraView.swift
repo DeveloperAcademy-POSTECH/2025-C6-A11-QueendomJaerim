@@ -35,12 +35,16 @@ extension CameraView {
       return "bolt.slash"
     }
   }
+
+  private var isPermissionGranted: Bool {
+    viewModel.isCameraPermissionGranted && viewModel.isCameraPermissionGranted
+  }
 }
 
 extension CameraView: View {
   var body: some View {
     ZStack {
-      switch viewModel.isPermissionGranted {
+      switch isPermissionGranted {
       case true:
         Color.black.ignoresSafeArea()
 
@@ -50,7 +54,12 @@ extension CameraView: View {
               Image(systemName: flashImage)
                 .foregroundStyle(viewModel.currentFlashMode == .on ? .yellow : .white)
             }
-            
+
+            Button(action: { viewModel.switchLivePhoto() }) {
+              Image(systemName: viewModel.isLivePhotoOn ? "livephoto" : "livephoto.slash")
+                .foregroundStyle(viewModel.isLivePhotoOn ? .yellow : .white)
+            }
+
             Spacer()
 
             Button(action: { isShowGrid.toggle() }) {
@@ -166,8 +175,7 @@ extension CameraView: View {
       }
     )
     .task {
-      await viewModel.checkPermission()
-      await viewModel.checkPhotosPermission()
+      await viewModel.checkPermissions()
     }
     .onChange(of: selectedItem) { _, new in
       Task {

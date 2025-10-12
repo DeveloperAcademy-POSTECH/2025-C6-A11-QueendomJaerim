@@ -8,13 +8,17 @@ import UIKit
 final class CameraViewModel {
   let manager = CameraManager()
 
-  var isPermissionGranted = false
-  var isShowSettingAlert = false
+  var isCameraPermissionGranted = false
   var isPhotosPermissionGranted = false
+  var isMicPermissionGranted = false
+
+  var isShowSettingAlert = false
 
   var lastImage: UIImage?
 
   var selectedZoom: CGFloat = 1.0
+
+  var isLivePhotoOn = false
 
   var cameraPostion: AVCaptureDevice.Position?
   var currentFlashMode: AVCaptureDevice.FlashMode = .off
@@ -32,51 +36,45 @@ final class CameraViewModel {
     }
   }
 
-  func checkPermission() async {
-    let status = AVCaptureDevice.authorizationStatus(for: .video)
-
-    switch status {
+  func checkPermissions() async {
+    let cameraGranted: Bool
+    switch AVCaptureDevice.authorizationStatus(for: .video) {
     case .notDetermined:
-      let granted = await AVCaptureDevice.requestAccess(for: .video)
-      if granted {
-        isPermissionGranted = true
-        try? await manager.configureSession()
-      } else {
-        isPermissionGranted = false
-        isShowSettingAlert = true
-      }
-
-    case .restricted, .denied:
-      isPermissionGranted = false
-      isShowSettingAlert = true
-
+      cameraGranted = await AVCaptureDevice.requestAccess(for: .video)
     case .authorized:
-      isPermissionGranted = true
-      try? await manager.configureSession()
-
-    @unknown default:
-      isPermissionGranted = false
+      cameraGranted = true
+    default:
+      cameraGranted = false
     }
-  }
 
-  func checkPhotosPermission() async {
-    let status = PHPhotoLibrary.authorizationStatus(for: .readWrite)
+    let audioGranted: Bool
+    switch AVCaptureDevice.authorizationStatus(for: .audio) {
+    case .notDetermined:
+      audioGranted = await AVCaptureDevice.requestAccess(for: .audio)
+    case .authorized:
+      audioGranted = true
+    default:
+      audioGranted = false
+    }
 
-    switch status {
-    case .authorized, .limited:
-      isPhotosPermissionGranted = true
+    let photoGranted: Bool
+    switch PHPhotoLibrary.authorizationStatus(for: .readWrite) {
     case .notDetermined:
       let newStatus = await PHPhotoLibrary.requestAuthorization(for: .readWrite)
-      if newStatus == .authorized || newStatus == .limited {
-        isPhotosPermissionGranted = true
-      } else {
-        isPhotosPermissionGranted = false
-      }
-    case .denied, .restricted:
-      isPhotosPermissionGranted = false
+      photoGranted = (newStatus == .authorized || newStatus == .limited)
+    case .authorized, .limited:
+      photoGranted = true
+    default:
+      photoGranted = false
+    }
 
-    @unknown default:
-      isPhotosPermissionGranted = false
+    if cameraGranted && audioGranted {
+      isCameraPermissionGranted = true
+      isMicPermissionGranted = true
+      isPhotosPermissionGranted = photoGranted
+      try? await manager.configureSession()
+    } else {
+      isShowSettingAlert = true
     }
   }
 
@@ -98,7 +96,6 @@ final class CameraViewModel {
   }
 
   func switchFlashMode() {
-
     switch currentFlashMode {
     case .off:
       currentFlashMode = .on
@@ -113,4 +110,10 @@ final class CameraViewModel {
 
     manager.flashMode = currentFlashMode
   }
+
+  func switchLivePhoto() {
+    isLivePhotoOn.toggle()
+    manager.isLivePhotoOn = isLivePhotoOn
+  }
+
 }

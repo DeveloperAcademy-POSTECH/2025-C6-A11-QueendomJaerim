@@ -1,4 +1,5 @@
 import AVFoundation
+import Foundation
 import OSLog
 import Photos
 import UIKit
@@ -7,9 +8,11 @@ final class CameraManager: NSObject {
   let session = AVCaptureSession()
   private let captureSessionQueue = DispatchQueue(label: "com.queendom.QueenCam.sessionQueue")
   private var videoDeviceInput: AVCaptureDeviceInput?
+  private var audioDeviceInput: AVCaptureDeviceInput?
   private let photoOutput = AVCapturePhotoOutput()
   var position: AVCaptureDevice.Position = .back
   var flashMode: AVCaptureDevice.FlashMode = .off
+  var isLivePhotoOn: Bool = false
 
   private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.queendom.QueenCam", category: "CameraManager")
 
@@ -27,6 +30,7 @@ final class CameraManager: NSObject {
           self.session.sessionPreset = .photo
 
           try self.setupVideoInput()
+          try self.setupAudioInput()
           self.setupPhotoOutput()
 
           self.session.commitConfiguration()
@@ -52,7 +56,11 @@ final class CameraManager: NSObject {
     captureSessionQueue.async { [weak self] in
       guard let self else { return }
 
-      let photoSettings = AVCapturePhotoSettings()
+      var photoSettings = AVCapturePhotoSettings()
+
+      if self.photoOutput.availablePhotoCodecTypes.contains(.hevc) {
+        photoSettings = AVCapturePhotoSettings(format: [AVVideoCodecKey: AVVideoCodecType.hevc])
+      }
 
       if let device = videoDeviceInput?.device,
         device.isFlashAvailable,
@@ -64,6 +72,12 @@ final class CameraManager: NSObject {
       }
 
       photoSettings.isAutoRedEyeReductionEnabled = true
+
+      if self.isLivePhotoOn {
+        if self.photoOutput.isLivePhotoCaptureSupported {
+          photoSettings.livePhotoMovieFileURL = URL.movieFileURL
+        }
+      }
 
       self.cameraDelegate = CameraDelegate { image in
         guard let image else { return }
@@ -128,11 +142,27 @@ extension CameraManager {
     }
   }
 
+  private func setupAudioInput() throws {
+    guard audioDeviceInput == nil else { return }
+
+    guard let audioDevice = AVCaptureDevice.default(for: .audio) else {
+      logger.warning("No audio device available ")
+      return
+    }
+
+    let input = try AVCaptureDeviceInput(device: audioDevice)
+    if session.canAddInput(input) {
+      session.addInput(input)
+      audioDeviceInput = input
+    }
+  }
+
   private func setupPhotoOutput() {
     guard session.canAddOutput(photoOutput) else { return }
     session.addOutput(photoOutput)
     photoOutput.maxPhotoDimensions = .init(width: 4032, height: 3024)
     photoOutput.maxPhotoQualityPrioritization = .balanced
+    photoOutput.isLivePhotoCaptureEnabled = photoOutput.isLivePhotoCaptureSupported
   }
 
   private func startSession() {
@@ -210,5 +240,14 @@ extension CameraManager {
         self.onTapCamerSwitch?(self.position)
       }
     }
+  }
+}
+
+extension URL {
+  /// 라이브 포토의 mov 파일을 위한 고유한 임시 경로 생성
+  static var movieFileURL: URL {
+    FileManager.default.temporaryDirectory
+      .appendingPathComponent(UUID().uuidString)
+      .appendingPathExtension(for: .quickTimeMovie)
   }
 }
