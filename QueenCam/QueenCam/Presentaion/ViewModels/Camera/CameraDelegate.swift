@@ -37,6 +37,13 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
     stillImageData = imageData
     completion(image)
 
+    let capturingLivePhoto =
+      (photo.resolvedSettings.livePhotoMovieDimensions.width > 0 && photo.resolvedSettings.livePhotoMovieDimensions.height > 0)
+
+    if !capturingLivePhoto {
+      saveToPhotoLibrary(image)
+    }
+
   }
 
   func photoOutput(
@@ -63,6 +70,18 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
 }
 
 extension CameraDelegate {
+  private func saveToPhotoLibrary(_ image: UIImage) {
+    PHPhotoLibrary.shared().performChanges {
+      PHAssetChangeRequest.creationRequestForAsset(from: image)
+    } completionHandler: { success, error in
+      if success {
+        self.logger.info("Image saved to gallery.")
+      } else if error != nil {
+        self.logger.error("Error saving image to gallery")
+      }
+    }
+  }
+
   private func saveLivePhotoToPhotosLibrary(stillImageData: Data, livePhotoMovieURL: URL) {
     PHPhotoLibrary.shared().performChanges({
       let creationRequest = PHAssetCreationRequest.forAsset()

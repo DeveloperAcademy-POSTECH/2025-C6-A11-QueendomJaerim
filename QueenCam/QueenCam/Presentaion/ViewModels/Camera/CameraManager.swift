@@ -73,16 +73,12 @@ final class CameraManager: NSObject {
 
       photoSettings.isAutoRedEyeReductionEnabled = true
 
-      if self.isLivePhotoOn {
-        if self.photoOutput.isLivePhotoCaptureSupported {
-          photoSettings.livePhotoMovieFileURL = URL.movieFileURL
-        }
+      if self.isLivePhotoOn, self.photoOutput.isLivePhotoCaptureSupported {
+        photoSettings.livePhotoMovieFileURL = URL.movieFileURL
       }
 
       self.cameraDelegate = CameraDelegate { image in
         guard let image else { return }
-
-        self.saveToPhotoLibrary(image)
 
         DispatchQueue.main.async {
           self.onPhotoCapture?(image)
@@ -168,21 +164,6 @@ extension CameraManager {
   private func startSession() {
     guard !session.isRunning else { return }
     session.startRunning()
-  }
-}
-
-// MARK: 사진 촬영
-extension CameraManager {
-  private func saveToPhotoLibrary(_ image: UIImage) {
-    PHPhotoLibrary.shared().performChanges {
-      PHAssetChangeRequest.creationRequestForAsset(from: image)
-    } completionHandler: { success, error in
-      if success {
-        self.logger.info("Image saved to gallery.")
-      } else if error != nil {
-        self.logger.error("Error saving image to gallery")
-      }
-    }
   }
 }
 
