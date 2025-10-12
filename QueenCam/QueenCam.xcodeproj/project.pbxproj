@@ -35,6 +35,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Common/.gitkeep.swift,
+				Info.plist,
 				Presentaion/DesignSystem/Components/.gitkeep.swift,
 				Presentaion/ViewModels/Guiding/.gitkeep.swift,
 				Presentaion/ViewModels/Main/.gitkeep.swift,
@@ -445,12 +446,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = QueenCam/QueenCam.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = D22ZM93S77;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = QueenCam/Info.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "This app uses the camera to capture photos";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "This app need tihs permission to save captured photos";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -480,12 +483,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = QueenCam/QueenCam.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = D22ZM93S77;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = QueenCam/Info.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "This app uses the camera to capture photos";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "This app need tihs permission to save captured photos";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
