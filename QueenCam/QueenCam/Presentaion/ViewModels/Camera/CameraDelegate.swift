@@ -4,13 +4,15 @@ import Photos
 import UIKit
 
 final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
-  private let completion: ((UIImage?) -> Void)
   private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.queendom.QueenCam", category: "CameraDelegate")
+  private let isCameraPosition: AVCaptureDevice.Position
 
+  private let completion: ((UIImage?) -> Void)
   private var stillImageData: Data?
   private var livePhotoMovieURL: URL?
 
-  init(completion: @escaping (UIImage?) -> Void) {
+  init(isCameraPosition: AVCaptureDevice.Position, completion: @escaping (UIImage?) -> Void) {
+    self.isCameraPosition = isCameraPosition
     self.completion = completion
   }
 
@@ -27,13 +29,19 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
 
     guard
       let imageData = photo.fileDataRepresentation(),
-      let image = UIImage(data: imageData)
+      var image = UIImage(data: imageData)
     else {
       logger.error("Image not fetched.")
       completion(nil)
       return
     }
-
+    
+    if isCameraPosition == .front {
+      if let cgImage = image.cgImage {
+        image = UIImage(cgImage: cgImage, scale: image.scale, orientation: .leftMirrored)
+      }
+    }
+    
     stillImageData = imageData
     completion(image)
 

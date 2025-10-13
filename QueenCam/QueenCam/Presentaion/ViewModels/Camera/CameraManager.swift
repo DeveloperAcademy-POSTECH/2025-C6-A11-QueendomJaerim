@@ -77,7 +77,7 @@ final class CameraManager: NSObject {
         photoSettings.livePhotoMovieFileURL = URL.movieFileURL
       }
 
-      self.cameraDelegate = CameraDelegate { image in
+      self.cameraDelegate = CameraDelegate(isCameraPosition: self.position) { image in
         guard let image else { return }
 
         DispatchQueue.main.async {
@@ -139,6 +139,8 @@ extension CameraManager {
   }
 
   private func setupAudioInput() throws {
+    guard isLivePhotoOn else { return }
+    
     guard audioDeviceInput == nil else { return }
 
     guard let audioDevice = AVCaptureDevice.default(for: .audio) else {
@@ -211,6 +213,9 @@ extension CameraManager {
 
       do {
         try self.setupVideoInput()
+        try self.setupAudioInput()
+        setupPhotoOutput()
+        
       } catch {
         self.logger.error("Failed to switch camera: \(error.localizedDescription)")
       }
