@@ -26,30 +26,6 @@ extension CameraView: View {
       case true:
         Color.black.ignoresSafeArea()
 
-        // 임시 툴바. 커밋하지 말기!!!
-        VStack {
-          HStack {
-            Spacer()
-
-            Button {
-              router.push(.establishConnection)
-            } label: {
-              Text("연결")
-                .padding(8)
-            }
-            .glassEffect()
-            
-            Button {
-              wifiAwareViewModel.didPingButtonTap()
-            } label: {
-              Text("핑")
-                .padding(8)
-            }
-            .glassEffect()
-
-            Spacer()
-          }
-
           CameraPreview(session: viewModel.manager.session)
             .overlay(alignment: .topLeading) {
               if let image = selectedImage {
@@ -106,7 +82,6 @@ extension CameraView: View {
                 .frame(width: 60, height: 60)
             }
           }
-        }
       case false:
         Color.black.ignoresSafeArea()
 
