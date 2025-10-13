@@ -102,4 +102,10 @@ extension WifiAwareViewModel {
       await self.networkService.send(for: .ping(Date()))
     }
   }
+  
+  func connectionViewDisappear() {
+    if connections.isEmpty { // 연결 중인 경우 연결 뷰에서 벗어나면 연결을 취소한다
+      networkService.stop()
+    }
+  }
 }

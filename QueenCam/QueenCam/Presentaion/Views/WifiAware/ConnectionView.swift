@@ -108,6 +108,9 @@ extension ConnectionView {
     .task {
       await viewModel.viewDidAppearTask()
     }
+    .onDisappear {
+      viewModel.connectionViewDisappear()
+    }
     .onChange(of: viewModel.connections) { _, newValue in
       if !newValue.isEmpty {
         DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
