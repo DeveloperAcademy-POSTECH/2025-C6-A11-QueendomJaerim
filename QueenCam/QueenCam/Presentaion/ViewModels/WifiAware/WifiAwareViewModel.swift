@@ -26,7 +26,7 @@ final class WifiAwareViewModel {
 
   var networkState: NetworkState?
   var connections: [WAPairedDevice: ConnectionDetail] = [:]
-  
+
   var lastPingAt: Date?
 
   private let networkService: NetworkServiceProtocol
@@ -85,7 +85,7 @@ extension WifiAwareViewModel {
     logger.info("endpoint selected. \(endpoint)")
   }
 
-  func connectButtonTapped(for device: WAPairedDevice) {
+  func connectButtonDidTap(for device: WAPairedDevice) {
     if networkState == .host(.stopped) || networkState == .viewer(.stopped) {
       networkService.run(for: device)
     } else {
@@ -96,15 +96,15 @@ extension WifiAwareViewModel {
   func viewDidAppearTask() async {
     await updatePairedDevices()
   }
-  
-  func didPingButtonTap() {
+
+  func pingButtonDidTap() {
     Task.detached {
       await self.networkService.send(for: .ping(Date()))
     }
   }
-  
+
   func connectionViewDisappear() {
-    if connections.isEmpty { // 연결 중인 경우 연결 뷰에서 벗어나면 연결을 취소한다
+    if connections.isEmpty {  // 연결 중인 경우 연결 뷰에서 벗어나면 연결을 취소한다
       networkService.stop()
     }
   }

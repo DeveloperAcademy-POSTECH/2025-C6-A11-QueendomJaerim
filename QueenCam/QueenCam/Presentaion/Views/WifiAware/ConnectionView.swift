@@ -36,7 +36,7 @@ extension ConnectionView {
             List(viewModel.pairedDevices) { device in
               Text(device.pairingInfo?.pairingName ?? "알 수 없는 이름")
                 .onTapGesture {
-                  viewModel.connectButtonTapped(for: device)
+                  viewModel.connectButtonDidTap(for: device)
                 }
             }
             .listStyle(.grouped)
@@ -50,7 +50,7 @@ extension ConnectionView {
               && viewModel.connections.isEmpty {
             Text("두 기기를 연결하고 있어요")
           }
-          
+
           if !viewModel.connections.isEmpty {
             Text("연결이 완료되었어요")
           }
