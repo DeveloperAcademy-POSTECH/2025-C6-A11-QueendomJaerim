@@ -97,15 +97,27 @@ final class NetworkService: NetworkServiceProtocol {
   }
 
   private var networkTask: Task<Void, Error>?
-  private let networkManager: NetworkManager
-  private let connectionManager: ConnectionManager
+  private let networkManager: NetworkManagerProtocol
+  private let connectionManager: ConnectionManagerProtocol
   private var eventHandlerTasks: [Task<Void, Error>] = []
 
   private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.queendom.QueenCam", category: "NetworkService")
 
   init() {
-    self.connectionManager = ConnectionManager()
-    self.networkManager = NetworkManager(connectionManager: self.connectionManager)
+    let connectionManager = ConnectionManager()
+    let networkManager = NetworkManager(connectionManager: connectionManager)
+    self.connectionManager = connectionManager
+    self.networkManager = networkManager
+
+    eventHandlerTasks.append(setupEventHandler(for: networkManager.localEvents))
+    eventHandlerTasks.append(setupEventHandler(for: networkManager.networkEvents))
+    eventHandlerTasks.append(setupEventHandler(for: connectionManager.localEvents))
+    eventHandlerTasks.append(setupEventHandler(for: connectionManager.networkEvents))
+  }
+
+  init(networkManager: NetworkManagerProtocol, connectionManager: ConnectionManagerProtocol) {
+    self.networkManager = networkManager
+    self.connectionManager = connectionManager
 
     eventHandlerTasks.append(setupEventHandler(for: networkManager.localEvents))
     eventHandlerTasks.append(setupEventHandler(for: networkManager.networkEvents))
@@ -211,3 +223,4 @@ final class NetworkService: NetworkServiceProtocol {
     await self.networkManager.sendToAll(event)
   }
 }
+
