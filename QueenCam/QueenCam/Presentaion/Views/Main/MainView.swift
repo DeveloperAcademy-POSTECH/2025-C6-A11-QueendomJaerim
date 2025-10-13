@@ -17,7 +17,7 @@ struct MainView: View {
   var body: some View {
     Group {
       NavigationStack(path: $router.path) {
-        CameraView(wifiAwareViewModel: wifiAwareViewModel)
+        CameraView()
           .navigationDestination(for: Route.self) { route in
             NavigationRouteView(currentRoute: route, wifiAwareViewModel: wifiAwareViewModel)
           }
