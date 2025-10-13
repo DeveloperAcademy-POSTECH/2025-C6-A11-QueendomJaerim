@@ -74,7 +74,7 @@ actor ConnectionManager: ConnectionManagerProtocol {
 
     return Task {
       for await (connection, state) in stream {
-        var connectionError: NWError? = nil
+        var connectionError: NWError?
 
         switch state {
         case .setup, .waiting, .preparing: break

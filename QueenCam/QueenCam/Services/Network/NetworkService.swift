@@ -34,7 +34,7 @@ protocol NetworkServiceProtocol: AnyObject {
 
   /// 네트워크 서비스를 중지합니다.
   func stop()
-  
+
   /// 이벤트를 보냅니다.
   func send(for event: NetworkEvent) async
 }
@@ -206,7 +206,7 @@ final class NetworkService: NetworkServiceProtocol {
   func stop() {
     networkTask?.cancel()
   }
-  
+
   func send(for event: NetworkEvent) async {
     await self.networkManager.sendToAll(event)
   }

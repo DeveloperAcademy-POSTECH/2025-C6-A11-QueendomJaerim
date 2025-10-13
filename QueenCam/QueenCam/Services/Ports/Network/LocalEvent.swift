@@ -29,6 +29,6 @@ struct ConnectionDetail: Sendable, Equatable {
   let performanceReport: WAPerformanceReport
 
   public static func == (lhs: ConnectionDetail, rhs: ConnectionDetail) -> Bool {
-    return lhs.performanceReport.localTimestamp == rhs.performanceReport.localTimestamp
+    lhs.performanceReport.localTimestamp == rhs.performanceReport.localTimestamp
   }
 }

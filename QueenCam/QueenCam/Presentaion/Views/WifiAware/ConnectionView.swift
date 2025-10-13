@@ -32,7 +32,7 @@ extension ConnectionView {
           }
 
           if !viewModel.pairedDevices.isEmpty
-              && (viewModel.networkState == .host(.stopped) || viewModel.networkState == .viewer(.stopped)) {
+            && (viewModel.networkState == .host(.stopped) || viewModel.networkState == .viewer(.stopped)) {
             List(viewModel.pairedDevices) { device in
               Text(device.pairingInfo?.pairingName ?? "알 수 없는 이름")
                 .onTapGesture {
@@ -43,11 +43,11 @@ extension ConnectionView {
           } else {
             Spacer()
           }
-          
+
           if (viewModel.networkState == .host(.publishing)
-              || viewModel.networkState == .viewer(.browsing)
-              || viewModel.networkState == .viewer(.connecting))
-              && viewModel.connections.isEmpty {
+            || viewModel.networkState == .viewer(.browsing)
+            || viewModel.networkState == .viewer(.connecting))
+            && viewModel.connections.isEmpty {
             Text("두 기기를 연결하고 있어요")
           }
 

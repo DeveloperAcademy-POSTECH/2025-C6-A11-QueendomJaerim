@@ -35,7 +35,7 @@ actor NetworkManager: NetworkManagerProtocol {
 
     try await NetworkListener(
       for:
-          .wifiAware(.connecting(to: .previewService, from: .selected([device]))),
+        .wifiAware(.connecting(to: .previewService, from: .selected([device]))),
       using: .parameters {
         Coder(receiving: NetworkEvent.self, sending: NetworkEvent.self, using: NetworkJSONCoder()) {
           TCP()
@@ -68,7 +68,7 @@ actor NetworkManager: NetworkManagerProtocol {
 
     let browser = NetworkBrowser(
       for:
-          .wifiAware(.connecting(to: .selected([device]), from: .previewService))
+        .wifiAware(.connecting(to: .selected([device]), from: .previewService))
     )
     .onStateUpdate { browser, state in
       self.logger.info("browser onStateUpdate - \(String(describing: browser)): \(String(describing: state))")

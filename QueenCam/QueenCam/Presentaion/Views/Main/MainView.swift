@@ -23,17 +23,23 @@ struct MainView: View {
           }
       }
     }
-#if DEBUG
-    .alert("Ping 메시지 도착", isPresented: .init(get: {
-      wifiAwareViewModel.lastPingAt != nil
-    }, set: { present in
-      wifiAwareViewModel.lastPingAt = present ? Date() : nil
-    })) {
+    #if DEBUG
+    .alert(
+      "Ping 메시지 도착",
+      isPresented: .init(
+        get: {
+          wifiAwareViewModel.lastPingAt != nil
+        },
+        set: { present in
+          wifiAwareViewModel.lastPingAt = present ? Date() : nil
+        }
+      )
+    ) {
       Button("확인") {
-          //
+        //
       }
     }
-#endif
+    #endif
     .environment(\.router, router)
   }
 }
