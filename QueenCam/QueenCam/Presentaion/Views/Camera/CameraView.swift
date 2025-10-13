@@ -6,6 +6,8 @@ struct CameraView {
 
   @State private var selectedItem: PhotosPickerItem?
   @State private var selectedImage: UIImage?
+
+  @Environment(\.router) private var router
 }
 
 extension CameraView {
@@ -23,7 +25,21 @@ extension CameraView: View {
       case true:
         Color.black.ignoresSafeArea()
 
+        // 임시 툴바. 커밋하지 말기!!!
         VStack {
+          HStack {
+            Spacer()
+
+            Button {
+              router.push(.establishConnection)
+            } label: {
+              Text("연결")
+            }
+            .glassEffect()
+
+            Spacer()
+          }
+
           CameraPreview(session: viewModel.manager.session)
             .overlay(alignment: .topLeading) {
               if let image = selectedImage {

@@ -10,12 +10,16 @@ import SwiftUI
 struct MainView: View {
   @State private var router = NavigationRouter()
 
+  @State private var wifiAwareViewModel = WifiAwareViewModel(
+    networkService: NetworkService()
+  )
+
   var body: some View {
     Group {
       NavigationStack(path: $router.path) {
         CameraView()
           .navigationDestination(for: Route.self) { route in
-            NavigationRouteView(currentRoute: route)
+            NavigationRouteView(currentRoute: route, wifiAwareViewModel: wifiAwareViewModel)
           }
       }
     }

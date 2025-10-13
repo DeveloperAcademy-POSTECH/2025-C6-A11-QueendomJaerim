@@ -9,15 +9,12 @@ import SwiftUI
 
 struct NavigationRouteView: View {
   let currentRoute: Route
-  
+  let wifiAwareViewModel: WifiAwareViewModel
+
   var body: some View {
     switch currentRoute {
     case .establishConnection:
-      ConnectionView()
+      ConnectionView(viewModel: wifiAwareViewModel)
     }
   }
-}
-
-#Preview {
-  NavigationRouteView(currentRoute: .establishConnection)
 }

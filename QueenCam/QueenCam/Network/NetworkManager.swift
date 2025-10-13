@@ -30,12 +30,12 @@ actor NetworkManager: NetworkManagerProtocol {
 
   // MARK: - NetworkListener (Publisher)
 
-  func listen() async throws {
+  func listen(to device: WAPairedDevice) async throws {
     logger.info("Start NetworkListener")
 
     try await NetworkListener(
       for:
-        .wifiAware(.connecting(to: .previewService, from: .allPairedDevices)),
+          .wifiAware(.connecting(to: .previewService, from: .selected([device]))),
       using: .parameters {
         Coder(receiving: NetworkEvent.self, sending: NetworkEvent.self, using: NetworkJSONCoder()) {
           TCP()
@@ -63,12 +63,12 @@ actor NetworkManager: NetworkManagerProtocol {
 
   // MARK: - NetworkBrowser (Subscriber)
 
-  func browse() async throws {
+  func browse(for device: WAPairedDevice) async throws {
     logger.info("Start NetworkBrowser")
 
     let browser = NetworkBrowser(
       for:
-        .wifiAware(.connecting(to: .allPairedDevices, from: .previewService))
+          .wifiAware(.connecting(to: .selected([device]), from: .previewService))
     )
     .onStateUpdate { browser, state in
       self.logger.info("browser onStateUpdate - \(String(describing: browser)): \(String(describing: state))")

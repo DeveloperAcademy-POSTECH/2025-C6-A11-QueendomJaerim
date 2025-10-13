@@ -10,11 +10,11 @@ import Network
 import WiFiAware
 
 protocol NetworkManagerProtocol {
-    var localEvents: AsyncStream<LocalEvent> { get }
-    var networkEvents: AsyncStream<NetworkEvent> { get }
-    
-    func listen() async throws
-    func browse() async throws
-    func send(_ event: NetworkEvent, to connection: WiFiAwareConnection) async
-    func sendToAll(_ event: NetworkEvent) async
+  var localEvents: AsyncStream<LocalEvent> { get }
+  var networkEvents: AsyncStream<NetworkEvent> { get }
+
+  func listen(to device: WAPairedDevice) async throws
+  func browse(for device: WAPairedDevice) async throws
+  func send(_ event: NetworkEvent, to connection: WiFiAwareConnection) async
+  func sendToAll(_ event: NetworkEvent) async
 }
