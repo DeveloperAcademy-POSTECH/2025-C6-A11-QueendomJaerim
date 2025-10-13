@@ -10,6 +10,9 @@ struct CameraView {
   @State private var zoomScaleItemList: [CGFloat] = [0.5, 1, 2]
 
   @State private var isShowGrid: Bool = false
+
+  @State private var isFocused = false
+  @State private var focusLocation: CGPoint = .zero
 }
 
 extension CameraView {
@@ -72,6 +75,24 @@ extension CameraView: View {
           ZStack {
             CameraPreview(session: viewModel.manager.session)
               .aspectRatio(3 / 4, contentMode: .fit)
+              .onTapGesture { location in
+                isFocused = true
+                focusLocation = location
+                viewModel.setFocus(point: location)
+              }
+              .overlay {
+                if isFocused {
+                  FocusView(position: $focusLocation)
+                    .onAppear {
+                      withAnimation {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                          self.isFocused = false
+
+                        }
+                      }
+                    }
+                }
+              }
 
             if isShowGrid {
               GridView()
@@ -187,5 +208,17 @@ extension CameraView: View {
         selectedImage = image
       }
     }
+  }
+}
+
+struct FocusView: View {
+  @Binding var position: CGPoint
+
+  var body: some View {
+    Rectangle()
+      .frame(width: 70, height: 70)
+      .foregroundStyle(.clear)
+      .border(Color.yellow, width: 1.5)
+      .position(x: position.x, y: position.y)
   }
 }

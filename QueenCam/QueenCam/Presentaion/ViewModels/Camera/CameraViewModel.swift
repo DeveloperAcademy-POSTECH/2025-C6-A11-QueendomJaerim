@@ -116,4 +116,7 @@ final class CameraViewModel {
     manager.isLivePhotoOn = isLivePhotoOn
   }
 
+  func setFocus(point: CGPoint) {
+    manager.focusAndExpose(at: point)
+  }
 }

@@ -140,7 +140,7 @@ extension CameraManager {
 
   private func setupAudioInput() throws {
     guard isLivePhotoOn else { return }
-    
+
     guard audioDeviceInput == nil else { return }
 
     guard let audioDevice = AVCaptureDevice.default(for: .audio) else {
@@ -215,7 +215,7 @@ extension CameraManager {
         try self.setupVideoInput()
         try self.setupAudioInput()
         setupPhotoOutput()
-        
+
       } catch {
         self.logger.error("Failed to switch camera: \(error.localizedDescription)")
       }
@@ -226,6 +226,44 @@ extension CameraManager {
         self.onTapCamerSwitch?(self.position)
       }
     }
+  }
+}
+
+extension CameraManager {
+  func focusAndExpose(at point: CGPoint) {
+    let devicePoint = videoPreviewLayer.captureDevicePointConverted(fromLayerPoint: point)
+
+    guard let device = videoDeviceInput?.device else {
+      logger.error("Focus failed: No active video device input.")
+      return
+    }
+
+    do {
+      try device.lockForConfiguration()
+
+      if device.isFocusPointOfInterestSupported, device.isFocusModeSupported(.autoFocus) {
+        device.focusPointOfInterest = devicePoint
+        device.focusMode = .autoFocus
+      }
+
+      if device.isExposurePointOfInterestSupported, device.isExposureModeSupported(.autoExpose) {
+        device.exposurePointOfInterest = devicePoint
+        device.exposureMode = .autoExpose
+      }
+
+      device.isSubjectAreaChangeMonitoringEnabled = true
+      device.unlockForConfiguration()
+    } catch {
+      logger.error("Focus/Exposure configuration failed: \(error.localizedDescription)")
+    }
+  }
+
+  private var videoPreviewLayer: AVCaptureVideoPreviewLayer {
+    guard let layer = session.connections.compactMap({ $0.videoPreviewLayer }).first else {
+      logger.error("No connected preview layer found in session.")
+      return AVCaptureVideoPreviewLayer(session: session)
+    }
+    return layer
   }
 }
 
