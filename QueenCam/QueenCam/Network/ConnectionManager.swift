@@ -16,7 +16,7 @@ private struct ConnectionInfo {
   var remoteDevice: WAPairedDevice?
 }
 
-actor ConnectionManager: ConnectionManagerProtocol, Sendable {
+actor ConnectionManager: ConnectionManagerProtocol {
   private(set) var connections: [WiFiAwareConnectionID: WiFiAwareConnection] = [:]
   private var connectionsInfo: [WiFiAwareConnectionID: ConnectionInfo] = [:]
 
