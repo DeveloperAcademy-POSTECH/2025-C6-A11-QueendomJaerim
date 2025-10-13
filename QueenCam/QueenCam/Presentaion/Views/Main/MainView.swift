@@ -17,12 +17,23 @@ struct MainView: View {
   var body: some View {
     Group {
       NavigationStack(path: $router.path) {
-        CameraView()
+        CameraView(wifiAwareViewModel: wifiAwareViewModel)
           .navigationDestination(for: Route.self) { route in
             NavigationRouteView(currentRoute: route, wifiAwareViewModel: wifiAwareViewModel)
           }
       }
     }
+#if DEBUG
+    .alert("Ping 메시지 도착", isPresented: .init(get: {
+      wifiAwareViewModel.lastPingAt != nil
+    }, set: { present in
+      wifiAwareViewModel.lastPingAt = present ? Date() : nil
+    })) {
+      Button("확인") {
+          //
+      }
+    }
+#endif
     .environment(\.router, router)
   }
 }

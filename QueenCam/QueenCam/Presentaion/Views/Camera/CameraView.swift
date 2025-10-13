@@ -3,6 +3,7 @@ import SwiftUI
 
 struct CameraView {
   @State private var viewModel = CameraViewModel()
+  var wifiAwareViewModel: WifiAwareViewModel
 
   @State private var selectedItem: PhotosPickerItem?
   @State private var selectedImage: UIImage?
@@ -34,6 +35,15 @@ extension CameraView: View {
               router.push(.establishConnection)
             } label: {
               Text("연결")
+                .padding(8)
+            }
+            .glassEffect()
+            
+            Button {
+              wifiAwareViewModel.didPingButtonTap()
+            } label: {
+              Text("핑")
+                .padding(8)
             }
             .glassEffect()
 

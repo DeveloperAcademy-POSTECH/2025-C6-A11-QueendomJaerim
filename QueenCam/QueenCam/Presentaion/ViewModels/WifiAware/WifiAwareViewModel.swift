@@ -26,6 +26,8 @@ final class WifiAwareViewModel {
 
   var networkState: NetworkState?
   var connections: [WAPairedDevice: ConnectionDetail] = [:]
+  
+  var lastPingAt: Date?
 
   private let networkService: NetworkServiceProtocol
   private var cancellables: Set<AnyCancellable> = []
@@ -53,9 +55,14 @@ final class WifiAwareViewModel {
       .store(in: &cancellables)
 
     networkService.networkEventPublisher
+      .receive(on: RunLoop.main)
       .compactMap { $0 }
-      .sink { event in
-        // TODO: Handle events
+      .sink { [weak self] event in
+        switch event {
+        case .ping(let pingAt):
+          self?.lastPingAt = pingAt
+        default: break
+        }
       }
       .store(in: &cancellables)
   }
@@ -88,5 +95,11 @@ extension WifiAwareViewModel {
 
   func viewDidAppearTask() async {
     await updatePairedDevices()
+  }
+  
+  func didPingButtonTap() {
+    Task.detached {
+      await self.networkService.send(for: .ping(Date()))
+    }
   }
 }
