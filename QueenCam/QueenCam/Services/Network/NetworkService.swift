@@ -21,7 +21,7 @@ final class NetworkService: NetworkServiceProtocol {
   }
 
   /// Available connections
-  private let deviceConnectionsSubject = PassthroughSubject<[WAPairedDevice: ConnectionDetail], Never>()
+  private let deviceConnectionsSubject = CurrentValueSubject<[WAPairedDevice: ConnectionDetail], Never>([:])
   var deviceConnectionsPublisher: AnyPublisher<[WAPairedDevice: ConnectionDetail], Never> {
     deviceConnectionsSubject.eraseToAnyPublisher()
   }
@@ -33,14 +33,14 @@ final class NetworkService: NetworkServiceProtocol {
   }
 
   /// Last error
-  private let lastErrorSubject = PassthroughSubject<Error?, Never>()
+  private let lastErrorSubject = CurrentValueSubject<Error?, Never>(nil)
   var lastErrorPublisher: AnyPublisher<Error?, Never> {
     lastErrorSubject.eraseToAnyPublisher()
   }
 
   // MARK: Published subjects
   /// Network state
-  private let networkStateSubject = PassthroughSubject<NetworkState?, Never>()
+  private let networkStateSubject = CurrentValueSubject<NetworkState?, Never>(nil)
   var networkStatePublisher: AnyPublisher<NetworkState?, Never> {
     networkStateSubject.eraseToAnyPublisher()
   }
@@ -62,7 +62,7 @@ final class NetworkService: NetworkServiceProtocol {
   }
 
   /// Network event
-  private let networkEventSubject = PassthroughSubject<NetworkEvent?, Never>()
+  private let networkEventSubject = CurrentValueSubject<NetworkEvent?, Never>(nil)
   var networkEventPublisher: AnyPublisher<NetworkEvent?, Never> {
     networkEventSubject.eraseToAnyPublisher()
   }

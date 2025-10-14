@@ -17,4 +17,6 @@ final class DependencyContainer {
     networkManager: networkManager,
     connectionManager: connectionManager
   )
+  
+  lazy var previewCaptureService = PreviewCaptureService()
 }

@@ -10,6 +10,7 @@ final class CameraManager: NSObject {
   private var videoDeviceInput: AVCaptureDeviceInput?
   private var audioDeviceInput: AVCaptureDeviceInput?
   private let photoOutput = AVCapturePhotoOutput()
+  private let previewCaptureService: PreviewCaptureService
   var position: AVCaptureDevice.Position = .back
   var flashMode: AVCaptureDevice.FlashMode = .off
   var isLivePhotoOn: Bool = false
@@ -20,6 +21,10 @@ final class CameraManager: NSObject {
 
   var onPhotoCapture: ((UIImage) -> Void)?
   var onTapCameraSwitch: ((AVCaptureDevice.Position) -> Void)?
+
+  init(previewCaptureService: PreviewCaptureService) {
+    self.previewCaptureService = previewCaptureService
+  }
 
   func configureSession() async throws {
     try await withCheckedThrowingContinuation { continuation in
@@ -32,6 +37,7 @@ final class CameraManager: NSObject {
           try self.setupVideoInput()
           try self.setupAudioInput()
           self.setupPhotoOutput()
+          self.setupPreviewCaptureOutput()
 
           self.session.commitConfiguration()
           self.startSession()
@@ -162,6 +168,13 @@ extension CameraManager {
     photoOutput.maxPhotoDimensions = .init(width: 4032, height: 3024)
     photoOutput.maxPhotoQualityPrioritization = .balanced
     photoOutput.isLivePhotoCaptureEnabled = photoOutput.isLivePhotoCaptureSupported
+  }
+
+  private func setupPreviewCaptureOutput() {
+    let previewCaptureOutput = previewCaptureService.output
+    guard session.canAddOutput(previewCaptureOutput) else { return }
+    session.addOutput(previewCaptureOutput)
+    logger.debug("AVCaptureVideoDataOutput for AVCaptureSession added to session")
   }
 
   private func startSession() {

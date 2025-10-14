@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum PreviewFrameQuality: Sendable {
+nonisolated enum PreviewFrameQuality: Sendable, Codable {
   case high
   case medium
   case low
@@ -51,7 +51,4 @@ enum PreviewFrameQuality: Sendable {
     case .low: return .low // low -> low
     }
   }
-}
-
-nonisolated extension PreviewFrameQuality: Codable {
 }

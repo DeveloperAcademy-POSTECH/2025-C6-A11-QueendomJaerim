@@ -13,13 +13,22 @@ struct MainView: View {
   @State private var wifiAwareViewModel = WifiAwareViewModel(
     networkService: DependencyContainer.defaultContainer.networkService
   )
+  
+  @State private var previewModel = PreviewStreamingViewModel(
+    previewCaptureService: DependencyContainer.defaultContainer.previewCaptureService,
+    networkService: DependencyContainer.defaultContainer.networkService
+  )
 
   var body: some View {
     Group {
       NavigationStack(path: $router.path) {
         CameraView()
           .navigationDestination(for: Route.self) { route in
-            NavigationRouteView(currentRoute: route, wifiAwareViewModel: wifiAwareViewModel)
+            NavigationRouteView(
+              currentRoute: route,
+              wifiAwareViewModel: wifiAwareViewModel,
+              previewModel: previewModel
+            )
           }
       }
     }

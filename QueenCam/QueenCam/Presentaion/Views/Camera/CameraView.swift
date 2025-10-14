@@ -3,6 +3,7 @@ import SwiftUI
 
 struct CameraView {
   @State private var viewModel = CameraViewModel()
+  @Environment(\.router) private var router
 
   @State private var selectedItem: PhotosPickerItem?
   @State private var selectedImage: UIImage?
@@ -62,6 +63,17 @@ extension CameraView: View {
               Image(systemName: viewModel.isLivePhotoOn ? "livephoto" : "livephoto.slash")
                 .foregroundStyle(viewModel.isLivePhotoOn ? .yellow : .white)
             }
+
+            Spacer()
+            
+
+            Button {
+              router.push(.establishConnection)
+            } label: {
+              Text("연결")
+                .padding(8)
+            }
+            .glassEffect()
 
             Spacer()
 
