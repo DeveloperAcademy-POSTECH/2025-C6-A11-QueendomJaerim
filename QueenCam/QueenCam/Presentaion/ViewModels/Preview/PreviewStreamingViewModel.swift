@@ -61,8 +61,10 @@ final class PreviewStreamingViewModel {
 
   var previewFrameQuality: PreviewFrameQuality = .high {
     didSet {
-      let newQuality = previewFrameQuality
-      logger.debug("preview frame quality changed to \(String(describing: newQuality))")
+      logger.debug("preview frame quality changed to \(String(describing: self.previewFrameQuality))")
+      Task {
+        await self.previewCaptureService.setQuality(to: self.previewFrameQuality)
+      }
     }
   }
 
@@ -91,7 +93,6 @@ final class PreviewStreamingViewModel {
       .sink { [weak self] state in
         self?.networkState = state
         self?.transferEnabled = state != .host(.stopped) && state != .viewer(.stopped)
-        print("networkStatePublisher sink -- transferEnabled=\(self?.transferEnabled)")
       }
       .store(in: &cancellables)
 
@@ -108,7 +109,6 @@ final class PreviewStreamingViewModel {
         switch event {
         case .previewFrame(let framePayload):
           self?.handleReceivedFrame(framePayload)
-          self?.logger.debug("previewFrame \(framePayload.timestamp)")
         case .renderState(let state):
           self?.handleReceivedRenderStateReport(state)
         default: break
@@ -133,18 +133,38 @@ final class PreviewStreamingViewModel {
   }
 }
 
+// MARK: - Photographer's Intent
 extension PreviewStreamingViewModel {
   func startCapture() {
     isTransfering = true
 
     Task.detached { [weak self] in
       guard let self else { return }
-      
+
       let framePayloadStream = await self.previewCaptureService.framePayloadStream
       await previewCaptureService.startCapturePreviewStream()
       for await payload in framePayloadStream {
         await self.networkService.send(for: .previewFrame(payload))
       }
+    }
+  }
+}
+
+// MARK: Model's Intent
+extension PreviewStreamingViewModel {
+  // MARK: 화질 조정
+
+  func frameDidSkipped() {
+    Task.detached { [weak self] in
+      await self?.networkService.send(for: .renderState(.unstable))
+      self?.logger.warning("sent unstable event")
+    }
+  }
+
+  func frameDidRenderStablely() {
+    Task.detached { [weak self] in
+      await self?.networkService.send(for: .renderState(.stable))
+      self?.logger.warning("sent stable event")
     }
   }
 }

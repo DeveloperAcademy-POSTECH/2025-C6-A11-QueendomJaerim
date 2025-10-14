@@ -3,7 +3,11 @@ import SwiftUI
 
 struct CameraView {
   @State private var viewModel = CameraViewModel()
+  var previewModel: PreviewStreamingViewModel
   @Environment(\.router) private var router
+  
+  // User Role
+  let role: Role?
 
   @State private var selectedItem: PhotosPickerItem?
   @State private var selectedImage: UIImage?
@@ -85,26 +89,30 @@ extension CameraView: View {
           .padding()
 
           ZStack {
-            CameraPreview(session: viewModel.manager.session)
-              .aspectRatio(3 / 4, contentMode: .fit)
-              .onTapGesture { location in
-                isFocused = true
-                focusLocation = location
-                viewModel.setFocus(point: location)
-              }
-              .overlay {
-                if isFocused {
-                  FocusView(position: $focusLocation)
-                    .onAppear {
-                      withAnimation {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-                          self.isFocused = false
+            if role == nil || role == .photographer {
+              CameraPreview(session: viewModel.manager.session)
+                .aspectRatio(3 / 4, contentMode: .fit)
+                .onTapGesture { location in
+                  isFocused = true
+                  focusLocation = location
+                  viewModel.setFocus(point: location)
+                }
+                .overlay {
+                  if isFocused {
+                    FocusView(position: $focusLocation)
+                      .onAppear {
+                        withAnimation {
+                          DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                            self.isFocused = false
 
+                          }
                         }
                       }
-                    }
+                  }
                 }
-              }
+            } else {
+              PreviewPlayerView(previewModel: previewModel)
+            }
 
             if isShowGrid {
               GridView()

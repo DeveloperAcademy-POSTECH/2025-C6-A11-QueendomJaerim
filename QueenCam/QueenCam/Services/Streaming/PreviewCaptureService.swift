@@ -41,7 +41,9 @@ final actor PreviewCaptureService {
   init() {
     (self.framePayloadStream, self.framePayloadContinuation) = AsyncStream.makeStream(of: VideoFramePayload.self)
   }
+}
 
+extension PreviewCaptureService {
   // MARK: - Start to capture
 
   /// The app calls this method when the user taps the photo capture button.
@@ -59,7 +61,6 @@ final actor PreviewCaptureService {
     // Capture
     previewOutput.videoSettings = [
       AVVideoCodecKey: AVVideoCodecType.h264,
-      AVVideoScalingModeKey: AVVideoScalingModeFit,
     ]
 
     bufferStream = previewCaptureDelegate?.bufferStream
@@ -69,7 +70,8 @@ final actor PreviewCaptureService {
     logger.info("started to capture preveiw stream")
     logger.info("video settings: \(self.previewOutput.videoSettings ?? [:])")
 
-    // MARK: - render frame
+    // MARK: set to render frame
+    
     Task {
       await setupFrameProcessing()
     }
@@ -85,6 +87,14 @@ final actor PreviewCaptureService {
     previewOutput.setSampleBufferDelegate(nil, queue: previewCaptureQueue)
 
     logger.info("stopped to capture preveiw stream")
+  }
+  
+  private func mutateQuality(_ quality: PreviewFrameQuality) {
+    self.quality = quality
+  }
+  
+  nonisolated func setQuality(to quality: PreviewFrameQuality) async {
+    await mutateQuality(quality)
   }
 }
 
@@ -152,7 +162,7 @@ extension PreviewCaptureService {
 }
 
 // MARK: - Delegate
-final class PreviewCaptureDelegate: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
+nonisolated final class PreviewCaptureDelegate: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
 
   let bufferStream: AsyncStream<CMSampleBuffer>
   private let bufferStreamContinuation: AsyncStream<CMSampleBuffer>.Continuation
