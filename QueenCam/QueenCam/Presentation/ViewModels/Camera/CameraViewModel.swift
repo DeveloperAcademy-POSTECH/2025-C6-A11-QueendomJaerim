@@ -6,7 +6,9 @@ import UIKit
 @Observable
 @MainActor
 final class CameraViewModel {
-  let manager = CameraManager()
+  let manager = CameraManager(
+    previewCaptureService: DependencyContainer.defaultContainer.previewCaptureService
+  )
 
   var isCameraPermissionGranted = false
   var isPhotosPermissionGranted = false

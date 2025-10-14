@@ -12,12 +12,13 @@ import WiFiAware
 struct ConnectionView: View {
   @Environment(\.router) private var router
   var viewModel: WifiAwareViewModel
+  var previewStreamingViewModel: PreviewModel
 }
 
 extension ConnectionView {
   var body: some View {
     Group {
-      if let _ = viewModel.role {
+      if viewModel.role != nil {
         MakeConnectionView(
           role: viewModel.role,
           pairedDevices: viewModel.pairedDevices,
@@ -45,7 +46,11 @@ extension ConnectionView {
     }
     .onChange(of: viewModel.connections) { _, newValue in
       if !newValue.isEmpty {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+        if viewModel.role == .photographer {
+          previewStreamingViewModel.startCapture()
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
           router.reset()
         }
       }
@@ -85,9 +90,14 @@ struct RoleSelectButton: View {
     @State var viewModel: WifiAwareViewModel = .init(
       networkService: NetworkService()
     )
+    
+    @State var previewModel: PreviewModel = .init(
+      previewCaptureService: PreviewCaptureService(),
+      networkService: NetworkService()
+    )
 
     var body: some View {
-      ConnectionView(viewModel: viewModel)
+      ConnectionView(viewModel: viewModel, previewStreamingViewModel: previewModel)
         .onAppear {
           viewModel.selectRole(for: nil)
         }

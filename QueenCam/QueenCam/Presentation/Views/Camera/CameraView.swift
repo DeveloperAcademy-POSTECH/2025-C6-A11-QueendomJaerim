@@ -3,6 +3,11 @@ import SwiftUI
 
 struct CameraView {
   @State private var viewModel = CameraViewModel()
+  var previewModel: PreviewModel
+  @Environment(\.router) private var router
+
+  // User Role
+  let role: Role?
 
   @State private var selectedItem: PhotosPickerItem?
   @State private var selectedImage: UIImage?
@@ -65,6 +70,16 @@ extension CameraView: View {
 
             Spacer()
 
+            Button {
+              router.push(.establishConnection)
+            } label: {
+              Text("연결")
+                .padding(8)
+            }
+            .glassEffect()
+
+            Spacer()
+
             Button(action: { isShowGrid.toggle() }) {
               Text(isShowGrid ? "그리드 활성화" : "그리드 비활성화")
                 .foregroundStyle(isShowGrid ? .yellow : .white)
@@ -73,26 +88,30 @@ extension CameraView: View {
           .padding()
 
           ZStack {
-            CameraPreview(session: viewModel.manager.session)
-              .aspectRatio(3 / 4, contentMode: .fit)
-              .onTapGesture { location in
-                isFocused = true
-                focusLocation = location
-                viewModel.setFocus(point: location)
-              }
-              .overlay {
-                if isFocused {
-                  FocusView(position: $focusLocation)
-                    .onAppear {
-                      withAnimation {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-                          self.isFocused = false
+            if role == nil || role == .photographer {  // 작가
+              CameraPreview(session: viewModel.manager.session)
+                .aspectRatio(3 / 4, contentMode: .fit)
+                .onTapGesture { location in
+                  isFocused = true
+                  focusLocation = location
+                  viewModel.setFocus(point: location)
+                }
+                .overlay {
+                  if isFocused {
+                    FocusView(position: $focusLocation)
+                      .onAppear {
+                        withAnimation {
+                          DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                            self.isFocused = false
 
+                          }
                         }
                       }
-                    }
+                  }
                 }
-              }
+            } else {  // 모델
+              PreviewPlayerView(previewModel: previewModel)
+            }
 
             if isShowGrid {
               GridView()
@@ -119,12 +138,15 @@ extension CameraView: View {
 
           if !isFront {
             HStack(spacing: 20) {
-              ForEach(zoomScaleItemList, id: \.self) { item in
-                Button(action: { viewModel.zoom(factor: item) }) {
-                  Text(String(format: "%.1fx", item))
-
-                    .foregroundStyle(viewModel.selectedZoom == item ? .yellow : .white)
+              if role == nil || role == .photographer {
+                ForEach(zoomScaleItemList, id: \.self) { item in
+                  Button(action: { viewModel.zoom(factor: item) }) {
+                    Text(String(format: "%.1fx", item))
+                      .foregroundStyle(viewModel.selectedZoom == item ? .yellow : .white)
+                  }
                 }
+              } else {
+                Spacer()
               }
             }
             .padding(.bottom, 32)
@@ -148,26 +170,28 @@ extension CameraView: View {
 
             Spacer()
 
-            Button(action: { viewModel.capturePhoto() }) {
-              Circle()
-                .fill(.white)
-                .frame(width: 70, height: 70)
-                .overlay(
-                  Circle().stroke(Color.black.opacity(0.8), lineWidth: 2)
-                )
-            }
-
-            Spacer()
-
-            Button(action: {
-              Task {
-                await viewModel.switchCamera()
+            if role == nil || role == .photographer {  // 작가 전용 뷰
+              Button(action: { viewModel.capturePhoto() }) {
+                Circle()
+                  .fill(.white)
+                  .frame(width: 70, height: 70)
+                  .overlay(
+                    Circle().stroke(Color.black.opacity(0.8), lineWidth: 2)
+                  )
               }
-            }) {
-              Image(systemName: "arrow.triangle.2.circlepath.camera")
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 60, height: 60)
+
+              Spacer()
+
+              Button(action: {
+                Task {
+                  await viewModel.switchCamera()
+                }
+              }) {
+                Image(systemName: "arrow.triangle.2.circlepath.camera")
+                  .resizable()
+                  .aspectRatio(contentMode: .fit)
+                  .frame(width: 60, height: 60)
+              }
             }
           }
         }
