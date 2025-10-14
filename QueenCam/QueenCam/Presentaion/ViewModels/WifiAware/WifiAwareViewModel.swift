@@ -13,7 +13,7 @@ import WiFiAware
 @Observable
 @MainActor
 final class WifiAwareViewModel {
-  var role: Role? {
+  private(set) var role: Role? {
     didSet {
       if role == .model {
         networkService.mode = .viewer
@@ -107,5 +107,9 @@ extension WifiAwareViewModel {
     if connections.isEmpty {  // 연결 중인 경우 연결 뷰에서 벗어나면 연결을 취소한다
       networkService.stop()
     }
+  }
+  
+  func selectRole(for role: Role?) {
+    self.role = role
   }
 }

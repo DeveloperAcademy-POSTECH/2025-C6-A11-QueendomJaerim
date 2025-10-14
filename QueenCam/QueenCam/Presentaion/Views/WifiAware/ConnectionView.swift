@@ -11,97 +11,29 @@ import WiFiAware
 
 struct ConnectionView: View {
   @Environment(\.router) private var router
-  let viewModel: WifiAwareViewModel
+  var viewModel: WifiAwareViewModel
 }
 
 extension ConnectionView {
   var body: some View {
     Group {
-      if let role = viewModel.role {
-        VStack {
-          Button {
-            viewModel.role = nil
-          } label: {
-            Text("촬영 모드 바꾸기")
-              .foregroundStyle(.black)
-              .padding(10)
-              .background {
-                RoundedRectangle(cornerRadius: 8)
-                  .foregroundStyle(.gray)
-              }
+      if let _ = viewModel.role {
+        MakeConnectionView(
+          role: viewModel.role,
+          pairedDevices: viewModel.pairedDevices,
+          networkState: viewModel.networkState,
+          connections: viewModel.connections,
+          changeRoleButtonDidTap: { viewModel.selectRole(for: nil) },
+          connectButtonDidTap: { device in
+            viewModel.connectButtonDidTap(for: device)
+          },
+          publisherDidSelectEndpoint: { endpoint in
+            viewModel.didEndpointSelect(endpoint: endpoint)
           }
-
-          if !viewModel.pairedDevices.isEmpty
-            && (viewModel.networkState == .host(.stopped) || viewModel.networkState == .viewer(.stopped)) {
-            List(viewModel.pairedDevices) { device in
-              Text(device.pairingInfo?.pairingName ?? "알 수 없는 이름")
-                .onTapGesture {
-                  viewModel.connectButtonDidTap(for: device)
-                }
-            }
-            .listStyle(.grouped)
-          } else {
-            Spacer()
-          }
-
-          if (viewModel.networkState == .host(.publishing)
-            || viewModel.networkState == .viewer(.browsing)
-            || viewModel.networkState == .viewer(.connecting))
-            && viewModel.connections.isEmpty {
-            Text("두 기기를 연결하고 있어요")
-          }
-
-          if !viewModel.connections.isEmpty {
-            Text("연결이 완료되었어요")
-          }
-
-          if role == .photographer {
-            DevicePairingView(.wifiAware(.connecting(to: .previewService, from: .userSpecifiedDevices))) {
-              HStack {
-                Image(systemName: "video.bubble.fill")
-
-                Text("다른 기기와 페어링하기")
-              }
-            } fallback: {
-              Image(systemName: "xmark.circle")
-              Text("Unavailable")
-            }
-          } else {
-            DevicePicker(.wifiAware(.connecting(to: .userSpecifiedDevices, from: .previewService))) { endpoint in
-              viewModel.didEndpointSelect(endpoint: endpoint)
-            } label: {
-              HStack {
-                Image(systemName: "eye")
-
-                Text("다른 기기와 페어링하기")
-              }
-            } fallback: {
-              Image(systemName: "xmark.circle")
-              Text("Unavailable")
-            }
-          }
-
-          Spacer()
-        }
+        )
       } else {
-        VStack {
-          Text("역할을 선택해주세요")
-            .fontWeight(.bold)
-
-          Text("서로 다른 역할의 기기끼리만 연결할 수 있어요")
-
-          Spacer()
-            .frame(height: 60)
-
-          HStack {
-            RoleSelectButton(guideText: "이 기기로 찍을게요", roleText: "촬영") {
-              viewModel.role = .photographer
-            }
-
-            RoleSelectButton(guideText: "이 기기로 볼게요", roleText: "모델") {
-              viewModel.role = .model
-            }
-          }
+        SelectRoleView { role in
+          viewModel.selectRole(for: role)
         }
       }
     }
@@ -157,7 +89,7 @@ struct RoleSelectButton: View {
     var body: some View {
       ConnectionView(viewModel: viewModel)
         .onAppear {
-          viewModel.role = nil
+          viewModel.selectRole(for: nil)
         }
     }
   }
