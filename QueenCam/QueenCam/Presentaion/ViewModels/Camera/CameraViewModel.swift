@@ -23,6 +23,8 @@ final class CameraViewModel {
   var cameraPostion: AVCaptureDevice.Position?
   var currentFlashMode: AVCaptureDevice.FlashMode = .off
 
+  var errorMessage = ""
+
   init() {
     manager.onPhotoCapture = { [weak self] image in
       self?.lastImage = image
@@ -91,8 +93,12 @@ final class CameraViewModel {
     manager.setZoomScale(factor: factor)
   }
 
-  func switchCamera() {
-    manager.switchCamera()
+  func switchCamera() async {
+    do {
+      try await manager.switchCamera()
+    } catch {
+      errorMessage = error.localizedDescription
+    }
   }
 
   func switchFlashMode() {

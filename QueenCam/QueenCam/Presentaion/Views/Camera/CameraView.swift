@@ -159,7 +159,11 @@ extension CameraView: View {
 
             Spacer()
 
-            Button(action: { viewModel.switchCamera() }) {
+            Button(action: {
+              Task {
+                await viewModel.switchCamera()
+              }
+            }) {
               Image(systemName: "arrow.triangle.2.circlepath.camera")
                 .resizable()
                 .aspectRatio(contentMode: .fit)

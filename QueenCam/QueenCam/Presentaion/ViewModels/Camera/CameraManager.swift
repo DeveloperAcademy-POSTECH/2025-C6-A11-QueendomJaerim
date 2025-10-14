@@ -217,8 +217,7 @@ extension CameraManager {
           try self.setupVideoInput()
           try self.setupAudioInput()
           setupPhotoOutput()
-          
-          
+
           session.commitConfiguration()
 
           DispatchQueue.main.async {
