@@ -19,7 +19,7 @@ final class CameraManager: NSObject {
   private var cameraDelegate: CameraDelegate?
 
   var onPhotoCapture: ((UIImage) -> Void)?
-  var onTapCamerSwitch: ((AVCaptureDevice.Position) -> Void)?
+  var onTapCameraSwitch: ((AVCaptureDevice.Position) -> Void)?
 
   func configureSession() async throws {
     try await withCheckedThrowingContinuation { continuation in
@@ -130,6 +130,7 @@ extension CameraManager {
         logger.info("Initial zoom factor set to 1.0")
       } catch {
         logger.error("Failed to set initial zoom")
+        throw error
       }
 
     } else {
@@ -200,30 +201,36 @@ extension CameraManager {
 }
 
 extension CameraManager {
-  func switchCamera() {
-    captureSessionQueue.async { [weak self] in
-      guard let self else { return }
-      self.session.beginConfiguration()
+  func switchCamera() async throws {
+    try await withCheckedThrowingContinuation { continuation in
+      captureSessionQueue.async { [weak self] in
+        guard let self else { return }
+        self.session.beginConfiguration()
 
-      if let currentInput = self.videoDeviceInput {
-        self.session.removeInput(currentInput)
-      }
+        if let currentInput = self.videoDeviceInput {
+          self.session.removeInput(currentInput)
+        }
 
-      position = position == .back ? .front : .back
+        position = position == .back ? .front : .back
 
-      do {
-        try self.setupVideoInput()
-        try self.setupAudioInput()
-        setupPhotoOutput()
+        do {
+          try self.setupVideoInput()
+          try self.setupAudioInput()
+          setupPhotoOutput()
+          
+          
+          session.commitConfiguration()
 
-      } catch {
-        self.logger.error("Failed to switch camera: \(error.localizedDescription)")
-      }
+          DispatchQueue.main.async {
+            self.onTapCameraSwitch?(self.position)
+          }
+          continuation.resume()
 
-      session.commitConfiguration()
+        } catch {
+          self.logger.error("Failed to switch camera: \(error.localizedDescription)")
+          continuation.resume(throwing: error)
+        }
 
-      DispatchQueue.main.async {
-        self.onTapCamerSwitch?(self.position)
       }
     }
   }

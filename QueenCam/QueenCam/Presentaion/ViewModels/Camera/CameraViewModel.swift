@@ -28,7 +28,7 @@ final class CameraViewModel {
       self?.lastImage = image
     }
 
-    manager.onTapCamerSwitch = { [weak self] position in
+    manager.onTapCameraSwitch = { [weak self] position in
       self?.cameraPostion = position
       if position == .back {
         self?.selectedZoom = 1.0
