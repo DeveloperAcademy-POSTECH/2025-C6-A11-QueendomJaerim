@@ -3,7 +3,7 @@ import SwiftUI
 
 struct CameraView {
   @State private var viewModel = CameraViewModel()
-  var previewModel: PreviewStreamingViewModel
+  var previewModel: PreviewModel
   @Environment(\.router) private var router
 
   // User Role

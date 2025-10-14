@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 
 struct PreviewPlayerView: View {
-  let previewModel: PreviewStreamingViewModel
+  let previewModel: PreviewModel
 
   var body: some View {
     if let imageSize = previewModel.imageSize {

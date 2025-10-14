@@ -14,7 +14,7 @@ struct MainView: View {
     networkService: DependencyContainer.defaultContainer.networkService
   )
 
-  @State private var previewModel = PreviewStreamingViewModel(
+  @State private var previewModel = PreviewModel(
     previewCaptureService: DependencyContainer.defaultContainer.previewCaptureService,
     networkService: DependencyContainer.defaultContainer.networkService
   )

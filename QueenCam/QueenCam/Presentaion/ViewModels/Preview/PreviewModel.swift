@@ -1,5 +1,5 @@
 //
-//  PreviewStreamingViewModel.swift
+//  PreviewModel.swift
 //  QueenCam
 //
 //  Created by 임영택 on 10/14/25.
@@ -12,7 +12,7 @@ import UIKit
 import WiFiAware
 
 @Observable
-final class PreviewStreamingViewModel {
+final class PreviewModel {
   private let previewCaptureService: PreviewCaptureService
   private let networkService: NetworkServiceProtocol
 
@@ -134,7 +134,7 @@ final class PreviewStreamingViewModel {
 }
 
 // MARK: - Photographer's Intent
-extension PreviewStreamingViewModel {
+extension PreviewModel {
   func startCapture() {
     isTransfering = true
 
@@ -151,7 +151,7 @@ extension PreviewStreamingViewModel {
 }
 
 // MARK: Model's Intent
-extension PreviewStreamingViewModel {
+extension PreviewModel {
   // MARK: 화질 조정
 
   func frameDidSkipped() {

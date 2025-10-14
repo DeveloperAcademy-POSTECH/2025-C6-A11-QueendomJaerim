@@ -12,7 +12,7 @@ import WiFiAware
 struct ConnectionView: View {
   @Environment(\.router) private var router
   var viewModel: WifiAwareViewModel
-  var previewStreamingViewModel: PreviewStreamingViewModel
+  var previewStreamingViewModel: PreviewModel
 }
 
 extension ConnectionView {
@@ -91,7 +91,7 @@ struct RoleSelectButton: View {
       networkService: NetworkService()
     )
     
-    @State var previewModel: PreviewStreamingViewModel = .init(
+    @State var previewModel: PreviewModel = .init(
       previewCaptureService: PreviewCaptureService(),
       networkService: NetworkService()
     )

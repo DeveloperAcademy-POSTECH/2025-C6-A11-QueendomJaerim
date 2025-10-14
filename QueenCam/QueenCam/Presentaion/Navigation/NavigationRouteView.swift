@@ -10,7 +10,7 @@ import SwiftUI
 struct NavigationRouteView: View {
   let currentRoute: Route
   let wifiAwareViewModel: WifiAwareViewModel
-  let previewModel: PreviewStreamingViewModel
+  let previewModel: PreviewModel
 
   var body: some View {
     switch currentRoute {
