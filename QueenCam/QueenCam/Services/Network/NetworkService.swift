@@ -10,35 +10,6 @@ import Foundation
 import OSLog
 import WiFiAware
 
-protocol NetworkServiceProtocol: AnyObject {
-  // MARK: - Settable Properties
-  /// 네트워크 모드 (호스트 / 뷰어)
-  var mode: NetworkType? { get set }
-
-  // MARK: - Observable Properties
-  /// 연결 가능한 기기 목록을 방출하는 퍼블리셔입니다.
-  var deviceConnectionsPublisher: AnyPublisher<[WAPairedDevice: ConnectionDetail], Never> { get }
-
-  /// 마지막으로 발생한 에러를 방출하는 퍼블리셔입니다.
-  var lastErrorPublisher: AnyPublisher<Error?, Never> { get }
-
-  /// 현재 네트워크 상태를 방출하는 퍼블리셔입니다.
-  var networkStatePublisher: AnyPublisher<NetworkState?, Never> { get }
-
-  /// 수신된 네트워크 이벤트를 방출하는 퍼블리셔입니다.
-  var networkEventPublisher: AnyPublisher<NetworkEvent?, Never> { get }
-
-  // MARK: - Methods
-  /// 네트워크 서비스를 시작합니다.
-  func run(for device: WAPairedDevice)
-
-  /// 네트워크 서비스를 중지합니다.
-  func stop()
-
-  /// 이벤트를 보냅니다.
-  func send(for event: NetworkEvent) async
-}
-
 final class NetworkService: NetworkServiceProtocol {
   // MARK: Published properties isolated to MainActor
   /// Wi-Fi Aware mode
