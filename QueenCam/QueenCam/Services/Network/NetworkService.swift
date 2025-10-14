@@ -188,10 +188,12 @@ final class NetworkService: NetworkServiceProtocol {
 
   func stop() {
     networkTask?.cancel()
+    Task.detached {
+      await self.connectionManager.stopAll()
+    }
   }
 
   func send(for event: NetworkEvent) async {
     await self.networkManager.sendToAll(event)
   }
 }
-

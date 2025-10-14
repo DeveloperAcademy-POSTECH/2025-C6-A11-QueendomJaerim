@@ -159,18 +159,22 @@ actor ConnectionManager: ConnectionManagerProtocol {
     }
   }
 
+  func stopAll() {
+    for info in connectionsInfo.values {
+      info.receiverTask.cancel()
+      info.stateUpdateTask.cancel()
+    }
+    connections.removeAll()
+  }
+
   func invalidate(_ id: WiFiAwareConnectionID) {
     logger.info("Invalidate connection ID: \(id)")
     connectionsInfo[id]?.stateUpdateTask.cancel()
     connectionsInfo.removeValue(forKey: id)
   }
 
-  deinit {
-    for info in connectionsInfo.values {
-      info.receiverTask.cancel()
-      info.stateUpdateTask.cancel()
-    }
-    connections.removeAll()
+  isolated deinit {
+    stopAll()
 
     localEventsContinuation.finish()
     networkEventsContinuation.finish()

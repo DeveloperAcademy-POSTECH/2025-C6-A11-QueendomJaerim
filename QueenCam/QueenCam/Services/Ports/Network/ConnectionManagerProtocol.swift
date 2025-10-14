@@ -19,5 +19,6 @@ protocol ConnectionManagerProtocol: Sendable {
   func sendToAll(_ event: NetworkEvent) async
   func monitor() async throws
   func stop(_ connection: WiFiAwareConnection) async
+  func stopAll() async
   func invalidate(_ id: WiFiAwareConnectionID) async
 }
