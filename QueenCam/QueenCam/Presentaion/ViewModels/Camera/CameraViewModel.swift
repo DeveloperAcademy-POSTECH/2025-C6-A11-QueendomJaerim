@@ -8,64 +8,75 @@ import UIKit
 final class CameraViewModel {
   let manager = CameraManager()
 
-  var isPermissionGranted = false
-  var isShowSettingAlert = false
+  var isCameraPermissionGranted = false
   var isPhotosPermissionGranted = false
+  var isMicPermissionGranted = false
+
+  var isShowSettingAlert = false
 
   var lastImage: UIImage?
+
+  var selectedZoom: CGFloat = 1.0
+
+  var isLivePhotoOn = false
+
+  var cameraPostion: AVCaptureDevice.Position?
+  var currentFlashMode: AVCaptureDevice.FlashMode = .off
+
+  var errorMessage = ""
 
   init() {
     manager.onPhotoCapture = { [weak self] image in
       self?.lastImage = image
     }
-  }
 
-  func checkPermission() async {
-    let status = AVCaptureDevice.authorizationStatus(for: .video)
-
-    switch status {
-    case .notDetermined:
-      let granted = await AVCaptureDevice.requestAccess(for: .video)
-      if granted {
-        isPermissionGranted = true
-        try? await manager.configureSession()
-      } else {
-        isPermissionGranted = false
-        isShowSettingAlert = true
+    manager.onTapCameraSwitch = { [weak self] position in
+      self?.cameraPostion = position
+      if position == .back {
+        self?.selectedZoom = 1.0
       }
-
-    case .restricted, .denied:
-      isPermissionGranted = false
-      isShowSettingAlert = true
-
-    case .authorized:
-      isPermissionGranted = true
-      try? await manager.configureSession()
-
-    @unknown default:
-      isPermissionGranted = false
     }
   }
 
-  func checkPhotosPermission() async {
-    let status = PHPhotoLibrary.authorizationStatus(for: .readWrite)
+  func checkPermissions() async {
+    let cameraGranted: Bool
+    switch AVCaptureDevice.authorizationStatus(for: .video) {
+    case .notDetermined:
+      cameraGranted = await AVCaptureDevice.requestAccess(for: .video)
+    case .authorized:
+      cameraGranted = true
+    default:
+      cameraGranted = false
+    }
 
-    switch status {
-    case .authorized, .limited:
-      isPhotosPermissionGranted = true
+    let audioGranted: Bool
+    switch AVCaptureDevice.authorizationStatus(for: .audio) {
+    case .notDetermined:
+      audioGranted = await AVCaptureDevice.requestAccess(for: .audio)
+    case .authorized:
+      audioGranted = true
+    default:
+      audioGranted = false
+    }
+
+    let photoGranted: Bool
+    switch PHPhotoLibrary.authorizationStatus(for: .readWrite) {
     case .notDetermined:
       let newStatus = await PHPhotoLibrary.requestAuthorization(for: .readWrite)
-      if newStatus == .authorized || newStatus == .limited {
-        isPhotosPermissionGranted = true
-      } else {
-        isPhotosPermissionGranted = false
-      }
-    case .denied, .restricted:
-      isPhotosPermissionGranted = false
-      isShowSettingAlert = true
+      photoGranted = (newStatus == .authorized || newStatus == .limited)
+    case .authorized, .limited:
+      photoGranted = true
+    default:
+      photoGranted = false
+    }
 
-    @unknown default:
-      isPhotosPermissionGranted = false
+    if cameraGranted && audioGranted {
+      isCameraPermissionGranted = true
+      isMicPermissionGranted = true
+      isPhotosPermissionGranted = photoGranted
+      try? await manager.configureSession()
+    } else {
+      isShowSettingAlert = true
     }
   }
 
@@ -75,5 +86,43 @@ final class CameraViewModel {
 
   func capturePhoto() {
     manager.capturePhoto()
+  }
+
+  func zoom(factor: CGFloat) {
+    selectedZoom = factor
+    manager.setZoomScale(factor: factor)
+  }
+
+  func switchCamera() async {
+    do {
+      try await manager.switchCamera()
+    } catch {
+      errorMessage = error.localizedDescription
+    }
+  }
+
+  func switchFlashMode() {
+    switch currentFlashMode {
+    case .off:
+      currentFlashMode = .on
+    case .on:
+      currentFlashMode = .auto
+    case .auto:
+      currentFlashMode = .off
+
+    @unknown default:
+      currentFlashMode = .off
+    }
+
+    manager.flashMode = currentFlashMode
+  }
+
+  func switchLivePhoto() {
+    isLivePhotoOn.toggle()
+    manager.isLivePhotoOn = isLivePhotoOn
+  }
+
+  func setFocus(point: CGPoint) {
+    manager.focusAndExpose(at: point)
   }
 }

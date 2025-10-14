@@ -6,6 +6,13 @@ struct CameraView {
 
   @State private var selectedItem: PhotosPickerItem?
   @State private var selectedImage: UIImage?
+
+  @State private var zoomScaleItemList: [CGFloat] = [0.5, 1, 2]
+
+  @State private var isShowGrid: Bool = false
+
+  @State private var isFocused = false
+  @State private var focusLocation: CGPoint = .zero
 }
 
 extension CameraView {
@@ -14,35 +21,114 @@ extension CameraView {
       UIApplication.shared.open(url)
     }
   }
+
+  private var isFront: Bool {
+    viewModel.cameraPostion == .front
+  }
+
+  private var flashImage: String {
+    switch viewModel.currentFlashMode {
+    case .off:
+      return "bolt.slash"
+    case .on:
+      return "bolt.fill"
+    case .auto:
+      return "bolt.badge.a"
+    @unknown default:
+      return "bolt.slash"
+    }
+  }
+
+  private var isPermissionGranted: Bool {
+    viewModel.isCameraPermissionGranted && viewModel.isCameraPermissionGranted
+  }
 }
 
 extension CameraView: View {
   var body: some View {
     ZStack {
-      switch viewModel.isPermissionGranted {
+      switch isPermissionGranted {
       case true:
         Color.black.ignoresSafeArea()
 
         VStack {
-          CameraPreview(session: viewModel.manager.session)
-            .overlay(alignment: .topLeading) {
-              if let image = selectedImage {
-                Image(uiImage: image)
-                  .resizable()
-                  .aspectRatio(contentMode: .fit)
-                  .frame(height: 250)
-                  .clipShape(.rect(cornerRadius: 16))
-                  .overlay(alignment: .topTrailing) {
-                    Button(action: {
-                      selectedImage = nil
-                      selectedItem = nil
-                    }) {
-                      Image(systemName: "xmark.circle.fill")
-                        .imageScale(.large)
+          HStack {
+            Button(action: { viewModel.switchFlashMode() }) {
+              Image(systemName: flashImage)
+                .foregroundStyle(viewModel.currentFlashMode == .on ? .yellow : .white)
+            }
+
+            Button(action: { viewModel.switchLivePhoto() }) {
+              Image(systemName: viewModel.isLivePhotoOn ? "livephoto" : "livephoto.slash")
+                .foregroundStyle(viewModel.isLivePhotoOn ? .yellow : .white)
+            }
+
+            Spacer()
+
+            Button(action: { isShowGrid.toggle() }) {
+              Text(isShowGrid ? "그리드 활성화" : "그리드 비활성화")
+                .foregroundStyle(isShowGrid ? .yellow : .white)
+            }
+          }
+          .padding()
+
+          ZStack {
+            CameraPreview(session: viewModel.manager.session)
+              .aspectRatio(3 / 4, contentMode: .fit)
+              .onTapGesture { location in
+                isFocused = true
+                focusLocation = location
+                viewModel.setFocus(point: location)
+              }
+              .overlay {
+                if isFocused {
+                  FocusView(position: $focusLocation)
+                    .onAppear {
+                      withAnimation {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                          self.isFocused = false
+
+                        }
+                      }
                     }
+                }
+              }
+
+            if isShowGrid {
+              GridView()
+                .aspectRatio(3 / 4, contentMode: .fit)
+            }
+
+            if let image = selectedImage {
+              Image(uiImage: image)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(height: 250)
+                .clipShape(.rect(cornerRadius: 16))
+                .overlay(alignment: .topTrailing) {
+                  Button(action: {
+                    selectedImage = nil
+                    selectedItem = nil
+                  }) {
+                    Image(systemName: "xmark.circle.fill")
+                      .imageScale(.large)
                   }
+                }
+            }
+          }
+
+          if !isFront {
+            HStack(spacing: 20) {
+              ForEach(zoomScaleItemList, id: \.self) { item in
+                Button(action: { viewModel.zoom(factor: item) }) {
+                  Text(String(format: "%.1fx", item))
+
+                    .foregroundStyle(viewModel.selectedZoom == item ? .yellow : .white)
+                }
               }
             }
+            .padding(.bottom, 32)
+          }
 
           HStack {
             PhotosPicker(selection: $selectedItem, matching: .images) {
@@ -73,7 +159,11 @@ extension CameraView: View {
 
             Spacer()
 
-            Button(action: {}) {
+            Button(action: {
+              Task {
+                await viewModel.switchCamera()
+              }
+            }) {
               Image(systemName: "arrow.triangle.2.circlepath.camera")
                 .resizable()
                 .aspectRatio(contentMode: .fit)
@@ -81,6 +171,7 @@ extension CameraView: View {
             }
           }
         }
+
       case false:
         Color.black.ignoresSafeArea()
 
@@ -98,7 +189,7 @@ extension CameraView: View {
       "카메라 접근 권한",
       isPresented: $viewModel.isShowSettingAlert,
       actions: {
-        Button(role: .cancel, action: {})
+        Button(role: .cancel, action: {}) {}
 
         Button(action: { openSetting() }) {
           Text("설정으로 이동")
@@ -109,8 +200,7 @@ extension CameraView: View {
       }
     )
     .task {
-      await viewModel.checkPermission()
-      await viewModel.checkPhotosPermission()
+      await viewModel.checkPermissions()
     }
     .onChange(of: selectedItem) { _, new in
       Task {
@@ -122,5 +212,17 @@ extension CameraView: View {
         selectedImage = image
       }
     }
+  }
+}
+
+struct FocusView: View {
+  @Binding var position: CGPoint
+
+  var body: some View {
+    Rectangle()
+      .frame(width: 70, height: 70)
+      .foregroundStyle(.clear)
+      .border(Color.yellow, width: 1.5)
+      .position(x: position.x, y: position.y)
   }
 }
