@@ -17,11 +17,11 @@ actor NetworkManager: NetworkManagerProtocol {
   public let networkEvents: AsyncStream<NetworkEvent>
   private let networkEventsContinuation: AsyncStream<NetworkEvent>.Continuation
 
-  private let connectionManager: ConnectionManager
+  private let connectionManager: ConnectionManagerProtocol
 
   private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.queendom.QueenCam", category: "NetworkManager")
 
-  init(connectionManager: ConnectionManager) {
+  init(connectionManager: ConnectionManagerProtocol) {
     (self.localEvents, self.localEventsContinuation) = AsyncStream.makeStream(of: LocalEvent.self)
     (self.networkEvents, self.networkEventsContinuation) = AsyncStream.makeStream(of: NetworkEvent.self)
 
