@@ -11,7 +11,7 @@ struct MainView: View {
   @State private var router = NavigationRouter()
 
   @State private var wifiAwareViewModel = WifiAwareViewModel(
-    networkService: NetworkService()
+    networkService: DependencyContainer.defaultContainer.networkService
   )
 
   var body: some View {
