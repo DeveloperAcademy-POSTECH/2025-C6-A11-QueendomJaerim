@@ -86,7 +86,7 @@ extension CameraView: View {
               }
             }
 
-            NetworkToolbarView(connectedDeviceName: connectedDeviceName) {
+            NetworkToolbarView(networkState: networkState, connectedDeviceName: connectedDeviceName) {
               connectedDeviceButtonDidTap()
             }
           }

@@ -91,9 +91,11 @@ extension WifiAwareViewModel {
   func connectButtonDidTap(for device: WAPairedDevice) {
     if networkState == .host(.stopped) || networkState == .viewer(.stopped) {
       networkService.run(for: device)
-    } else {
-      networkService.stop()
     }
+  }
+  
+  func disconnectButtonDidTap() {
+    networkService.stop()
   }
 
   func viewDidAppearTask() async {

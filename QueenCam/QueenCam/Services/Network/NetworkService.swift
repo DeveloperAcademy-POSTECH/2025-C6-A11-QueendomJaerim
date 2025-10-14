@@ -155,6 +155,8 @@ final class NetworkService: NetworkServiceProtocol {
 
       if mode == .viewer {
         networkState = .viewer(.stopped)
+      } else {
+        networkState = .host(.stopped)
       }
 
       if let waError = error {
@@ -188,8 +190,9 @@ final class NetworkService: NetworkServiceProtocol {
 
   func stop() {
     networkTask?.cancel()
-    Task.detached {
+    Task {
       await self.connectionManager.stopAll()
+      self.networkState = self.mode == .host ? .host(.stopped) : .viewer(.stopped)
     }
   }
 
