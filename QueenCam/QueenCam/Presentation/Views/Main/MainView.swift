@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import WiFiAware
 
 struct MainView: View {
   @State private var router = NavigationRouter()
@@ -18,17 +19,36 @@ struct MainView: View {
     previewCaptureService: DependencyContainer.defaultContainer.previewCaptureService,
     networkService: DependencyContainer.defaultContainer.networkService
   )
+  
+  @State private var isShwoingCurrentConnectionModal: Bool = false
 
   var body: some View {
     Group {
       NavigationStack(path: $router.path) {
-        CameraView(previewModel: previewModel, role: wifiAwareViewModel.role)
-        .navigationDestination(for: Route.self) { route in
-          NavigationRouteView(
-            currentRoute: route,
-            wifiAwareViewModel: wifiAwareViewModel,
-            previewModel: previewModel
-          )
+        ZStack {
+          CameraView(
+            previewModel: previewModel,
+            role: wifiAwareViewModel.role,
+            networkState: wifiAwareViewModel.networkState,
+            connectedDeviceName: wifiAwareViewModel.connectedDevice?.pairingInfo?.pairingName
+          ) {
+            if wifiAwareViewModel.connections.isEmpty {
+              router.push(.establishConnection)
+            } else {
+              isShwoingCurrentConnectionModal.toggle()
+            }
+          }
+          .navigationDestination(for: Route.self) { route in
+            NavigationRouteView(
+              currentRoute: route,
+              wifiAwareViewModel: wifiAwareViewModel,
+              previewModel: previewModel
+            )
+          }
+          
+          if isShwoingCurrentConnectionModal {
+            Text("CurrentConnectionModal")
+          }
         }
       }
     }

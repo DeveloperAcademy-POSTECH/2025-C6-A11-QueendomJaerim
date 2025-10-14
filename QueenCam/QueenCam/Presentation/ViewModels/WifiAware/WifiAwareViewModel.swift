@@ -26,6 +26,9 @@ final class WifiAwareViewModel {
 
   var networkState: NetworkState?
   var connections: [WAPairedDevice: ConnectionDetail] = [:]
+  var connectedDevice: WAPairedDevice? {
+    connections.keys.first
+  }
 
   var lastPingAt: Date?
 

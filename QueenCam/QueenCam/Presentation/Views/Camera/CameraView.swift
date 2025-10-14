@@ -3,11 +3,20 @@ import SwiftUI
 
 struct CameraView {
   @State private var viewModel = CameraViewModel()
-  var previewModel: PreviewModel
   @Environment(\.router) private var router
+  var previewModel: PreviewModel
 
-  // User Role
+  /// User Role
   let role: Role?
+
+  /// Network State
+  let networkState: NetworkState?
+
+  /// Connected Device Name
+  let connectedDeviceName: String?
+
+  /// Handler when connected device button tapped
+  let connectedDeviceButtonDidTap: () -> Void
 
   @State private var selectedItem: PhotosPickerItem?
   @State private var selectedImage: UIImage?
@@ -57,32 +66,28 @@ extension CameraView: View {
         Color.black.ignoresSafeArea()
 
         VStack {
-          HStack {
-            Button(action: { viewModel.switchFlashMode() }) {
-              Image(systemName: flashImage)
-                .foregroundStyle(viewModel.currentFlashMode == .on ? .yellow : .white)
+          ZStack {
+            HStack {
+              Button(action: { viewModel.switchFlashMode() }) {
+                Image(systemName: flashImage)
+                  .foregroundStyle(viewModel.currentFlashMode == .on ? .yellow : .white)
+              }
+
+              Button(action: { viewModel.switchLivePhoto() }) {
+                Image(systemName: viewModel.isLivePhotoOn ? "livephoto" : "livephoto.slash")
+                  .foregroundStyle(viewModel.isLivePhotoOn ? .yellow : .white)
+              }
+
+              Spacer()
+
+              Button(action: { isShowGrid.toggle() }) {
+                Text(isShowGrid ? "그리드 활성화" : "그리드 비활성화")
+                  .foregroundStyle(isShowGrid ? .yellow : .white)
+              }
             }
 
-            Button(action: { viewModel.switchLivePhoto() }) {
-              Image(systemName: viewModel.isLivePhotoOn ? "livephoto" : "livephoto.slash")
-                .foregroundStyle(viewModel.isLivePhotoOn ? .yellow : .white)
-            }
-
-            Spacer()
-
-            Button {
-              router.push(.establishConnection)
-            } label: {
-              Text("연결")
-                .padding(8)
-            }
-            .glassEffect()
-
-            Spacer()
-
-            Button(action: { isShowGrid.toggle() }) {
-              Text(isShowGrid ? "그리드 활성화" : "그리드 비활성화")
-                .foregroundStyle(isShowGrid ? .yellow : .white)
+            NetworkToolbarView(connectedDeviceName: connectedDeviceName) {
+              connectedDeviceButtonDidTap()
             }
           }
           .padding()
