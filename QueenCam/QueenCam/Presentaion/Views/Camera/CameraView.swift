@@ -5,7 +5,7 @@ struct CameraView {
   @State private var viewModel = CameraViewModel()
   var previewModel: PreviewStreamingViewModel
   @Environment(\.router) private var router
-  
+
   // User Role
   let role: Role?
 
@@ -69,7 +69,6 @@ extension CameraView: View {
             }
 
             Spacer()
-            
 
             Button {
               router.push(.establishConnection)
@@ -89,7 +88,7 @@ extension CameraView: View {
           .padding()
 
           ZStack {
-            if role == nil || role == .photographer {
+            if role == nil || role == .photographer {  // 작가
               CameraPreview(session: viewModel.manager.session)
                 .aspectRatio(3 / 4, contentMode: .fit)
                 .onTapGesture { location in
@@ -110,7 +109,7 @@ extension CameraView: View {
                       }
                   }
                 }
-            } else {
+            } else {  // 모델
               PreviewPlayerView(previewModel: previewModel)
             }
 
@@ -139,12 +138,15 @@ extension CameraView: View {
 
           if !isFront {
             HStack(spacing: 20) {
-              ForEach(zoomScaleItemList, id: \.self) { item in
-                Button(action: { viewModel.zoom(factor: item) }) {
-                  Text(String(format: "%.1fx", item))
-
-                    .foregroundStyle(viewModel.selectedZoom == item ? .yellow : .white)
+              if role == nil || role == .photographer {
+                ForEach(zoomScaleItemList, id: \.self) { item in
+                  Button(action: { viewModel.zoom(factor: item) }) {
+                    Text(String(format: "%.1fx", item))
+                      .foregroundStyle(viewModel.selectedZoom == item ? .yellow : .white)
+                  }
                 }
+              } else {
+                Spacer()
               }
             }
             .padding(.bottom, 32)
@@ -168,26 +170,28 @@ extension CameraView: View {
 
             Spacer()
 
-            Button(action: { viewModel.capturePhoto() }) {
-              Circle()
-                .fill(.white)
-                .frame(width: 70, height: 70)
-                .overlay(
-                  Circle().stroke(Color.black.opacity(0.8), lineWidth: 2)
-                )
-            }
-
-            Spacer()
-
-            Button(action: {
-              Task {
-                await viewModel.switchCamera()
+            if role == nil || role == .photographer {  // 작가 전용 뷰
+              Button(action: { viewModel.capturePhoto() }) {
+                Circle()
+                  .fill(.white)
+                  .frame(width: 70, height: 70)
+                  .overlay(
+                    Circle().stroke(Color.black.opacity(0.8), lineWidth: 2)
+                  )
               }
-            }) {
-              Image(systemName: "arrow.triangle.2.circlepath.camera")
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 60, height: 60)
+
+              Spacer()
+
+              Button(action: {
+                Task {
+                  await viewModel.switchCamera()
+                }
+              }) {
+                Image(systemName: "arrow.triangle.2.circlepath.camera")
+                  .resizable()
+                  .aspectRatio(contentMode: .fit)
+                  .frame(width: 60, height: 60)
+              }
             }
           }
         }
