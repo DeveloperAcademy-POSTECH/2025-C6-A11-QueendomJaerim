@@ -6,7 +6,11 @@ struct PhotosPickerView {
   private let columnList = Array(repeating: GridItem(.flexible(), spacing: 4), count: 3)
 
   @Environment(\.dismiss) private var dismiss
+
+  let onSelectAction: (UIImage?) -> Void
 }
+
+extension PhotosPickerView { }
 
 extension PhotosPickerView: View {
   var body: some View {
@@ -24,11 +28,13 @@ extension PhotosPickerView: View {
       case .loaded:
         NavigationStack {
           ScrollView {
-
-            Text("AA \(viewModel.assets.count)")
             LazyVGrid(columns: columnList, spacing: 1) {
               ForEach(viewModel.assets, id: \.localIdentifier) { asset in
-                Text(" BB \(asset)")
+                ThumbnailView(
+                  asset: asset,
+                  manager: viewModel.cachingManager,
+                  onTapAcion: { onSelectAction($0) }
+                )
               }
             }
           }

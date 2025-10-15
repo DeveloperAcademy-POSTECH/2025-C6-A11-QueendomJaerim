@@ -249,8 +249,11 @@ extension CameraView: View {
       }
     )
     .sheet(isPresented: $isShowPhotoPicker) {
-      PhotosPickerView()
-        .presentationDetents([.medium, .large])
+      PhotosPickerView { image in
+        selectedImage = image
+        isShowPhotoPicker = false
+      }
+      .presentationDetents([.medium, .large])
     }
     .task {
       await viewModel.checkPermissions()
