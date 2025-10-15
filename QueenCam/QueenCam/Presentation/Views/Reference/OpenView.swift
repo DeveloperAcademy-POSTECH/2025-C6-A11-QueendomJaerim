@@ -9,8 +9,11 @@
 import SwiftUI
 
 struct OpenView: View {
-  @StateObject private var viewModel = ReferenceViewModel()
-  @State private var showDelete : Bool = false
+  @ObservedObject var viewModel = ReferenceViewModel()
+  @State private var showDelete: Bool = false
+  
+  let role: Role?
+
   var body: some View {
     ZStack(alignment: .topTrailing) {
       RoundedRectangle(cornerRadius: 20)
@@ -20,7 +23,7 @@ struct OpenView: View {
           showDelete.toggle()
         }
 
-      if showDelete {
+      if showDelete && role == .model {
         Button {
           viewModel.onDelete()
         } label: {
@@ -34,5 +37,5 @@ struct OpenView: View {
 }
 
 #Preview {
-  OpenView()
+  OpenView(role: .model)
 }
