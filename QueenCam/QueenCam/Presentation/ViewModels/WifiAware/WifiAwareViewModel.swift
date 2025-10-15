@@ -29,11 +29,19 @@ final class WifiAwareViewModel {
   var connectedDevice: WAPairedDevice? {
     connections.keys.first
   }
+  var connectedDeviceName: String? {
+    connectedDevice?.pairingInfo?.pairingName
+  }
+  
 
   var lastPingAt: Date?
 
   private let networkService: NetworkServiceProtocol
   private var cancellables: Set<AnyCancellable> = []
+
+  var isConnecting: Bool {
+    !(networkState == nil || networkState == .host(.stopped) || networkState == .viewer(.stopped))
+  }
 
   private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.queendom.QueenCam", category: "ConnectionView")
 
@@ -93,7 +101,7 @@ extension WifiAwareViewModel {
       networkService.run(for: device)
     }
   }
-  
+
   func disconnectButtonDidTap() {
     networkService.stop()
   }
@@ -113,7 +121,7 @@ extension WifiAwareViewModel {
       networkService.stop()
     }
   }
-  
+
   func selectRole(for role: Role?) {
     self.role = role
   }

@@ -1,22 +1,18 @@
 import PhotosUI
 import SwiftUI
+import WiFiAware
 
 struct CameraView {
   @State private var viewModel = CameraViewModel()
   @Environment(\.router) private var router
-  var previewModel: PreviewModel
+  let previewModel: PreviewModel
+  let wifiAwareViewModel: WifiAwareViewModel
 
-  /// User Role
-  let role: Role?
-
-  /// Network State
-  let networkState: NetworkState?
-
-  /// Connected Device Name
-  let connectedDeviceName: String?
-
-  /// Handler when connected device button tapped
-  let connectedDeviceButtonDidTap: () -> Void
+  /// 네트워크 상태 모달 노출 여부
+  @State private var isShwoingCurrentConnectionModal: Bool = false
+  private var isPhotographerMode: Bool {
+    wifiAwareViewModel.role == nil || wifiAwareViewModel.role == .photographer
+  }
 
   @State private var selectedItem: PhotosPickerItem?
   @State private var selectedImage: UIImage?
@@ -86,14 +82,21 @@ extension CameraView: View {
               }
             }
 
-            NetworkToolbarView(networkState: networkState, connectedDeviceName: connectedDeviceName) {
-              connectedDeviceButtonDidTap()
+            NetworkToolbarView(
+              networkState: wifiAwareViewModel.networkState,
+              connectedDeviceName: wifiAwareViewModel.connectedDeviceName
+            ) {
+              if wifiAwareViewModel.isConnecting {
+                isShwoingCurrentConnectionModal.toggle()
+              } else {
+                router.push(.establishConnection)
+              }
             }
           }
           .padding()
 
           ZStack {
-            if role == nil || role == .photographer {  // 작가
+            if isPhotographerMode {  // 작가
               CameraPreview(session: viewModel.manager.session)
                 .aspectRatio(3 / 4, contentMode: .fit)
                 .onTapGesture { location in
@@ -143,7 +146,7 @@ extension CameraView: View {
 
           if !isFront {
             HStack(spacing: 20) {
-              if role == nil || role == .photographer {
+              if isPhotographerMode {
                 ForEach(zoomScaleItemList, id: \.self) { item in
                   Button(action: { viewModel.zoom(factor: item) }) {
                     Text(String(format: "%.1fx", item))
@@ -175,7 +178,7 @@ extension CameraView: View {
 
             Spacer()
 
-            if role == nil || role == .photographer {  // 작가 전용 뷰
+            if isPhotographerMode {  // 작가 전용 뷰
               Button(action: { viewModel.capturePhoto() }) {
                 Circle()
                   .fill(.white)
@@ -212,6 +215,21 @@ extension CameraView: View {
             Text("설정으로 이동하기")
           }
         }
+      }
+
+      // MARK: 네트워크 상태 모달
+      if isShwoingCurrentConnectionModal {
+        NetworkStateModalView(
+          myRole: wifiAwareViewModel.role ?? .model,
+          otherDeviceName: wifiAwareViewModel.connectedDeviceName ?? "알 수 없는 기기",
+          disconnectButtonDidTap: {
+            isShwoingCurrentConnectionModal = false
+            wifiAwareViewModel.disconnectButtonDidTap()
+          },
+          changeRoleButtonDidTap: {
+            // TODO: 역할 바꾸기 기능 구현
+          }
+        )
       }
     }
     .alert(
