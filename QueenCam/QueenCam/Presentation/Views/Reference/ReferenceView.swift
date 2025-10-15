@@ -5,7 +5,7 @@
 //  Created by 윤보라 on 10/14/25.
 //  Reference가 Open일때와 Close일때의 View, CameraPreview에 주입할 예정
 
-enum ReferanceState: Equatable {
+enum ReferenceState: Equatable {
   case open // Reference(PiP) 모드 활성화
   case close // Reference(PiP) 모두 비활성화
   case delete // Reference(PiP) 삭제
@@ -22,7 +22,7 @@ struct ReferenceView: View {
   var body: some View {
     Group {
       switch viewModel.state {
-      case .open:
+      case .open: //레퍼런스 On
         OpenView(viewModel: viewModel, role: role )
           .padding(.top, top)
           .padding(.leading, leading)
@@ -36,14 +36,14 @@ struct ReferenceView: View {
                 viewModel.dragEnded()
               }
           )
-      case .close:
+      case .close: // 레퍼런스 Off
         Button {
           viewModel.unFold()
         } label: {
           CloseView()
             .padding(.top, top)
         }
-      case .delete:
+      case .delete: // 레퍼런스 삭제
         EmptyView()
       }
     }

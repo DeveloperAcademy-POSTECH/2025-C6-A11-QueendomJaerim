@@ -9,7 +9,7 @@ import SwiftUI
 
 struct CloseView: View {
   var body: some View {
-    ZStack{
+    ZStack {
       Rectangle()
         .fill(.black.opacity(0.8))
         .frame(width: 28, height: 120)

@@ -118,12 +118,12 @@ extension CameraView: View {
                   }
                 }
                 .overlay(alignment: .topLeading){
-                  ReferenceView(role: .photographer)// 레퍼런스 View
+                  ReferenceView(role: .photographer)// 작가의 레퍼런스 View(삭제 불가능)
                 }
             } else {  // 모델
               PreviewPlayerView(previewModel: previewModel)
                 .overlay(alignment: .topLeading){
-                  ReferenceView(role: .model) // 레퍼런스 View
+                  ReferenceView(role: .model) // 모델의 레퍼런스 View(삭제 가능)
                 }
             }
             if isShowGrid {

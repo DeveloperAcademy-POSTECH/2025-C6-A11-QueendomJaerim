@@ -10,12 +10,12 @@ import SwiftUI
 import Combine
 
 final class ReferenceViewModel: ObservableObject {
-  @Published var state: ReferanceState = .open
+  @Published var state: ReferenceState = .open
   @Published var dragOffset: CGSize = .zero // 드래그 중 임시편차
 
   // MARK: - 드래그 Close(Fold) 제스쳐
   let foldThreshold: CGFloat = -30 // fold(접힘) 전환 임계값 - 변경 예정
-  let maxDrag: CGFloat = 10 // 최대 드래그 허용 범위(양수: 오른쪽, 음수: 왼쪽)
+  let maxDrag: CGFloat = 60 // 최대 드래그 허용 범위(양수: 오른쪽, 음수: 왼쪽)
   // 드래그 중: 수평만 처리
   func dragChanged(_ value: DragGesture.Value) {
     let x = value.translation.width
@@ -38,8 +38,8 @@ final class ReferenceViewModel: ObservableObject {
     }
   }
   // MARK: - Reference 삭제
-  func onDelete(){
-    withAnimation(.snappy){
+  func onDelete() {
+    withAnimation(.snappy) {
       state = .delete
     }
   }

@@ -9,9 +9,9 @@
 import SwiftUI
 
 struct OpenView: View {
-  @ObservedObject var viewModel = ReferenceViewModel()
+  @ObservedObject var viewModel : ReferenceViewModel
   @State private var showDelete: Bool = false
-  
+
   let role: Role?
 
   var body: some View {
@@ -20,10 +20,11 @@ struct OpenView: View {
         .fill(.yellow)
         .frame(width: 90, height: 120)
         .onTapGesture {
-          showDelete.toggle()
+          guard role == .model else { return } // 작가의 경우 레퍼런스 삭제 불가능
+          showDelete.toggle() //모델의 경우 레퍼런스 삭제 가능
         }
 
-      if showDelete && role == .model {
+      if showDelete {
         Button {
           viewModel.onDelete()
         } label: {
@@ -37,5 +38,5 @@ struct OpenView: View {
 }
 
 #Preview {
-  OpenView(role: .model)
+  OpenView(viewModel: ReferenceViewModel(), role: .model)
 }
