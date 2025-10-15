@@ -24,6 +24,8 @@
 
 ### Fixed
 
+- 연결이 끊겼는데도 카메라 프리뷰 캡쳐가 중단되지 않았던 문제
+
 ### Security
 
 [unreleased]: hhttps://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim
