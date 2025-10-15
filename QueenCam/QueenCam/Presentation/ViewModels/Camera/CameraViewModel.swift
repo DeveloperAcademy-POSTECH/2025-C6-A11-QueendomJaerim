@@ -10,6 +10,7 @@ final class CameraViewModel {
     previewCaptureService: DependencyContainer.defaultContainer.previewCaptureService,
     networkService: DependencyContainer.defaultContainer.networkService
   )
+  let networkService = DependencyContainer.defaultContainer.networkService
 
   var isCameraPermissionGranted = false
   var isPhotosPermissionGranted = false

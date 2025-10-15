@@ -1,4 +1,5 @@
 import AVFoundation
+import Combine
 import Foundation
 import OSLog
 import Photos
@@ -11,8 +12,11 @@ final class CameraManager: NSObject {
   private var audioDeviceInput: AVCaptureDeviceInput?
   private let photoOutput = AVCapturePhotoOutput()
 
+  // 프리뷰 프레임 캡쳐
   private let previewCaptureService: PreviewCaptureService
+  // 네트워크 송수신
   private let networkService: NetworkServiceProtocol
+  private var cancellables: Set<AnyCancellable> = []
 
   var position: AVCaptureDevice.Position = .back
   var flashMode: AVCaptureDevice.FlashMode = .off
@@ -28,6 +32,10 @@ final class CameraManager: NSObject {
   init(previewCaptureService: PreviewCaptureService, networkService: NetworkServiceProtocol) {
     self.previewCaptureService = previewCaptureService
     self.networkService = networkService
+
+    super.init()
+
+    bind()
   }
 
   func configureSession() async throws {
@@ -92,6 +100,12 @@ final class CameraManager: NSObject {
 
         DispatchQueue.main.async {
           self.onPhotoCapture?(photoOutput.uiImage)
+        }
+
+        if let photoData = photoOutput.data {
+          self.sendPhoto(imageData: photoData)
+        } else {
+          self.logger.warning("Got photoOutput but photoData is nil... so skip to send...")
         }
       }
 
@@ -290,8 +304,41 @@ extension CameraManager {
   }
 }
 
-// 네트워크
+// MARK: 네트워크
 extension CameraManager {
+  // 받기
+  func bind() {
+    networkService.networkEventPublisher
+      .receive(on: RunLoop.main)
+      .compactMap { $0 }
+      .sink { [weak self] event in
+        switch event {
+        case .photoResult(let photoData):
+          if let image = UIImage(data: photoData) {
+            self?.saveToPhotoLibrary(image)
+          } else {
+            self?.logger.error("failed to convert data to image")
+          }
+        default: break
+        }
+      }
+      .store(in: &cancellables)
+  }
+
+  // FIXME: Duplicated code in CameraDelgate
+  func saveToPhotoLibrary(_ image: UIImage) {
+    PHPhotoLibrary.shared().performChanges {
+      PHAssetChangeRequest.creationRequestForAsset(from: image)
+    } completionHandler: { success, error in
+      if success {
+        self.logger.info("Image saved to gallery.")
+      } else if error != nil {
+        self.logger.error("Error saving image to gallery")
+      }
+    }
+  }
+
+  // 보내기
   func sendPhoto(imageData: Data) {
     guard networkService.networkState == .host(.publishing) else {
       logger.warning("The client has a viewer role or is not publishing. Skipping sending photo.")
