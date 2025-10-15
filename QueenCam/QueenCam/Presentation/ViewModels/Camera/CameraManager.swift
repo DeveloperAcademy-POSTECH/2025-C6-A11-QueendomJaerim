@@ -314,15 +314,22 @@ extension CameraManager {
       .sink { [weak self] event in
         switch event {
         case .photoResult(let photoData):
-          if let image = UIImage(data: photoData) {
-            self?.saveToPhotoLibrary(image)
-          } else {
-            self?.logger.error("failed to convert data to image")
-          }
+          self?.handlePhotoResultEvent(photoData: photoData)
         default: break
         }
       }
       .store(in: &cancellables)
+  }
+  
+  func handlePhotoResultEvent(photoData: Data) {
+    if let image = UIImage(data: photoData) {
+      saveToPhotoLibrary(image)
+      DispatchQueue.main.async {
+        self.onPhotoCapture?(image)
+      }
+    } else {
+      logger.error("failed to convert data to image")
+    }
   }
 
   // FIXME: Duplicated code in CameraDelgate
