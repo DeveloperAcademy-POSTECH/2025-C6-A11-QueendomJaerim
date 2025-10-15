@@ -16,7 +16,8 @@ struct PhotosPickerView {
   private let columnList = Array(repeating: GridItem(.flexible(), spacing: 4), count: 3)
   let onTapComplete: (UIImage?) -> Void
 
-  @State private var isShowDetail = false
+  @State private var selectedImageItem: IdentifiableImage?
+  
 }
 
 extension PhotosPickerView: View {
@@ -52,8 +53,7 @@ extension PhotosPickerView: View {
                   },
                   onTapThumbnail: { image in
                     // 디테일로 이동
-                    selectedImage = image
-                    isShowDetail = true
+                    selectedImageItem = IdentifiableImage(image: image)
                   }
                 )
               }
@@ -85,21 +85,26 @@ extension PhotosPickerView: View {
             currentImageID = selectedImageID
           }
         }
-        .fullScreenCover(isPresented: $isShowDetail) {
-          if let image = selectedImage {
-            PhotoDetailView(
-              image: image,
-              onTapAction: {
-                onTapComplete(image)
-                isShowDetail = false
-              },
-              onTapClose: {
-                isShowDetail = false
-              }
-            )
-          }
+        .fullScreenCover(item: $selectedImageItem) { item in
+          PhotoDetailView(
+            image: item.image,
+            onTapAction: {
+              onTapComplete(item.image)
+              selectedImageID = currentImageID
+              selectedImageItem = nil
+              dismiss()
+            },
+            onTapClose: {
+              selectedImageItem = nil
+            })
         }
       }
     }
   }
+}
+
+
+struct IdentifiableImage: Identifiable {
+  let id = UUID()
+  let image: UIImage
 }
