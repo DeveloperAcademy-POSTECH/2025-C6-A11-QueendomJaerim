@@ -109,10 +109,15 @@ extension CameraView: View {
                       }
                   }
                 }
+                .overlay(alignment: .topLeading){
+                  ReferenceView(role: .photographer)// 레퍼런스 View
+                }
             } else {  // 모델
               PreviewPlayerView(previewModel: previewModel)
+                .overlay(alignment: .topLeading){
+                  ReferenceView(role: .model) // 레퍼런스 View
+                }
             }
-
             if isShowGrid {
               GridView()
                 .aspectRatio(3 / 4, contentMode: .fit)
