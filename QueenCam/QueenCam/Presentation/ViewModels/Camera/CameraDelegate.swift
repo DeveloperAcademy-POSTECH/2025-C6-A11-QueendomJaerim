@@ -7,11 +7,11 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
   private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.queendom.QueenCam", category: "CameraDelegate")
   private let isCameraPosition: AVCaptureDevice.Position
 
-  private let completion: ((UIImage?) -> Void)
+  private let completion: ((PhotoOuput?) -> Void)
   private var stillImageData: Data?
   private var livePhotoMovieURL: URL?
 
-  init(isCameraPosition: AVCaptureDevice.Position, completion: @escaping (UIImage?) -> Void) {
+  init(isCameraPosition: AVCaptureDevice.Position, completion: @escaping (PhotoOuput?) -> Void) {
     self.isCameraPosition = isCameraPosition
     self.completion = completion
   }
@@ -43,7 +43,7 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
     }
     
     stillImageData = imageData
-    completion(image)
+    completion(.init(uiImage: image, data: stillImageData))
 
     let capturingLivePhoto =
       (photo.resolvedSettings.livePhotoMovieDimensions.width > 0 && photo.resolvedSettings.livePhotoMovieDimensions.height > 0)
@@ -109,4 +109,9 @@ extension CameraDelegate {
 
     }
   }
+}
+
+struct PhotoOuput {
+  let uiImage: UIImage // 렌더링을 위한 이미지
+  let data: Data? // 전송을 위한 데이터
 }

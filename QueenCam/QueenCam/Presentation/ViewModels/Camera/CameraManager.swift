@@ -10,7 +10,10 @@ final class CameraManager: NSObject {
   private var videoDeviceInput: AVCaptureDeviceInput?
   private var audioDeviceInput: AVCaptureDeviceInput?
   private let photoOutput = AVCapturePhotoOutput()
+
   private let previewCaptureService: PreviewCaptureService
+  private let networkService: NetworkServiceProtocol
+
   var position: AVCaptureDevice.Position = .back
   var flashMode: AVCaptureDevice.FlashMode = .off
   var isLivePhotoOn: Bool = false
@@ -22,8 +25,9 @@ final class CameraManager: NSObject {
   var onPhotoCapture: ((UIImage) -> Void)?
   var onTapCameraSwitch: ((AVCaptureDevice.Position) -> Void)?
 
-  init(previewCaptureService: PreviewCaptureService) {
+  init(previewCaptureService: PreviewCaptureService, networkService: NetworkServiceProtocol) {
     self.previewCaptureService = previewCaptureService
+    self.networkService = networkService
   }
 
   func configureSession() async throws {
@@ -83,11 +87,11 @@ final class CameraManager: NSObject {
         photoSettings.livePhotoMovieFileURL = URL.movieFileURL
       }
 
-      self.cameraDelegate = CameraDelegate(isCameraPosition: self.position) { image in
-        guard let image else { return }
+      self.cameraDelegate = CameraDelegate(isCameraPosition: self.position) { photoOutput in
+        guard let photoOutput else { return }
 
         DispatchQueue.main.async {
-          self.onPhotoCapture?(image)
+          self.onPhotoCapture?(photoOutput.uiImage)
         }
       }
 
@@ -283,6 +287,20 @@ extension CameraManager {
       return AVCaptureVideoPreviewLayer(session: session)
     }
     return layer
+  }
+}
+
+// 네트워크
+extension CameraManager {
+  func sendPhoto(imageData: Data) {
+    guard networkService.networkState == .host(.publishing) else {
+      logger.warning("The client has a viewer role or is not publishing. Skipping sending photo.")
+      return
+    }
+
+    Task.detached { [weak self] in
+      await self?.networkService.send(for: .photoResult(imageData))
+    }
   }
 }
 

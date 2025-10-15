@@ -7,7 +7,8 @@ import UIKit
 @MainActor
 final class CameraViewModel {
   let manager = CameraManager(
-    previewCaptureService: DependencyContainer.defaultContainer.previewCaptureService
+    previewCaptureService: DependencyContainer.defaultContainer.previewCaptureService,
+    networkService: DependencyContainer.defaultContainer.networkService
   )
 
   var isCameraPermissionGranted = false
