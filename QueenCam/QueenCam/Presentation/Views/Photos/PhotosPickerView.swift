@@ -3,7 +3,12 @@ import SwiftUI
 
 struct PhotosPickerView {
   @Environment(\.dismiss) private var dismiss
+  
+  // 내부 이미지 데이터
   @State private var selectedImage: UIImage?
+  @State private var currentImageID: String?
+  
+  // 상위 뷰에서 넘어오는 아이디
   @Binding var selectedImageID: String?
 
   let viewModel = PhotosViewModel()
@@ -35,13 +40,13 @@ extension PhotosPickerView: View {
                 ThumbnailView(
                   asset: asset,
                   manager: viewModel.cachingManager,
-                  isSelected: selectedImageID == asset.localIdentifier,
+                  isSelected: currentImageID == asset.localIdentifier,
                   onTapCheck: { image in
-                    if selectedImageID == asset.localIdentifier {
+                    if currentImageID == asset.localIdentifier {
+                      currentImageID = nil
                       selectedImage = nil
-                      selectedImageID = nil
                     } else {
-                      selectedImageID = asset.localIdentifier
+                      currentImageID = asset.localIdentifier
                       selectedImage = image
                     }
                   },
@@ -68,17 +73,16 @@ extension PhotosPickerView: View {
             ToolbarItem(placement: .topBarTrailing) {
               Button(action: {
                 onTapComplete(selectedImage)
+                selectedImageID = currentImageID
                 dismiss()
               }) {
                 Text("완료")
               }
-              .disabled(selectedImage == nil)
+              .disabled(currentImageID == nil)
             }
           }
           .onAppear {
-            if let id = selectedImageID {
-              selectedImageID = id
-            }
+            currentImageID = selectedImageID
           }
         }
         .fullScreenCover(isPresented: $isShowDetail) {
