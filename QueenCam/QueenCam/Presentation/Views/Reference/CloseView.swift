@@ -2,7 +2,7 @@
 //  CloseView.swift
 //  QueenCam
 //
-//  Created by Bora Yun on 10/14/25.
+//  Created by 윤보라 on 10/14/25.
 //  Camera Preview에서 레퍼런스를 Fold 했을때 나타나는 View
 
 import SwiftUI
@@ -21,7 +21,6 @@ struct CloseView: View {
       Image(systemName: "chevron.right")
         .foregroundStyle(.white)
     }
-    
   }
 }
 
