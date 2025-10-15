@@ -8,7 +8,9 @@ struct ThumbnailView {
   let asset: PHAsset
   let manager: PHCachingImageManager
   var isSelected: Bool
-  let onTapAcion: (UIImage?) -> Void
+  
+  let onTapCheck: (UIImage) -> Void
+  let onTapThumbnail: (UIImage) -> Void
 }
 
 extension ThumbnailView {
@@ -40,7 +42,7 @@ extension ThumbnailView: View {
           .scaledToFit()
           .clipped()
           .onTapGesture {
-            // TODO: 사진 디테일 페이지
+            onTapThumbnail(image)
           }
       } else {
         Rectangle()
@@ -49,7 +51,7 @@ extension ThumbnailView: View {
       }
       Button(action: {
         if let image = image {
-          onTapAcion(image)
+          onTapCheck(image)
         }
       }) {
         Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")

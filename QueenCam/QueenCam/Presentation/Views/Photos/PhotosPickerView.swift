@@ -5,15 +5,14 @@ struct PhotosPickerView {
   @Environment(\.dismiss) private var dismiss
   @State private var selectedImage: UIImage?
   @Binding var selectedImageID: String?
-  
+
   let viewModel = PhotosViewModel()
-  
+
   private let columnList = Array(repeating: GridItem(.flexible(), spacing: 4), count: 3)
   let onTapComplete: (UIImage?) -> Void
 
+  @State private var isShowDetail = false
 }
-
-extension PhotosPickerView {}
 
 extension PhotosPickerView: View {
   var body: some View {
@@ -36,16 +35,22 @@ extension PhotosPickerView: View {
                 ThumbnailView(
                   asset: asset,
                   manager: viewModel.cachingManager,
-                  isSelected: selectedImageID == asset.localIdentifier
-                ) { image in
-                  if selectedImageID == asset.localIdentifier {
-                    selectedImage = nil
-                    selectedImageID = nil
-                  } else {
-                    selectedImageID = asset.localIdentifier
+                  isSelected: selectedImageID == asset.localIdentifier,
+                  onTapCheck: { image in
+                    if selectedImageID == asset.localIdentifier {
+                      selectedImage = nil
+                      selectedImageID = nil
+                    } else {
+                      selectedImageID = asset.localIdentifier
+                      selectedImage = image
+                    }
+                  },
+                  onTapThumbnail: { image in
+                    // 디테일로 이동
                     selectedImage = image
+                    isShowDetail = true
                   }
-                }
+                )
               }
             }
           }
@@ -76,8 +81,21 @@ extension PhotosPickerView: View {
             }
           }
         }
+        .fullScreenCover(isPresented: $isShowDetail) {
+          if let image = selectedImage {
+            PhotoDetailView(
+              image: image,
+              onTapAction: {
+                onTapComplete(image)
+                isShowDetail = false
+              },
+              onTapClose: {
+                isShowDetail = false
+              }
+            )
+          }
+        }
       }
     }
-
   }
 }
