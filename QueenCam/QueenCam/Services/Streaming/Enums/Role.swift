@@ -17,4 +17,11 @@ enum Role: CustomDebugStringConvertible {
     case .model: return "Model"
     }
   }
+  
+  var displayName: String {
+    switch self {
+    case .photographer: return "작가"
+    case .model: return "모델"
+    }
+  }
 }

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import WiFiAware
 
 struct MainView: View {
   @State private var router = NavigationRouter()
@@ -22,13 +23,15 @@ struct MainView: View {
   var body: some View {
     Group {
       NavigationStack(path: $router.path) {
-        CameraView(previewModel: previewModel, role: wifiAwareViewModel.role)
-        .navigationDestination(for: Route.self) { route in
-          NavigationRouteView(
-            currentRoute: route,
-            wifiAwareViewModel: wifiAwareViewModel,
-            previewModel: previewModel
-          )
+        ZStack {
+          CameraView(previewModel: previewModel, wifiAwareViewModel: wifiAwareViewModel)
+          .navigationDestination(for: Route.self) { route in
+            NavigationRouteView(
+              currentRoute: route,
+              wifiAwareViewModel: wifiAwareViewModel,
+              previewModel: previewModel
+            )
+          }
         }
       }
     }

@@ -70,7 +70,13 @@ final class PreviewModel {
 
   // MARK: - 네트워크 관련 프로퍼티
   /// 현재 네트워크가 연결되어 전송 가능함
-  var transferEnabled: Bool = false
+  var transferEnabled: Bool = false {
+    didSet {
+      if !transferEnabled {
+        stopCapture()
+      }
+    }
+  }
   /// 현재 캡쳐 전송 중
   var isTransfering: Bool = false
   /// 현재 네트워크 상태
@@ -146,6 +152,14 @@ extension PreviewModel {
       for await payload in framePayloadStream {
         await self.networkService.send(for: .previewFrame(payload))
       }
+    }
+  }
+  
+  func stopCapture() {
+    isTransfering = false
+    
+    Task.detached { [weak self] in
+      await self?.previewCaptureService.stopCapturePreviewStream()
     }
   }
 }
