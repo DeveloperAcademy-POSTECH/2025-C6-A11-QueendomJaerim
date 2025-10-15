@@ -26,11 +26,22 @@ final class WifiAwareViewModel {
 
   var networkState: NetworkState?
   var connections: [WAPairedDevice: ConnectionDetail] = [:]
+  var connectedDevice: WAPairedDevice? {
+    connections.keys.first
+  }
+  var connectedDeviceName: String? {
+    connectedDevice?.pairingInfo?.pairingName
+  }
+  
 
   var lastPingAt: Date?
 
   private let networkService: NetworkServiceProtocol
   private var cancellables: Set<AnyCancellable> = []
+
+  var isConnecting: Bool {
+    !(networkState == nil || networkState == .host(.stopped) || networkState == .viewer(.stopped))
+  }
 
   private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.queendom.QueenCam", category: "ConnectionView")
 
@@ -43,7 +54,11 @@ final class WifiAwareViewModel {
     networkService.networkStatePublisher
       .compactMap { $0 }
       .sink { [weak self] state in
-        self?.networkState = state
+        guard let self else { return }
+        self.networkState = state
+        if state == .host(.cancelled) || state == .viewer(.cancelled) {
+          role = nil
+        }
       }
       .store(in: &cancellables)
 
@@ -88,9 +103,11 @@ extension WifiAwareViewModel {
   func connectButtonDidTap(for device: WAPairedDevice) {
     if networkState == .host(.stopped) || networkState == .viewer(.stopped) {
       networkService.run(for: device)
-    } else {
-      networkService.stop()
     }
+  }
+
+  func disconnectButtonDidTap() {
+    networkService.stop()
   }
 
   func viewDidAppearTask() async {
@@ -108,7 +125,7 @@ extension WifiAwareViewModel {
       networkService.stop()
     }
   }
-  
+
   func selectRole(for role: Role?) {
     self.role = role
   }

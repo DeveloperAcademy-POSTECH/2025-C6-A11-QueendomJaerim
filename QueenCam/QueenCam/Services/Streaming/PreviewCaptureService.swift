@@ -60,7 +60,7 @@ extension PreviewCaptureService {
 
     // Capture
     previewOutput.videoSettings = [
-      AVVideoCodecKey: AVVideoCodecType.h264,
+      AVVideoCodecKey: AVVideoCodecType.h264
     ]
 
     bufferStream = previewCaptureDelegate?.bufferStream
@@ -71,7 +71,7 @@ extension PreviewCaptureService {
     logger.info("video settings: \(self.previewOutput.videoSettings ?? [:])")
 
     // MARK: set to render frame
-    
+
     Task {
       await setupFrameProcessing()
     }
@@ -88,11 +88,11 @@ extension PreviewCaptureService {
 
     logger.info("stopped to capture preveiw stream")
   }
-  
+
   private func mutateQuality(_ quality: PreviewFrameQuality) {
     self.quality = quality
   }
-  
+
   nonisolated func setQuality(to quality: PreviewFrameQuality) async {
     await mutateQuality(quality)
   }

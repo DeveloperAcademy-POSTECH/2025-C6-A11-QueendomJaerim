@@ -1,13 +1,18 @@
 import PhotosUI
 import SwiftUI
+import WiFiAware
 
 struct CameraView {
   @State private var viewModel = CameraViewModel()
-  var previewModel: PreviewModel
   @Environment(\.router) private var router
+  let previewModel: PreviewModel
+  let wifiAwareViewModel: WifiAwareViewModel
 
-  // User Role
-  let role: Role?
+  /// 네트워크 상태 모달 노출 여부
+  @State private var isShwoingCurrentConnectionModal: Bool = false
+  private var isPhotographerMode: Bool {
+    wifiAwareViewModel.role == nil || wifiAwareViewModel.role == .photographer
+  }
 
   @State private var selectedItem: PhotosPickerItem?
   @State private var selectedImage: UIImage?
@@ -57,38 +62,41 @@ extension CameraView: View {
         Color.black.ignoresSafeArea()
 
         VStack {
-          HStack {
-            Button(action: { viewModel.switchFlashMode() }) {
-              Image(systemName: flashImage)
-                .foregroundStyle(viewModel.currentFlashMode == .on ? .yellow : .white)
+          ZStack {
+            HStack {
+              Button(action: { viewModel.switchFlashMode() }) {
+                Image(systemName: flashImage)
+                  .foregroundStyle(viewModel.currentFlashMode == .on ? .yellow : .white)
+              }
+
+              Button(action: { viewModel.switchLivePhoto() }) {
+                Image(systemName: viewModel.isLivePhotoOn ? "livephoto" : "livephoto.slash")
+                  .foregroundStyle(viewModel.isLivePhotoOn ? .yellow : .white)
+              }
+
+              Spacer()
+
+              Button(action: { isShowGrid.toggle() }) {
+                Text(isShowGrid ? "그리드 활성화" : "그리드 비활성화")
+                  .foregroundStyle(isShowGrid ? .yellow : .white)
+              }
             }
 
-            Button(action: { viewModel.switchLivePhoto() }) {
-              Image(systemName: viewModel.isLivePhotoOn ? "livephoto" : "livephoto.slash")
-                .foregroundStyle(viewModel.isLivePhotoOn ? .yellow : .white)
-            }
-
-            Spacer()
-
-            Button {
-              router.push(.establishConnection)
-            } label: {
-              Text("연결")
-                .padding(8)
-            }
-            .glassEffect()
-
-            Spacer()
-
-            Button(action: { isShowGrid.toggle() }) {
-              Text(isShowGrid ? "그리드 활성화" : "그리드 비활성화")
-                .foregroundStyle(isShowGrid ? .yellow : .white)
+            NetworkToolbarView(
+              networkState: wifiAwareViewModel.networkState,
+              connectedDeviceName: wifiAwareViewModel.connectedDeviceName
+            ) {
+              if wifiAwareViewModel.isConnecting {
+                isShwoingCurrentConnectionModal.toggle()
+              } else {
+                router.push(.establishConnection)
+              }
             }
           }
           .padding()
 
           ZStack {
-            if role == nil || role == .photographer {  // 작가
+            if isPhotographerMode {  // 작가
               CameraPreview(session: viewModel.manager.session)
                 .aspectRatio(3 / 4, contentMode: .fit)
                 .onTapGesture { location in
@@ -138,7 +146,7 @@ extension CameraView: View {
 
           if !isFront {
             HStack(spacing: 20) {
-              if role == nil || role == .photographer {
+              if isPhotographerMode {
                 ForEach(zoomScaleItemList, id: \.self) { item in
                   Button(action: { viewModel.zoom(factor: item) }) {
                     Text(String(format: "%.1fx", item))
@@ -170,7 +178,7 @@ extension CameraView: View {
 
             Spacer()
 
-            if role == nil || role == .photographer {  // 작가 전용 뷰
+            if isPhotographerMode {  // 작가 전용 뷰
               Button(action: { viewModel.capturePhoto() }) {
                 Circle()
                   .fill(.white)
@@ -207,6 +215,21 @@ extension CameraView: View {
             Text("설정으로 이동하기")
           }
         }
+      }
+
+      // MARK: 네트워크 상태 모달
+      if isShwoingCurrentConnectionModal {
+        NetworkStateModalView(
+          myRole: wifiAwareViewModel.role ?? .model,
+          otherDeviceName: wifiAwareViewModel.connectedDeviceName ?? "알 수 없는 기기",
+          disconnectButtonDidTap: {
+            isShwoingCurrentConnectionModal = false
+            wifiAwareViewModel.disconnectButtonDidTap()
+          },
+          changeRoleButtonDidTap: {
+            // TODO: 역할 바꾸기 기능 구현
+          }
+        )
       }
     }
     .alert(
