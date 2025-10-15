@@ -2,22 +2,25 @@ import Photos
 import SwiftUI
 
 struct PhotosPickerView {
-  let viewModel = PhotosViewModel()
-  private let columnList = Array(repeating: GridItem(.flexible(), spacing: 4), count: 3)
-
   @Environment(\.dismiss) private var dismiss
+  @State private var selectedImage: UIImage?
+  @Binding var selectedImageID: String?
+  
+  let viewModel = PhotosViewModel()
+  
+  private let columnList = Array(repeating: GridItem(.flexible(), spacing: 4), count: 3)
+  let onTapComplete: (UIImage?) -> Void
 
-  let onSelectAction: (UIImage?) -> Void
 }
 
-extension PhotosPickerView { }
+extension PhotosPickerView {}
 
 extension PhotosPickerView: View {
   var body: some View {
     VStack {
       switch viewModel.state {
       case .idle, .requestingPermission:
-        Text("사진 권한 요청 확인 중")
+        ProgressView("사진 권한 요청 확인 중")
           .task {
             await viewModel.requestAccessAndLoad()
           }
@@ -33,8 +36,16 @@ extension PhotosPickerView: View {
                 ThumbnailView(
                   asset: asset,
                   manager: viewModel.cachingManager,
-                  onTapAcion: { onSelectAction($0) }
-                )
+                  isSelected: selectedImageID == asset.localIdentifier
+                ) { image in
+                  if selectedImageID == asset.localIdentifier {
+                    selectedImage = nil
+                    selectedImageID = nil
+                  } else {
+                    selectedImageID = asset.localIdentifier
+                    selectedImage = image
+                  }
+                }
               }
             }
           }
@@ -42,10 +53,26 @@ extension PhotosPickerView: View {
           .navigationBarTitleDisplayMode(.inline)
           .toolbar {
             ToolbarItem(placement: .topBarLeading) {
-              Button(action: { dismiss() }) {
+              Button(action: {
+                dismiss()
+              }) {
                 Image(systemName: "xmark")
               }
-              .buttonStyle(.glassProminent)
+            }
+
+            ToolbarItem(placement: .topBarTrailing) {
+              Button(action: {
+                onTapComplete(selectedImage)
+                dismiss()
+              }) {
+                Text("완료")
+              }
+              .disabled(selectedImage == nil)
+            }
+          }
+          .onAppear {
+            if let id = selectedImageID {
+              selectedImageID = id
             }
           }
         }

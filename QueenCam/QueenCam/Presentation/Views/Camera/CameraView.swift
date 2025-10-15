@@ -14,8 +14,8 @@ struct CameraView {
     wifiAwareViewModel.role == nil || wifiAwareViewModel.role == .photographer
   }
 
-  @State private var selectedItem: PhotosPickerItem?
   @State private var selectedImage: UIImage?
+  @State private var selectedImageID: String?
 
   @State private var zoomScaleItemList: [CGFloat] = [0.5, 1, 2]
 
@@ -25,6 +25,7 @@ struct CameraView {
   @State private var focusLocation: CGPoint = .zero
 
   @State private var isShowPhotoPicker = false
+
 }
 
 extension CameraView {
@@ -137,7 +138,7 @@ extension CameraView: View {
                 .overlay(alignment: .topTrailing) {
                   Button(action: {
                     selectedImage = nil
-                    selectedItem = nil
+                    selectedImageID = nil
                   }) {
                     Image(systemName: "xmark.circle.fill")
                       .imageScale(.large)
@@ -249,7 +250,7 @@ extension CameraView: View {
       }
     )
     .sheet(isPresented: $isShowPhotoPicker) {
-      PhotosPickerView { image in
+      PhotosPickerView(selectedImageID: $selectedImageID) { image in
         selectedImage = image
         isShowPhotoPicker = false
       }

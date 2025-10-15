@@ -7,6 +7,7 @@ struct ThumbnailView {
 
   let asset: PHAsset
   let manager: PHCachingImageManager
+  var isSelected: Bool
   let onTapAcion: (UIImage?) -> Void
 }
 
@@ -32,19 +33,30 @@ extension ThumbnailView {
 
 extension ThumbnailView: View {
   var body: some View {
-    ZStack {
+    ZStack(alignment: .topTrailing) {
       if let image {
         Image(uiImage: image)
           .resizable()
           .scaledToFit()
           .clipped()
           .onTapGesture {
-            onTapAcion(image)
+            // TODO: 사진 디테일 페이지
           }
       } else {
         Rectangle()
           .fill(Color.gray.opacity(0.12))
           .overlay { ProgressView().controlSize(.mini) }
+      }
+      Button(action: {
+        if let image = image {
+          onTapAcion(image)
+        }
+      }) {
+        Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+          .imageScale(.large)
+          .foregroundStyle(isSelected ? .blue : .gray.opacity(0.4))
+          .padding(12)
+          .background(.red.opacity(0.3))
       }
     }
     .onAppear {
