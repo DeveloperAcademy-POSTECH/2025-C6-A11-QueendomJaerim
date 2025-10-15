@@ -9,11 +9,13 @@ import Foundation
 
 nonisolated enum HostState: Sendable {
   case stopped
+  case cancelled
   case publishing
 }
 
 nonisolated enum ViewerState: Sendable {
   case stopped
+  case cancelled
   case browsing
   case connecting
   case connected

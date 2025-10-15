@@ -49,11 +49,18 @@ final class NetworkService: NetworkServiceProtocol {
       logger.debug("network state updated: \(self.networkState?.debugDescription ?? "")")
 
       networkStateSubject.send(networkState)
+      
+      // 연결이 취소되었다면 다음 태스크에서 stopped 상태로 전환한다
+      if networkState == .host(.cancelled) || networkState == .viewer(.cancelled) {
+        Task {
+          networkState = mode == .host ? .host(.stopped) : .viewer(.stopped)
+        }
+      }
 
+      // 연결이 stopped 상태일 때 networkTask가 진행중이면 취소한다
       if networkState != .host(.stopped) && networkState != .viewer(.stopped) {
         return
       }
-
       if let networkTask, !networkTask.isCancelled {
         networkTask.cancel()
         logger.warning("networkState가 stopped으로 전환되었으나 networkTask가 유효하여 취소하였습니다")
@@ -150,13 +157,14 @@ final class NetworkService: NetworkServiceProtocol {
       deviceConnections[device] = connectionDetail
 
     case .stopped(let device, let connectionID, let error):
+      print("handle stopped event \(error)")
       deviceConnections.removeValue(forKey: device)
       await connectionManager.invalidate(connectionID)
 
       if mode == .viewer {
-        networkState = .viewer(.stopped)
+        networkState = .viewer(.cancelled)
       } else {
-        networkState = .host(.stopped)
+        networkState = .host(.cancelled)
       }
 
       if let waError = error {
@@ -192,7 +200,7 @@ final class NetworkService: NetworkServiceProtocol {
     networkTask?.cancel()
     Task {
       await self.connectionManager.stopAll()
-      self.networkState = self.mode == .host ? .host(.stopped) : .viewer(.stopped)
+      self.networkState = self.mode == .host ? .host(.cancelled) : .viewer(.cancelled)
     }
   }
 

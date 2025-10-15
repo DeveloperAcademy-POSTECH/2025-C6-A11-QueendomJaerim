@@ -54,7 +54,11 @@ final class WifiAwareViewModel {
     networkService.networkStatePublisher
       .compactMap { $0 }
       .sink { [weak self] state in
-        self?.networkState = state
+        guard let self else { return }
+        self.networkState = state
+        if state == .host(.cancelled) || state == .viewer(.cancelled) {
+          role = nil
+        }
       }
       .store(in: &cancellables)
 
