@@ -8,9 +8,9 @@ struct ThumbnailView {
   let asset: PHAsset
   let manager: PHCachingImageManager
   var isSelected: Bool
-  
+
   let onTapCheck: (UIImage) -> Void
-  let onTapThumbnail: (UIImage) -> Void
+  let onTapThumbnail: (PHAsset) -> Void
 }
 
 extension ThumbnailView {
@@ -42,13 +42,15 @@ extension ThumbnailView: View {
           .scaledToFit()
           .clipped()
           .onTapGesture {
-            onTapThumbnail(image)
+            // 디테일 이동
+            onTapThumbnail(asset)
           }
       } else {
         Rectangle()
           .fill(Color.gray.opacity(0.12))
           .overlay { ProgressView().controlSize(.mini) }
       }
+
       Button(action: {
         if let image = image {
           onTapCheck(image)

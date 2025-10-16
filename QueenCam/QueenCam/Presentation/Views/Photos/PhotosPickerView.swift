@@ -3,21 +3,22 @@ import SwiftUI
 
 struct PhotosPickerView {
   @Environment(\.dismiss) private var dismiss
-  
-  // 내부 이미지 데이터
-  @State private var selectedImage: UIImage?
-  @State private var currentImageID: String?
-  
+
+  // 시트 내부 임시 상태 (썸네일/풀스크린에서만 바뀜)
+  @State private var tempSelectedImage: UIImage?
+  @State private var tempSelectedImageID: String?
+
   // 상위 뷰에서 넘어오는 아이디
   @Binding var selectedImageID: String?
 
   let viewModel = PhotosViewModel()
 
   private let columnList = Array(repeating: GridItem(.flexible(), spacing: 4), count: 3)
+
   let onTapComplete: (UIImage?) -> Void
 
-  @State private var selectedImageItem: IdentifiableImage?
-  
+  @State private var selectedImageAsset: IdentifiableAsset?
+
 }
 
 extension PhotosPickerView: View {
@@ -41,19 +42,20 @@ extension PhotosPickerView: View {
                 ThumbnailView(
                   asset: asset,
                   manager: viewModel.cachingManager,
-                  isSelected: currentImageID == asset.localIdentifier,
+                  isSelected: tempSelectedImageID == asset.localIdentifier,
                   onTapCheck: { image in
-                    if currentImageID == asset.localIdentifier {
-                      currentImageID = nil
-                      selectedImage = nil
+                    // 선택되어있을때 탭하면 선택 해제 (체크박스)
+                    if tempSelectedImageID == asset.localIdentifier {
+                      tempSelectedImageID = nil
+                      tempSelectedImage = nil
                     } else {
-                      currentImageID = asset.localIdentifier
-                      selectedImage = image
+                      tempSelectedImageID = asset.localIdentifier
+                      tempSelectedImage = image
                     }
                   },
-                  onTapThumbnail: { image in
+                  onTapThumbnail: { _ in
                     // 디테일로 이동
-                    selectedImageItem = IdentifiableImage(image: image)
+                    selectedImageAsset = IdentifiableAsset(asset: asset)
                   }
                 )
               }
@@ -72,39 +74,47 @@ extension PhotosPickerView: View {
 
             ToolbarItem(placement: .topBarTrailing) {
               Button(action: {
-                onTapComplete(selectedImage)
-                selectedImageID = currentImageID
+                onTapComplete(tempSelectedImage)
+                selectedImageID = tempSelectedImageID
                 dismiss()
               }) {
                 Text("완료")
               }
-              .disabled(currentImageID == nil)
+              .disabled(tempSelectedImageID == nil)
             }
           }
           .onAppear {
-            currentImageID = selectedImageID
+            tempSelectedImageID = selectedImageID
           }
         }
-        .fullScreenCover(item: $selectedImageItem) { item in
+        .fullScreenCover(item: $selectedImageAsset) { item in
           PhotoDetailView(
-            image: item.image,
-            onTapAction: {
-              onTapComplete(item.image)
-              selectedImageID = currentImageID
-              selectedImageItem = nil
+            asset: item.asset,
+            manager: viewModel.cachingManager,
+            initialSelectedID: tempSelectedImageID,
+            onTapConfirm: { image in
+              tempSelectedImage = image
+              tempSelectedImageID = item.asset.localIdentifier
+              onTapComplete(image)
+              selectedImageID = tempSelectedImageID
+              selectedImageAsset = nil
               dismiss()
             },
             onTapClose: {
-              selectedImageItem = nil
-            })
+              selectedImageAsset = nil
+            }
+          )
         }
       }
     }
   }
 }
 
+// 바인딩을 위한 Identifiable 모델
+struct IdentifiableAsset: Identifiable {
+  var id: String {
+    asset.localIdentifier
+  }
 
-struct IdentifiableImage: Identifiable {
-  let id = UUID()
-  let image: UIImage
+  let asset: PHAsset
 }
