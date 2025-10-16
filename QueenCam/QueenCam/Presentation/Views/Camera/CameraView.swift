@@ -119,6 +119,7 @@ extension CameraView: View {
                 }
             } else {  // 모델
               PreviewPlayerView(previewModel: previewModel)
+              FrameControlView()
             }
 
             if isShowGrid {
