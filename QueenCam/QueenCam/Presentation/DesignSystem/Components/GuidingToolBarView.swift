@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct ToolBarView: View {
+struct GuidingToolBarView: View {
     var onAction: (ToolBarAction) -> Void
     var body: some View {
       HStack(spacing: 20){
@@ -51,7 +51,7 @@ struct ToolBarView: View {
 }
 
 #Preview {
-    ToolBarView { action in
+    GuidingToolBarView { action in
         print("Tapped: \(action)")
     }
 }

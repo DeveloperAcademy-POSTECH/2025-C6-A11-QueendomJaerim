@@ -48,7 +48,7 @@ struct PenWriteView: View {
           )
         }
         // MARK: - 버튼 툴바 Undo / Redo / clearAll
-        ToolBarView { action in
+        GuidingToolBarView { action in
           switch action {
           case .clearAll:
             viewModel.clearAll()
