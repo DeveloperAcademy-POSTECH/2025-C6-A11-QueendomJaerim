@@ -125,13 +125,6 @@ extension CameraPreviewMTKViewController {
 
     let currentTimestamp = Date().timeIntervalSince1970
     let diff = currentTimestamp - frame.timestamp.timeIntervalSince1970
-
-    guard diff < timestampDiffThreshold else {  // 프레임이 너무 많이 밀렸다면 드랍
-      logger.warning("skip frame... current diff=\(diff)")
-      delegate?.frameDidSkipped(viewController: self, diff: diff)
-      renderingCount = 0
-      return
-    }
     
     if diff >= timestampDiffThreshold {
       logger.warning("frame delayed... diff=\(diff)")
