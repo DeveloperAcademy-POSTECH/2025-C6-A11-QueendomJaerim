@@ -13,7 +13,7 @@ enum NetworkEvent: Sendable {
   case ping(Date)
   case previewFrame(VideoFramePayload)
   case renderState(RenderingState)
-  case photo(Data)
+  case photoResult(Data)
 }
 
 nonisolated extension NetworkEvent: Codable {

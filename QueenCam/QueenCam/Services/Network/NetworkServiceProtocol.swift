@@ -21,6 +21,9 @@ protocol NetworkServiceProtocol: AnyObject {
   /// 마지막으로 발생한 에러를 방출하는 퍼블리셔입니다.
   var lastErrorPublisher: AnyPublisher<Error?, Never> { get }
 
+  /// 현재 네트워크 상태
+  var networkState: NetworkState? { get }
+
   /// 현재 네트워크 상태를 방출하는 퍼블리셔입니다.
   var networkStatePublisher: AnyPublisher<NetworkState?, Never> { get }
 
