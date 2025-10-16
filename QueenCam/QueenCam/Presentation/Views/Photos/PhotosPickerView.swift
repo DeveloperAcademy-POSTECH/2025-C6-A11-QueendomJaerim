@@ -74,8 +74,11 @@ extension PhotosPickerView: View {
 
             ToolbarItem(placement: .topBarTrailing) {
               Button(action: {
-                onTapComplete(tempSelectedImage)
-                selectedImageID = tempSelectedImageID
+
+                if tempSelectedImageID != selectedImageID {
+                  onTapComplete(tempSelectedImage)
+                  selectedImageID = tempSelectedImageID
+                }
                 dismiss()
               }) {
                 Text("완료")
