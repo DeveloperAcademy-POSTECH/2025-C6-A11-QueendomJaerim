@@ -1,4 +1,5 @@
 import AVFoundation
+import Combine
 import Foundation
 import OSLog
 import Photos
@@ -10,7 +11,13 @@ final class CameraManager: NSObject {
   private var videoDeviceInput: AVCaptureDeviceInput?
   private var audioDeviceInput: AVCaptureDeviceInput?
   private let photoOutput = AVCapturePhotoOutput()
+
+  // 프리뷰 프레임 캡쳐
   private let previewCaptureService: PreviewCaptureService
+  // 네트워크 송수신
+  private let networkService: NetworkServiceProtocol
+  private var cancellables: Set<AnyCancellable> = []
+
   var position: AVCaptureDevice.Position = .back
   var flashMode: AVCaptureDevice.FlashMode = .off
   var isLivePhotoOn: Bool = false
@@ -22,8 +29,13 @@ final class CameraManager: NSObject {
   var onPhotoCapture: ((UIImage) -> Void)?
   var onTapCameraSwitch: ((AVCaptureDevice.Position) -> Void)?
 
-  init(previewCaptureService: PreviewCaptureService) {
+  init(previewCaptureService: PreviewCaptureService, networkService: NetworkServiceProtocol) {
     self.previewCaptureService = previewCaptureService
+    self.networkService = networkService
+
+    super.init()
+
+    bind()
   }
 
   func configureSession() async throws {
@@ -83,11 +95,17 @@ final class CameraManager: NSObject {
         photoSettings.livePhotoMovieFileURL = URL.movieFileURL
       }
 
-      self.cameraDelegate = CameraDelegate(isCameraPosition: self.position) { image in
-        guard let image else { return }
+      self.cameraDelegate = CameraDelegate(isCameraPosition: self.position) { photoOutput in
+        guard let photoOutput else { return }
 
         DispatchQueue.main.async {
-          self.onPhotoCapture?(image)
+          self.onPhotoCapture?(photoOutput.uiImage)
+        }
+
+        if let photoData = photoOutput.data {
+          self.sendPhoto(imageData: photoData)
+        } else {
+          self.logger.warning("Got photoOutput but photoData is nil... so skip to send...")
         }
       }
 
@@ -283,6 +301,60 @@ extension CameraManager {
       return AVCaptureVideoPreviewLayer(session: session)
     }
     return layer
+  }
+}
+
+// MARK: 네트워크
+extension CameraManager {
+  // 받기
+  func bind() {
+    networkService.networkEventPublisher
+      .receive(on: RunLoop.main)
+      .compactMap { $0 }
+      .sink { [weak self] event in
+        switch event {
+        case .photoResult(let photoData):
+          self?.handlePhotoResultEvent(photoData: photoData)
+        default: break
+        }
+      }
+      .store(in: &cancellables)
+  }
+  
+  func handlePhotoResultEvent(photoData: Data) {
+    if let image = UIImage(data: photoData) {
+      saveToPhotoLibrary(image)
+      DispatchQueue.main.async {
+        self.onPhotoCapture?(image)
+      }
+    } else {
+      logger.error("failed to convert data to image")
+    }
+  }
+
+  // FIXME: Duplicated code in CameraDelgate
+  func saveToPhotoLibrary(_ image: UIImage) {
+    PHPhotoLibrary.shared().performChanges {
+      PHAssetChangeRequest.creationRequestForAsset(from: image)
+    } completionHandler: { success, error in
+      if success {
+        self.logger.info("Image saved to gallery.")
+      } else if error != nil {
+        self.logger.error("Error saving image to gallery")
+      }
+    }
+  }
+
+  // 보내기
+  func sendPhoto(imageData: Data) {
+    guard networkService.networkState == .host(.publishing) else {
+      logger.warning("The client has a viewer role or is not publishing. Skipping sending photo.")
+      return
+    }
+
+    Task.detached { [weak self] in
+      await self?.networkService.send(for: .photoResult(imageData))
+    }
   }
 }
 

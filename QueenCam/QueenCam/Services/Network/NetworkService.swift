@@ -49,7 +49,7 @@ final class NetworkService: NetworkServiceProtocol {
       logger.debug("network state updated: \(self.networkState?.debugDescription ?? "")")
 
       networkStateSubject.send(networkState)
-      
+
       // 연결이 취소되었다면 다음 태스크에서 stopped 상태로 전환한다
       if networkState == .host(.cancelled) || networkState == .viewer(.cancelled) {
         Task {
@@ -157,7 +157,7 @@ final class NetworkService: NetworkServiceProtocol {
       deviceConnections[device] = connectionDetail
 
     case .stopped(let device, let connectionID, let error):
-      print("handle stopped event \(error)")
+      logger.info("handle stopped event \(error)")
       deviceConnections.removeValue(forKey: device)
       await connectionManager.invalidate(connectionID)
 
