@@ -32,6 +32,7 @@ struct PenWriteView: View {
               context.stroke(path, with: .color(.orange), style: StrokeStyle(lineWidth: 4, lineCap: .round, lineJoin: .round))
             }
           }
+          .background(.clear)
           .gesture(
             DragGesture(minimumDistance: 0)
               .onChanged { value in
