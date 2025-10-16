@@ -11,12 +11,14 @@ nonisolated enum PreviewFrameQuality: Sendable, Codable {
   case high
   case medium
   case low
+  case veryLow
 
   var scale: CGFloat {
     switch self {
     case .high: return 1.0
     case .medium: return 0.7
     case .low: return 0.5
+    case .veryLow: return 0.1
     }
   }
 
@@ -25,6 +27,7 @@ nonisolated enum PreviewFrameQuality: Sendable, Codable {
     case .high:   return 0.8
     case .medium: return 0.4
     case .low:    return 0.2
+    case .veryLow: return 0.1
     }
   }
 
@@ -33,6 +36,7 @@ nonisolated enum PreviewFrameQuality: Sendable, Codable {
     case .high:   return "High"
     case .medium: return "Medium"
     case .low:    return "Low"
+    case .veryLow:    return "Low"
     }
   }
 
@@ -41,6 +45,7 @@ nonisolated enum PreviewFrameQuality: Sendable, Codable {
     case .high: return .high // high -> high
     case .medium: return .high
     case .low: return .medium
+    case .veryLow: return .low
     }
   }
 
@@ -48,7 +53,8 @@ nonisolated enum PreviewFrameQuality: Sendable, Codable {
     switch self {
     case .high: return .medium
     case .medium: return .low
-    case .low: return .low // low -> low
+    case .low: return .veryLow
+    case .veryLow: return .veryLow // veryLow -> veryLow
     }
   }
 }
