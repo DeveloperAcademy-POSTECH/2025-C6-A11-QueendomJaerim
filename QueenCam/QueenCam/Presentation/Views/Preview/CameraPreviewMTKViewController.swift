@@ -53,7 +53,7 @@ final class CameraPreviewMTKViewController: UIViewController {
       mtkView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
       mtkView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
       mtkView.topAnchor.constraint(equalTo: view.topAnchor),
-      mtkView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+      mtkView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
     ])
   }
 
@@ -131,6 +131,16 @@ extension CameraPreviewMTKViewController {
       delegate?.frameDidSkipped(viewController: self, diff: diff)
       renderingCount = 0
       return
+    }
+    
+    if diff >= timestampDiffThreshold {
+      logger.warning("frame delayed... diff=\(diff)")
+      delegate?.frameDidSkipped(viewController: self, diff: diff)
+      renderingCount = 0
+      
+      if frame.quality != .veryLow { // 이미 Very Low라면 스킵하지 않고 그린다
+        return
+      }
     }
 
     guard let drawable = mtkView.currentDrawable,
