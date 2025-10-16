@@ -53,7 +53,7 @@ final class CameraPreviewMTKViewController: UIViewController {
       mtkView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
       mtkView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
       mtkView.topAnchor.constraint(equalTo: view.topAnchor),
-      mtkView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+      mtkView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
     ])
   }
 
@@ -125,12 +125,15 @@ extension CameraPreviewMTKViewController {
 
     let currentTimestamp = Date().timeIntervalSince1970
     let diff = currentTimestamp - frame.timestamp.timeIntervalSince1970
-
-    guard diff < timestampDiffThreshold else {  // 프레임이 너무 많이 밀렸다면 드랍
-      logger.warning("skip frame... current diff=\(diff)")
+    
+    if diff >= timestampDiffThreshold {
+      logger.warning("frame delayed... diff=\(diff)")
       delegate?.frameDidSkipped(viewController: self, diff: diff)
       renderingCount = 0
-      return
+      
+      if frame.quality != .veryLow { // 이미 Very Low라면 스킵하지 않고 그린다
+        return
+      }
     }
 
     guard let drawable = mtkView.currentDrawable,
