@@ -33,6 +33,10 @@ final actor PreviewCaptureService {
   /// 렌더링 품질
   var quality: PreviewFrameQuality = .medium
 
+  /// Goal FPS
+  private let transferingFPS: Double = 30.0  // 목표 FPS를 30으로 설정
+  private var lastPresentationTime: TimeInterval = 0.0
+
   private let logger = Logger(
     subsystem: Bundle.main.bundleIdentifier ?? "com.queendom.QueenCam",
     category: "PreviewCaptureService"
@@ -103,12 +107,31 @@ extension PreviewCaptureService {
     let ciContext = CIContext()
     let colorSpace = CGColorSpace(name: CGColorSpace.sRGB)!
 
+    let minTimeInterval = 1.0 / self.transferingFPS
+
     if let bufferStream = self.bufferStream {
       for await buffer in bufferStream {
         guard let pixelBuffer = CMSampleBufferGetImageBuffer(buffer) else {
           self.logger.warning("video buffer에 imageBuffer가 없음")
           continue  // 다음 프레임으로 넘어갑니다.
         }
+
+        // --- FPS 제어 로직 ---
+        let currentTime = Date().timeIntervalSince1970
+
+        // 현재 시간과 마지막 처리 시간의 차이를 계산
+        let elapsedTime = currentTime - self.lastPresentationTime
+
+        // 시간 간격이 충분하지 않으면 이번 프레임은 건너뜁니다 (continue 사용).
+        guard elapsedTime >= minTimeInterval else {
+          // self.logger.debug("skip to capture frame")
+          continue
+        }
+
+        // 마지막 처리 시간을 현재 시간으로 업데이트
+        self.lastPresentationTime = currentTime
+
+//        self.logger.debug("will capture frame. \(currentTime)")
 
         // ----- 1. 현재 화질 가져오기 -----
         let quality = self.quality
