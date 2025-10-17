@@ -5,17 +5,21 @@
 //  Created by 윤보라 on 10/14/25.
 //  Reference의 Open/Close 제스쳐 관리 ViewModel
 
+import Combine
 import Foundation
 import SwiftUI
-import Combine
+import UIKit
 
 final class ReferenceViewModel: ObservableObject {
+  @Published var image: UIImage?  //선택된 레퍼런스 사진
+  @Published var selectedImageID: String?
+
   @Published var state: ReferenceState = .open
-  @Published var dragOffset: CGSize = .zero // 드래그 중 임시편차
+  @Published var dragOffset: CGSize = .zero  // 드래그 중 임시편차
 
   // MARK: - 드래그 Close(Fold) 제스쳐
-  let foldThreshold: CGFloat = -30 // fold(접힘) 전환 임계값 - 변경 예정
-  let maxDrag: CGFloat = 60 // 최대 드래그 허용 범위(양수: 오른쪽, 음수: 왼쪽)
+  let foldThreshold: CGFloat = -30  // fold(접힘) 전환 임계값 - 변경 예정
+  let maxDrag: CGFloat = 60  // 최대 드래그 허용 범위(양수: 오른쪽, 음수: 왼쪽)
   // 드래그 중: 수평만 처리
   func dragChanged(_ value: DragGesture.Value) {
     let x = value.translation.width
@@ -38,12 +42,11 @@ final class ReferenceViewModel: ObservableObject {
     }
   }
   // MARK: - Reference 삭제
-  func onDelete() {
+  func onDelete() {  //초기화
     withAnimation(.snappy) {
       state = .delete
+      image = nil
+      selectedImageID = nil
     }
-  }
-  #Preview{
-    ReferenceView(role: .model)
   }
 }

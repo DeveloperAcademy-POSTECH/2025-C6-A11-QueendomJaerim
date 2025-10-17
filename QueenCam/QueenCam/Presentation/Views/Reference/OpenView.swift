@@ -9,20 +9,27 @@
 import SwiftUI
 
 struct OpenView: View {
-  @ObservedObject var viewModel : ReferenceViewModel
+  @ObservedObject var viewModel: ReferenceViewModel
   @State private var showDelete: Bool = false
 
   let role: Role?
 
   var body: some View {
     ZStack(alignment: .topTrailing) {
-      RoundedRectangle(cornerRadius: 20)
-        .fill(.yellow)
-        .frame(width: 90, height: 120)
-        .onTapGesture {
-          guard role == .model else { return } // 작가의 경우 레퍼런스 삭제 불가능
-          showDelete.toggle() //모델의 경우 레퍼런스 삭제 가능
+      Group {
+        if let image = viewModel.image {
+          Image(uiImage: image)
+            .resizable()
+            .scaledToFill()
+            .frame(width: 90, height: 120)
+            .clipped()
+            .cornerRadius(20)
+            .onTapGesture {
+              guard role == .model else { return }  // 작가의 경우 레퍼런스 삭제 불가능
+              showDelete.toggle()  //모델의 경우 레퍼런스 삭제 가능
+            }
         }
+      }
 
       if showDelete {
         Button {

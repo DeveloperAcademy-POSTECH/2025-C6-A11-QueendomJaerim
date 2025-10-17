@@ -13,11 +13,16 @@ struct CloseView: View {
       Rectangle()
         .fill(.black.opacity(0.8))
         .frame(width: 28, height: 120)
-        .clipShape(UnevenRoundedRectangle(
-          cornerRadii: RectangleCornerRadii(
-            topLeading: 0, bottomLeading: 0, bottomTrailing: 10, topTrailing: 10
-          ),
-        ))
+        .clipShape(
+          UnevenRoundedRectangle(
+            cornerRadii: RectangleCornerRadii(
+              topLeading: 0,
+              bottomLeading: 0,
+              bottomTrailing: 10,
+              topTrailing: 10
+            ),
+          )
+        )
       Image(systemName: "chevron.right")
         .foregroundStyle(.white)
     }
