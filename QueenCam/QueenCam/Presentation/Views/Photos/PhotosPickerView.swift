@@ -5,8 +5,8 @@ struct PhotosPickerView {
   @Environment(\.dismiss) private var dismiss
 
   // 시트 내부 임시 상태 (썸네일/풀스크린에서만 바뀜)
-  @State private var tempSelectedImage: UIImage?
-  @State private var tempSelectedImageID: String?
+  @State private var sheetSelectedImage: UIImage?
+  @State private var sheetSelectedImageID: String?
 
   // 상위 뷰에서 넘어오는 아이디
   @Binding var selectedImageID: String?
@@ -42,15 +42,15 @@ extension PhotosPickerView: View {
                 ThumbnailView(
                   asset: asset,
                   manager: viewModel.cachingManager,
-                  isSelected: tempSelectedImageID == asset.localIdentifier,
+                  isSelected: sheetSelectedImageID == asset.localIdentifier,
                   onTapCheck: { image in
                     // 선택되어있을때 탭하면 선택 해제 (체크박스)
-                    if tempSelectedImageID == asset.localIdentifier {
-                      tempSelectedImageID = nil
-                      tempSelectedImage = nil
+                    if sheetSelectedImageID == asset.localIdentifier {
+                      sheetSelectedImageID = nil
+                      sheetSelectedImage = nil
                     } else {
-                      tempSelectedImageID = asset.localIdentifier
-                      tempSelectedImage = image
+                      sheetSelectedImageID = asset.localIdentifier
+                      sheetSelectedImage = image
                     }
                   },
                   onTapThumbnail: { _ in
@@ -75,31 +75,31 @@ extension PhotosPickerView: View {
             ToolbarItem(placement: .topBarTrailing) {
               Button(action: {
 
-                if tempSelectedImageID != selectedImageID {
-                  onTapComplete(tempSelectedImage)
-                  selectedImageID = tempSelectedImageID
+                if sheetSelectedImageID != selectedImageID {
+                  onTapComplete(sheetSelectedImage)
+                  selectedImageID = sheetSelectedImageID
                 }
                 dismiss()
               }) {
                 Text("완료")
               }
-              .disabled(tempSelectedImageID == nil)
+              .disabled(sheetSelectedImageID == nil)
             }
           }
           .onAppear {
-            tempSelectedImageID = selectedImageID
+            sheetSelectedImageID = selectedImageID
           }
         }
         .fullScreenCover(item: $selectedImageAsset) { item in
           PhotoDetailView(
             asset: item.asset,
             manager: viewModel.cachingManager,
-            initialSelectedID: tempSelectedImageID,
+            selectedImageID: sheetSelectedImageID,
             onTapConfirm: { image in
-              tempSelectedImage = image
-              tempSelectedImageID = item.asset.localIdentifier
+              sheetSelectedImage = image
+              sheetSelectedImageID = item.asset.localIdentifier
               onTapComplete(image)
-              selectedImageID = tempSelectedImageID
+              selectedImageID = sheetSelectedImageID
               selectedImageAsset = nil
               dismiss()
             },

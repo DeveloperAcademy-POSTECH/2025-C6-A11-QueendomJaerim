@@ -4,12 +4,12 @@ import SwiftUI
 struct PhotoDetailView {
   let asset: PHAsset
   let manager: PHCachingImageManager
-  let initialSelectedID: String?
+  let selectedImageID: String? // 외부에서 주입 받은 이미지 아이디
   let onTapConfirm: (UIImage) -> Void  // 완료시 상위로 전달
   let onTapClose: () -> Void
 
-  @State private var fullScreenImage: UIImage?
-  @State private var localSelectedID: String?
+  @State private var detailImage: UIImage?
+  @State private var detailSelectedImageID: String?
 
 }
 
@@ -26,7 +26,7 @@ extension PhotoDetailView {
       options: options
     ) { result, _ in
       if let result {
-        self.fullScreenImage = result
+        self.detailImage = result
       }
     }
   }
@@ -37,20 +37,20 @@ extension PhotoDetailView: View {
     ZStack {
       Color.black.ignoresSafeArea()
 
-      if let image = fullScreenImage {
+      if let image = detailImage {
         Image(uiImage: image)
           .resizable()
           .scaledToFit()
           .overlay(alignment: .topTrailing) {
 
             Button(action: {
-              if localSelectedID == asset.localIdentifier {
-                localSelectedID = nil
+              if detailSelectedImageID == asset.localIdentifier {
+                detailSelectedImageID = nil
               } else {
-                localSelectedID = asset.localIdentifier
+                detailSelectedImageID = asset.localIdentifier
               }
             }) {
-              Image(systemName: localSelectedID == asset.localIdentifier ? "checkmark.circle.fill" : "circle")
+              Image(systemName: detailSelectedImageID == asset.localIdentifier ? "checkmark.circle.fill" : "circle")
                 .imageScale(.large)
                 .padding()
             }
@@ -68,8 +68,8 @@ extension PhotoDetailView: View {
           Spacer()
 
           Button(action: {
-            if let image = fullScreenImage,
-              localSelectedID == asset.localIdentifier
+            if let image = detailImage,
+               detailSelectedImageID == asset.localIdentifier
             {
               onTapConfirm(image)
             }
@@ -78,7 +78,7 @@ extension PhotoDetailView: View {
               .foregroundStyle(.white)
               .padding()
           }
-          .disabled(localSelectedID != asset.localIdentifier)
+          .disabled(detailSelectedImageID != asset.localIdentifier)
         }
         .padding()
 
@@ -87,7 +87,7 @@ extension PhotoDetailView: View {
       }
     }
     .onAppear {
-      localSelectedID = initialSelectedID
+      detailSelectedImageID = selectedImageID
       requestImage()
     }
   }
