@@ -25,7 +25,7 @@ struct CameraView {
   @State private var focusLocation: CGPoint = .zero
 
   @State private var isShowPhotoPicker = false
-  @StateObject private var referenceVM = ReferenceViewModel()
+  @State private var referenceVM = ReferenceViewModel()
 
 }
 

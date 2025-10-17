@@ -14,7 +14,7 @@ enum ReferenceState: Equatable {
 }
 
 struct ReferenceView: View {
-  @ObservedObject var viewModel: ReferenceViewModel
+  @Bindable var viewModel: ReferenceViewModel
   // 레퍼런스 임시 배치 위치 => 스프린트2,3에 수정 예정
   var top: CGFloat = 24
   var leading: CGFloat = 4

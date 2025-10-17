@@ -9,7 +9,7 @@
 import SwiftUI
 
 struct OpenView: View {
-  @ObservedObject var viewModel: ReferenceViewModel
+  @Bindable var viewModel: ReferenceViewModel
   @State private var showDelete: Bool = false
 
   let role: Role?
@@ -22,8 +22,7 @@ struct OpenView: View {
             .resizable()
             .scaledToFill()
             .frame(width: 90, height: 120)
-            .clipped()
-            .cornerRadius(20)
+            .clipShape(.rect(cornerRadius: 20))
             .onTapGesture {
               guard role == .model else { return }  // 작가의 경우 레퍼런스 삭제 불가능
               showDelete.toggle()  //모델의 경우 레퍼런스 삭제 가능

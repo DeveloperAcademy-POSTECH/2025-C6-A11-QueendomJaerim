@@ -10,12 +10,13 @@ import Foundation
 import SwiftUI
 import UIKit
 
-final class ReferenceViewModel: ObservableObject {
-  @Published var image: UIImage?  //선택된 레퍼런스 사진
-  @Published var selectedImageID: String?
+@Observable
+final class ReferenceViewModel {
+  var image: UIImage?  // 선택된 레퍼런스 사진
+  var selectedImageID: String?
 
-  @Published var state: ReferenceState = .open
-  @Published var dragOffset: CGSize = .zero  // 드래그 중 임시편차
+  var state: ReferenceState = .open
+  var dragOffset: CGSize = .zero  // 드래그 중 임시편차
 
   // MARK: - 드래그 Close(Fold) 제스쳐
   let foldThreshold: CGFloat = -30  // fold(접힘) 전환 임계값 - 변경 예정
