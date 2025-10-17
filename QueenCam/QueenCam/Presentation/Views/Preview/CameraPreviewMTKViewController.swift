@@ -28,7 +28,7 @@ final class CameraPreviewMTKViewController: UIViewController {
   private var renderingCount: Int = 0
 
   // MARK: Configs
-  private let timestampDiffThreshold: Double = 1.0 / 8.0  // 단위: 초
+  private let timestampDiffThreshold: Double = 1.0 / 3.0  // 단위: 초
   private let countForReportingStableThreshold: Int = 150  // 단위: 횟수, 대략 5초 정도
 
   private let logger = Logger(
