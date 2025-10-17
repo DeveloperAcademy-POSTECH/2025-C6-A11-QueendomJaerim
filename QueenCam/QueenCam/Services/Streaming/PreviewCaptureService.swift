@@ -31,7 +31,7 @@ final actor PreviewCaptureService {
   var framePayloadContinuation: AsyncStream<VideoFramePayload>.Continuation
 
   /// 렌더링 품질
-  var quality: PreviewFrameQuality = .high
+  var quality: PreviewFrameQuality = .medium
 
   private let logger = Logger(
     subsystem: Bundle.main.bundleIdentifier ?? "com.queendom.QueenCam",
