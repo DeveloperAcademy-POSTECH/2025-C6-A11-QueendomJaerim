@@ -14,8 +14,8 @@ struct CameraView {
     wifiAwareViewModel.role == nil || wifiAwareViewModel.role == .photographer
   }
 
-  @State private var selectedItem: PhotosPickerItem?
   @State private var selectedImage: UIImage?
+  @State private var selectedImageID: String?
 
   @State private var zoomScaleItemList: [CGFloat] = [0.5, 1, 2]
 
@@ -23,6 +23,9 @@ struct CameraView {
 
   @State private var isFocused = false
   @State private var focusLocation: CGPoint = .zero
+
+  @State private var isShowPhotoPicker = false
+
 }
 
 extension CameraView {
@@ -135,7 +138,7 @@ extension CameraView: View {
                 .overlay(alignment: .topTrailing) {
                   Button(action: {
                     selectedImage = nil
-                    selectedItem = nil
+                    selectedImageID = nil
                   }) {
                     Image(systemName: "xmark.circle.fill")
                       .imageScale(.large)
@@ -161,7 +164,7 @@ extension CameraView: View {
           }
 
           HStack {
-            PhotosPicker(selection: $selectedItem, matching: .images) {
+            Button(action: { isShowPhotoPicker.toggle() }) {
               if let image = viewModel.lastImage {
                 Image(uiImage: image)
                   .resizable()
@@ -246,18 +249,15 @@ extension CameraView: View {
         Text("설정에서 카메라 접근 권한을 허용해주세요.")
       }
     )
+    .sheet(isPresented: $isShowPhotoPicker) {
+      PhotosPickerView(selectedImageID: $selectedImageID) { image in
+        selectedImage = image
+        isShowPhotoPicker = false
+      }
+      .presentationDetents([.medium, .large])
+    }
     .task {
       await viewModel.checkPermissions()
-    }
-    .onChange(of: selectedItem) { _, new in
-      Task {
-        guard
-          let data = try await new?.loadTransferable(type: Data.self),
-          let image = UIImage(data: data)
-        else { return }
-
-        selectedImage = image
-      }
     }
   }
 }
