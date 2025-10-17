@@ -37,7 +37,6 @@
 				Info.plist,
 				Presentation/DesignSystem/Components/.gitkeep.swift,
 				Presentation/ViewModels/Guiding/.gitkeep.swift,
-				Presentation/ViewModels/Reference/.gitkeep.swift,
 			);
 			target = 3D5E6BED2E7D687300A0E03A /* QueenCam */;
 		};
