@@ -21,6 +21,12 @@
 
 ### Changed
 
+- 스트리밍 시작 화질 .high -> .medium
+- .veryLow 화질 품질 조정
+- 프레임 딜레이 판정 기준 1/8초 -> 1/3초로 완화
+- 전송 FPS 고정 (30 frames / 1 second)
+- 현재 프레임 화질을 표시하는 디버그용 오버레이 추가
+
 ### Deprecated
 
 ### Removed

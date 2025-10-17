@@ -121,7 +121,11 @@ extension CameraView: View {
                   }
                 }
             } else {  // 모델
+              #if DEBUG
+              DebugPreviewPlayerView(previewModel: previewModel)
+              #else
               PreviewPlayerView(previewModel: previewModel)
+              #endif
             }
 
             if isShowGrid {
