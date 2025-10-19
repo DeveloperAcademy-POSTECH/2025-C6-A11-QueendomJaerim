@@ -8,7 +8,8 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
   private let isCameraPosition: AVCaptureDevice.Position
 
   private let completion: ((PhotoOuput?) -> Void)
-  private var stillImageData: Data?
+  private var lastThumbnailImage: UIImage?
+  private var lastStillImageData: Data?
   private var livePhotoMovieURL: URL?
 
   init(isCameraPosition: AVCaptureDevice.Position, completion: @escaping (PhotoOuput?) -> Void) {
@@ -42,14 +43,15 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
       }
     }
 
-    stillImageData = imageData
-    completion(.init(uiImage: image, data: stillImageData))
+    lastThumbnailImage = image
+    lastStillImageData = imageData
 
     let capturingLivePhoto =
       (photo.resolvedSettings.livePhotoMovieDimensions.width > 0 && photo.resolvedSettings.livePhotoMovieDimensions.height > 0)
 
     if !capturingLivePhoto {
-      saveToPhotoLibrary(image)
+      PhotoLiberaryHelpers.saveToPhotoLibrary(image)
+      completion(.basicPhoto(thumbnail: image, imageData: imageData))
     }
 
   }
@@ -68,45 +70,16 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
       return
     }
 
-    guard let stillImageData = stillImageData else { return }
+    guard let lastStillImageData = lastStillImageData,
+      let lastThumbnailImage = lastThumbnailImage,
+      let movieData = try? Data(contentsOf: outputFileURL)
+    else { return }
 
-    saveLivePhotoToPhotosLibrary(
-      stillImageData: stillImageData,
+    PhotoLiberaryHelpers.saveLivePhotoToPhotosLibrary(
+      stillImageData: lastStillImageData,
       livePhotoMovieURL: outputFileURL
     )
-  }
-}
 
-extension CameraDelegate {
-  private func saveToPhotoLibrary(_ image: UIImage) {
-    PHPhotoLibrary.shared().performChanges {
-      PHAssetChangeRequest.creationRequestForAsset(from: image)
-    } completionHandler: { success, error in
-      if success {
-        self.logger.info("Image saved to gallery.")
-      } else if error != nil {
-        self.logger.error("Error saving image to gallery")
-      }
-    }
-  }
-
-  private func saveLivePhotoToPhotosLibrary(stillImageData: Data, livePhotoMovieURL: URL) {
-    PHPhotoLibrary.shared().performChanges({
-      let creationRequest = PHAssetCreationRequest.forAsset()
-
-      creationRequest.addResource(with: .photo, data: stillImageData, options: nil)
-
-      let options = PHAssetResourceCreationOptions()
-      options.shouldMoveFile = true
-      creationRequest.addResource(with: .pairedVideo, fileURL: livePhotoMovieURL, options: options)
-
-    }) { success, error in
-      if success {
-        self.logger.info("Live Photo saved successfully.")
-      } else if let error {
-        self.logger.error("Failed to save Live Photo: \(error.localizedDescription)")
-      }
-
-    }
+    completion(.livePhoto(thumbnail: lastThumbnailImage, imageData: lastStillImageData, videoData: movieData))
   }
 }
