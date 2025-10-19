@@ -9,9 +9,12 @@ import SwiftUI
 
 /// 저장된 펜 가이드라인 조회(출력) 뷰 (Both)
 struct PenDisplayView: View {
-  var penViewModel = PenViewModel()
+  @Bindable var penViewModel: PenViewModel
   private var outerColor = Color.white
   private var innerColor = Color.orange
+  init(penViewModel: PenViewModel) {
+    self.penViewModel = penViewModel
+  }
   var body: some View {
     GeometryReader { _ in
       Canvas { context, _ in

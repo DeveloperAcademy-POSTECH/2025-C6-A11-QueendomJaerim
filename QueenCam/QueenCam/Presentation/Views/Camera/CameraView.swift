@@ -128,7 +128,6 @@ extension CameraView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                 .padding(12)
               PenDisplayView(penViewModel: penViewModel)
-
             } else {  // 모델
               #if DEBUG
               DebugPreviewPlayerView(previewModel: previewModel)
@@ -141,8 +140,11 @@ extension CameraView: View {
                 .padding(12)
 
               ZStack {
-                isPen ? AnyView(PenWriteView(penViewModel: penViewModel)) : AnyView(PenDisplayView(penViewModel: penViewModel))
-
+                if isPen {
+                  PenWriteView(penViewModel: penViewModel)
+                } else {
+                  PenDisplayView(penViewModel: penViewModel)
+                }
                 Button {
                   isPen.toggle()
                 } label: {

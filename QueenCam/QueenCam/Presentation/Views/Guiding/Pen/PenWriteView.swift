@@ -8,10 +8,13 @@ import SwiftUI
 
 /// 펜 가이드라인 작성 뷰 (only 모델)
 struct PenWriteView: View {
-  var penViewModel = PenViewModel()
+  @Bindable var penViewModel: PenViewModel
   @State private var tempPoints: [CGPoint] = []  // 현재 그리고 있는 선의 좌표(임시)
   private var outerColor = Color.white
   private var innerColor = Color.orange
+  init(penViewModel: PenViewModel) {
+    self.penViewModel = penViewModel
+  }
   var body: some View {
     VStack {
       GeometryReader { _ in
@@ -39,10 +42,11 @@ struct PenWriteView: View {
             .onChanged { value in
               tempPoints.append(value.location)
             }
-            .onEnded { value in
+            .onEnded { _ in
               guard !tempPoints.isEmpty else { return }
               penViewModel.strokes.append(Pen(points: tempPoints))
               tempPoints.removeAll()
+              penViewModel.redoStrokes.removeAll()
             }
         )
       }
@@ -59,8 +63,4 @@ struct PenWriteView: View {
       }
     }
   }
-}
-
-#Preview {
-  PenWriteView()
 }
