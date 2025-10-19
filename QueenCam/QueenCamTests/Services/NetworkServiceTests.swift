@@ -5,12 +5,13 @@
 //  Created by 임영택 on 10/13/25.
 //
 
-import Testing
 import Combine
 import Foundation
-@testable import QueenCam
-import WiFiAware
 import Network
+import Testing
+import WiFiAware
+
+@testable import QueenCam
 
 // MARK: - Mocks
 
@@ -250,20 +251,20 @@ struct NetworkServiceTests {
 
 // 테스트 및 미리보기 전용 데이터를 관리하기 위한 확장
 extension WAPairedDevice {
-    /// SwiftUI 미리보기 또는 테스트에서 사용할 수 있는 단일 샘플 데이터입니다.
-    static var sample: WAPairedDevice {
-        let jsonString = """
-        {
-            "id": 1001,
-            "name": "안방 조명",
-            "pairingInfo": {
-                "pairingName": "Smart Lamp 2",
-                "vendorName": "스마트홈",
-                "modelName": "LightBright v2"
-            }
-        }
-        """
-        let jsonData = jsonString.data(using: .utf8)!
-        return try! JSONDecoder().decode(WAPairedDevice.self, from: jsonData)
-    }
+  /// SwiftUI 미리보기 또는 테스트에서 사용할 수 있는 단일 샘플 데이터입니다.
+  static var sample: WAPairedDevice {
+    let jsonString = """
+      {
+          "id": 1001,
+          "name": "안방 조명",
+          "pairingInfo": {
+              "pairingName": "Smart Lamp 2",
+              "vendorName": "스마트홈",
+              "modelName": "LightBright v2"
+          }
+      }
+      """
+    let jsonData = jsonString.data(using: .utf8)!
+    return try! JSONDecoder().decode(WAPairedDevice.self, from: jsonData)
+  }
 }

@@ -10,7 +10,7 @@ import SwiftUI
 
 struct DebugPreviewPlayerView: View {
   let previewModel: PreviewModel
-  
+
   @State private var showingDebugInfo: Bool = false
 
   var body: some View {
@@ -26,7 +26,7 @@ struct DebugPreviewPlayerView: View {
             previewModel.frameDidRenderStablely()
           }
         )
-        
+
         if showingDebugInfo {
           DebugInfoOverlay(qualityLabel: previewModel.lastReceivedQuality?.displayLabel)
         }
@@ -41,7 +41,7 @@ struct DebugPreviewPlayerView: View {
 
 struct DebugInfoOverlay: View {
   let qualityLabel: String?
-  
+
   var body: some View {
     VStack {
       HStack {

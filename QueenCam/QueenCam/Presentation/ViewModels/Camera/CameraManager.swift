@@ -11,7 +11,7 @@ final class CameraManager: NSObject {
   private var videoDeviceInput: AVCaptureDeviceInput?
   private var audioDeviceInput: AVCaptureDeviceInput?
   private let photoOutput = AVCapturePhotoOutput()
-  
+
   /// 세션 초기화 여부를 표현하는 플래그 변수
   private(set) var isSessionConfigured: Bool = false
 
@@ -46,7 +46,7 @@ final class CameraManager: NSObject {
       print("capture session is already configured")
       return
     }
-    
+
     try await withCheckedThrowingContinuation { continuation in
       captureSessionQueue.async { [weak self] in
         guard let self else { return }
@@ -91,7 +91,8 @@ final class CameraManager: NSObject {
 
       if let device = videoDeviceInput?.device,
         device.isFlashAvailable,
-        photoOutput.supportedFlashModes.contains(flashMode) {
+        photoOutput.supportedFlashModes.contains(flashMode)
+      {
         photoSettings.flashMode = flashMode
       } else {
         photoSettings.flashMode = .off
@@ -328,7 +329,7 @@ extension CameraManager {
       }
       .store(in: &cancellables)
   }
-  
+
   func handlePhotoResultEvent(photoData: Data) {
     if let image = UIImage(data: photoData) {
       saveToPhotoLibrary(image)

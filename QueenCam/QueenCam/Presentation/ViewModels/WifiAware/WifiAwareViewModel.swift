@@ -32,7 +32,6 @@ final class WifiAwareViewModel {
   var connectedDeviceName: String? {
     connectedDevice?.pairingInfo?.pairingName
   }
-  
 
   var lastPingAt: Date?
 

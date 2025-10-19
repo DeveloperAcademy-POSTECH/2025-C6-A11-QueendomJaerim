@@ -25,13 +25,13 @@ struct MainView: View {
       NavigationStack(path: $router.path) {
         ZStack {
           CameraView(previewModel: previewModel, wifiAwareViewModel: wifiAwareViewModel)
-          .navigationDestination(for: Route.self) { route in
-            NavigationRouteView(
-              currentRoute: route,
-              wifiAwareViewModel: wifiAwareViewModel,
-              previewModel: previewModel
-            )
-          }
+            .navigationDestination(for: Route.self) { route in
+              NavigationRouteView(
+                currentRoute: route,
+                wifiAwareViewModel: wifiAwareViewModel,
+                previewModel: previewModel
+              )
+            }
         }
       }
     }

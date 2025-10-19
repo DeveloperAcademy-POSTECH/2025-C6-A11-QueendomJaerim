@@ -4,7 +4,7 @@ import SwiftUI
 struct PhotoDetailView {
   let asset: PHAsset
   let manager: PHCachingImageManager
-  let selectedImageID: String? // 외부에서 주입 받은 이미지 아이디
+  let selectedImageID: String?  // 외부에서 주입 받은 이미지 아이디
   let onTapConfirm: (UIImage) -> Void  // 완료시 상위로 전달
   let onTapClose: () -> Void
 
@@ -69,7 +69,7 @@ extension PhotoDetailView: View {
 
           Button(action: {
             if let image = detailImage,
-               detailSelectedImageID == asset.localIdentifier
+              detailSelectedImageID == asset.localIdentifier
             {
               onTapConfirm(image)
             }

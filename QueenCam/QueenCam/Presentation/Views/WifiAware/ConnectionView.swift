@@ -90,7 +90,7 @@ struct RoleSelectButton: View {
     @State var viewModel: WifiAwareViewModel = .init(
       networkService: NetworkService()
     )
-    
+
     @State var previewModel: PreviewModel = .init(
       previewCaptureService: PreviewCaptureService(),
       networkService: NetworkService()

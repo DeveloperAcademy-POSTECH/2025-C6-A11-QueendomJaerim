@@ -48,7 +48,7 @@ final class JPEGToPixelBufferDecoder {
       kCVPixelBufferHeightKey: height,
       kCVPixelBufferIOSurfacePropertiesKey: [:],
       kCVPixelBufferCGImageCompatibilityKey: true,
-      kCVPixelBufferCGBitmapContextCompatibilityKey: true
+      kCVPixelBufferCGBitmapContextCompatibilityKey: true,
     ]
     guard CVPixelBufferCreate(nil, width, height, pixelFormat, attrs as CFDictionary, &pixelBuffer) == kCVReturnSuccess,
       let pixelBuffer = pixelBuffer
