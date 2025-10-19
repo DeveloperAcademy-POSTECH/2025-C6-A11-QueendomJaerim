@@ -48,6 +48,7 @@ final class ReferenceViewModel {
       state = .delete
       image = nil
       selectedImageID = nil
+      state = .open
     }
   }
 }

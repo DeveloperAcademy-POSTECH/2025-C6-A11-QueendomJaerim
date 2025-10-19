@@ -9,7 +9,7 @@
 import SwiftUI
 
 struct OpenView: View {
-  @Bindable var viewModel: ReferenceViewModel
+  @Bindable var referenceViewModel: ReferenceViewModel
   @State private var showDelete: Bool = false
 
   let role: Role?
@@ -17,7 +17,7 @@ struct OpenView: View {
   var body: some View {
     ZStack(alignment: .topTrailing) {
       Group {
-        if let image = viewModel.image {
+        if let image = referenceViewModel.image {
           Image(uiImage: image)
             .resizable()
             .scaledToFill()
@@ -30,9 +30,10 @@ struct OpenView: View {
         }
       }
 
-      if showDelete {
+      if showDelete && (referenceViewModel.image != nil) {
         Button {
-          viewModel.onDelete()
+          referenceViewModel.onDelete()
+          showDelete = false
         } label: {
           Image(systemName: "x.circle")
             .imageScale(.large)
@@ -44,5 +45,5 @@ struct OpenView: View {
 }
 
 #Preview {
-  OpenView(viewModel: ReferenceViewModel(), role: .model)
+  OpenView(referenceViewModel: ReferenceViewModel(), role: .model)
 }
