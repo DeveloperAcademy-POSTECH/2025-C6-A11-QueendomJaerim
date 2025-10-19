@@ -121,7 +121,7 @@ extension CameraView: View {
                       }
                   }
                 }
-              ReferenceView(viewModel: referenceViewModel, role: .photographer)  //레퍼런스 - 삭제 불가능
+              ReferenceView(referenceViewModel: referenceViewModel, role: .photographer)  //레퍼런스 - 삭제 불가능
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                 .padding(12)
 
@@ -132,7 +132,7 @@ extension CameraView: View {
               PreviewPlayerView(previewModel: previewModel)
               #endif
               
-              ReferenceView(viewModel: referenceViewModel, role: .model) // 레퍼런스 - 삭제 가능
+              ReferenceView(referenceViewModel: referenceViewModel, role: .model) // 레퍼런스 - 삭제 가능
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                 .padding(12)
             }

@@ -14,31 +14,31 @@ enum ReferenceState: Equatable {
 }
 
 struct ReferenceView: View {
-  @Bindable var viewModel: ReferenceViewModel
+  @Bindable var referenceViewModel: ReferenceViewModel
   // 레퍼런스 임시 배치 위치 => 스프린트2,3에 수정 예정
   var top: CGFloat = 24
   var leading: CGFloat = 4
   let role: Role?
   var body: some View {
     Group {
-      switch viewModel.state {
+      switch referenceViewModel.state {
       case .open:  //레퍼런스 On
-        OpenView(viewModel: viewModel, role: role)
+        OpenView(referenceViewModel: referenceViewModel, role: role)
           .padding(.top, top)
           .padding(.leading, leading)
-          .offset(viewModel.dragOffset)
+          .offset(referenceViewModel.dragOffset)
           .highPriorityGesture(
             DragGesture(minimumDistance: 5)
               .onChanged {
-                viewModel.dragChanged($0)
+                referenceViewModel.dragChanged($0)
               }
               .onEnded { _ in
-                viewModel.dragEnded()
+                referenceViewModel.dragEnded()
               }
           )
       case .close:  // 레퍼런스 Off
         Button {
-          viewModel.unFold()
+          referenceViewModel.unFold()
         } label: {
           CloseView()
             .padding(.top, top)
