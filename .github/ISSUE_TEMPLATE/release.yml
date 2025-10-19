@@ -1,0 +1,58 @@
+name: "🎤 릴리즈"
+title: "🎤 [Release] 태스크 요약"
+description: 새로운 버전 릴리즈
+labels:
+  - release
+body:
+  - type: textarea
+    id: textarea-0
+    attributes:
+      label: 개요
+      description: 작업 개요를 작성합니다.
+    validations:
+      required: true
+  - type: input
+    id: input-1
+    attributes:
+      label: 버전
+      description: 버전을 지정합니다.
+      placeholder: "1.2.0"
+  - type: textarea
+    id: textarea-2
+    attributes:
+      label: 체크리스트
+      description: 작업헐 내용을 작성합니다.
+      value: |-
+        - [ ] 현재 오픈된 PR 중 릴리즈할 버전에 추가할 범위를 정하고, 릴리즈 일자 전에 develop에 모두 머지했다.
+        - [ ] 릴리즈 브랜치 (ex> `release/v0.0.0`)를 생성했다.
+        - [ ] 생성한 릴리즈 브랜치로 체크아웃 한 후 커밋, 푸시했다.
+            - [ ] Xcode 프로젝트의 빌드 넘버를 1 올렸다. (커밋 메시지 형식: `[Chore] release: 빌드 넘버 증가`)
+            - [ ] CHAGNELOG.md에 릴리즈할 버전으로 새로운 섹션을 만들고, Unrelease 섹션의 작업 내용을 옮겨 업데이트했다. (커밋 메시지 형식: `[Docs] release: v0.0.0 CHAGNELOG.md`)
+        - [ ] 릴리즈 브랜치 (ex> `release/v0.0.0`)를 main에 병합하는 PR을 생성했다. (PR 제목 형식: `[Release] v0.0.0`)
+        - [ ] 릴리즈 브랜치를 다시 develop으로 병합하는 PR을 생성했다. (PR 제목 형식: `[Chore] Merge back v0.0.0`)
+        - [ ] 두 PR을 병합한 후, 다음 작업을 수행했다.
+            - [ ] main 브랜치로 체크아웃하여 현재 버전으로 태그를 생성했다. (태그 형식: `v0.0.0`)
+            - [ ] Xcode로 프로젝트를 열어 배포했다.
+    validations:
+      required: true
+  - type: input
+    id: input-3
+    attributes:
+      label: 릴리즈 일자
+      description: 릴리즈 일자를 지정합니다.
+      placeholder: "2025-10-01 수"
+  - type: textarea
+    id: textarea-4
+    attributes:
+      label: 노션링크
+      value: 없음
+  - type: textarea
+    id: textarea-5
+    attributes:
+      label: 비고
+      value: 없음
+  - type: textarea
+    id: textarea-6
+    attributes:
+      label: 참조자
+      value: cc. @Jeongin-c (PM)
