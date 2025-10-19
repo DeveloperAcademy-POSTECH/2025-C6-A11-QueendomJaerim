@@ -18,7 +18,7 @@ nonisolated enum PreviewFrameQuality: Sendable, Codable {
     case .high: return 1.0
     case .medium: return 0.7
     case .low: return 0.5
-    case .veryLow: return 0.1
+    case .veryLow: return 0.4
     }
   }
 
@@ -27,7 +27,7 @@ nonisolated enum PreviewFrameQuality: Sendable, Codable {
     case .high:   return 0.8
     case .medium: return 0.4
     case .low:    return 0.2
-    case .veryLow: return 0.1
+    case .veryLow: return 0.2
     }
   }
 
@@ -36,7 +36,7 @@ nonisolated enum PreviewFrameQuality: Sendable, Codable {
     case .high:   return "High"
     case .medium: return "Medium"
     case .low:    return "Low"
-    case .veryLow:    return "Low"
+    case .veryLow:    return "Very Low"
     }
   }
 
