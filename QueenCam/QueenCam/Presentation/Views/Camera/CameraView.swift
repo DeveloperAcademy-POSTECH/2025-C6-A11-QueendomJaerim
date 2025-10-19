@@ -27,6 +27,9 @@ struct CameraView {
   @State private var isShowPhotoPicker = false
   @State private var referenceViewModel = ReferenceViewModel()
 
+  @State private var isPen: Bool = false
+  @State private var penViewModel = PenViewModel()
+
 }
 
 extension CameraView {
@@ -124,6 +127,7 @@ extension CameraView: View {
               ReferenceView(referenceViewModel: referenceViewModel, role: .photographer)  //레퍼런스 - 삭제 불가능
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                 .padding(12)
+              PenDisplayView(penViewModel: penViewModel)
 
             } else {  // 모델
               #if DEBUG
@@ -131,11 +135,26 @@ extension CameraView: View {
               #else
               PreviewPlayerView(previewModel: previewModel)
               #endif
-              
-              ReferenceView(referenceViewModel: referenceViewModel, role: .model) // 레퍼런스 - 삭제 가능
+
+              ReferenceView(referenceViewModel: referenceViewModel, role: .model)  // 레퍼런스 - 삭제 가능
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                 .padding(12)
-              PenWriteView()
+
+              ZStack {
+                isPen ? AnyView(PenWriteView(penViewModel: penViewModel)) : AnyView(PenDisplayView(penViewModel: penViewModel))
+
+                Button {
+                  isPen.toggle()
+                } label: {
+                  Image(systemName: "pencil")
+                    .font(.system(size: 25, weight: .semibold))
+                    .foregroundStyle(.black)
+                    .frame(width: 60, height: 60)
+                    .background(.ultraThinMaterial)
+                    .clipShape(Circle())
+                    .shadow(color: .black.opacity(0.2), radius: 5, x: 0, y: 2)
+                }
+              }
             }
             if isShowGrid {
               GridView()
