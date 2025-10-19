@@ -30,9 +30,10 @@ struct OpenView: View {
         }
       }
 
-      if showDelete || (referenceViewModel.image != nil) {
+      if showDelete && (referenceViewModel.image != nil) {
         Button {
           referenceViewModel.onDelete()
+          showDelete = false
         } label: {
           Image(systemName: "x.circle")
             .imageScale(.large)
