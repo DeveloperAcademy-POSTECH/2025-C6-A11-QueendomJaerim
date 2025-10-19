@@ -25,6 +25,7 @@ struct CameraView {
   @State private var focusLocation: CGPoint = .zero
 
   @State private var isShowPhotoPicker = false
+  @State private var referenceViewModel = ReferenceViewModel()
 
 }
 
@@ -120,35 +121,26 @@ extension CameraView: View {
                       }
                   }
                 }
+              ReferenceView(viewModel: referenceViewModel, role: .photographer)  //레퍼런스 - 삭제 불가능
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                .padding(12)
+
             } else {  // 모델
               #if DEBUG
               DebugPreviewPlayerView(previewModel: previewModel)
               #else
               PreviewPlayerView(previewModel: previewModel)
               #endif
+              
+              ReferenceView(viewModel: referenceViewModel, role: .model) // 레퍼런스 - 삭제 가능
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                .padding(12)
             }
-
             if isShowGrid {
               GridView()
                 .aspectRatio(3 / 4, contentMode: .fit)
             }
 
-            if let image = selectedImage {
-              Image(uiImage: image)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(height: 250)
-                .clipShape(.rect(cornerRadius: 16))
-                .overlay(alignment: .topTrailing) {
-                  Button(action: {
-                    selectedImage = nil
-                    selectedImageID = nil
-                  }) {
-                    Image(systemName: "xmark.circle.fill")
-                      .imageScale(.large)
-                  }
-                }
-            }
           }
 
           if !isFront {
@@ -256,6 +248,7 @@ extension CameraView: View {
     .sheet(isPresented: $isShowPhotoPicker) {
       PhotosPickerView(selectedImageID: $selectedImageID) { image in
         selectedImage = image
+        referenceViewModel.image = image
         isShowPhotoPicker = false
       }
       .presentationDetents([.medium, .large])
