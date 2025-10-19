@@ -1,12 +1,13 @@
 //
-//  PenView.swift
+//  PenWriteView.swift
 //  QueenCam
 //
 //  Created by Bora Yun on 10/15/25.
-/** 펜 가이드라인 작성 뷰 (only 모델) */
+
 
 import SwiftUI
 
+/** 펜 가이드라인 작성 뷰 (only 모델) */
 struct PenWriteView: View {
   var penViewModel = PenViewModel()
   @State private var tempPoints: [CGPoint] = []  // 현재 그리고 있는 선의 좌표(임시)

@@ -41,11 +41,12 @@ struct GuidingToolBarView: View {
             .font(.system(size: 26, weight: .semibold))
             .foregroundStyle(.black)
         }
-      }.padding(.horizontal, 24)
-        .padding(.vertical, 16)
-        .background(.ultraThinMaterial)
-        .clipShape(Capsule())
-        .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 2)
+      }
+      .padding(.horizontal, 24)
+      .padding(.vertical, 16)
+      .background(.ultraThinMaterial)
+      .clipShape(Capsule())
+      .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 2)
     }
   }
 }
