@@ -25,7 +25,7 @@ struct CameraView {
   @State private var focusLocation: CGPoint = .zero
 
   @State private var isShowPhotoPicker = false
-  @State private var referenceVM = ReferenceViewModel()
+  @State private var referenceViewModel = ReferenceViewModel()
 
 }
 
@@ -121,20 +121,20 @@ extension CameraView: View {
                       }
                   }
                 }
-              ReferenceView(viewModel: referenceVM, role: .photographer)  //레퍼런스 - 삭제 불가능
+              ReferenceView(viewModel: referenceViewModel, role: .photographer)  //레퍼런스 - 삭제 불가능
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                 .padding(12)
 
             } else {  // 모델
               #if DEBUG
               DebugPreviewPlayerView(previewModel: previewModel)
-
-              ReferenceView(viewModel: referenceVM, role: .model)  //레퍼런스 - 삭제 가능
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-                .padding(12)
               #else
               PreviewPlayerView(previewModel: previewModel)
               #endif
+              
+              ReferenceView(viewModel: referenceViewModel, role: .model) // 레퍼런스 - 삭제 가능
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                .padding(12)
             }
             if isShowGrid {
               GridView()
@@ -248,7 +248,7 @@ extension CameraView: View {
     .sheet(isPresented: $isShowPhotoPicker) {
       PhotosPickerView(selectedImageID: $selectedImageID) { image in
         selectedImage = image
-        referenceVM.image = image
+        referenceViewModel.image = image
         isShowPhotoPicker = false
       }
       .presentationDetents([.medium, .large])
