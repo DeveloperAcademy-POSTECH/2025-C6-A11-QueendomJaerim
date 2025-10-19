@@ -29,8 +29,8 @@ struct OpenView: View {
             }
         }
       }
-      
-      if showDelete || (referenceViewModel.image != nil){
+
+      if showDelete || (referenceViewModel.image != nil) {
         Button {
           referenceViewModel.onDelete()
         } label: {

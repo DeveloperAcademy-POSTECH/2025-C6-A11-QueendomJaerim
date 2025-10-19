@@ -22,7 +22,7 @@ struct ReferenceView: View {
   var body: some View {
     Group {
       switch referenceViewModel.state {
-      case .open:  //레퍼런스 On
+      case .open:  // 레퍼런스 On
         OpenView(referenceViewModel: referenceViewModel, role: role)
           .padding(.top, top)
           .padding(.leading, leading)
