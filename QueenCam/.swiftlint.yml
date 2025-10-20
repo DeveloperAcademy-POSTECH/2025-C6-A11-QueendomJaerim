@@ -1,0 +1,88 @@
+included:
+  - QueenCam
+  - QueenCamTests
+  - QueenCamUITests
+
+excluded:
+  - Carthage
+  - Pods
+  - DerivedData
+  - .build
+  - .swiftpm
+
+reporter: xcode
+
+# ------------------------------------------------------------
+# 기본 규칙
+# ------------------------------------------------------------
+force_cast: warning
+force_try: warning
+
+line_length:
+  warning: 130
+  error: 150
+  ignores_urls: true
+  ignores_comments: true
+
+file_length:
+  warning: 500
+  error: 1200
+
+type_body_length:
+  - 300
+  - 400
+
+function_body_length:
+  - 60
+  - 100
+
+identifier_name:
+  min_length:
+    error: 3
+  excluded:
+    - id
+    - URL
+    - x
+    - y
+    - dx
+    - dy
+    - i
+
+type_name:
+  excluded:
+    - ".*_Preview$"
+
+# ------------------------------------------------------------
+# opt-in
+# ------------------------------------------------------------
+opt_in_rules:
+  - duplicate_imports
+  - empty_count
+  - implicit_return
+  - trailing_closure
+  - indentation_width
+
+indentation_width:
+  indentation_width: 2
+  include_comments: false
+
+# ------------------------------------------------------------
+# analyzer
+# ------------------------------------------------------------
+
+analyzer_rules:
+  - unused_import
+
+# ------------------------------------------------------------
+# 커스텀 규칙
+# ------------------------------------------------------------
+custom_rules:
+  no_print_in_production:
+    included: "QueenCam"
+    name: "Avoid print()"
+    regex: "\\bprint\\s*\\("
+    message: "print 대신 Logger를 사용하세요."
+    severity: warning
+    excluded:
+      - "QueenCamTests"
+      - "QueenCamUITests"

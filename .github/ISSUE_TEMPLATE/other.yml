@@ -1,0 +1,57 @@
+name: "🎛️ 기타 작업"
+title: "🎛️ [Other] 태스크 요약"
+description: 문서 작성, 테스트 추가 등 기타 작업
+labels:
+  - other
+body:
+  - type: textarea
+    id: textarea-0
+    attributes:
+      label: 개요
+      description: 작업 개요를 작성합니다.
+    validations:
+      required: true
+  - type: dropdown
+    id: dropdown-1
+    attributes:
+      label: 작업 유형
+      description: 작업 유형을 작성합니다.
+      options:
+        - 문서 작업
+        - 테스트 추가
+        - CI/CD
+        - 기타
+    validations:
+      required: true
+  - type: textarea
+    id: textarea-2
+    attributes:
+      label: 작업내용
+      description: 작업 내용을 작성합니다.
+      value: |-
+        - [ ] 작업 1
+        - [ ] 작업 2
+        - [ ] 작업 3
+    validations:
+      required: true
+  - type: input
+    id: input-3
+    attributes:
+      label: 작업기한
+      description: 작업 기한을 지정합니다.
+      placeholder: "2025-10-01 수"
+  - type: textarea
+    id: textarea-4
+    attributes:
+      label: 노션링크
+      value: 없음
+  - type: textarea
+    id: textarea-5
+    attributes:
+      label: 비고
+      value: 없음
+  - type: textarea
+    id: textarea-6
+    attributes:
+      label: 참조자
+      value: cc. @Jeongin-c (PM)

@@ -1,0 +1,83 @@
+name: "🛫 개선 작업"
+title: "🛫 [Enhancement] 태스크 요약"
+description: 리팩토링, 구조 변경 등 내부 개선 작업
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: textarea-0
+    attributes:
+      label: 개요
+      description: 문제 개요를 작성합니다.
+      value: |+
+        ### 변경할 부분
+
+
+        ### 개선 이유와 기대 효과
+
+    validations:
+      required: true
+  - type: dropdown
+    id: dropdown-1
+    attributes:
+      label: 영역
+      description: 관련 영역을 작성합니다.
+      options:
+        - camera
+        - preview
+        - guiding
+        - other
+    validations:
+      required: true
+  - type: textarea
+    id: textarea-2
+    attributes:
+      label: AS-IS
+      description: 현재 구현 내용
+      value: |-
+        - 현재 구현된 내용 1
+        - 현재 구현된 내용 2
+        - 현재 구현된 내용 3
+    validations:
+      required: true
+  - type: textarea
+    id: textarea-3
+    attributes:
+      label: TO-BE
+      description: 변경할 부분
+      value: |-
+        - [ ] 변경할 부분 1
+        - [ ] 변경할 부분 2
+        - [ ] 변경할 부분 3
+    validations:
+      required: true
+  - type: textarea
+    id: textarea-4
+    attributes:
+      label: 작업계획
+      value: |-
+        - [ ] 작업 1
+        - [ ] 작업 2
+        - [ ] 작업 3
+    validations:
+      required: true
+  - type: input
+    id: input-5
+    attributes:
+      label: 작업기한
+      placeholder: "2025-10-01 수"
+  - type: input
+    id: input-6
+    attributes:
+      label: 노션링크
+      value: 없음
+  - type: textarea
+    id: textarea-7
+    attributes:
+      label: 비고
+      value: 없음
+  - type: textarea
+    id: textarea-8
+    attributes:
+      label: 참조자
+      value: cc. @Jeongin-c (PM)

@@ -1,0 +1,96 @@
+name: "🐛 버그 해결"
+title: "🐛 [Bug] 태스크 요약"
+description: 버그 레포트 및 해결 계획
+labels:
+  - bug
+body:
+  - type: textarea
+    id: textarea-0
+    attributes:
+      label: 개요
+      description: 문제 개요를 작성합니다.
+    validations:
+      required: true
+  - type: dropdown
+    id: dropdown-1
+    attributes:
+      label: 영역
+      description: 관련 영역을 작성합니다.
+      options:
+        - camera
+        - preview
+        - guiding
+        - other
+    validations:
+      required: true
+  - type: textarea
+    id: textarea-2
+    attributes:
+      label: 재현시나리오
+      description: 문제를 재현할 수 있는 시나리오를 작성합니다.
+      value: |-
+        1. 단계 1
+        2. 단계 2
+        3. 단계 3
+    validations:
+      required: true
+  - type: input
+    id: input-3
+    attributes:
+      label: 재현빈도
+      description: 재현 빈도를 작성합니다.
+      value: 10회 시도 중 (00)회 재현됨
+    validations:
+      required: true
+  - type: input
+    id: input-4
+    attributes:
+      label: OS버전
+      value: iOS 26
+    validations:
+      required: false
+  - type: input
+    id: input-5
+    attributes:
+      label: 기기모델
+      placeholder: iPhone 17
+  - type: textarea
+    id: textarea-6
+    attributes:
+      label: 문제분석
+      value: |-
+        - 분석 내용 1
+        - 분석 내용 2
+        - 분석 내용 3
+    validations:
+      required: true
+  - type: textarea
+    id: textarea-7
+    attributes:
+      label: 해결계획
+      value: |-
+        - [ ] 작업 1
+        - [ ] 작업 2
+        - [ ] 작업 3
+    validations:
+      required: true
+  - type: input
+    id: input-8
+    attributes:
+      label: 작업기한
+      placeholder: "2025-10-01 수"
+  - type: input
+    id: input-9
+    attributes:
+      label: 노션링크
+      value: 없음
+  - type: textarea
+    id: textarea-10
+    attributes:
+      label: 비고
+      value: 없음
+  - type: textarea
+    id: textarea-11
+    attributes:
+      label: 참조자
+      value: cc. @Jeongin-c (PM)
