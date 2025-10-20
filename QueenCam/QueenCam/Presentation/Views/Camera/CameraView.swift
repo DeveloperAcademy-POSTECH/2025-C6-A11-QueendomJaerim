@@ -130,6 +130,7 @@ extension CameraView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                 .padding(12)
               PenDisplayView(penViewModel: penViewModel)
+              FrameDisplayView(frameViewModel: frameViewModel)
             } else {  // 모델
               #if DEBUG
               DebugPreviewPlayerView(previewModel: previewModel)
