@@ -13,7 +13,6 @@ import UIKit
 @Observable
 final class ReferenceViewModel {
   var image: UIImage?  // 선택된 레퍼런스 사진
-  var selectedImageID: String?
 
   var state: ReferenceState = .open
   var dragOffset: CGSize = .zero  // 드래그 중 임시편차
@@ -47,7 +46,6 @@ final class ReferenceViewModel {
     withAnimation(.snappy) {
       state = .delete
       image = nil
-      selectedImageID = nil
       state = .open
     }
   }
