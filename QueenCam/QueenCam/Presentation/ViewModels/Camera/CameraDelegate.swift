@@ -76,11 +76,4 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
 
     completion(.livePhoto(thumbnail: lastThumbnailImage, imageData: lastStillImageData, videoData: movieData))
   }
-  
-  
-  func photoOutput(_ output: AVCapturePhotoOutput, willCapturePhotoFor resolvedSettings: AVCaptureResolvedPhotoSettings) {
-      // dispose system shutter sound
-      AudioServicesDisposeSystemSoundID(1108)
-  }
-
 }
