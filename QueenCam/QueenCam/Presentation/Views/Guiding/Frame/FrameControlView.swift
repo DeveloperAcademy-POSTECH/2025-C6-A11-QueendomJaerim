@@ -44,7 +44,8 @@ struct FrameControlView: View {
           .onTapGesture {
             frameViewModel.selectFrame(nil)
           }
-        }.background(.clear)
+        }
+        .background(.clear)
 
         HStack(spacing: 28) {
           Button {
