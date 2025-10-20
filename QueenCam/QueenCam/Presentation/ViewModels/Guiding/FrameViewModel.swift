@@ -13,8 +13,6 @@ final class FrameViewModel {
   var frames: [Frame] = []
   var selectedFrameID: UUID? = nil
 
-  func allFrames() -> [Frame] { frames }
-
   //MARK: - 프레임 추가
   let maxFrames = 5  //프레임은 최대 5개까지 혀용
   private let colors: [Color] = [

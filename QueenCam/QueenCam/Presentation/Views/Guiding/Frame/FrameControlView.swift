@@ -16,7 +16,7 @@ struct FrameControlView: View {
         // MARK: - 프레임 생성 및 이동
         GeometryReader { geo in
           ZStack {
-            ForEach(frameViewModel.allFrames()) { frame in
+            ForEach(frameViewModel.frames) { frame in
               FrameLayerView(
                 frame: frame,
                 containerSize: geo.size,
@@ -59,7 +59,7 @@ struct FrameControlView: View {
               .clipShape(Circle())
               .shadow(color: .black.opacity(0.2), radius: 5, x: 0, y: 2)
           }
-          .disabled(frameViewModel.allFrames().count >= frameViewModel.maxFrames)
+          .disabled(frameViewModel.frames.count >= frameViewModel.maxFrames)
 
           // MARK: - GuidingToolBar
           Button {

@@ -14,7 +14,7 @@ struct FrameDisplayView: View {
   }
   var body: some View {
     GeometryReader { geo in
-      ForEach(frameViewModel.allFrames()) { frame in
+      ForEach(frameViewModel.frames) { frame in
         let rect = frame.rect
         let containerSize = geo.size
         let newWidth = rect.width * containerSize.width
