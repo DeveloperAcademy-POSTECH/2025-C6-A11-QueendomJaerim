@@ -16,8 +16,8 @@ enum ReferenceState: Equatable {
 struct ReferenceView: View {
   @Bindable var referenceViewModel: ReferenceViewModel
   // 레퍼런스 임시 배치 위치 => 스프린트2,3에 수정 예정
-  var top: CGFloat = 24
-  var leading: CGFloat = 4
+  var top: CGFloat = 8
+  var leading: CGFloat = 0
   let role: Role?
   var body: some View {
     Group {
@@ -42,6 +42,7 @@ struct ReferenceView: View {
         } label: {
           CloseView()
             .padding(.top, top)
+            .padding(.leading, -8 )
         }
       case .delete:  // 레퍼런스 삭제
         EmptyView()
