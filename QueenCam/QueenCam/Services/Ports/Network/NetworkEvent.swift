@@ -29,6 +29,9 @@ enum NetworkEvent: Sendable {
 
   /// 등록된 레퍼런스 (모델 -> 작가)
   case referenceImage(ReferenceImageEventType)
+
+  /// 프레임 이벤트
+  case frameUpdated(FrameEventType)
 }
 
 nonisolated extension NetworkEvent: Codable {
@@ -42,4 +45,35 @@ enum RenderingState: Codable, Sendable {
 enum ReferenceImageEventType: Codable, Sendable {
   case remove
   case register(imageData: Data)
+}
+
+enum FrameEventType: Codable, Sendable {
+  case add(FramePayload)
+  case replace(FramePayload)
+  case delete(id: UUID)
+  case deleteAll
+
+  struct FramePayload: Codable, Sendable {
+    let id: UUID
+    let origin: PointPayload
+    let size: SizePayload
+    let color: ColorPayload
+
+    struct PointPayload: Codable, Sendable {
+      let x: Double
+      let y: Double
+    }
+
+    struct SizePayload: Codable, Sendable {
+      let width: Double
+      let height: Double
+    }
+
+    struct ColorPayload: Codable, Sendable {
+      let red: Double
+      let green: Double
+      let blue: Double
+      let opacity: Double
+    }
+  }
 }
