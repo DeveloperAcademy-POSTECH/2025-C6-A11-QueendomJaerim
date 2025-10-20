@@ -12,40 +12,43 @@ struct FrameControlView: View {
 
   var body: some View {
     ZStack {
-      VStack {
-        // MARK: - 프레임 생성 및 이동
-        GeometryReader { geo in
-          ZStack {
-            ForEach(frameViewModel.frames) { frame in
-              FrameLayerView(
-                frame: frame,
-                containerSize: geo.size,
-                onDrag: {
-                  start,
-                  translation in
-                  frameViewModel.moveFrame(
-                    id: frame.id,
-                    start: start,
-                    translation: translation,
-                    container: geo.size
-                  )
-                },
-                onTap: {
-                  frameViewModel.selectFrame(frame.id)
-                },
-                onDelete: {
-                  frameViewModel.remove(frame.id)
-                },
-                isSelected: frameViewModel.isSelected(frame.id)
-              )
-            }
-          }
-          .contentShape(Rectangle())
-          .onTapGesture {
-            frameViewModel.selectFrame(nil)
+      // MARK: - 프레임 생성 및 이동
+      GeometryReader { geo in
+        ZStack {
+          ForEach(frameViewModel.frames) { frame in
+            FrameLayerView(
+              frame: frame,
+              containerSize: geo.size,
+              onDrag: {
+                start,
+                translation in
+                frameViewModel.moveFrame(
+                  id: frame.id,
+                  start: start,
+                  translation: translation,
+                  container: geo.size
+                )
+              },
+              onTap: {
+                frameViewModel.selectFrame(frame.id)
+              },
+              onDelete: {
+                frameViewModel.remove(frame.id)
+              },
+              isSelected: frameViewModel.isSelected(frame.id)
+            )
           }
         }
-        .background(.clear)
+        .contentShape(Rectangle())
+        .onTapGesture {
+          frameViewModel.selectFrame(nil)
+        }
+      }
+      .background(.clear)
+
+      // MARK: Toolbar
+      VStack {
+        Spacer()
 
         HStack(spacing: 28) {
           Button {

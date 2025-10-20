@@ -5,6 +5,7 @@
 //  Created by Bora Yun on 10/16/25.
 //
 
+import Combine
 import Foundation
 import SwiftUI
 
@@ -23,6 +24,18 @@ final class FrameViewModel {
     .purple.opacity(0.5),
   ]
 
+  // MARK: - 네트워크
+  let networkService: NetworkServiceProtocol
+  var cancellables: Set<AnyCancellable> = []
+
+  init(
+    networkService: NetworkServiceProtocol = DependencyContainer.defaultContainer.networkService
+  ) {
+    self.networkService = networkService
+
+    bind()
+  }
+
   func addFrame(
     at origin: CGPoint,
     size: CGSize = .init(width: 0.3, height: 0.4)
@@ -34,7 +47,11 @@ final class FrameViewModel {
 
     let rect = CGRect(origin: .init(x: newX, y: newY), size: size)
     let color = colors[frames.count % colors.count]
-    frames.append(Frame(rect: rect, color: color))
+    let frame = Frame(rect: rect, color: color)
+    frames.append(frame)
+
+    // Send to network
+    sendFrameCommand(command: .add(frame: frame))
   }
 
   //MARK: - 프레임 선택
@@ -69,14 +86,97 @@ final class FrameViewModel {
     new.origin.y = min(max(new.origin.y, 0), 1 - new.size.height)
 
     frames[idx].rect = new
+
+    // Send to network
+    sendFrameCommand(command: .move(frame: frames[idx]))
   }
 
   // MARK: - 프레임의 삭제 및 복구
   func remove(_ id: UUID) {
     frames.removeAll { $0.id == id }
+
+    // Send to network
+    sendFrameCommand(command: .remove(id: id))
   }
+
   func removeAll() {
     frames.removeAll()
     selectedFrameID = nil
+
+    // Send to network
+    sendFrameCommand(command: .removeAll)
   }
+}
+
+// MARK: Receiving network event
+extension FrameViewModel {
+  private func bind() {
+    networkService.networkEventPublisher
+      .receive(on: RunLoop.main)
+      .compactMap { $0 }
+      .sink { [weak self] event in
+        switch event {
+        case .frameUpdated(let eventType):
+          self?.handleFrameEvent(eventType: eventType)
+        default: break
+        }
+      }
+      .store(in: &cancellables)
+  }
+
+  private func handleFrameEvent(eventType: FrameEventType) {
+    switch eventType {
+    case .add(let framePayload):
+      let frame = FrameMapper.convert(payload: framePayload)
+
+      if !frames.contains(where: { $0.id == frame.id }) {
+        frames.append(frame)
+      }
+    case .replace(let framePayload):
+      let replaceTo = FrameMapper.convert(payload: framePayload)
+      let targetId = replaceTo.id
+
+      frames = frames.map { frame in
+        if frame.id == targetId {
+          return replaceTo
+        }
+
+        return frame
+      }
+    case .delete(let id):
+      frames.removeAll { $0.id == id } // remove나 removeAll 함수를 재사용하지 말 것. 네트워크로 전파하며 무한 루프 시작됨.
+    case .deleteAll:
+      frames.removeAll()
+    }
+  }
+}
+
+// MARK: Sending network event
+extension FrameViewModel {
+  private func sendFrameCommand(command: FrameNetworkCommand) {
+    var sendingEventType: FrameEventType
+
+    switch command {
+    case .add(let frame):
+      sendingEventType = .add(FrameMapper.convert(frame: frame))
+    case .move(let frame):
+      sendingEventType = .replace(FrameMapper.convert(frame: frame))
+    case .remove(let id):
+      sendingEventType = .delete(id: id)
+    case .removeAll:
+      sendingEventType = .deleteAll
+    }
+
+    Task.detached { [weak self] in
+      guard let self else { return }
+      await self.networkService.send(for: .frameUpdated(sendingEventType))
+    }
+  }
+}
+
+private enum FrameNetworkCommand {
+  case add(frame: Frame)
+  case move(frame: Frame)
+  case remove(id: UUID)
+  case removeAll
 }

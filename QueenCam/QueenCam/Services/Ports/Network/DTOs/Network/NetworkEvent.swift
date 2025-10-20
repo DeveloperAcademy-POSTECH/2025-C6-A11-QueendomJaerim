@@ -29,17 +29,10 @@ enum NetworkEvent: Sendable {
 
   /// 등록된 레퍼런스 (모델 -> 작가)
   case referenceImage(ReferenceImageEventType)
+
+  /// 프레임 이벤트
+  case frameUpdated(FrameEventType)
 }
 
 nonisolated extension NetworkEvent: Codable {
-}
-
-enum RenderingState: Codable, Sendable {
-  case unstable
-  case stable
-}
-
-enum ReferenceImageEventType: Codable, Sendable {
-  case remove
-  case register(imageData: Data)
 }
