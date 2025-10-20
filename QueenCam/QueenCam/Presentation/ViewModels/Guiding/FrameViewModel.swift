@@ -5,9 +5,9 @@
 //  Created by Bora Yun on 10/16/25.
 //
 
+import Combine
 import Foundation
 import SwiftUI
-import Combine
 
 @Observable
 final class FrameViewModel {
@@ -23,11 +23,11 @@ final class FrameViewModel {
     .orange.opacity(0.5),
     .purple.opacity(0.5),
   ]
-  
+
   // MARK: - 네트워크
   let networkService: NetworkServiceProtocol
   var cancellables: Set<AnyCancellable> = []
-  
+
   init(
     networkService: NetworkServiceProtocol = DependencyContainer.defaultContainer.networkService
   ) {
@@ -49,7 +49,7 @@ final class FrameViewModel {
     let color = colors[frames.count % colors.count]
     let frame = Frame(rect: rect, color: color)
     frames.append(frame)
-    
+
     // Send to network
     sendFrameCommand(command: .add(frame: frame))
   }
@@ -86,7 +86,7 @@ final class FrameViewModel {
     new.origin.y = min(max(new.origin.y, 0), 1 - new.size.height)
 
     frames[idx].rect = new
-    
+
     // Send to network
     sendFrameCommand(command: .move(frame: frames[idx]))
   }
@@ -94,15 +94,15 @@ final class FrameViewModel {
   // MARK: - 프레임의 삭제 및 복구
   func remove(_ id: UUID) {
     frames.removeAll { $0.id == id }
-    
+
     // Send to network
     sendFrameCommand(command: .remove(id: id))
   }
-  
+
   func removeAll() {
     frames.removeAll()
     selectedFrameID = nil
-    
+
     // Send to network
     sendFrameCommand(command: .removeAll)
   }
@@ -123,25 +123,24 @@ extension FrameViewModel {
       }
       .store(in: &cancellables)
   }
-  
+
   private func handleFrameEvent(eventType: FrameEventType) {
     switch eventType {
     case .add(let framePayload):
       let frame = FrameMapper.convert(payload: framePayload)
-      
+
       if !frames.contains(where: { $0.id == frame.id }) {
         frames.append(frame)
-        print("!!!! Frame 추가됨!!!! \(frame.id)")
       }
     case .replace(let framePayload):
       let replaceTo = FrameMapper.convert(payload: framePayload)
       let targetId = replaceTo.id
-      
+
       frames = frames.map { frame in
         if frame.id == targetId {
           return replaceTo
         }
-        
+
         return frame
       }
     case .delete(let id):
@@ -156,7 +155,7 @@ extension FrameViewModel {
 extension FrameViewModel {
   private func sendFrameCommand(command: FrameNetworkCommand) {
     var sendingEventType: FrameEventType
-    
+
     switch command {
     case .add(let frame):
       sendingEventType = .add(FrameMapper.convert(frame: frame))
@@ -167,7 +166,7 @@ extension FrameViewModel {
     case .removeAll:
       sendingEventType = .deleteAll
     }
-    
+
     Task.detached { [weak self] in
       guard let self else { return }
       await self.networkService.send(for: .frameUpdated(sendingEventType))
