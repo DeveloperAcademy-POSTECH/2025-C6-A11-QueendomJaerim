@@ -35,13 +35,13 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
       completion(nil)
       return
     }
-    
+
     if isCameraPosition == .front {
       if let cgImage = image.cgImage {
         image = UIImage(cgImage: cgImage, scale: image.scale, orientation: .leftMirrored)
       }
     }
-    
+
     stillImageData = imageData
     completion(.init(uiImage: image, data: stillImageData))
 

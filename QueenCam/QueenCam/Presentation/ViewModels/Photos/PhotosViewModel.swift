@@ -1,6 +1,6 @@
 import Foundation
-import UIKit
 import Photos
+import UIKit
 
 @Observable
 final class PhotosViewModel {
@@ -47,17 +47,18 @@ extension PhotosViewModel {
     self.fetchResult = result
     self.assets = tmp
   }
-  
+
   func startImageCaching(scale: CGFloat) {
     guard !assets.isEmpty else { return }
-    
+
     cachingManager.startCachingImages(
       for: assets,
       targetSize: .init(width: 120 * scale, height: 120 * scale),
       contentMode: .aspectFit,
-      options: .none)
+      options: .none
+    )
   }
-  
+
   func stopImageCaching() {
     cachingManager.stopCachingImagesForAllAssets()
   }

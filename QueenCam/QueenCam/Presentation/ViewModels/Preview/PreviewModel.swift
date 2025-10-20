@@ -154,10 +154,10 @@ extension PreviewModel {
       }
     }
   }
-  
+
   func stopCapture() {
     isTransfering = false
-    
+
     Task.detached { [weak self] in
       await self?.previewCaptureService.stopCapturePreviewStream()
     }

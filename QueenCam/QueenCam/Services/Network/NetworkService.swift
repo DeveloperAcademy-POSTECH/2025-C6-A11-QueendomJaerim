@@ -180,12 +180,12 @@ final class NetworkService: NetworkServiceProtocol {
     if case .previewFrame = event {
       // Skip logging for preview frames
     } else {
-      logger.debug("handleNetworkEvent - \(String(describing: event))") // preview frame 이벤트가 아닐 때만 로깅
+      logger.debug("handleNetworkEvent - \(String(describing: event))")  // preview frame 이벤트가 아닐 때만 로깅
     }
 
     networkEventSubject.send(event)
   }
-  
+
   func run(for device: WAPairedDevice) {
     logger.debug("run() invoked")
 
@@ -212,4 +212,3 @@ final class NetworkService: NetworkServiceProtocol {
     await self.networkManager.sendToAll(event)
   }
 }
-
