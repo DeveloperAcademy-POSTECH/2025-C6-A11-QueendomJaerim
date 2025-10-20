@@ -59,8 +59,8 @@ extension ConnectionView {
 }
 
 struct RoleSelectButton: View {
-  let guideText: String
-  let roleText: String
+  let guideText: LocalizedStringKey
+  let roleText: LocalizedStringKey
   let action: () -> Void
 
   var body: some View {
