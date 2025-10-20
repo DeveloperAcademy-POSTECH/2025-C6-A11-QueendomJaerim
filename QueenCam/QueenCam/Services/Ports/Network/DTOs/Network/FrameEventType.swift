@@ -9,9 +9,9 @@ import Foundation
 import CoreGraphics
 
 enum FrameEventType: Codable, Sendable {
-  /// 새로운 가이딩 프레임을 추가한다/
+  /// 새로운 가이딩 프레임을 추가한다
   case add(FramePayload)
-  /// 이전에 추가된 가이딩 프레임을 바꾼다/
+  /// 이전에 추가된 가이딩 프레임을 바꾼다
   case replace(FramePayload)
   /// 이전에 추가된 가이딩 프레임을 지운다
   case delete(id: UUID)
