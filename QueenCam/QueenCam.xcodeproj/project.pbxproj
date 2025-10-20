@@ -35,7 +35,6 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
-				Presentation/DesignSystem/Components/.gitkeep.swift,
 			);
 			target = 3D5E6BED2E7D687300A0E03A /* QueenCam */;
 		};

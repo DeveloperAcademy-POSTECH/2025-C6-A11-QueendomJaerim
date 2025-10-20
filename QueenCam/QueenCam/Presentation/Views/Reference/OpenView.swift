@@ -21,7 +21,7 @@ struct OpenView: View {
           Image(uiImage: image)
             .resizable()
             .scaledToFill()
-            .frame(width: 90, height: 120)
+            .frame(width: 120, height: 160)
             .clipShape(.rect(cornerRadius: 20))
             .onTapGesture {
               guard role == .model else { return }  // 작가의 경우 레퍼런스 삭제 불가능
