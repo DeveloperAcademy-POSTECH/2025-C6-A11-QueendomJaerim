@@ -12,6 +12,10 @@ final class CameraManager: NSObject {
   private var audioDeviceInput: AVCaptureDeviceInput?
   private let photoOutput = AVCapturePhotoOutput()
 
+  // 비디오 장치 회전을 모니터링하는 객체
+  private var rotationCoordinator: AVCaptureDevice.RotationCoordinator?
+  private var rotationObservers = [AnyObject]()
+
   /// 세션 초기화 여부를 표현하는 플래그 변수
   private(set) var isSessionConfigured: Bool = false
 
@@ -38,7 +42,7 @@ final class CameraManager: NSObject {
 
     super.init()
 
-    bind() // Handle receiving network events
+    bind()  // Handle receiving network events
   }
 
   func configureSession() async throws {
@@ -156,6 +160,8 @@ extension CameraManager {
     if session.canAddInput(input) {
       session.addInput(input)
       videoDeviceInput = input
+
+      createRotationCoordinator(for: device)
 
       do {
         try device.lockForConfiguration()
@@ -311,6 +317,43 @@ extension CameraManager {
       return AVCaptureVideoPreviewLayer(session: session)
     }
     return layer
+  }
+}
+
+extension CameraManager {
+  /// 지정된 장치에 대한 새 회전 코디네이터를 만들고 해당 상태를 관찰하여 회전 변경 사항을 모니터링합니다.
+  private func createRotationCoordinator(for device: AVCaptureDevice) {
+    // 이 장치에 대한 새 회전 코디네이터를 만듭니다.
+    rotationCoordinator = AVCaptureDevice.RotationCoordinator(device: device, previewLayer: videoPreviewLayer)
+
+    guard let rotationCoordinator else { return }
+    
+    if let connection = photoOutput.connection(with: .video) {
+      if connection.isVideoMirroringSupported {
+        connection.isVideoMirrored = (position == .front)
+      }
+    }
+
+    // 출력 연결에 초기 회전 상태를 설정합니다.
+    updateCaptureRotation(rotationCoordinator.videoRotationAngleForHorizonLevelCapture)
+
+    // 이전 관찰을 취소합니다.
+    rotationObservers.removeAll()
+
+    rotationObservers.append(
+      rotationCoordinator.observe(\.videoRotationAngleForHorizonLevelCapture, options: .new) { [weak self] _, change in
+        guard let self, let angle = change.newValue else { return }
+        // 캡처 미리보기 회전을 업데이트합니다.
+        self.updateCaptureRotation(angle)
+      }
+    )
+  }
+
+  private func updateCaptureRotation(_ angle: CGFloat) {
+    // 모든 출력 서비스에 대한 방향을 업데이트합니다.
+    if let connection = photoOutput.connection(with: .video) {
+      connection.videoRotationAngle = angle
+    }
   }
 }
 
