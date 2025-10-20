@@ -146,7 +146,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Only devices with different roles can be connected"
+            "value" : "Only different roles can be connected"
           }
         }
       }
@@ -156,7 +156,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Please allow camera access in settings."
+            "value" : "Please allow camera permission in settings."
           }
         }
       }
