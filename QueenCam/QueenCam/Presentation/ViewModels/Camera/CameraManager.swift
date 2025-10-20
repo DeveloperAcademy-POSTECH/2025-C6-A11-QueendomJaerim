@@ -18,11 +18,8 @@ final class CameraManager: NSObject {
   // 프리뷰 프레임 캡쳐
   private let previewCaptureService: PreviewCaptureService
   // 네트워크 송수신
-  private let networkService: NetworkServiceProtocol
-  private var cancellables: Set<AnyCancellable> = []
-  
-  // 라이브 포토 비디오 저장 디렉토리 프리픽스
-  private let livePhotoMoviesDirectoryName: String = "receivedLivePhotoMovies"
+  let networkService: NetworkServiceProtocol
+  var cancellables: Set<AnyCancellable> = []
 
   var position: AVCaptureDevice.Position = .back
   var flashMode: AVCaptureDevice.FlashMode = .off
@@ -41,12 +38,12 @@ final class CameraManager: NSObject {
 
     super.init()
 
-    bind()
+    bind() // Handle receiving network events
   }
 
   func configureSession() async throws {
     guard !isSessionConfigured else {
-      print("capture session is already configured")
+      logger.warning("capture session is already configured")
       return
     }
 
@@ -118,7 +115,7 @@ final class CameraManager: NSObject {
             self.onPhotoCapture?(thumbnail)
           }
         }
-        
+
         self.sendPhoto(photoOutput)
       }
 
@@ -314,90 +311,6 @@ extension CameraManager {
       return AVCaptureVideoPreviewLayer(session: session)
     }
     return layer
-  }
-}
-
-// MARK: 네트워크
-extension CameraManager {
-  // 받기
-  func bind() {
-    networkService.networkEventPublisher
-      .receive(on: RunLoop.main)
-      .compactMap { $0 }
-      .sink { [weak self] event in
-        switch event {
-        case .photoResult(let photoData, let videoData):
-          self?.handlePhotoResultEvent(photoData: photoData, videoData: videoData)
-        default: break
-        }
-      }
-      .store(in: &cancellables)
-  }
-  
-  func handlePhotoResultEvent(photoData: Data, videoData: Data?) {
-    let isLivePhoto = videoData != nil
-    
-    if isLivePhoto, let videoData {
-      handleLivePhotoEvent(photoData: photoData, videoData: videoData)
-    } else {
-      handleBasicPhotoEvent(photoData: photoData)
-    }
-  }
-  
-  private func handleLivePhotoEvent(photoData: Data, videoData: Data) {
-    do {
-      let path = try FileManager.default
-        .url(for: .cachesDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
-        .appendingPathComponent(livePhotoMoviesDirectoryName)
-      
-      try FileManager.default.createDirectory(at: path, withIntermediateDirectories: true)
-      
-      let fileURL = path.appendingPathComponent(UUID().uuidString)
-        .appendingPathExtension(for: .quickTimeMovie)
-      
-      try videoData.write(to: fileURL)
-      
-      PhotoLiberaryHelpers.saveLivePhotoToPhotosLibrary(stillImageData: photoData, livePhotoMovieURL: fileURL)
-    } catch {
-      logger.error("failed to prepare directory to save a live photo movie. error=\(error.localizedDescription)")
-    }
-    
-    if let image = UIImage(data: photoData) {
-      DispatchQueue.main.async {
-        self.onPhotoCapture?(image)
-      }
-    } else {
-      logger.error("failed to convert data to image")
-    }
-  }
-  
-  private func handleBasicPhotoEvent(photoData: Data) {
-    if let image = UIImage(data: photoData) {
-      PhotoLiberaryHelpers.saveToPhotoLibrary(image)
-      DispatchQueue.main.async {
-        self.onPhotoCapture?(image)
-      }
-    } else {
-      logger.error("failed to convert data to image")
-    }
-  }
-
-  // 보내기
-  /// 이미지를 전송한다.
-  func sendPhoto(_ photoOutput: PhotoOuput) {
-    guard networkService.networkState == .host(.publishing) else {
-      logger.warning("The client has a viewer role or is not publishing. Skipping sending photo.")
-      return
-    }
-
-    Task.detached { [weak self] in
-      switch photoOutput {
-      case .basicPhoto(let thumbnail, let imageData):
-        await self?.networkService.send(for: .photoResult(imageData: imageData, videoData: nil))
-      case .livePhoto(let thumbnail, let imageData, let videoData):
-        await self?.networkService.send(for: .photoResult(imageData: imageData, videoData: videoData))
-      }
-    }
   }
 }
 
