@@ -27,6 +27,8 @@ struct CameraView {
   @State private var isShowPhotoPicker = false
   @State private var referenceViewModel = ReferenceViewModel()
 
+  @State private var frameViewModel = FrameViewModel()
+  @State private var isFrame: Bool = false
 }
 
 extension CameraView {
@@ -131,10 +133,30 @@ extension CameraView: View {
               #else
               PreviewPlayerView(previewModel: previewModel)
               #endif
-              
-              ReferenceView(referenceViewModel: referenceViewModel, role: .model) // 레퍼런스 - 삭제 가능
+
+              ReferenceView(referenceViewModel: referenceViewModel, role: .model)  // 레퍼런스 - 삭제 가능
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                 .padding(12)
+              FrameControlView(frameViewModel: frameViewModel)
+
+              ZStack {
+                if isFrame {
+                  FrameControlView(frameViewModel: frameViewModel)
+                } else {
+                  FrameDisplayView(frameViewModel: frameViewModel)
+                }
+                Button {
+                  isFrame.toggle()
+                } label: {
+                  Image(systemName: "camera.metering.center.weighted.average")
+                    .font(.system(size: 25, weight: .semibold))
+                    .foregroundStyle(.black)
+                    .frame(width: 60, height: 60)
+                    .background(.ultraThinMaterial)
+                    .clipShape(Circle())
+                    .shadow(color: .black.opacity(0.2), radius: 5, x: 0, y: 2)
+                }
+              }
             }
             if isShowGrid {
               GridView()

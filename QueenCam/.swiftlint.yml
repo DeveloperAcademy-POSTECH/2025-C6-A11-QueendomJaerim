@@ -44,6 +44,8 @@ identifier_name:
     - URL
     - x
     - y
+    - dx
+    - dy
     - i
 
 type_name:
