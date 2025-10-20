@@ -9,6 +9,20 @@
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [0.0.1]
+
+### Added
+
 - 기본 프로젝트 구조
 - 카메라 기본 기능 및 프리뷰 
 - 네트워크 레이어
@@ -35,16 +49,11 @@
 - 전송 FPS 고정 (30 frames / 1 second)
 - 현재 프레임 화질을 표시하는 디버그용 오버레이 추가
 
-### Deprecated
-
-### Removed
-
 ### Fixed
 
 - 연결이 끊겼는데도 카메라 프리뷰 캡쳐가 중단되지 않았던 문제
 - Wi-Fi Aware 연결 후, 라이브 포토 촬영 시 앱이 크래시되는 문제
 - 레퍼런스 삭제 후 재등록에 관한 상태 초기화 문제
 
-### Security
-
+[0.0.1]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/releases/tag/v0.0.1
 [unreleased]: hhttps://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim
