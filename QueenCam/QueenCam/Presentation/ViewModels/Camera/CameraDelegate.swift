@@ -30,17 +30,11 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
 
     guard
       let imageData = photo.fileDataRepresentation(),
-      var image = UIImage(data: imageData)
+      let image = UIImage(data: imageData)
     else {
       logger.error("Image not fetched.")
       completion(nil)
       return
-    }
-
-    if isCameraPosition == .front {
-      if let cgImage = image.cgImage {
-        image = UIImage(cgImage: cgImage, scale: image.scale, orientation: .leftMirrored)
-      }
     }
 
     lastThumbnailImage = image
