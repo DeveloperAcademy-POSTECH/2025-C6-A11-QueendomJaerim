@@ -344,7 +344,7 @@ extension CameraManager {
       rotationCoordinator.observe(\.videoRotationAngleForHorizonLevelCapture, options: .new) { [weak self] _, change in
         guard let self, let angle = change.newValue else { return }
         // 캡처 미리보기 회전을 업데이트합니다.
-        Task { await self.updateCaptureRotation(angle) }
+        self.updateCaptureRotation(angle)
       }
     )
   }
