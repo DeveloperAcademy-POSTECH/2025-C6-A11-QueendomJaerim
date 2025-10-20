@@ -30,6 +30,8 @@ struct CameraView {
   @State private var isPen: Bool = false
   @State private var penViewModel = PenViewModel()
 
+  @State private var frameViewModel = FrameViewModel()
+  @State private var isFrame: Bool = false
 }
 
 extension CameraView {
@@ -139,23 +141,47 @@ extension CameraView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                 .padding(12)
 
-              ZStack {
-                if isPen {
-                  PenWriteView(penViewModel: penViewModel)
-                } else {
-                  PenDisplayView(penViewModel: penViewModel)
+              ZStack(alignment: .topTrailing) {
+                Group {
+                  if isPen {
+                    PenWriteView(penViewModel: penViewModel)
+                  } else {
+                    PenDisplayView(penViewModel: penViewModel)
+                  }
+
+                  if isFrame {
+                    FrameControlView(frameViewModel: frameViewModel)
+                  } else {
+                    FrameDisplayView(frameViewModel: frameViewModel)
+                  }
                 }
-                Button {
-                  isPen.toggle()
-                } label: {
-                  Image(systemName: "pencil")
-                    .font(.system(size: 25, weight: .semibold))
-                    .foregroundStyle(.black)
-                    .frame(width: 60, height: 60)
-                    .background(.ultraThinMaterial)
-                    .clipShape(Circle())
-                    .shadow(color: .black.opacity(0.2), radius: 5, x: 0, y: 2)
+                HStack(spacing: 0) {
+                  CircleButton(
+                    systemImage: "pencil",
+                    isActive: isPen
+                  ) {
+                    isPen.toggle()
+                    isFrame = false
+                  }
+                  CircleButton(
+                    systemImage: "camera.metering.center.weighted.average",
+                    isActive: isFrame
+                  ) {
+                    isFrame.toggle()
+                    isPen = false
+                  }
                 }
+                  .background(
+                    Capsule()
+                      .fill(.ultraThinMaterial)
+                      .shadow(color: .black.opacity(0.2), radius: 5, x: 0, y: 2)
+                  )
+                  .overlay(
+                    Capsule()
+                      .stroke(Color.white.opacity(0.15), lineWidth: 1)
+                  )
+                  .frame(width: 120, height: 60)
+                  .padding(20)
               }
             }
             if isShowGrid {
