@@ -60,5 +60,6 @@ struct FrameLayerView: View {
         }
       }
     }.position(x: newX, y: newY)
+      .animation(.snappy, value: frame.rect)
   }
 }
