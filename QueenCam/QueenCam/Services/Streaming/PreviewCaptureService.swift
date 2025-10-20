@@ -131,7 +131,7 @@ extension PreviewCaptureService {
         // 마지막 처리 시간을 현재 시간으로 업데이트
         self.lastPresentationTime = currentTime
 
-//        self.logger.debug("will capture frame. \(currentTime)")
+        //        self.logger.debug("will capture frame. \(currentTime)")
 
         // ----- 1. 현재 화질 가져오기 -----
         let quality = self.quality

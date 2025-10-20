@@ -27,6 +27,9 @@ struct CameraView {
   @State private var isShowPhotoPicker = false
   @State private var referenceViewModel = ReferenceViewModel()
 
+  @State private var isPen: Bool = false
+  @State private var penViewModel = PenViewModel()
+
   @State private var frameViewModel = FrameViewModel()
   @State private var isFrame: Bool = false
 }
@@ -126,7 +129,7 @@ extension CameraView: View {
               ReferenceView(referenceViewModel: referenceViewModel, role: .photographer)  //레퍼런스 - 삭제 불가능
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                 .padding(12)
-
+              PenDisplayView(penViewModel: penViewModel)
             } else {  // 모델
               #if DEBUG
               DebugPreviewPlayerView(previewModel: previewModel)
@@ -140,6 +143,23 @@ extension CameraView: View {
               FrameControlView(frameViewModel: frameViewModel)
 
               ZStack {
+                if isPen {
+                  PenWriteView(penViewModel: penViewModel)
+                } else {
+                  PenDisplayView(penViewModel: penViewModel)
+                }
+                Button {
+                  isPen.toggle()
+                } label: {
+                  Image(systemName: "pencil")
+                    .font(.system(size: 25, weight: .semibold))
+                    .foregroundStyle(.black)
+                    .frame(width: 60, height: 60)
+                    .background(.ultraThinMaterial)
+                    .clipShape(Circle())
+                    .shadow(color: .black.opacity(0.2), radius: 5, x: 0, y: 2)
+                }
+
                 if isFrame {
                   FrameControlView(frameViewModel: frameViewModel)
                 } else {

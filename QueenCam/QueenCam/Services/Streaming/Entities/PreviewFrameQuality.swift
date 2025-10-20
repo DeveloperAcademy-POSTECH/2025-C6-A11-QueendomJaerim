@@ -24,25 +24,25 @@ nonisolated enum PreviewFrameQuality: Sendable, Codable {
 
   var jpegQuality: CGFloat {
     switch self {
-    case .high:   return 0.8
+    case .high: return 0.8
     case .medium: return 0.4
-    case .low:    return 0.2
+    case .low: return 0.2
     case .veryLow: return 0.2
     }
   }
 
   var displayLabel: String {
     switch self {
-    case .high:   return "High"
+    case .high: return "High"
     case .medium: return "Medium"
-    case .low:    return "Low"
-    case .veryLow:    return "Very Low"
+    case .low: return "Low"
+    case .veryLow: return "Very Low"
     }
   }
 
   func getBetter() -> PreviewFrameQuality {
     switch self {
-    case .high: return .high // high -> high
+    case .high: return .high  // high -> high
     case .medium: return .high
     case .low: return .medium
     case .veryLow: return .low
@@ -54,7 +54,7 @@ nonisolated enum PreviewFrameQuality: Sendable, Codable {
     case .high: return .medium
     case .medium: return .low
     case .low: return .veryLow
-    case .veryLow: return .veryLow // veryLow -> veryLow
+    case .veryLow: return .veryLow  // veryLow -> veryLow
     }
   }
 }

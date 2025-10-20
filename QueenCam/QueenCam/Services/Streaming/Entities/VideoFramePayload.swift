@@ -5,8 +5,8 @@
 //  Created by 임영택 on 10/13/25.
 //
 
-import Foundation
 import AVFoundation
+import Foundation
 
 struct VideoFramePayload: Codable {
   let frameData: Data
