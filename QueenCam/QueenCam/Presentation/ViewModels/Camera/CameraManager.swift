@@ -327,6 +327,12 @@ extension CameraManager {
     rotationCoordinator = AVCaptureDevice.RotationCoordinator(device: device, previewLayer: videoPreviewLayer)
 
     guard let rotationCoordinator else { return }
+    
+    if let connection = photoOutput.connection(with: .video) {
+      if connection.isVideoMirroringSupported {
+        connection.isVideoMirrored = (position == .front)
+      }
+    }
 
     // 출력 연결에 초기 회전 상태를 설정합니다.
     updateCaptureRotation(rotationCoordinator.videoRotationAngleForHorizonLevelCapture)
