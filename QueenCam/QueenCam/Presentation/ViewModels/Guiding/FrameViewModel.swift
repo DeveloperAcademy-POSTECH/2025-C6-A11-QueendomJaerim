@@ -144,9 +144,9 @@ extension FrameViewModel {
         return frame
       }
     case .delete(let id):
-      remove(id)
+      frames.removeAll { $0.id == id } // remove나 removeAll 함수를 재사용하지 말 것. 네트워크로 전파하며 무한 루프 시작됨.
     case .deleteAll:
-      removeAll()
+      frames.removeAll()
     }
   }
 }
