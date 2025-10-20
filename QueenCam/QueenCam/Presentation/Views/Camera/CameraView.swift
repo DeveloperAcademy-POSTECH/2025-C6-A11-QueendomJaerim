@@ -296,7 +296,7 @@ extension CameraView: View {
     .sheet(isPresented: $isShowPhotoPicker) {
       PhotosPickerView(selectedImageID: $selectedImageID) { image in
         selectedImage = image
-        referenceViewModel.image = image
+        referenceViewModel.onRegister(uiImage: image)
         isShowPhotoPicker = false
       }
       .presentationDetents([.medium, .large])
