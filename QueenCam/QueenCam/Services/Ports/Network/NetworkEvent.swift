@@ -58,22 +58,22 @@ enum FrameEventType: Codable, Sendable {
     let origin: PointPayload
     let size: SizePayload
     let color: ColorPayload
+  }
 
-    struct PointPayload: Codable, Sendable {
-      let x: Double
-      let y: Double
-    }
+  struct PointPayload: Codable, Sendable {
+    let x: Double
+    let y: Double
+  }
 
-    struct SizePayload: Codable, Sendable {
-      let width: Double
-      let height: Double
-    }
+  struct SizePayload: Codable, Sendable {
+    let width: Double
+    let height: Double
+  }
 
-    struct ColorPayload: Codable, Sendable {
-      let red: Double
-      let green: Double
-      let blue: Double
-      let opacity: Double
-    }
+  struct ColorPayload: Codable, Sendable {
+    let red: Double
+    let green: Double
+    let blue: Double
+    let opacity: Double
   }
 }

@@ -30,29 +30,29 @@ struct FrameMapper {
   }
 
   // MARK: - CGPoint <-> PointPayload
-  private static func convert(pointPayload: FrameEventType.FramePayload.PointPayload) -> CGPoint {
+  private static func convert(pointPayload: FrameEventType.PointPayload) -> CGPoint {
     CGPoint(x: pointPayload.x, y: pointPayload.y)
   }
 
-  private static func convert(cgPoint: CGPoint) -> FrameEventType.FramePayload.PointPayload {
-    FrameEventType.FramePayload.PointPayload(x: cgPoint.x, y: cgPoint.y)
+  private static func convert(cgPoint: CGPoint) -> FrameEventType.PointPayload {
+    FrameEventType.PointPayload(x: cgPoint.x, y: cgPoint.y)
   }
 
   // MARK: - CGSize <-> SizePayload
-  private static func convert(sizePayload: FrameEventType.FramePayload.SizePayload) -> CGSize {
+  private static func convert(sizePayload: FrameEventType.SizePayload) -> CGSize {
     CGSize(width: sizePayload.width, height: sizePayload.height)
   }
 
-  private static func convert(cgSize: CGSize) -> FrameEventType.FramePayload.SizePayload {
-    FrameEventType.FramePayload.SizePayload(width: cgSize.width, height: cgSize.height)
+  private static func convert(cgSize: CGSize) -> FrameEventType.SizePayload {
+    FrameEventType.SizePayload(width: cgSize.width, height: cgSize.height)
   }
 
   // MARK: - Color <-> ColorPayload
-  private static func convert(colorPayload: FrameEventType.FramePayload.ColorPayload) -> Color {
+  private static func convert(colorPayload: FrameEventType.ColorPayload) -> Color {
     Color(red: colorPayload.red, green: colorPayload.green, blue: colorPayload.blue, opacity: colorPayload.opacity)
   }
 
-  private static func convert(color: Color) -> FrameEventType.FramePayload.ColorPayload {
+  private static func convert(color: Color) -> FrameEventType.ColorPayload {
     let uiColor = UIColor(color)
 
     var red: CGFloat = 0
@@ -64,7 +64,7 @@ struct FrameMapper {
       return .init(red: 0.0, green: 0.0, blue: 0.0, opacity: 1.0)
     }
 
-    return FrameEventType.FramePayload.ColorPayload(
+    return FrameEventType.ColorPayload(
       red: Double(red),
       green: Double(green),
       blue: Double(blue),
