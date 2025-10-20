@@ -11,58 +11,58 @@ final class CameraManager: NSObject {
   private var videoDeviceInput: AVCaptureDeviceInput?
   private var audioDeviceInput: AVCaptureDeviceInput?
   private let photoOutput = AVCapturePhotoOutput()
-  
+
   // 비디오 장치 회전을 모니터링하는 객체
   private var rotationCoordinator: AVCaptureDevice.RotationCoordinator?
   private var rotationObservers = [AnyObject]()
-  
+
   /// 세션 초기화 여부를 표현하는 플래그 변수
   private(set) var isSessionConfigured: Bool = false
-  
+
   // 프리뷰 프레임 캡쳐
   private let previewCaptureService: PreviewCaptureService
   // 네트워크 송수신
   let networkService: NetworkServiceProtocol
   var cancellables: Set<AnyCancellable> = []
-  
+
   var position: AVCaptureDevice.Position = .back
   var flashMode: AVCaptureDevice.FlashMode = .off
   var isLivePhotoOn: Bool = false
-  
+
   private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.queendom.QueenCam", category: "CameraManager")
-  
+
   private var cameraDelegate: CameraDelegate?
-  
+
   var onPhotoCapture: ((UIImage) -> Void)?
   var onTapCameraSwitch: ((AVCaptureDevice.Position) -> Void)?
-  
+
   init(previewCaptureService: PreviewCaptureService, networkService: NetworkServiceProtocol) {
     self.previewCaptureService = previewCaptureService
     self.networkService = networkService
-    
+
     super.init()
-    
-    bind() // Handle receiving network events
+
+    bind()  // Handle receiving network events
   }
-  
+
   func configureSession() async throws {
     guard !isSessionConfigured else {
       logger.warning("capture session is already configured")
       return
     }
-    
+
     try await withCheckedThrowingContinuation { continuation in
       captureSessionQueue.async { [weak self] in
         guard let self else { return }
         do {
           self.session.beginConfiguration()
           self.session.sessionPreset = .photo
-          
+
           try self.setupVideoInput()
           try self.setupAudioInput()
           self.setupPhotoOutput()
           self.setupPreviewCaptureOutput()
-          
+
           self.session.commitConfiguration()
           self.startSession()
           isSessionConfigured = true
@@ -73,7 +73,7 @@ final class CameraManager: NSObject {
       }
     }
   }
-  
+
   func stopSession() {
     captureSessionQueue.async { [weak self] in
       guard let self else { return }
@@ -82,35 +82,35 @@ final class CameraManager: NSObject {
       }
     }
   }
-  
+
   func capturePhoto() {
     captureSessionQueue.async { [weak self] in
       guard let self else { return }
-      
+
       var photoSettings = AVCapturePhotoSettings()
-      
+
       if self.photoOutput.availablePhotoCodecTypes.contains(.hevc) {
         photoSettings = AVCapturePhotoSettings(format: [AVVideoCodecKey: AVVideoCodecType.hevc])
       }
-      
+
       if let device = videoDeviceInput?.device,
-         device.isFlashAvailable,
-         photoOutput.supportedFlashModes.contains(flashMode)
+        device.isFlashAvailable,
+        photoOutput.supportedFlashModes.contains(flashMode)
       {
         photoSettings.flashMode = flashMode
       } else {
         photoSettings.flashMode = .off
       }
-      
+
       photoSettings.isAutoRedEyeReductionEnabled = true
-      
+
       if self.isLivePhotoOn, self.photoOutput.isLivePhotoCaptureSupported {
         photoSettings.livePhotoMovieFileURL = URL.movieFileURL
       }
-      
+
       self.cameraDelegate = CameraDelegate(isCameraPosition: self.position) { photoOutput in
         guard let photoOutput else { return }
-        
+
         DispatchQueue.main.async {
           switch photoOutput {
           case .basicPhoto(let thumbnail, let imageData):
@@ -119,10 +119,10 @@ final class CameraManager: NSObject {
             self.onPhotoCapture?(thumbnail)
           }
         }
-        
+
         self.sendPhoto(photoOutput)
       }
-      
+
       guard let delegate = self.cameraDelegate else { return }
       self.photoOutput.capturePhoto(with: photoSettings, delegate: delegate)
     }
@@ -137,32 +137,32 @@ extension CameraManager {
       .builtInDualWideCamera,  // 일반 모델
       .builtInWideAngleCamera,  // 단일 렌즈
     ]
-    
+
     // 현재 position에 해당하는 카메라 검색
     let discoverySession = AVCaptureDevice.DiscoverySession(
       deviceTypes: deviceTypeList,
       mediaType: .video,
       position: position
     )
-    
+
     guard let device = discoverySession.devices.first
     else {
       logger.error("Video device is unavailable")
       return
     }
-    
+
     let input = try AVCaptureDeviceInput(device: device)
-    
+
     if let currentInput = videoDeviceInput {
       session.removeInput(currentInput)
     }
-    
+
     if session.canAddInput(input) {
       session.addInput(input)
       videoDeviceInput = input
-      
+
       createRotationCoordinator(for: device)
-      
+
       do {
         try device.lockForConfiguration()
         device.videoZoomFactor = 1.0 / device.displayVideoZoomFactorMultiplier
@@ -172,30 +172,30 @@ extension CameraManager {
         logger.error("Failed to set initial zoom")
         throw error
       }
-      
+
     } else {
       logger.error("Couldn't add video device input to the session.")
       return
     }
   }
-  
+
   private func setupAudioInput() throws {
     guard isLivePhotoOn else { return }
-    
+
     guard audioDeviceInput == nil else { return }
-    
+
     guard let audioDevice = AVCaptureDevice.default(for: .audio) else {
       logger.warning("No audio device available ")
       return
     }
-    
+
     let input = try AVCaptureDeviceInput(device: audioDevice)
     if session.canAddInput(input) {
       session.addInput(input)
       audioDeviceInput = input
     }
   }
-  
+
   private func setupPhotoOutput() {
     guard session.canAddOutput(photoOutput) else { return }
     session.addOutput(photoOutput)
@@ -203,14 +203,14 @@ extension CameraManager {
     photoOutput.maxPhotoQualityPrioritization = .balanced
     photoOutput.isLivePhotoCaptureEnabled = photoOutput.isLivePhotoCaptureSupported
   }
-  
+
   private func setupPreviewCaptureOutput() {
     let previewCaptureOutput = previewCaptureService.output
     guard session.canAddOutput(previewCaptureOutput) else { return }
     session.addOutput(previewCaptureOutput)
     logger.debug("AVCaptureVideoDataOutput for AVCaptureSession added to session")
   }
-  
+
   private func startSession() {
     guard !session.isRunning else { return }
     session.startRunning()
@@ -226,20 +226,20 @@ extension CameraManager {
         logger.error("Zoom failed: Device not found")
         return
       }
-      
+
       do {
         try device.lockForConfiguration()
-        
+
         let zoomFactor = max(
           device.minAvailableVideoZoomFactor,
           min(factor / device.displayVideoZoomFactorMultiplier, device.maxAvailableVideoZoomFactor)
         )
-        
+
         device.ramp(toVideoZoomFactor: zoomFactor, withRate: 4)
         device.unlockForConfiguration()
-        
+
         logger.info("Zoom scale set to \(zoomFactor)")
-        
+
       } catch {
         logger.error("Failed to configure zoom: \(error.localizedDescription)")
       }
@@ -253,30 +253,30 @@ extension CameraManager {
       captureSessionQueue.async { [weak self] in
         guard let self else { return }
         self.session.beginConfiguration()
-        
+
         if let currentInput = self.videoDeviceInput {
           self.session.removeInput(currentInput)
         }
-        
+
         position = position == .back ? .front : .back
-        
+
         do {
           try self.setupVideoInput()
           try self.setupAudioInput()
           setupPhotoOutput()
-          
+
           session.commitConfiguration()
-          
+
           DispatchQueue.main.async {
             self.onTapCameraSwitch?(self.position)
           }
           continuation.resume()
-          
+
         } catch {
           self.logger.error("Failed to switch camera: \(error.localizedDescription)")
           continuation.resume(throwing: error)
         }
-        
+
       }
     }
   }
@@ -285,32 +285,32 @@ extension CameraManager {
 extension CameraManager {
   func focusAndExpose(at point: CGPoint) {
     let devicePoint = videoPreviewLayer.captureDevicePointConverted(fromLayerPoint: point)
-    
+
     guard let device = videoDeviceInput?.device else {
       logger.error("Focus failed: No active video device input.")
       return
     }
-    
+
     do {
       try device.lockForConfiguration()
-      
+
       if device.isFocusPointOfInterestSupported, device.isFocusModeSupported(.autoFocus) {
         device.focusPointOfInterest = devicePoint
         device.focusMode = .autoFocus
       }
-      
+
       if device.isExposurePointOfInterestSupported, device.isExposureModeSupported(.autoExpose) {
         device.exposurePointOfInterest = devicePoint
         device.exposureMode = .autoExpose
       }
-      
+
       device.isSubjectAreaChangeMonitoringEnabled = true
       device.unlockForConfiguration()
     } catch {
       logger.error("Focus/Exposure configuration failed: \(error.localizedDescription)")
     }
   }
-  
+
   private var videoPreviewLayer: AVCaptureVideoPreviewLayer {
     guard let layer = session.connections.compactMap({ $0.videoPreviewLayer }).first else {
       logger.error("No connected preview layer found in session.")
@@ -325,16 +325,15 @@ extension CameraManager {
   private func createRotationCoordinator(for device: AVCaptureDevice) {
     // 이 장치에 대한 새 회전 코디네이터를 만듭니다.
     rotationCoordinator = AVCaptureDevice.RotationCoordinator(device: device, previewLayer: videoPreviewLayer)
-    
+
     guard let rotationCoordinator else { return }
-    
+
     // 출력 연결에 초기 회전 상태를 설정합니다.
     updateCaptureRotation(rotationCoordinator.videoRotationAngleForHorizonLevelCapture)
-    
+
     // 이전 관찰을 취소합니다.
     rotationObservers.removeAll()
-    
-    
+
     rotationObservers.append(
       rotationCoordinator.observe(\.videoRotationAngleForHorizonLevelCapture, options: .new) { [weak self] _, change in
         guard let self, let angle = change.newValue else { return }
@@ -343,8 +342,7 @@ extension CameraManager {
       }
     )
   }
-  
-  
+
   private func updateCaptureRotation(_ angle: CGFloat) {
     // 모든 출력 서비스에 대한 방향을 업데이트합니다.
     if let connection = photoOutput.connection(with: .video) {
