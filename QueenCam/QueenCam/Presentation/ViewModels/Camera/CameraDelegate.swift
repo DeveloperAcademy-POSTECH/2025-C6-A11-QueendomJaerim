@@ -50,7 +50,7 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
       (photo.resolvedSettings.livePhotoMovieDimensions.width > 0 && photo.resolvedSettings.livePhotoMovieDimensions.height > 0)
 
     if !capturingLivePhoto {
-      PhotoLiberaryHelpers.saveToPhotoLibrary(image)
+      PhotoLibraryHelpers.saveToPhotoLibrary(image)
       completion(.basicPhoto(thumbnail: image, imageData: imageData))
     }
 
@@ -75,7 +75,7 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
       let movieData = try? Data(contentsOf: outputFileURL)
     else { return }
 
-    PhotoLiberaryHelpers.saveLivePhotoToPhotosLibrary(
+    PhotoLibraryHelpers.saveLivePhotoToPhotosLibrary(
       stillImageData: lastStillImageData,
       livePhotoMovieURL: outputFileURL
     )

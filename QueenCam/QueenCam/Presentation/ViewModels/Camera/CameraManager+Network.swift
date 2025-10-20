@@ -62,7 +62,7 @@ extension CameraManager {
 
       try videoData.write(to: fileURL)
 
-      PhotoLiberaryHelpers.saveLivePhotoToPhotosLibrary(stillImageData: photoData, livePhotoMovieURL: fileURL)
+      PhotoLibraryHelpers.saveLivePhotoToPhotosLibrary(stillImageData: photoData, livePhotoMovieURL: fileURL)
     } catch {
       logger.error("failed to prepare directory to save a live photo movie. error=\(error.localizedDescription)")
     }
@@ -78,7 +78,7 @@ extension CameraManager {
 
   private func handleBasicPhotoEvent(photoData: Data) {
     if let image = UIImage(data: photoData) {
-      PhotoLiberaryHelpers.saveToPhotoLibrary(image)
+      PhotoLibraryHelpers.saveToPhotoLibrary(image)
       DispatchQueue.main.async {
         self.onPhotoCapture?(image)
       }
