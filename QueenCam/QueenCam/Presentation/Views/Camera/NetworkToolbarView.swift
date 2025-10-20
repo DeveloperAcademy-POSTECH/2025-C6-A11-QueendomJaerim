@@ -22,7 +22,7 @@ struct NetworkToolbarView: View {
         if networkState == nil || networkState == .host(.stopped) || networkState == .viewer(.stopped) {
           NetworkToolbarButtonLabel(isDotShowing: false, title: "연결하기")
         } else {
-          NetworkToolbarButtonLabel(isDotShowing: true, title: connectedDeviceName ?? "알 수 없는 기기")
+          NetworkToolbarButtonLabel(isDotShowing: true, title: LocalizedStringKey(connectedDeviceName ?? "알 수 없는 기기"))
         }
       }
       .glassEffect(.regular.tint(.black).interactive())
@@ -34,7 +34,7 @@ struct NetworkToolbarView: View {
 
 struct NetworkToolbarButtonLabel: View {
   let isDotShowing: Bool
-  let title: String
+  let title: LocalizedStringKey
 
   var body: some View {
     HStack(spacing: 0) {
