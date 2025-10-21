@@ -1,5 +1,21 @@
+import OSLog
 import Photos
+import PhotosUI
 import SwiftUI
+
+struct LivePhotoView: UIViewRepresentable {
+  let livePhoto: PHLivePhoto
+
+  func makeUIView(context: Context) -> PHLivePhotoView {
+    let livePhotoView = PHLivePhotoView()
+    livePhotoView.contentMode = .scaleAspectFit
+    return livePhotoView
+  }
+
+  func updateUIView(_ uiView: PHLivePhotoView, context: Context) {
+    uiView.livePhoto = livePhoto
+  }
+}
 
 struct PhotoDetailView {
   let asset: PHAsset
@@ -11,22 +27,47 @@ struct PhotoDetailView {
   @State private var detailImage: UIImage?
   @State private var detailSelectedImageID: String?
 
+  @State private var livePhoto: PHLivePhoto?
+
+  private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.queendom.QueenCam", category: "PhotoDetailView")
 }
 
 extension PhotoDetailView {
   private func requestImage() {
+    logger.debug("일반 이미지 요청 시작")
     let options = PHImageRequestOptions()
     options.isNetworkAccessAllowed = true
-    options.deliveryMode = .highQualityFormat
+    options.deliveryMode = .opportunistic
     options.resizeMode = .none
     manager.requestImage(
       for: asset,
       targetSize: PHImageManagerMaximumSize,
       contentMode: .aspectFit,
       options: options
-    ) { result, _ in
+    ) { result, info in
       if let result {
         self.detailImage = result
+        let isDegraded = (info?[PHImageResultIsDegradedKey] as? NSNumber)?.boolValue ?? false
+        self.logger.debug("\(isDegraded ? "저화질 썸네일 로드" : "고화질 원본 로드")")
+      }
+    }
+  }
+
+  private func requestLivePhoto() {
+    logger.debug("라이브 포토 요청 시작")
+    let options = PHLivePhotoRequestOptions()
+    options.isNetworkAccessAllowed = true
+    options.deliveryMode = .opportunistic
+    manager.requestLivePhoto(
+      for: asset,
+      targetSize: PHImageManagerMaximumSize,
+      contentMode: .aspectFit,
+      options: options
+    ) { result, info in
+      if let result {
+        self.livePhoto = result
+        let isDegraded = (info?[PHImageResultIsDegradedKey] as? NSNumber)?.boolValue ?? false
+        self.logger.debug("\(isDegraded ? "저화질 라이브 포토 로드" : "고화질 라이브 포토 로드")")
       }
     }
   }
@@ -37,24 +78,32 @@ extension PhotoDetailView: View {
     ZStack {
       Color.black.ignoresSafeArea()
 
-      if let image = detailImage {
-        Image(uiImage: image)
-          .resizable()
-          .scaledToFit()
-          .overlay(alignment: .topTrailing) {
-
-            Button(action: {
-              if detailSelectedImageID == asset.localIdentifier {
-                detailSelectedImageID = nil
-              } else {
-                detailSelectedImageID = asset.localIdentifier
-              }
-            }) {
-              Image(systemName: detailSelectedImageID == asset.localIdentifier ? "checkmark.circle.fill" : "circle")
-                .imageScale(.large)
-                .padding()
-            }
+      Group {
+        if asset.mediaSubtypes.contains(.photoLive) {
+          if let livePhoto = livePhoto {
+            LivePhotoView(livePhoto: livePhoto)
           }
+        } else {
+          if let image = detailImage {
+            Image(uiImage: image)
+              .resizable()
+              .scaledToFit()
+
+          }
+        }
+      }
+      .overlay(alignment: .topTrailing) {
+        Button(action: {
+          if detailSelectedImageID == asset.localIdentifier {
+            detailSelectedImageID = nil
+          } else {
+            detailSelectedImageID = asset.localIdentifier
+          }
+        }) {
+          Image(systemName: detailSelectedImageID == asset.localIdentifier ? "checkmark.circle.fill" : "circle")
+            .imageScale(.large)
+            .padding()
+        }
       }
 
       VStack {
@@ -89,6 +138,10 @@ extension PhotoDetailView: View {
     .onAppear {
       detailSelectedImageID = selectedImageID
       requestImage()
+
+      if asset.mediaSubtypes.contains(.photoLive) {
+        requestLivePhoto()
+      }
     }
   }
 }
