@@ -9,6 +9,7 @@ import AVFoundation
 import CoreImage
 import Foundation
 import OSLog
+import Transcoding
 
 final actor PreviewCaptureService {
   private(set) var isCapturing: Bool = false
@@ -37,8 +38,12 @@ final actor PreviewCaptureService {
   private let transferingFPS: Double = 30.0  // 목표 FPS를 30으로 설정
   private var lastPresentationTime: TimeInterval = 0.0
 
-  /// HEVC 인코더
-  var hevcEncoder: HEVCEncoder?
+  /// 비디오 인코더
+  let videoEncoder = VideoEncoder(config: .ultraLowLatency)
+  var encoderStreamTask: Task<Void, Never>?
+  lazy var videoEncoderAnnexBAdaptor = VideoEncoderAnnexBAdaptor(
+      videoEncoder: videoEncoder
+  )
 
   private let logger = Logger(
     subsystem: Bundle.main.bundleIdentifier ?? "com.queendom.QueenCam",
@@ -81,7 +86,7 @@ extension PreviewCaptureService {
     if let width = self.previewOutput.videoSettings[kCVPixelBufferWidthKey as String] as? Int,
       let height = self.previewOutput.videoSettings[kCVPixelBufferHeightKey as String] as? Int
     {
-      setupEncoder(width: width, height: height)
+      setupEncoder()
     } else {
       logger.error("Cannot read width and height from videoSettings")
     }
@@ -115,64 +120,29 @@ extension PreviewCaptureService {
 }
 
 extension PreviewCaptureService {
-  func setupEncoder(width: Int, height: Int) {
-    hevcEncoder = HEVCEncoder(width: width, height: height)
-
-    // NAL Unit을 받았을 때 실행할 클로저(콜백) 설정
-    hevcEncoder?.callback = { [weak self] (nalUnits: [Data]) in
-
-      // nalUnits는 [Data] 배열입니다.
-      // 키프레임의 경우 [VPS, SPS, PPS, Slice, ...] 순서로 들어옵니다.
-      // P/B프레임의 경우 [Slice, ...] 순서로 들어옵니다.
-
-      self?.logger.debug("Received \(nalUnits.count) NAL units.")
-
-      Task {
-        if let framePayloadContinuation = await self?.framePayloadContinuation {
+  func setupEncoder() {
+    encoderStreamTask = Task { [weak self] in
+      guard let self else { return }
+      
+      for await data in await videoEncoderAnnexBAdaptor.annexBData {
+        let framePayloadContinuation = await self.framePayloadContinuation
           framePayloadContinuation.yield(
             VideoFramePayload(
-              nalUnits: nalUnits,
+              data: data,
               originalSize: .zero,
               scaledSize: .zero,
               quality: .high,
               timestamp: Date()
             )
           )
-        }
       }
-
-//      for nalData in nalUnits {
-//        let header = nalData.prefix(5).map { String(format: "%02x", $0) }.joined(separator: " ")
-//        self?.logger.debug("NAL Unit: \(header)... (Total: \(nalData.count) bytes)")
-//      }
     }
   }
 
   private func setupFrameProcessing() async {
-    let ciContext = CIContext()
-    let colorSpace = CGColorSpace(name: CGColorSpace.sRGB)!
-
-    let minTimeInterval = 1.0 / self.transferingFPS
-
     if let bufferStream = self.bufferStream {
       for await buffer in bufferStream {
-        guard let hevcEncoder else {
-          logger.warning("HEVCEncoder is nil")
-          break
-        }
-
-        hevcEncoder.encode(sampleBuffer: buffer)
-
-        // ----- 5. 프레임 방출 -----
-        //        framePayloadContinuation.yield(
-        //          VideoFramePayload(
-        //            frameData: imageData,
-        //            originalSize: originalSize,
-        //            scaledSize: scaledSize,
-        //            quality: quality,
-        //            timestamp: Date()
-        //          )
-        //        )
+        videoEncoder.encode(buffer)
       }
     }
   }

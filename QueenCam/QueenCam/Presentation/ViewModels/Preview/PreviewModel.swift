@@ -8,8 +8,10 @@
 import Combine
 import Foundation
 import OSLog
+import Transcoding
 import UIKit
 import WiFiAware
+import AVFoundation
 
 @Observable
 final class PreviewModel {
@@ -19,32 +21,15 @@ final class PreviewModel {
   private var cancellables: Set<AnyCancellable> = []
 
   // MARK: - 스트리밍 관련 프로퍼티
-  private let jpegToPixelBufferDecoder = JPEGToPixelBufferDecoder()
-  
-  let hevcDecoder = HEVCDecoder()
+  @ObservationIgnored let videoDecoder = VideoDecoder(config: .init(realTime: true))
+  @ObservationIgnored lazy var videoDecoderAnnexBAdaptor = VideoDecoderAnnexBAdaptor(videoDecoder: videoDecoder, codec: .hevc)
+  @ObservationIgnored var videoDecoderTask: Task<Void, Never>?
 
   /// Received Preview Image
   var lastReceivedFrame: VideoFramePayload? {
     didSet {
       if let lastReceivedFrame {
-//        if imageSize == nil {
-//          imageSize = lastReceivedFrame.originalSize
-//        }
-//
-//        do {
-//          let imageBuffer = try jpegToPixelBufferDecoder.decode(lastReceivedFrame.frameData)
-//          lastReceivedFrameDecoded = VideoFrameDecoded(
-//            frame: imageBuffer,
-//            originalSize: lastReceivedFrame.originalSize,
-//            scaledSize: lastReceivedFrame.scaledSize,
-//            quality: lastReceivedFrame.quality,
-//            timestamp: lastReceivedFrame.timestamp
-//          )
-//        } catch {
-//          logger.error("error during decoding image: \(error)")
-//        }
-        
-        hevcDecoder.decode(nalUnits: lastReceivedFrame.nalUnits, pts: lastReceivedFrame.timestamp.timeIntervalSince1970.toCMTime())
+        videoDecoderAnnexBAdaptor.decode(lastReceivedFrame.data)
       }
     }
   }
@@ -57,7 +42,7 @@ final class PreviewModel {
     return nil
   }
 
-  var lastReceivedFrameDecoded: VideoFrameDecoded?
+  var lastReceivedCMSampleBuffer: CMSampleBuffer?
 
   let imagePrecessingQueue = DispatchQueue(label: "com.queendom.QueenCam.imageProcessingQueue")
 
@@ -95,15 +80,44 @@ final class PreviewModel {
     self.networkService = networkService
 
     bind()
-    
-    hevcDecoder.onFrameDecoded = { [weak self] (buffer, cmTime) in
-      self?.lastReceivedFrameDecoded = .init(
-        frame: buffer,
-        originalSize: .zero,
-        scaledSize: .zero,
-        quality: .high,
-        timestamp: cmTime
-      )
+
+    videoDecoderTask = Task { [weak self] in
+      guard let self else { return }
+      
+      for await decodedSampleBuffer in self.videoDecoder.decodedSampleBuffers {
+        // 1. 새 타임스탬프로 '현재 호스트 시간'을 사용합니다.
+        let newPTS = CMClockGetTime(CMClockGetHostTimeClock())
+        var timingInfo = CMSampleTimingInfo(
+            duration: .invalid,
+            presentationTimeStamp: newPTS, // <-- 'nan' 대신 현재 시간으로 강제 설정
+            decodeTimeStamp: .invalid
+        )
+
+        // 2. 원본 버퍼에서 이미지와 포맷 디스크립션 추출
+        guard let imageBuffer = CMSampleBufferGetImageBuffer(decodedSampleBuffer),
+              let formatDesc = CMSampleBufferGetFormatDescription(decodedSampleBuffer)
+        else {
+            logger.error("Failed to get imageBuffer or formatDesc from original buffer")
+            return
+        }
+
+        // 3. 새 타이밍 정보로 CMSampleBuffer를 새로 생성
+        var retimedSampleBuffer: CMSampleBuffer?
+        let status = CMSampleBufferCreateReadyWithImageBuffer(
+            allocator: kCFAllocatorDefault,
+            imageBuffer: imageBuffer,       // 원본 이미지
+            formatDescription: formatDesc,  // 원본 포맷
+            sampleTiming: &timingInfo,      // <-- 새로 만든 시간 정보
+            sampleBufferOut: &retimedSampleBuffer
+        )
+
+        guard status == noErr, let validBuffer = retimedSampleBuffer else {
+            logger.error("Failed to create retimed sample buffer")
+            return
+        }
+        
+        self.lastReceivedCMSampleBuffer = validBuffer
+      }
     }
   }
 

@@ -5,203 +5,177 @@
 //  Created by 임영택 on 10/21/25.
 //
 
-import AVFoundation
+import MetalKit
 import OSLog
 import UIKit
-
-// MARK: - AVSampleBufferDisplayLayer를 담는 커스텀 View
-
-/// AVSampleBufferDisplayLayer를 기본 레이어로 사용하는 UIView
-private class SampleBufferDisplayView: UIView {
-  /// 이 View의 기본 CALayer 클래스를 AVSampleBufferDisplayLayer로 지정합니다.
-  override class var layerClass: AnyClass {
-    return AVSampleBufferDisplayLayer.self
-  }
-
-  /// convenience accessor
-  var sampleBufferDisplayLayer: AVSampleBufferDisplayLayer {
-    return self.layer as! AVSampleBufferDisplayLayer
-  }
-}
-
-// MARK: - View Controller
+import CoreMedia
 
 final class CameraPreviewDisplayViewController: UIViewController {
+  // MARK: MTKView
+  private let mtkView = MTKView()
 
-  private var displayView: SampleBufferDisplayView!
+  // MARK: Core Image
+  private var commandQueue: MTLCommandQueue!
+  private var ciContext: CIContext!
+  private var offscreenTexture: MTLTexture?
+  private let colorSpace = CGColorSpaceCreateDeviceRGB()
 
-  /// AVSampleBufferDisplayLayer의 재생 타이밍을 제어하기 위한 타임베이스
-  private var controlTimebase: CMTimebase?
+  // MARK: Current Video Frame
+  private var currentPixelBuffer: CVPixelBuffer?
 
   // MARK: Delegate
-  weak var delegate: CameraPreviewDisplayViewControllerDelegate?  // (프로토콜 이름도 수정됨)
+  weak var delegate: CameraPreviewDisplayViewControllerDelegate?
 
   private var renderingCount: Int = 0
 
   // MARK: Configs
   private let timestampDiffThreshold: Double = 1.0 / 3.0  // 단위: 초
-  private let countForReportingStableThreshold: Int = 150  // 단위: 횟수
+  private let countForReportingStableThreshold: Int = 150  // 단위: 횟수, 대략 5초 정도
 
   private let logger = Logger(
     subsystem: Bundle.main.bundleIdentifier ?? "com.queendom.QueenCam",
-    category: "CameraPreviewDisplayViewController"
+    category: "CameraPreviewMTKViewController"
   )
-
-  // MARK: - View Lifecycle
-
-  /// UIViewController가 View를 로드할 때 호출됩니다.
-  /// 기본 View를 SampleBufferDisplayView로 교체합니다.
-  override func loadView() {
-    displayView = SampleBufferDisplayView()
-    self.view = displayView
-  }
 
   override func viewDidLoad() {
     super.viewDidLoad()
-    configureDisplayLayer()
+    mtkView.delegate = self
+
+    configure()
+    setupLayout()
   }
 
-  private func configureDisplayLayer() {
-    let layer = displayView.sampleBufferDisplayLayer
+  private func setupLayout() {
+    mtkView.translatesAutoresizingMaskIntoConstraints = false
 
-    // 1. 비디오 화면 채우기 모드 설정 (기존 aspectFill과 동일)
-    layer.videoGravity = .resizeAspectFill
+    view.addSubview(mtkView)
 
-    // 2. 타임베이스 생성 (재생 시간 제어)
-    // AVSampleBufferDisplayLayer는 자체 시계가 없으므로,
-    // 호스트 시간(Host Time)을 기준으로 하는 제어 시계를 만들어 연결합니다.
-    var timebase: CMTimebase?
-    let status = CMTimebaseCreateWithSourceClock(
-      allocator: kCFAllocatorDefault,
-      sourceClock: CMClockGetHostTimeClock(),
-      timebaseOut: &timebase
-    )
+    NSLayoutConstraint.activate([
+      mtkView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+      mtkView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+      mtkView.topAnchor.constraint(equalTo: view.topAnchor),
+      mtkView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+    ])
+  }
 
-    if status == noErr, let timebase = timebase {
-      self.controlTimebase = timebase
-      layer.controlTimebase = timebase
-      // 타임베이스의 시간을 1.0 (정상 속도)으로 흐르게 설정
-      CMTimebaseSetRate(timebase, rate: 1.0)
-    } else {
-      logger.critical("Failed to create control timebase. Status: \(status)")
+  private func configure() {
+    guard let device = MTLCreateSystemDefaultDevice() else {
+      assertionFailure("Metal is not supported on this device")
+      return
+    }
+
+    mtkView.device = device
+    mtkView.colorPixelFormat = .bgra8Unorm
+    mtkView.framebufferOnly = false
+
+    commandQueue = device.makeCommandQueue()
+    ciContext = CIContext(mtlDevice: device)
+  }
+}
+
+extension CameraPreviewDisplayViewController {
+  func renderFrame(sampleBuffer: CMSampleBuffer?) {
+    guard let sampleBuffer else { return }
+    
+    if let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) {
+      self.currentPixelBuffer = pixelBuffer
     }
   }
 }
 
-// MARK: - 3. Public Interface (프레임 수신)
+extension CameraPreviewDisplayViewController: MTKViewDelegate {
+  func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
+  }
+
+  func draw(in view: MTKView) {
+    drawBuffer(currentPixelBuffer)
+  }
+}
 
 extension CameraPreviewDisplayViewController {
+  // MARK: Rendering
 
-  /// 디코더로부터 CVPixelBuffer가 포함된 프레임을 받아 렌더링합니다.
-  func renderFrame(frame: VideoFrameDecoded?) {
-    guard let timebase = self.controlTimebase else {
+  private func ensureOffscreenTexture(for size: CGSize) {
+    guard let device = mtkView.device else { return }
+    let width = max(1, Int(size.width.rounded()))
+    let height = max(1, Int(size.height.rounded()))
+    if let texture = offscreenTexture, texture.width == width, texture.height == height { return }
+
+    let desc = MTLTextureDescriptor.texture2DDescriptor(
+      pixelFormat: mtkView.colorPixelFormat,
+      width: width,
+      height: height,
+      mipmapped: false
+    )
+    desc.usage = [.shaderWrite, .shaderRead]  // 핵심
+    desc.storageMode = .private
+    offscreenTexture = device.makeTexture(descriptor: desc)
+  }
+
+  private func aspectFill(_ image: CIImage, to dst: CGSize) -> CIImage {
+    let size = image.extent.size
+    let scale = max(dst.width / size.width, dst.height / size.height)
+    let scaled = image.transformed(by: .init(scaleX: scale, y: scale))
+    let translationX = (dst.width - scaled.extent.width) * 0.5
+    let translationY = (dst.height - scaled.extent.height) * 0.5
+    return scaled.transformed(by: .init(translationX: translationX, y: translationY))
+  }
+
+  func drawBuffer(_ pixelBuffer: CVPixelBuffer?) {
+    guard let pixelBuffer else {
+      logger.warning("skip drawBuffer... frame is nil...")
+      renderingCount = 0
       return
     }
-    
-    let layer = displayView.sampleBufferDisplayLayer
 
-    // 1. 프레임이 nil이면, 큐를 비우고 종료 (기존 로직 동일)
-    guard let frame = frame else {
-      logger.warning("skip renderFrame... frame is nil. Flushing layer.")
-      renderingCount = 0
-      layer.flush()  // nil이 들어오면 대기 중인 프레임을 비웁니다.
-      return
-    }
+    guard let drawable = mtkView.currentDrawable,
+      let commandBuffer = commandQueue.makeCommandBuffer()
+    else { return }
 
-    // 2. 프레임 지연 체크 (기존 로직 동일)
-    // 타임베이스의 현재 시간을 기준으로 지연을 계산합니다.
-    let currentHostTime = timebase.time
-    let frameTimestamp = frame.timestamp
-    let diff = currentHostTime - frameTimestamp
-    let diffSeconds = diff.seconds
-    diffSeconds
-    if diffSeconds >= timestampDiffThreshold {
-      logger.warning("frame delayed... diff=\(diffSeconds)")
-      delegate?.frameDidSkipped(viewController: self, diff: diffSeconds)
-      renderingCount = 0
+    let dstSize = mtkView.drawableSize
+    ensureOffscreenTexture(for: dstSize)
+    guard let offscreen = offscreenTexture else { return }
 
-      if frame.quality != .veryLow {
-        // 너무 늦은 프레임이면 현재 큐를 비워서 다음 프레임이 빨리 보이도록 함
-        layer.flushAndRemoveImage()
-        return
-      }
-    }
+    // 1) CVPixelBuffer -> CIImage (방향 보정 필요시 oriented 사용)
+    var img = CIImage(cvPixelBuffer: pixelBuffer)
+    img = img.oriented(.rightMirrored)
 
-    // 3. ⭐️ 핵심: CVPixelBuffer -> CMSampleBuffer 변환
-    guard
-      let sampleBuffer = createSampleBuffer(
-        from: frame.frame,
-        timestamp: frame.timestamp
+    // 2) Aspect-Fill
+    img = aspectFill(img, to: dstSize)
+
+    // 3) CI -> Offscreen(shaderWrite)
+    ciContext.render(
+      img,
+      to: offscreen,
+      commandBuffer: commandBuffer,
+      bounds: CGRect(origin: .zero, size: dstSize),
+      colorSpace: colorSpace
+    )
+
+    // 4) Offscreen -> Drawable Blit
+    if let blit = commandBuffer.makeBlitCommandEncoder() {
+      blit.copy(
+        from: offscreen,
+        sourceSlice: 0,
+        sourceLevel: 0,
+        sourceOrigin: .init(x: 0, y: 0, z: 0),
+        sourceSize: .init(width: offscreen.width, height: offscreen.height, depth: 1),
+        to: drawable.texture,
+        destinationSlice: 0,
+        destinationLevel: 0,
+        destinationOrigin: .init(x: 0, y: 0, z: 0)
       )
-    else {
-      logger.error("Failed to create CMSampleBuffer from CVPixelBuffer.")
-      return
+      blit.endEncoding()
     }
 
-    // 4. 레이어에 샘플 버퍼 추가 (Enqueue)
-    if layer.isReadyForMoreMediaData {
-      layer.enqueue(sampleBuffer)
-    } else {
-      // 레이어가 처리할 수 있는 버퍼 큐가 꽉 찼음 (프레임 드롭)
-      logger.warning("DisplayLayer not ready for more media. Dropping frame.")
-    }
+    commandBuffer.present(drawable)
+    commandBuffer.commit()
 
-    // 5. 안정적 렌더링 리포트 (기존 로직 동일)
     renderingCount += 1
     if renderingCount >= countForReportingStableThreshold {
       delegate?.frameDidRenderStably(viewController: self)
       renderingCount = 0
     }
-  }
-}
-
-// MARK: - 4. Private Helper (CVPixelBuffer -> CMSampleBuffer)
-
-extension CameraPreviewDisplayViewController {
-
-  /// CVPixelBuffer와 타임스탬프를 AVSampleBufferDisplayLayer가 요구하는
-  /// CMSampleBuffer 객체로 래핑(변환)합니다.
-  private func createSampleBuffer(from pixelBuffer: CVPixelBuffer, timestamp: CMTime) -> CMSampleBuffer? {
-
-    // 1. CVPixelBuffer로부터 CMVideoFormatDescription(포맷 정보) 생성
-    var formatDescription: CMVideoFormatDescription?
-    var status = CMVideoFormatDescriptionCreateForImageBuffer(
-      allocator: kCFAllocatorDefault,
-      imageBuffer: pixelBuffer,
-      formatDescriptionOut: &formatDescription
-    )
-    guard status == noErr, let formatDesc = formatDescription else {
-      logger.error("Failed to create CMVideoFormatDescription: \(status)")
-      return nil
-    }
-
-    // 2. Date(타임스탬프)로부터 CMSampleTimingInfo(시간 정보) 생성
-    // AVSampleBufferDisplayLayer는 Presentation TimeStamp(PTS)를 사용합니다.
-    // 나노초(1_000_000_000) 단위의 고정밀 타임스케일 사용
-    let pts = timestamp
-
-    var timingInfo = CMSampleTimingInfo(
-      duration: .invalid,  // 1회성 이미지이므로 duration 불필요
-      presentationTimeStamp: pts,  // 이 프레임을 언제 보여줄 것인가
-      decodeTimeStamp: .invalid  // 디코딩 시간이므로 불필요
-    )
-
-    // 3. CMSampleBuffer 생성
-    var sampleBuffer: CMSampleBuffer?
-    status = CMSampleBufferCreateReadyWithImageBuffer(
-      allocator: kCFAllocatorDefault,
-      imageBuffer: pixelBuffer,  // 래핑할 이미지 버퍼
-      formatDescription: formatDesc,  // 이미지 포맷 정보
-      sampleTiming: &timingInfo,  // 시간 정보
-      sampleBufferOut: &sampleBuffer
-    )
-
-    guard status == noErr, let buffer = sampleBuffer else {
-      logger.error("Failed to create CMSampleBuffer: \(status)")
-      return nil
-    }
-
-    return buffer
   }
 }
 

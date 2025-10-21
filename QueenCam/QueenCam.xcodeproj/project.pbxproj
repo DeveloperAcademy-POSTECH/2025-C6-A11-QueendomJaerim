@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		3D525A9C2EA7CC5B00B4860A /* Transcoding in Frameworks */ = {isa = PBXBuildFile; productRef = 3D525A9B2EA7CC5B00B4860A /* Transcoding */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		3D5E6BFC2E7D687300A0E03A /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -66,6 +70,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3D525A9C2EA7CC5B00B4860A /* Transcoding in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -129,6 +134,7 @@
 			);
 			name = QueenCam;
 			packageProductDependencies = (
+				3D525A9B2EA7CC5B00B4860A /* Transcoding */,
 			);
 			productName = QueenCam;
 			productReference = 3D5E6BEE2E7D687300A0E03A /* QueenCam.app */;
@@ -215,6 +221,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				3D6CDA672E8E3EDD006C445A /* XCRemoteSwiftPackageReference "SwiftLintPlugins" */,
+				3D525A9A2EA7CC5B00B4860A /* XCRemoteSwiftPackageReference "Transcoding" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 3D5E6BEF2E7D687300A0E03A /* Products */;
@@ -643,6 +650,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		3D525A9A2EA7CC5B00B4860A /* XCRemoteSwiftPackageReference "Transcoding" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/0tak2/Transcoding";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
 		3D6CDA672E8E3EDD006C445A /* XCRemoteSwiftPackageReference "SwiftLintPlugins" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/SimplyDanny/SwiftLintPlugins";
@@ -654,6 +669,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		3D525A9B2EA7CC5B00B4860A /* Transcoding */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3D525A9A2EA7CC5B00B4860A /* XCRemoteSwiftPackageReference "Transcoding" */;
+			productName = Transcoding;
+		};
 		3D6CDA682E8E3F36006C445A /* SwiftLintBuildToolPlugin */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 3D6CDA672E8E3EDD006C445A /* XCRemoteSwiftPackageReference "SwiftLintPlugins" */;

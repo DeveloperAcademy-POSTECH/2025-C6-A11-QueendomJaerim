@@ -8,9 +8,10 @@
 import Combine
 import Foundation
 import SwiftUI
+import CoreMedia
 
 struct CameraPreviewDisplayViewContainer: UIViewControllerRepresentable {
-  var currentFrame: VideoFrameDecoded?
+  var currentSampleBuffer: CMSampleBuffer?
 
   let frameDidSkippedAction: (Double) -> Void
   let frameDidRenderStablyAction: () -> Void
@@ -20,7 +21,7 @@ struct CameraPreviewDisplayViewContainer: UIViewControllerRepresentable {
   }
 
   func updateUIViewController(_ uiViewController: CameraPreviewDisplayViewController, context: Context) {
-    uiViewController.renderFrame(frame: currentFrame)
+    uiViewController.renderFrame(sampleBuffer: currentSampleBuffer)
     uiViewController.delegate = context.coordinator
   }
 
