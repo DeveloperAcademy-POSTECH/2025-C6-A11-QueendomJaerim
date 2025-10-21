@@ -80,6 +80,37 @@ extension PhotoDetailView {
   private var isLivePhoto: Bool {
     asset.mediaSubtypes.contains(.photoLive)
   }
+  
+  private func requestVideoResouceData() {
+    logger.debug("라이브 포토 Paired Video 사전 캐시 시작")
+    
+    // 비디오 리소스 찾기
+    let resources = PHAssetResource.assetResources(for: asset)
+    
+    guard let videoResource = resources.first(where: { $0.type == .pairedVideo }) else {
+      logger.warning("Paired Video 리스소를 찾을 수 없음")
+      return
+    }
+    
+    // 데이터 요청 옵션 설정
+    let options = PHAssetResourceRequestOptions()
+    options.isNetworkAccessAllowed = true
+    
+    // 데이터 요청 실행
+    let manger = PHAssetResourceManager()
+    
+    manger.requestData(
+      for: videoResource,
+      options: options,
+      dataReceivedHandler: { _ in }) { error in
+        if let error = error {
+          self.logger.error("Paired Video 캐시 실패: \(error.localizedDescription)")
+        } else {
+          self.logger.debug("Paired Video 캐시 완료")
+        }
+            
+      }
+  }
 }
 
 extension PhotoDetailView: View {
@@ -173,6 +204,7 @@ extension PhotoDetailView: View {
 
       if asset.mediaSubtypes.contains(.photoLive) {
         requestLivePhoto()
+        requestVideoResouceData()
       }
     }
   }
