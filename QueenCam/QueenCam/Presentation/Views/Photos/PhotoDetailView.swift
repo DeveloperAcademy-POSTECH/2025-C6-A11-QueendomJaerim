@@ -65,9 +65,14 @@ extension PhotoDetailView {
       options: options
     ) { result, info in
       if let result {
-        self.livePhoto = result
         let isDegraded = (info?[PHImageResultIsDegradedKey] as? NSNumber)?.boolValue ?? false
-        self.logger.debug("\(isDegraded ? "저화질 라이브 포토 로드" : "고화질 라이브 포토 로드")")
+        
+        if !isDegraded {
+          self.livePhoto = result
+          self.logger.debug("고화질 라이브 포토 로드 완료")
+        } else {
+          self.logger.debug("저화질 라이브 포토 로드")
+        }
       }
     }
   }
