@@ -116,19 +116,26 @@ extension PhotoDetailView: View {
           }
         }
       }
-      .overlay(alignment: .topTrailing) {
-        Button(action: {
-          if detailSelectedImageID == asset.localIdentifier {
-            detailSelectedImageID = nil
-          } else {
-            detailSelectedImageID = asset.localIdentifier
+
+      VStack {
+        HStack {
+          Spacer()
+          Button(action: {
+            if detailSelectedImageID == asset.localIdentifier {
+              detailSelectedImageID = nil
+            } else {
+              detailSelectedImageID = asset.localIdentifier
+            }
+          }) {
+            Image(systemName: detailSelectedImageID == asset.localIdentifier ? "checkmark.circle.fill" : "circle")
+              .imageScale(.large)
+              .padding()
           }
-        }) {
-          Image(systemName: detailSelectedImageID == asset.localIdentifier ? "checkmark.circle.fill" : "circle")
-            .imageScale(.large)
-            .padding()
+          .padding(.top, 128)
+
         }
-        .padding(.top, 128)
+
+        Spacer()
       }
 
       VStack {
