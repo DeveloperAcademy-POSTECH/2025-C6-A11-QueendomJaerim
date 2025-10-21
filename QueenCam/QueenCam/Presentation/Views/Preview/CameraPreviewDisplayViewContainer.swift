@@ -9,17 +9,17 @@ import Combine
 import Foundation
 import SwiftUI
 
-struct CameraPreviewMTKViewContainer: UIViewControllerRepresentable {
+struct CameraPreviewDisplayViewContainer: UIViewControllerRepresentable {
   var currentFrame: VideoFrameDecoded?
 
   let frameDidSkippedAction: (Double) -> Void
   let frameDidRenderStablyAction: () -> Void
 
-  func makeUIViewController(context: Context) -> CameraPreviewMTKViewController {
-    CameraPreviewMTKViewController()
+  func makeUIViewController(context: Context) -> CameraPreviewDisplayViewController {
+    CameraPreviewDisplayViewController()
   }
 
-  func updateUIViewController(_ uiViewController: CameraPreviewMTKViewController, context: Context) {
+  func updateUIViewController(_ uiViewController: CameraPreviewDisplayViewController, context: Context) {
     uiViewController.renderFrame(frame: currentFrame)
     uiViewController.delegate = context.coordinator
   }
@@ -28,7 +28,7 @@ struct CameraPreviewMTKViewContainer: UIViewControllerRepresentable {
     Coordinator(frameDidSkippedAction: frameDidSkippedAction, frameDidRenderStablyAction: frameDidRenderStablyAction)
   }
 
-  class Coordinator: CameraPreviewMTKViewControllerDeletegate {
+  class Coordinator: CameraPreviewDisplayViewControllerDelegate {
     let frameDidSkippedAction: (Double) -> Void
     let frameDidRenderStablyAction: () -> Void
 
@@ -37,11 +37,11 @@ struct CameraPreviewMTKViewContainer: UIViewControllerRepresentable {
       self.frameDidRenderStablyAction = frameDidRenderStablyAction
     }
 
-    func frameDidSkipped(viewController: CameraPreviewMTKViewController, diff: Double) {
+    func frameDidSkipped(viewController: CameraPreviewDisplayViewController, diff: Double) {
       frameDidSkippedAction(diff)
     }
 
-    func frameDidRenderStably(viewController: CameraPreviewMTKViewController) {
+    func frameDidRenderStably(viewController: CameraPreviewDisplayViewController) {
       frameDidRenderStablyAction()
     }
   }

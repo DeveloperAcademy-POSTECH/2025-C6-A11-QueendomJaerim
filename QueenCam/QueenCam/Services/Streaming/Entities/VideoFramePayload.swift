@@ -9,7 +9,7 @@ import AVFoundation
 import Foundation
 
 struct VideoFramePayload: Codable {
-  let frameData: Data
+  let nalUnits: [Data]
   let originalSize: CGSize
   let scaledSize: CGSize
   let quality: PreviewFrameQuality
@@ -21,5 +21,5 @@ struct VideoFrameDecoded {
   let originalSize: CGSize
   let scaledSize: CGSize
   let quality: PreviewFrameQuality
-  let timestamp: Date
+  let timestamp: CMTime
 }

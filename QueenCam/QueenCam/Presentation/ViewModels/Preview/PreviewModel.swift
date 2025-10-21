@@ -20,27 +20,31 @@ final class PreviewModel {
 
   // MARK: - 스트리밍 관련 프로퍼티
   private let jpegToPixelBufferDecoder = JPEGToPixelBufferDecoder()
+  
+  let hevcDecoder = HEVCDecoder()
 
   /// Received Preview Image
   var lastReceivedFrame: VideoFramePayload? {
     didSet {
       if let lastReceivedFrame {
-        if imageSize == nil {
-          imageSize = lastReceivedFrame.originalSize
-        }
-
-        do {
-          let imageBuffer = try jpegToPixelBufferDecoder.decode(lastReceivedFrame.frameData)
-          lastReceivedFrameDecoded = VideoFrameDecoded(
-            frame: imageBuffer,
-            originalSize: lastReceivedFrame.originalSize,
-            scaledSize: lastReceivedFrame.scaledSize,
-            quality: lastReceivedFrame.quality,
-            timestamp: lastReceivedFrame.timestamp
-          )
-        } catch {
-          logger.error("error during decoding image: \(error)")
-        }
+//        if imageSize == nil {
+//          imageSize = lastReceivedFrame.originalSize
+//        }
+//
+//        do {
+//          let imageBuffer = try jpegToPixelBufferDecoder.decode(lastReceivedFrame.frameData)
+//          lastReceivedFrameDecoded = VideoFrameDecoded(
+//            frame: imageBuffer,
+//            originalSize: lastReceivedFrame.originalSize,
+//            scaledSize: lastReceivedFrame.scaledSize,
+//            quality: lastReceivedFrame.quality,
+//            timestamp: lastReceivedFrame.timestamp
+//          )
+//        } catch {
+//          logger.error("error during decoding image: \(error)")
+//        }
+        
+        hevcDecoder.decode(nalUnits: lastReceivedFrame.nalUnits, pts: lastReceivedFrame.timestamp.timeIntervalSince1970.toCMTime())
       }
     }
   }
@@ -91,6 +95,16 @@ final class PreviewModel {
     self.networkService = networkService
 
     bind()
+    
+    hevcDecoder.onFrameDecoded = { [weak self] (buffer, cmTime) in
+      self?.lastReceivedFrameDecoded = .init(
+        frame: buffer,
+        originalSize: .zero,
+        scaledSize: .zero,
+        quality: .high,
+        timestamp: cmTime
+      )
+    }
   }
 
   private func bind() {

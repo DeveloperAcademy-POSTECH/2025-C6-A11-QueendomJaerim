@@ -14,7 +14,7 @@ struct PreviewPlayerView: View {
   var body: some View {
     if let imageSize = previewModel.imageSize {
 
-      CameraPreviewMTKViewContainer(
+      CameraPreviewDisplayViewContainer(
         currentFrame: previewModel.lastReceivedFrameDecoded,
         frameDidSkippedAction: { diff in
           previewModel.frameDidSkipped()

@@ -37,6 +37,9 @@ final actor PreviewCaptureService {
   private let transferingFPS: Double = 30.0  // 목표 FPS를 30으로 설정
   private var lastPresentationTime: TimeInterval = 0.0
 
+  /// HEVC 인코더
+  var hevcEncoder: HEVCEncoder?
+
   private let logger = Logger(
     subsystem: Bundle.main.bundleIdentifier ?? "com.queendom.QueenCam",
     category: "PreviewCaptureService"
@@ -74,6 +77,15 @@ extension PreviewCaptureService {
     logger.info("started to capture preveiw stream")
     logger.info("video settings: \(self.previewOutput.videoSettings ?? [:])")
 
+    // MARK: setup HEVC encoder
+    if let width = self.previewOutput.videoSettings[kCVPixelBufferWidthKey as String] as? Int,
+      let height = self.previewOutput.videoSettings[kCVPixelBufferHeightKey as String] as? Int
+    {
+      setupEncoder(width: width, height: height)
+    } else {
+      logger.error("Cannot read width and height from videoSettings")
+    }
+
     // MARK: set to render frame
 
     Task {
@@ -103,6 +115,39 @@ extension PreviewCaptureService {
 }
 
 extension PreviewCaptureService {
+  func setupEncoder(width: Int, height: Int) {
+    hevcEncoder = HEVCEncoder(width: width, height: height)
+
+    // NAL Unit을 받았을 때 실행할 클로저(콜백) 설정
+    hevcEncoder?.callback = { [weak self] (nalUnits: [Data]) in
+
+      // nalUnits는 [Data] 배열입니다.
+      // 키프레임의 경우 [VPS, SPS, PPS, Slice, ...] 순서로 들어옵니다.
+      // P/B프레임의 경우 [Slice, ...] 순서로 들어옵니다.
+
+      self?.logger.debug("Received \(nalUnits.count) NAL units.")
+
+      Task {
+        if let framePayloadContinuation = await self?.framePayloadContinuation {
+          framePayloadContinuation.yield(
+            VideoFramePayload(
+              nalUnits: nalUnits,
+              originalSize: .zero,
+              scaledSize: .zero,
+              quality: .high,
+              timestamp: Date()
+            )
+          )
+        }
+      }
+
+//      for nalData in nalUnits {
+//        let header = nalData.prefix(5).map { String(format: "%02x", $0) }.joined(separator: " ")
+//        self?.logger.debug("NAL Unit: \(header)... (Total: \(nalData.count) bytes)")
+//      }
+    }
+  }
+
   private func setupFrameProcessing() async {
     let ciContext = CIContext()
     let colorSpace = CGColorSpace(name: CGColorSpace.sRGB)!
@@ -111,74 +156,23 @@ extension PreviewCaptureService {
 
     if let bufferStream = self.bufferStream {
       for await buffer in bufferStream {
-        guard let pixelBuffer = CMSampleBufferGetImageBuffer(buffer) else {
-          self.logger.warning("video buffer에 imageBuffer가 없음")
-          continue  // 다음 프레임으로 넘어갑니다.
+        guard let hevcEncoder else {
+          logger.warning("HEVCEncoder is nil")
+          break
         }
 
-        // --- FPS 제어 로직 ---
-        let currentTime = Date().timeIntervalSince1970
-
-        // 현재 시간과 마지막 처리 시간의 차이를 계산
-        let elapsedTime = currentTime - self.lastPresentationTime
-
-        // 시간 간격이 충분하지 않으면 이번 프레임은 건너뜁니다 (continue 사용).
-        guard elapsedTime >= minTimeInterval else {
-          // self.logger.debug("skip to capture frame")
-          continue
-        }
-
-        // 마지막 처리 시간을 현재 시간으로 업데이트
-        self.lastPresentationTime = currentTime
-
-        //        self.logger.debug("will capture frame. \(currentTime)")
-
-        // ----- 1. 현재 화질 가져오기 -----
-        let quality = self.quality
-        let scaleFactor = quality.scale
-        let jpegQuality = quality.jpegQuality
-
-        // ----- 2. 원본 CIImage -----
-        var ciImage = CIImage(cvPixelBuffer: pixelBuffer)
-        let originalSize = ciImage.extent.size
-
-        // ----- 3. 다운스케일 -----
-        if scaleFactor < 1.0 {
-          let filter = CIFilter(name: "CILanczosScaleTransform")!
-          filter.setValue(ciImage, forKey: kCIInputImageKey)
-          filter.setValue(scaleFactor, forKey: kCIInputScaleKey)
-          filter.setValue(1.0, forKey: kCIInputAspectRatioKey)
-          guard let output = filter.outputImage else {
-            self.logger.warning("CILanczosScaleTransform 실패")
-            continue
-          }
-          ciImage = output
-        }
-
-        let scaledSize = ciImage.extent.size
-
-        // ----- 4. JPEG 변환 -----
-        guard
-          let imageData = ciContext.jpegRepresentation(
-            of: ciImage,
-            colorSpace: colorSpace,
-            options: [kCGImageDestinationLossyCompressionQuality as CIImageRepresentationOption: jpegQuality]
-          )
-        else {
-          self.logger.warning("CIImage -> JPEG 변환 실패")
-          continue
-        }
+        hevcEncoder.encode(sampleBuffer: buffer)
 
         // ----- 5. 프레임 방출 -----
-        framePayloadContinuation.yield(
-          VideoFramePayload(
-            frameData: imageData,
-            originalSize: originalSize,
-            scaledSize: scaledSize,
-            quality: quality,
-            timestamp: Date()
-          )
-        )
+        //        framePayloadContinuation.yield(
+        //          VideoFramePayload(
+        //            frameData: imageData,
+        //            originalSize: originalSize,
+        //            scaledSize: scaledSize,
+        //            quality: quality,
+        //            timestamp: Date()
+        //          )
+        //        )
       }
     }
   }

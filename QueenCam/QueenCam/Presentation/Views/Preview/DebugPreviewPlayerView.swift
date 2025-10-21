@@ -17,7 +17,7 @@ struct DebugPreviewPlayerView: View {
     if let imageSize = previewModel.imageSize {
 
       ZStack {
-        CameraPreviewMTKViewContainer(
+        CameraPreviewDisplayViewContainer(
           currentFrame: previewModel.lastReceivedFrameDecoded,
           frameDidSkippedAction: { diff in
             previewModel.frameDidSkipped()
