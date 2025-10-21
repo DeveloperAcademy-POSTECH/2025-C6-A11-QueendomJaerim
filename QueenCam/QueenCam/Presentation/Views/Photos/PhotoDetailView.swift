@@ -71,6 +71,10 @@ extension PhotoDetailView {
       }
     }
   }
+
+  private var isLivePhoto: Bool {
+    asset.mediaSubtypes.contains(.photoLive)
+  }
 }
 
 extension PhotoDetailView: View {
@@ -79,16 +83,31 @@ extension PhotoDetailView: View {
       Color.black.ignoresSafeArea()
 
       Group {
-        if asset.mediaSubtypes.contains(.photoLive) {
+        switch self.isLivePhoto {
+        case true:
           if let livePhoto = livePhoto {
             LivePhotoView(livePhoto: livePhoto)
+              .background(.red.opacity(0.2))
+          } else if let image = detailImage {
+            Image(uiImage: image)
+              .resizable()
+              .scaledToFit()
+              .frame(maxWidth: .infinity, maxHeight: .infinity)
+              .background(.green.opacity(0.2))
+
+          } else {
+            ProgressView()
           }
-        } else {
+
+        case false:
           if let image = detailImage {
             Image(uiImage: image)
               .resizable()
               .scaledToFit()
-
+              .frame(maxWidth: .infinity, maxHeight: .infinity)
+              .background(.green.opacity(0.2))
+          } else {
+            ProgressView()
           }
         }
       }
@@ -104,6 +123,7 @@ extension PhotoDetailView: View {
             .imageScale(.large)
             .padding()
         }
+        .padding(.top, 128)
       }
 
       VStack {
