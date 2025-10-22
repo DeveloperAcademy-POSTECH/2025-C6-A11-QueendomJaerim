@@ -9,6 +9,8 @@
 
 ### Added
 
+- 라이브 포토 재생 기능
+
 ### Changed
 
 ### Deprecated
