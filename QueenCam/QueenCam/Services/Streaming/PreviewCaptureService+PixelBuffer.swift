@@ -21,7 +21,7 @@ extension PreviewCaptureService {
   /**
    CoreImage를 사용해 CVPixelBuffer를 리사이징한다.
    */
-  private func resizePixelBuffer(_ pixelBuffer: CVPixelBuffer, scale: CGFloat) -> CVPixelBuffer? {
+  func resizePixelBuffer(_ pixelBuffer: CVPixelBuffer, scale: CGFloat) -> CVPixelBuffer? {
     let originalWidth = CVPixelBufferGetWidth(pixelBuffer)
     let originalHeight = CVPixelBufferGetHeight(pixelBuffer)
 
@@ -64,7 +64,7 @@ extension PreviewCaptureService {
   /**
    새 CVPixelBuffer와 원본 CMSampleBuffer의 시간 정보를 조합해 새 CMSampleBuffer를 생성한다.
    */
-  private func createSampleBuffer(
+  func createSampleBuffer(
     from pixelBuffer: CVPixelBuffer,
     withTimingOf originalSampleBuffer: CMSampleBuffer
   ) -> CMSampleBuffer? {
