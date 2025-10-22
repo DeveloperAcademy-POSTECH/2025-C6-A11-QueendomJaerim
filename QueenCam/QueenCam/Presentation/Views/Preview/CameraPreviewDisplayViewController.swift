@@ -5,181 +5,101 @@
 //  Created by 임영택 on 10/21/25.
 //
 
-import MetalKit
+import AVFoundation
 import OSLog
 import UIKit
-import CoreMedia
 
 final class CameraPreviewDisplayViewController: UIViewController {
-  // MARK: MTKView
-  private let mtkView = MTKView()
+  let displayView: SampleBufferDisplayView = .init()
 
-  // MARK: Core Image
-  private var commandQueue: MTLCommandQueue!
-  private var ciContext: CIContext!
-  private var offscreenTexture: MTLTexture?
-  private let colorSpace = CGColorSpaceCreateDeviceRGB()
-
-  // MARK: Current Video Frame
-  private var currentPixelBuffer: CVPixelBuffer?
-
-  // MARK: Delegate
   weak var delegate: CameraPreviewDisplayViewControllerDelegate?
 
-  private var renderingCount: Int = 0
+  // MARK: - Config
+  let rotateDegrees: CGFloat = 90.0  // 비디오가 가로로 전송되어 플레이어 뷰를 회전시키기 위한 값
 
-  // MARK: Configs
-  private let timestampDiffThreshold: Double = 1.0 / 3.0  // 단위: 초
-  private let countForReportingStableThreshold: Int = 150  // 단위: 횟수, 대략 5초 정도
+  override func viewDidLoad() {
+    displayView.translatesAutoresizingMaskIntoConstraints = false
+    view.addSubview(displayView)
+    NSLayoutConstraint.activate([
+      displayView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+      displayView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+      displayView.topAnchor.constraint(equalTo: view.topAnchor),
+      displayView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+    ])
+
+    view.transform = CGAffineTransformMakeRotation(rotateDegrees * .pi / 180);
+  }
+
+  func renderFrame(sampleBuffer: CMSampleBuffer?) {
+    displayView.renderFrame(sampleBuffer)
+  }
+}
+
+final class SampleBufferDisplayView: UIView {
+  private let minFPS: Double = 200
+  private let frameRateDropThreshold = 2
+  private let frameRateSkipAmount = 4
+  private let adapterClock = CMClockGetHostTimeClock()
+
+  private var lastTime = CMClockGetTime(CMClockGetHostTimeClock())
+  private var adapterCounter = 0 // 너무 많은 프레임이 들어오는 경우를 조절하는 카운터
+  
+  var onFrameRenderError: (() -> Void)?
+  var onFrameRenderStablely: (() -> Void)?
 
   private let logger = Logger(
     subsystem: Bundle.main.bundleIdentifier ?? "com.queendom.QueenCam",
-    category: "CameraPreviewMTKViewController"
+    category: "SampleBufferDisplayView"
   )
 
-  override func viewDidLoad() {
-    super.viewDidLoad()
-    mtkView.delegate = self
+  var videoLayer: AVSampleBufferDisplayLayer?
 
-    configure()
-    setupLayout()
+  override func layoutSubviews() {
+    super.layoutSubviews()
+    videoLayer?.removeFromSuperlayer()
+    let videoLayer = AVSampleBufferDisplayLayer()
+    videoLayer.backgroundColor = UIColor.black.cgColor
+    videoLayer.frame = bounds
+    videoLayer.videoGravity = .resizeAspect
+    layer.insertSublayer(videoLayer, at: 0)
+    self.videoLayer = videoLayer
   }
+}
 
-  private func setupLayout() {
-    mtkView.translatesAutoresizingMaskIntoConstraints = false
-
-    view.addSubview(mtkView)
-
-    NSLayoutConstraint.activate([
-      mtkView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-      mtkView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-      mtkView.topAnchor.constraint(equalTo: view.topAnchor),
-      mtkView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-    ])
-  }
-
-  private func configure() {
-    guard let device = MTLCreateSystemDefaultDevice() else {
-      assertionFailure("Metal is not supported on this device")
+extension SampleBufferDisplayView {
+  func renderFrame(_ sampleBuffer: CMSampleBuffer?) {
+    guard let renderer = videoLayer?.sampleBufferRenderer else {
+      logger.warning("AVSampleBufferDisplayLayer is nil. Skip rendering a frame.")
       return
     }
 
-    mtkView.device = device
-    mtkView.colorPixelFormat = .bgra8Unorm
-    mtkView.framebufferOnly = false
+    let adaptedTime = CMClockGetTime(adapterClock)
+    let timeDifference = CMTimeSubtract(adaptedTime, lastTime)
+    let frameRate = 1 / CMTimeGetSeconds(timeDifference)
 
-    commandQueue = device.makeCommandQueue()
-    ciContext = CIContext(mtlDevice: device)
-  }
-}
+    lastTime = adaptedTime
 
-extension CameraPreviewDisplayViewController {
-  func renderFrame(sampleBuffer: CMSampleBuffer?) {
-    guard let sampleBuffer else { return }
-    
-    if let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) {
-      self.currentPixelBuffer = pixelBuffer
-    }
-  }
-}
+    if frameRate > minFPS { // 너무 빠르게 프레임이 들어오면 드랍
+      adapterCounter += 1
 
-extension CameraPreviewDisplayViewController: MTKViewDelegate {
-  func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
-  }
-
-  func draw(in view: MTKView) {
-    drawBuffer(currentPixelBuffer)
-  }
-}
-
-extension CameraPreviewDisplayViewController {
-  // MARK: Rendering
-
-  private func ensureOffscreenTexture(for size: CGSize) {
-    guard let device = mtkView.device else { return }
-    let width = max(1, Int(size.width.rounded()))
-    let height = max(1, Int(size.height.rounded()))
-    if let texture = offscreenTexture, texture.width == width, texture.height == height { return }
-
-    let desc = MTLTextureDescriptor.texture2DDescriptor(
-      pixelFormat: mtkView.colorPixelFormat,
-      width: width,
-      height: height,
-      mipmapped: false
-    )
-    desc.usage = [.shaderWrite, .shaderRead]  // 핵심
-    desc.storageMode = .private
-    offscreenTexture = device.makeTexture(descriptor: desc)
-  }
-
-  private func aspectFill(_ image: CIImage, to dst: CGSize) -> CIImage {
-    let size = image.extent.size
-    let scale = max(dst.width / size.width, dst.height / size.height)
-    let scaled = image.transformed(by: .init(scaleX: scale, y: scale))
-    let translationX = (dst.width - scaled.extent.width) * 0.5
-    let translationY = (dst.height - scaled.extent.height) * 0.5
-    return scaled.transformed(by: .init(translationX: translationX, y: translationY))
-  }
-
-  func drawBuffer(_ pixelBuffer: CVPixelBuffer?) {
-    guard let pixelBuffer else {
-      logger.warning("skip drawBuffer... frame is nil...")
-      renderingCount = 0
-      return
+      if adapterCounter > frameRateDropThreshold && ((adapterCounter - frameRateDropThreshold) % frameRateSkipAmount) != 0 {
+        // 빠르게 들어온 카운트가 임계값을 넘었을 때, frameRateSkipAmount마다 렌더링함
+        return
+      }
+    } else {
+      adapterCounter = 0
     }
 
-    guard let drawable = mtkView.currentDrawable,
-      let commandBuffer = commandQueue.makeCommandBuffer()
-    else { return }
-
-    let dstSize = mtkView.drawableSize
-    ensureOffscreenTexture(for: dstSize)
-    guard let offscreen = offscreenTexture else { return }
-
-    // 1) CVPixelBuffer -> CIImage (방향 보정 필요시 oriented 사용)
-    var img = CIImage(cvPixelBuffer: pixelBuffer)
-    img = img.oriented(.rightMirrored)
-
-    // 2) Aspect-Fill
-    img = aspectFill(img, to: dstSize)
-
-    // 3) CI -> Offscreen(shaderWrite)
-    ciContext.render(
-      img,
-      to: offscreen,
-      commandBuffer: commandBuffer,
-      bounds: CGRect(origin: .zero, size: dstSize),
-      colorSpace: colorSpace
-    )
-
-    // 4) Offscreen -> Drawable Blit
-    if let blit = commandBuffer.makeBlitCommandEncoder() {
-      blit.copy(
-        from: offscreen,
-        sourceSlice: 0,
-        sourceLevel: 0,
-        sourceOrigin: .init(x: 0, y: 0, z: 0),
-        sourceSize: .init(width: offscreen.width, height: offscreen.height, depth: 1),
-        to: drawable.texture,
-        destinationSlice: 0,
-        destinationLevel: 0,
-        destinationOrigin: .init(x: 0, y: 0, z: 0)
-      )
-      blit.endEncoding()
-    }
-
-    commandBuffer.present(drawable)
-    commandBuffer.commit()
-
-    renderingCount += 1
-    if renderingCount >= countForReportingStableThreshold {
-      delegate?.frameDidRenderStably(viewController: self)
-      renderingCount = 0
+    if let videoLayer, renderer.isReadyForMoreMediaData, let sampleBuffer {
+      renderer.enqueue(sampleBuffer)
+    } else if let error = renderer.error {
+      logger.error("video layer error \(error)")
+      onFrameRenderError?()
     }
   }
 }
 
 protocol CameraPreviewDisplayViewControllerDelegate: AnyObject {
-  func frameDidSkipped(viewController: CameraPreviewDisplayViewController, diff: Double)
+  func frameDidSkipped(viewController: CameraPreviewDisplayViewController)
   func frameDidRenderStably(viewController: CameraPreviewDisplayViewController)
 }
