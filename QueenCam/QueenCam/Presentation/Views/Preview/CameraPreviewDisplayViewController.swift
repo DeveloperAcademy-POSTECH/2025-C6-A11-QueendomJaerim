@@ -24,10 +24,20 @@ final class CameraPreviewDisplayViewController: UIViewController {
       displayView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
       displayView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
       displayView.topAnchor.constraint(equalTo: view.topAnchor),
-      displayView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+      displayView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
     ])
 
-    view.transform = CGAffineTransformMakeRotation(rotateDegrees * .pi / 180);
+    view.transform = CGAffineTransformMakeRotation(rotateDegrees * .pi / 180)
+
+    displayView.onFrameRenderUnstably = { [weak self] in
+      guard let self else { return }
+      self.delegate?.frameDidSkipped(viewController: self)
+    }
+
+    displayView.onFrameRenderStably = { [weak self] in
+      guard let self else { return }
+      self.delegate?.frameDidRenderStably(viewController: self)
+    }
   }
 
   func renderFrame(sampleBuffer: CMSampleBuffer?) {
@@ -44,8 +54,12 @@ final class SampleBufferDisplayView: UIView {
   private var lastTime = CMClockGetTime(CMClockGetHostTimeClock())
   private var adapterCounter = 0 // 너무 많은 프레임이 들어오는 경우를 조절하는 카운터
   
-  var onFrameRenderError: (() -> Void)?
-  var onFrameRenderStablely: (() -> Void)?
+  private var stableRenderingCounter = 0 // 안정적으로 렌더링된 프레임 카운터
+  private var reportStableRenderingThreshold: Int = 300
+  
+  // MARK: - Handlers
+  var onFrameRenderUnstably: (() -> Void)?
+  var onFrameRenderStably: (() -> Void)?
 
   private let logger = Logger(
     subsystem: Bundle.main.bundleIdentifier ?? "com.queendom.QueenCam",
@@ -90,11 +104,21 @@ extension SampleBufferDisplayView {
       adapterCounter = 0
     }
 
-    if let videoLayer, renderer.isReadyForMoreMediaData, let sampleBuffer {
+    if renderer.isReadyForMoreMediaData, let sampleBuffer {
       renderer.enqueue(sampleBuffer)
+      stableRenderingCounter += 1
     } else if let error = renderer.error {
       logger.error("video layer error \(error)")
-      onFrameRenderError?()
+      onFrameRenderUnstably?()
+      stableRenderingCounter = 0
+    } else {
+      logger.warning("video layer has no error but not enqueued a sample buffer")
+      onFrameRenderUnstably?()
+      stableRenderingCounter = 0
+    }
+
+    if stableRenderingCounter >= reportStableRenderingThreshold {
+      onFrameRenderStably?()
     }
   }
 }

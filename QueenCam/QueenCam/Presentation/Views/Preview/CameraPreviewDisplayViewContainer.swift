@@ -13,7 +13,7 @@ import CoreMedia
 struct CameraPreviewDisplayViewContainer: UIViewControllerRepresentable {
   var currentSampleBuffer: CMSampleBuffer?
 
-  let frameDidSkippedAction: (Double) -> Void
+  let frameDidSkippedAction: () -> Void
   let frameDidRenderStablyAction: () -> Void
 
   func makeUIViewController(context: Context) -> CameraPreviewDisplayViewController {
@@ -30,16 +30,16 @@ struct CameraPreviewDisplayViewContainer: UIViewControllerRepresentable {
   }
 
   class Coordinator: CameraPreviewDisplayViewControllerDelegate {
-    let frameDidSkippedAction: (Double) -> Void
+    let frameDidSkippedAction: () -> Void
     let frameDidRenderStablyAction: () -> Void
 
-    init(frameDidSkippedAction: @escaping (Double) -> Void, frameDidRenderStablyAction: @escaping () -> Void) {
+    init(frameDidSkippedAction: @escaping () -> Void, frameDidRenderStablyAction: @escaping () -> Void) {
       self.frameDidSkippedAction = frameDidSkippedAction
       self.frameDidRenderStablyAction = frameDidRenderStablyAction
     }
 
-    func frameDidSkipped(viewController: CameraPreviewDisplayViewController, diff: Double) {
-      frameDidSkippedAction(diff)
+    func frameDidSkipped(viewController: CameraPreviewDisplayViewController) {
+      frameDidSkippedAction()
     }
 
     func frameDidRenderStably(viewController: CameraPreviewDisplayViewController) {

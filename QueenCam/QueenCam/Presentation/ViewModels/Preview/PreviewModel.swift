@@ -206,7 +206,7 @@ extension PreviewModel {
   func frameDidRenderStablely() {
     Task.detached { [weak self] in
       await self?.networkService.send(for: .renderState(.stable))
-      self?.logger.warning("sent stable event")
+      // self?.logger.debug("sent stable event")
     }
   }
 }

@@ -17,7 +17,7 @@ struct DebugPreviewPlayerView: View {
     ZStack {
       CameraPreviewDisplayViewContainer(
         currentSampleBuffer: previewModel.lastReceivedCMSampleBuffer,
-        frameDidSkippedAction: { diff in
+        frameDidSkippedAction: {
           previewModel.frameDidSkipped()
         },
         frameDidRenderStablyAction: {

@@ -14,7 +14,7 @@ struct PreviewPlayerView: View {
   var body: some View {
     CameraPreviewDisplayViewContainer(
       currentSampleBuffer: previewModel.lastReceivedCMSampleBuffer,
-      frameDidSkippedAction: { diff in
+      frameDidSkippedAction: {
         previewModel.frameDidSkipped()
       },
       frameDidRenderStablyAction: {
