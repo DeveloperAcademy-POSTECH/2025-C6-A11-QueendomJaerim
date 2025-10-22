@@ -29,7 +29,7 @@ final class PreviewModel {
   var lastReceivedFrame: VideoFramePayload? {
     didSet {
       if let lastReceivedFrame {
-        videoDecoderAnnexBAdaptor.decode(lastReceivedFrame.data)
+        videoDecoderAnnexBAdaptor.decode(lastReceivedFrame.hevcData)
       }
     }
   }

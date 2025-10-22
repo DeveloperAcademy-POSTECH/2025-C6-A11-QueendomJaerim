@@ -121,11 +121,8 @@ extension PreviewCaptureService {
         let framePayloadContinuation = await self.framePayloadContinuation
           framePayloadContinuation.yield(
             VideoFramePayload(
-              data: data,
-              originalSize: .zero,
-              scaledSize: .zero,
+              hevcData: data,
               quality: .high,
-              timestamp: Date()
             )
           )
       }
