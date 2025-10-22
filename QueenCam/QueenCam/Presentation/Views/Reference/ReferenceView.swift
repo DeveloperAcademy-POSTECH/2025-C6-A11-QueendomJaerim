@@ -7,14 +7,17 @@
 
 import SwiftUI
 
+/// 레퍼런스 상태를 표현하는 이넘
 enum ReferenceState: Equatable {
   case open  // Reference(PiP) 모드 활성화
   case close  // Reference(PiP) 모두 비활성화
   case delete  // Reference(PiP) 삭제
 }
 
+/// 레퍼런스 뷰 - 레퍼런스를 표시한다.
 struct ReferenceView: View {
   @Bindable var referenceViewModel: ReferenceViewModel
+  @Binding var isLarge: Bool
   // FIXME: 레퍼런스 임시 배치 위치 => 스프린트2,3에 수정 예정
   var top: CGFloat = 8
   var leading: CGFloat = 0
@@ -23,7 +26,7 @@ struct ReferenceView: View {
     Group {
       switch referenceViewModel.state {
       case .open:  // 레퍼런스 On
-        OpenView(referenceViewModel: referenceViewModel, role: role)
+        OpenView(referenceViewModel: referenceViewModel, isLarge: $isLarge, role: role)
           .padding(.top, top)
           .padding(.leading, leading)
           .offset(referenceViewModel.dragOffset)
