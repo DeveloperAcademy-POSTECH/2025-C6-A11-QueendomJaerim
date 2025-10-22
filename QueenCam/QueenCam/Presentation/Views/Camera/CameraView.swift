@@ -144,6 +144,13 @@ extension CameraView: View {
               #else
               PreviewPlayerView(previewModel: previewModel)
               #endif
+              
+              if isLarge {
+                Color.black.opacity(0.5)
+                  .onTapGesture {
+                    isLarge = false
+                  }
+              }
 
               ReferenceView(referenceViewModel: referenceViewModel, isLarge: $isLarge, role: .model)  // 레퍼런스 - 삭제 가능
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)

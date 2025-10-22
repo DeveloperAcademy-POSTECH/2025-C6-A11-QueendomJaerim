@@ -38,7 +38,7 @@ struct OpenView: View {
             }
         }
       }
-      if showDelete && (referenceViewModel.image != nil) {
+      if isLarge && (referenceViewModel.image != nil) {
         Button {
           referenceViewModel.onDelete()
           showDelete = false
