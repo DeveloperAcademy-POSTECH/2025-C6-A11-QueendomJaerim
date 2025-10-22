@@ -235,7 +235,8 @@ extension CameraManager {
           min(factor / device.displayVideoZoomFactorMultiplier, device.maxAvailableVideoZoomFactor)
         )
 
-        device.ramp(toVideoZoomFactor: zoomFactor, withRate: 4)
+        device.videoZoomFactor = zoomFactor
+//        device.ramp(toVideoZoomFactor: zoomFactor, withRate: 4)
         device.unlockForConfiguration()
 
         logger.info("Zoom scale set to \(zoomFactor)")

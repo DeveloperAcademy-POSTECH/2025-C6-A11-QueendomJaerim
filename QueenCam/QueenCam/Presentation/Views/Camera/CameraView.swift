@@ -19,6 +19,11 @@ struct CameraView {
 
   @State private var zoomScaleItemList: [CGFloat] = [0.5, 1, 2]
 
+  // 현재 적용된 줌 배율 (카메라와 UI 상태 동기화용)
+  @State private var currentZoomFactor: CGFloat = 1.0
+  // 현재 하나의 핀치 동작 내에서 이전 배율 값을 임시 저장 (변화량을 계산하기 위해)
+  @State private var previousMagnificationValue: CGFloat = 1.0
+
   @State private var isShowGrid: Bool = false
 
   @State private var isFocused = false
@@ -64,6 +69,32 @@ extension CameraView {
 }
 
 extension CameraView: View {
+  var magnificationGesture: some Gesture {
+    MagnifyGesture()
+      // 핀치를 하는 동안 계속 호출
+      .onChanged { value in
+        // 이전 값 대비 상대적 변화량
+        let delta = value.magnification / previousMagnificationValue
+
+        // 다음 계산을 위해 현재 배율을 이전 값으로 저장
+        previousMagnificationValue = value.magnification
+
+        // 전체 줌 배율 업데이트
+        let newZoom = currentZoomFactor * delta
+
+        let clampedZoom = max(0.5, min(newZoom, 2.0))
+
+        currentZoomFactor = clampedZoom
+
+        viewModel.updateCamerZoom(factor: currentZoomFactor)
+      }
+      // 핀치를 마쳤을때 한 번 호출될 로직
+      .onEnded { _ in
+        viewModel.selectedZoom = currentZoomFactor
+        previousMagnificationValue = 1.0
+      }
+  }
+
   var body: some View {
     ZStack {
       switch isPermissionGranted {
@@ -112,6 +143,12 @@ extension CameraView: View {
                   isFocused = true
                   focusLocation = location
                   viewModel.setFocus(point: location)
+                }
+                .gesture(magnificationGesture)
+                .overlay(alignment: .bottom) {
+                  Text(String(format: "%.1fx", currentZoomFactor))
+                    .foregroundStyle(.white)
+                    .padding()
                 }
                 .overlay {
                   if isFocused {
@@ -172,17 +209,17 @@ extension CameraView: View {
                     isPen = false
                   }
                 }
-                  .background(
-                    Capsule()
-                      .fill(.ultraThinMaterial)
-                      .shadow(color: .black.opacity(0.2), radius: 5, x: 0, y: 2)
-                  )
-                  .overlay(
-                    Capsule()
-                      .stroke(Color.white.opacity(0.15), lineWidth: 1)
-                  )
-                  .frame(width: 120, height: 60)
-                  .padding(20)
+                .background(
+                  Capsule()
+                    .fill(.ultraThinMaterial)
+                    .shadow(color: .black.opacity(0.2), radius: 5, x: 0, y: 2)
+                )
+                .overlay(
+                  Capsule()
+                    .stroke(Color.white.opacity(0.15), lineWidth: 1)
+                )
+                .frame(width: 120, height: 60)
+                .padding(20)
               }
             }
             if isShowGrid {
@@ -196,7 +233,10 @@ extension CameraView: View {
             HStack(spacing: 20) {
               if isPhotographerMode {
                 ForEach(zoomScaleItemList, id: \.self) { item in
-                  Button(action: { viewModel.zoom(factor: item) }) {
+                  Button(action: {
+                    viewModel.zoom(factor: item)
+                    currentZoomFactor = item
+                  }) {
                     Text(String(format: "%.1fx", item))
                       .foregroundStyle(viewModel.selectedZoom == item ? .yellow : .white)
                   }
