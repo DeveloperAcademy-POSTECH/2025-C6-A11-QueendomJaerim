@@ -66,6 +66,17 @@ extension CameraView {
   private var isPermissionGranted: Bool {
     viewModel.isCameraPermissionGranted && viewModel.isCameraPermissionGranted
   }
+
+  private var activeZoom: CGFloat {
+    switch currentZoomFactor {
+    case ..<0.95:
+      return 0.5
+    case ..<1.95:
+      return 1
+    default:
+      return 2
+    }
+  }
 }
 
 extension CameraView: View {
@@ -75,23 +86,21 @@ extension CameraView: View {
       .onChanged { value in
         // 이전 값 대비 상대적 변화량
         let delta = value.magnification / previousMagnificationValue
-
         // 다음 계산을 위해 현재 배율을 이전 값으로 저장
         previousMagnificationValue = value.magnification
 
         // 전체 줌 배율 업데이트
         let newZoom = currentZoomFactor * delta
-
         let clampedZoom = max(0.5, min(newZoom, 2.0))
-
         currentZoomFactor = clampedZoom
 
-        viewModel.updateCamerZoom(factor: currentZoomFactor)
+        viewModel.setZoom(factor: currentZoomFactor, ramp: false)
       }
       // 핀치를 마쳤을때 한 번 호출될 로직
       .onEnded { _ in
-        viewModel.selectedZoom = currentZoomFactor
+        viewModel.setZoom(factor: currentZoomFactor, ramp: true)
         previousMagnificationValue = 1.0
+
       }
   }
 
@@ -145,11 +154,7 @@ extension CameraView: View {
                   viewModel.setFocus(point: location)
                 }
                 .gesture(magnificationGesture)
-                .overlay(alignment: .bottom) {
-                  Text(String(format: "%.1fx", currentZoomFactor))
-                    .foregroundStyle(.white)
-                    .padding()
-                }
+
                 .overlay {
                   if isFocused {
                     FocusView(position: $focusLocation)
@@ -234,13 +239,17 @@ extension CameraView: View {
               if isPhotographerMode {
                 ForEach(zoomScaleItemList, id: \.self) { item in
                   Button(action: {
-                    viewModel.zoom(factor: item)
+                    viewModel.setZoom(factor: item, ramp: true)
                     currentZoomFactor = item
                   }) {
-                    Text(String(format: "%.1fx", item))
-                      .foregroundStyle(viewModel.selectedZoom == item ? .yellow : .white)
+                    Text(
+                      item == activeZoom
+                        ? String(format: "%.1fx", currentZoomFactor) : String(format: "%.1fx", item)
+                    )
+                    .foregroundStyle(item == activeZoom ? .yellow : .white)
                   }
                 }
+
               } else {
                 Spacer()
               }
