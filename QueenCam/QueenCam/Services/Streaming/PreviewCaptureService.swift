@@ -42,7 +42,7 @@ final actor PreviewCaptureService {
   let videoEncoder = VideoEncoder(config: .ultraLowLatency)
   var encoderStreamTask: Task<Void, Never>?
   lazy var videoEncoderAnnexBAdaptor = VideoEncoderAnnexBAdaptor(
-      videoEncoder: videoEncoder
+    videoEncoder: videoEncoder
   )
 
   private let logger = Logger(
@@ -119,14 +119,14 @@ extension PreviewCaptureService {
 
       for await payload in await videoEncoderAnnexBAdaptor.annexBData {
         let framePayloadContinuation = await self.framePayloadContinuation
-          framePayloadContinuation.yield(
-            VideoFramePayload(
-              hevcData: payload.annexBData,
-              firstFrameTimeStamp: payload.firstFrameTimestamp,
-              presetationTimeStamp: payload.presentationTimestamp,
-              quality: .high,
-            )
+        framePayloadContinuation.yield(
+          VideoFramePayload(
+            hevcData: payload.annexBData,
+            firstFrameTimeStamp: payload.firstFrameTimestamp,
+            presetationTimeStamp: payload.presentationTimestamp,
+            quality: .high,
           )
+        )
       }
     }
   }
