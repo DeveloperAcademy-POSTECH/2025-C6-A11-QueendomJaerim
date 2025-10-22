@@ -219,7 +219,7 @@ extension CameraManager {
 
 // MARK: - 배율
 extension CameraManager {
-  func setZoomScale(factor: CGFloat) {
+  func setZoomScale(factor: CGFloat, ramp: Bool) {
     captureSessionQueue.async { [weak self] in
       guard let self else { return }
       guard let device = videoDeviceInput?.device else {
@@ -235,8 +235,12 @@ extension CameraManager {
           min(factor / device.displayVideoZoomFactorMultiplier, device.maxAvailableVideoZoomFactor)
         )
 
-        device.videoZoomFactor = zoomFactor
-//        device.ramp(toVideoZoomFactor: zoomFactor, withRate: 4)
+        if ramp {
+          device.ramp(toVideoZoomFactor: zoomFactor, withRate: 4)
+        } else {
+          device.videoZoomFactor = zoomFactor
+        }
+
         device.unlockForConfiguration()
 
         logger.info("Zoom scale set to \(zoomFactor)")
@@ -328,7 +332,7 @@ extension CameraManager {
     rotationCoordinator = AVCaptureDevice.RotationCoordinator(device: device, previewLayer: videoPreviewLayer)
 
     guard let rotationCoordinator else { return }
-    
+
     if let connection = photoOutput.connection(with: .video) {
       if connection.isVideoMirroringSupported {
         connection.isVideoMirrored = (position == .front)
