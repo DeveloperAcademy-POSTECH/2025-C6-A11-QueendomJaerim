@@ -15,10 +15,10 @@ nonisolated enum PreviewFrameQuality: Sendable, Codable {
 
   var scale: CGFloat {
     switch self {
-    case .high: return 1.0
-    case .medium: return 0.7
-    case .low: return 0.5
-    case .veryLow: return 0.4
+    case .high: return 1.00
+    case .medium: return 0.85
+    case .low: return 0.75
+    case .veryLow: return 0.50
     }
   }
 
