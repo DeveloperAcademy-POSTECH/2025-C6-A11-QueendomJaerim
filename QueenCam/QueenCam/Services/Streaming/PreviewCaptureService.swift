@@ -34,16 +34,15 @@ final actor PreviewCaptureService {
   /// 렌더링 품질
   var quality: PreviewFrameQuality = .medium
 
-  /// Goal FPS
-  private let transferingFPS: Double = 30.0  // 목표 FPS를 30으로 설정
-  private var lastPresentationTime: TimeInterval = 0.0
-
   /// 비디오 인코더
   let videoEncoder = VideoEncoder(config: .ultraLowLatency)
   var encoderStreamTask: Task<Void, Never>?
   lazy var videoEncoderAnnexBAdaptor = VideoEncoderAnnexBAdaptor(
     videoEncoder: videoEncoder
   )
+
+  /// 프레임 처리를 위한 CIContext
+  let ciContext = CIContext(options: nil)
 
   private let logger = Logger(
     subsystem: Bundle.main.bundleIdentifier ?? "com.queendom.QueenCam",
@@ -55,6 +54,7 @@ final actor PreviewCaptureService {
   }
 }
 
+// MARK: - 캡쳐 시작 / 중지
 extension PreviewCaptureService {
   // MARK: - Start to capture
 
@@ -112,6 +112,7 @@ extension PreviewCaptureService {
   }
 }
 
+// MARK: - 인코더 설정
 extension PreviewCaptureService {
   func setupEncoder() {
     encoderStreamTask = Task { [weak self] in
@@ -124,7 +125,7 @@ extension PreviewCaptureService {
             hevcData: payload.annexBData,
             firstFrameTimeStamp: payload.firstFrameTimestamp,
             presetationTimeStamp: payload.presentationTimestamp,
-            quality: .high,
+            quality: await self.quality
           )
         )
       }
@@ -134,28 +135,38 @@ extension PreviewCaptureService {
   private func setupFrameProcessing() async {
     if let bufferStream = self.bufferStream {
       for await buffer in bufferStream {
-        videoEncoder.encode(buffer)
+        var resizedBuffer: CMSampleBuffer
+
+        // MARK: Quality에 따라 해상도 조정
+        let scale = quality.scale
+
+        if scale == 1.0 {
+          resizedBuffer = buffer
+        } else {
+          // 원본 픽셀 버퍼 가져오기
+          guard let originalPixelBuffer = CMSampleBufferGetImageBuffer(buffer) else {
+            self.logger.warning("Failed to get CVPixelBuffer from CMSampleBuffer.")
+            continue  // 이 프레임 건너뛰기
+          }
+
+          // 픽셀 버퍼 리사이징
+          guard let newPixelBuffer = resizePixelBuffer(originalPixelBuffer, scale: scale) else {
+            self.logger.warning("Failed to resize CVPixelBuffer.")
+            continue
+          }
+
+          // 리사이징된 픽셀 버퍼와 원본 시간 정보 조합
+          guard let newSampleBuffer = createSampleBuffer(from: newPixelBuffer, withTimingOf: buffer) else {
+            self.logger.warning("Failed to create new CMSampleBuffer.")
+            continue
+          }
+
+          resizedBuffer = newSampleBuffer
+        }
+
+        videoEncoder.encode(resizedBuffer)
       }
     }
   }
 }
 
-// MARK: - Delegate
-nonisolated final class PreviewCaptureDelegate: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
-
-  let bufferStream: AsyncStream<CMSampleBuffer>
-  private let bufferStreamContinuation: AsyncStream<CMSampleBuffer>.Continuation
-
-  override init() {
-    let (bufferStream, bufferStreamContinuation) = AsyncStream.makeStream(of: CMSampleBuffer.self)
-
-    self.bufferStream = bufferStream
-    self.bufferStreamContinuation = bufferStreamContinuation
-
-    super.init()
-  }
-
-  func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-    bufferStreamContinuation.yield(sampleBuffer)
-  }
-}

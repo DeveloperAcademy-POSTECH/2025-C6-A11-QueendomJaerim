@@ -22,15 +22,6 @@ nonisolated enum PreviewFrameQuality: Sendable, Codable {
     }
   }
 
-  var jpegQuality: CGFloat {
-    switch self {
-    case .high: return 0.8
-    case .medium: return 0.4
-    case .low: return 0.2
-    case .veryLow: return 0.2
-    }
-  }
-
   var displayLabel: String {
     switch self {
     case .high: return "High"
