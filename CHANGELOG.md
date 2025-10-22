@@ -13,6 +13,8 @@
 
 ### Changed
 
+- 카메라 프리뷰 스트리밍에 HEVC 코덱 적용
+
 ### Deprecated
 
 ### Removed
