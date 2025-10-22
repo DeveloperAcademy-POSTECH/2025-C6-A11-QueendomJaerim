@@ -83,16 +83,9 @@ extension PreviewCaptureService {
     logger.info("video settings: \(self.previewOutput.videoSettings ?? [:])")
 
     // MARK: setup HEVC encoder
-    if let width = self.previewOutput.videoSettings[kCVPixelBufferWidthKey as String] as? Int,
-      let height = self.previewOutput.videoSettings[kCVPixelBufferHeightKey as String] as? Int
-    {
-      setupEncoder()
-    } else {
-      logger.error("Cannot read width and height from videoSettings")
-    }
+    setupEncoder()
 
     // MARK: set to render frame
-
     Task {
       await setupFrameProcessing()
     }
