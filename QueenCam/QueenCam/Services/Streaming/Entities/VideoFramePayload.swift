@@ -10,5 +10,7 @@ import Foundation
 
 struct VideoFramePayload: Codable {
   let hevcData: Data
+  let firstFrameTimeStamp: TimeInterval
+  let presetationTimeStamp: TimeInterval
   let quality: PreviewFrameQuality
 }

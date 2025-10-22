@@ -24,7 +24,7 @@ final class CameraPreviewDisplayViewController: UIViewController {
       displayView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
       displayView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
       displayView.topAnchor.constraint(equalTo: view.topAnchor),
-      displayView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+      displayView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
     ])
 
     view.transform = CGAffineTransformMakeRotation(rotateDegrees * .pi / 180)
@@ -84,6 +84,7 @@ final class SampleBufferDisplayView: UIView {
     videoLayer.backgroundColor = UIColor.black.cgColor
     videoLayer.frame = bounds
     videoLayer.videoGravity = .resizeAspect
+
     layer.insertSublayer(videoLayer, at: 0)
     self.videoLayer = videoLayer
   }
@@ -163,7 +164,7 @@ extension SampleBufferDisplayView {
         isStable = false
       }
     }
-    
+
     // 불안정 상태 보고 (이 프레임을 버리진 않고 일단 렌더링 시도)
     if !isStable {
       onFrameRenderUnstably?()
@@ -189,6 +190,8 @@ extension SampleBufferDisplayView {
       onFrameRenderUnstably?()
       stableRenderingCounter = 0
       // lastPTS는 리셋하지 않음. 다음 프레임이 이 프레임과 비교되어야 함.
+
+      renderer.flush()  // 이 경우 플러시 한 후 다음 프레임을 기다림
     }
 
     // 안정적으로 렌더링되는 경우 보고

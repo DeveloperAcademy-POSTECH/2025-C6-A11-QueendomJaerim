@@ -116,12 +116,14 @@ extension PreviewCaptureService {
   func setupEncoder() {
     encoderStreamTask = Task { [weak self] in
       guard let self else { return }
-      
-      for await data in await videoEncoderAnnexBAdaptor.annexBData {
+
+      for await payload in await videoEncoderAnnexBAdaptor.annexBData {
         let framePayloadContinuation = await self.framePayloadContinuation
           framePayloadContinuation.yield(
             VideoFramePayload(
-              hevcData: data,
+              hevcData: payload.annexBData,
+              firstFrameTimeStamp: payload.firstFrameTimestamp,
+              presetationTimeStamp: payload.presentationTimestamp,
               quality: .high,
             )
           )

@@ -29,7 +29,13 @@ final class PreviewModel {
   var lastReceivedFrame: VideoFramePayload? {
     didSet {
       if let lastReceivedFrame {
-        videoDecoderAnnexBAdaptor.decode(lastReceivedFrame.hevcData)
+        videoDecoderAnnexBAdaptor.decode(
+          AnnexBPayload(
+            annexBData: lastReceivedFrame.hevcData,
+            firstFrameTimestamp: lastReceivedFrame.firstFrameTimeStamp,
+            presentationTimestamp: lastReceivedFrame.presetationTimeStamp
+          )
+        )
       }
     }
   }
@@ -83,40 +89,9 @@ final class PreviewModel {
 
     videoDecoderTask = Task { [weak self] in
       guard let self else { return }
-      
+
       for await decodedSampleBuffer in self.videoDecoder.decodedSampleBuffers {
-        // 1. 새 타임스탬프로 '현재 호스트 시간'을 사용합니다.
-        let newPTS = CMClockGetTime(CMClockGetHostTimeClock())
-        var timingInfo = CMSampleTimingInfo(
-            duration: .invalid,
-            presentationTimeStamp: newPTS, // <-- 'nan' 대신 현재 시간으로 강제 설정
-            decodeTimeStamp: .invalid
-        )
-
-        // 2. 원본 버퍼에서 이미지와 포맷 디스크립션 추출
-        guard let imageBuffer = CMSampleBufferGetImageBuffer(decodedSampleBuffer),
-              let formatDesc = CMSampleBufferGetFormatDescription(decodedSampleBuffer)
-        else {
-            logger.error("Failed to get imageBuffer or formatDesc from original buffer")
-            return
-        }
-
-        // 3. 새 타이밍 정보로 CMSampleBuffer를 새로 생성
-        var retimedSampleBuffer: CMSampleBuffer?
-        let status = CMSampleBufferCreateReadyWithImageBuffer(
-            allocator: kCFAllocatorDefault,
-            imageBuffer: imageBuffer,       // 원본 이미지
-            formatDescription: formatDesc,  // 원본 포맷
-            sampleTiming: &timingInfo,      // <-- 새로 만든 시간 정보
-            sampleBufferOut: &retimedSampleBuffer
-        )
-
-        guard status == noErr, let validBuffer = retimedSampleBuffer else {
-            logger.error("Failed to create retimed sample buffer")
-            return
-        }
-        
-        self.lastReceivedCMSampleBuffer = validBuffer
+        self.lastReceivedCMSampleBuffer = decodedSampleBuffer
       }
     }
   }
@@ -142,6 +117,7 @@ final class PreviewModel {
       .sink { [weak self] event in
         switch event {
         case .previewFrame(let framePayload):
+          let dateFromTimeInterval = Date(timeIntervalSince1970: framePayload.presetationTimeStamp)
           self?.handleReceivedFrame(framePayload)
         case .renderState(let state):
           self?.handleReceivedRenderStateReport(state)
