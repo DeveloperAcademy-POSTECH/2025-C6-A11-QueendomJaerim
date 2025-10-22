@@ -160,10 +160,15 @@ actor ConnectionManager: ConnectionManagerProtocol {
   }
 
   func stopAll() {
-    for info in connectionsInfo.values {
+    for (connectionId, info) in connectionsInfo {
       info.receiverTask.cancel()
       info.stateUpdateTask.cancel()
+      
+      if let device = info.remoteDevice {
+        localEventsContinuation.yield(.connection(.stopped(device, connectionId, nil)))
+      }
     }
+    
     connections.removeAll()
   }
 

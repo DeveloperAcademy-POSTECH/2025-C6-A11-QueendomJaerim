@@ -32,6 +32,12 @@ enum NetworkEvent: Sendable {
 
   /// 프레임 이벤트
   case frameUpdated(FrameEventType)
+  
+  /// 헬스 체크 요청. 랜덤 문자열을 담아서 보낸다. (모델 -> 작가)
+  case healthCheckRequest(String)
+  
+  /// 헬스 체크 응답. 받은 코드를 담아서 보낸다. (작가 -> 모델)
+  case healthCheckResponse(String)
 }
 
 nonisolated extension NetworkEvent: Codable {
