@@ -250,7 +250,7 @@ extension NetworkService {
   private func requestHealthCheck() {
     healthCheckPending = true
 
-    let randomCode = RandomGenerator.string(length: 12)
+    let randomCode = RandomGenerator.string(length: codeLength)
     requestedRandomCode = randomCode
 
     Task {
