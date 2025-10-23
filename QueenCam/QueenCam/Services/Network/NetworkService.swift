@@ -52,8 +52,8 @@ final class NetworkService: NetworkServiceProtocol {
 
       // 연결이 취소되었다면 다음 태스크에서 stopped 상태로 전환한다
       if networkState == .host(.cancelled) || networkState == .viewer(.cancelled) {
-        resetHealthCheck() // 헬스 체크 리셋
-        
+        resetHealthCheck()  // 헬스 체크 리셋
+
         Task {
           networkState = mode == .host ? .host(.stopped) : .viewer(.stopped)
         }
@@ -80,11 +80,12 @@ final class NetworkService: NetworkServiceProtocol {
   private let networkManager: NetworkManagerProtocol
   private let connectionManager: ConnectionManagerProtocol
   private var eventHandlerTasks: [Task<Void, Error>] = []
-  
+
   // Health Check
   private let healthCheckPeriod: TimeInterval = 1.0
   private var healthCheckTimer: Timer?
   private var requestedRandomCode: String?
+  private var healthCheckPending: Bool = false  // 현재 요청한 헬스 체크 응답이 도착하지 않으면 true, 도착했으면 false
   private var lastHealthCheckTime: Date?
 
   private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.queendom.QueenCam", category: "NetworkService")
@@ -160,11 +161,11 @@ final class NetworkService: NetworkServiceProtocol {
 
         await networkManager.send(.startSession, to: connectionDetail.connection)  // Wake-up message
         networkState = .viewer(.connected)
-        
+
         // 헬스체크 타이머 시작 (viewer)
-        healthCheckTimer = Timer.scheduledTimer(withTimeInterval: healthCheckPeriod, repeats: true, block: { [weak self] _ in
+        healthCheckTimer = Timer.scheduledTimer(withTimeInterval: healthCheckPeriod, repeats: true) { [weak self] _ in
           self?.handleTimer()
-        })
+        }
       }
     case .performance(let device, let connectionDetail):
       deviceConnections[device] = connectionDetail
@@ -195,11 +196,11 @@ final class NetworkService: NetworkServiceProtocol {
     } else {
       logger.debug("handleNetworkEvent - \(String(describing: event))")  // preview frame 이벤트가 아닐 때만 로깅
     }
-    
+
     if case .healthCheckRequest(let randomCode) = event {
       handleHealthCheckRequestEvent(code: randomCode)
     }
-    
+
     if case .healthCheckResponse(let randomCode) = event {
       handleHealthCheckResponseEvent(code: randomCode)
     }
@@ -239,58 +240,65 @@ extension NetworkService {
   private var codeLength: Int {
     12
   }
-  
+
   /// 연결이 끊겼다고 판정할 헬스 체크 시간
   private var healthCheckTimeout: TimeInterval {
-    3.0
+    4.0
   }
-  
+
   /// 헬스 체크 프로토콜 시작 (뷰어)
   private func requestHealthCheck() {
+    healthCheckPending = true
+
     let randomCode = RandomGenerator.string(length: 12)
     requestedRandomCode = randomCode
-    
+
     Task {
       await send(for: .healthCheckRequest(randomCode))
     }
   }
-  
+
   /// 헬스 체크 타이머가 실행할 메서드
   private func handleTimer() {
     logger.debug("Health Check Timer invoked")
-    
-    requestHealthCheck()
-    logger.debug("Requested health check")
-    
-    if let lastHealthCheckTime { // 타임 아웃 확인
+
+    if !healthCheckPending {  // 현재 요청해둔 헬스 체크가 있으면 건너 뛴다
+      requestHealthCheck()
+      logger.debug("Requested health check")
+    } else {
+      logger.debug("health check skipped. still pending.")
+    }
+
+    if let lastHealthCheckTime {  // 타임 아웃 확인
       if Date().timeIntervalSince1970 - lastHealthCheckTime.timeIntervalSince1970 > healthCheckTimeout {
         logger.warning("Health Check Timeout. Cancelling connection")
-        networkState = mode == .host ? .host(.cancelled) : .viewer(.cancelled)
+        stop()
       } else {
         logger.debug("Health okay")
       }
     }
   }
-  
+
   /// 헬스 체크 요청 메시지 핸들링 (호스트가 받음)
   private func handleHealthCheckRequestEvent(code: String) {
     Task {
       await send(for: .healthCheckResponse(code))
     }
   }
-  
+
   /// 헬스 체크 응답 메시지 핸들링 (뷰어가 받음)
   private func handleHealthCheckResponseEvent(code: String) {
     if requestedRandomCode == code {
       logger.debug("Exchange code success. health check ok")
       lastHealthCheckTime = Date()
       requestedRandomCode = nil
+      healthCheckPending = false
     } else {
       logger.error("Exchange code does not match. connection will be cancelled.")
       networkState = .viewer(.cancelled)
     }
   }
-  
+
   /// 헬스 체크 리셋
   private func resetHealthCheck() {
     healthCheckTimer?.invalidate()
