@@ -260,13 +260,11 @@ extension NetworkService {
 
   /// 헬스 체크 타이머가 실행할 메서드
   private func handleTimer() {
-    logger.debug("Health Check Timer invoked")
-
     if !healthCheckPending {  // 현재 요청해둔 헬스 체크가 있으면 건너 뛴다
       requestHealthCheck()
-      logger.debug("Requested health check")
+      // logger.debug("Requested health check")
     } else {
-      logger.debug("health check skipped. still pending.")
+      logger.warning("health check skipped. still pending.")
     }
 
     if let lastHealthCheckTime {  // 타임 아웃 확인
@@ -274,7 +272,7 @@ extension NetworkService {
         logger.warning("Health Check Timeout. Cancelling connection")
         stop()
       } else {
-        logger.debug("Health okay")
+        // logger.debug("Health okay")
       }
     }
   }
@@ -289,7 +287,7 @@ extension NetworkService {
   /// 헬스 체크 응답 메시지 핸들링 (뷰어가 받음)
   private func handleHealthCheckResponseEvent(code: String) {
     if requestedRandomCode == code {
-      logger.debug("Exchange code success. health check ok")
+      // logger.debug("Exchange code success. health check ok")
       lastHealthCheckTime = Date()
       requestedRandomCode = nil
       healthCheckPending = false
