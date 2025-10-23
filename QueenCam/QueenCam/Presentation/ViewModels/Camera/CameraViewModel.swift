@@ -92,9 +92,12 @@ final class CameraViewModel {
     manager.capturePhoto()
   }
 
-  func zoom(factor: CGFloat) {
-    selectedZoom = factor
-    manager.setZoomScale(factor: factor)
+  func setZoom(factor: CGFloat, ramp: Bool) {
+    if ramp {
+      selectedZoom = factor
+    }
+
+    manager.setZoomScale(factor: factor, ramp: ramp)
   }
 
   func switchCamera() async {
