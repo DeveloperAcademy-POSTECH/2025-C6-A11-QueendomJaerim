@@ -8,8 +8,10 @@
 import Combine
 import Foundation
 import OSLog
+import Transcoding
 import UIKit
 import WiFiAware
+import AVFoundation
 
 @Observable
 final class PreviewModel {
@@ -19,28 +21,21 @@ final class PreviewModel {
   private var cancellables: Set<AnyCancellable> = []
 
   // MARK: - 스트리밍 관련 프로퍼티
-  private let jpegToPixelBufferDecoder = JPEGToPixelBufferDecoder()
+  @ObservationIgnored let videoDecoder = VideoDecoder(config: .init(realTime: true))
+  @ObservationIgnored lazy var videoDecoderAnnexBAdaptor = VideoDecoderAnnexBAdaptor(videoDecoder: videoDecoder, codec: .hevc)
+  @ObservationIgnored var videoDecoderTask: Task<Void, Never>?
 
   /// Received Preview Image
   var lastReceivedFrame: VideoFramePayload? {
     didSet {
       if let lastReceivedFrame {
-        if imageSize == nil {
-          imageSize = lastReceivedFrame.originalSize
-        }
-
-        do {
-          let imageBuffer = try jpegToPixelBufferDecoder.decode(lastReceivedFrame.frameData)
-          lastReceivedFrameDecoded = VideoFrameDecoded(
-            frame: imageBuffer,
-            originalSize: lastReceivedFrame.originalSize,
-            scaledSize: lastReceivedFrame.scaledSize,
-            quality: lastReceivedFrame.quality,
-            timestamp: lastReceivedFrame.timestamp
+        videoDecoderAnnexBAdaptor.decode(
+          AnnexBPayload(
+            annexBData: lastReceivedFrame.hevcData,
+            firstFrameTimestamp: lastReceivedFrame.firstFrameTimeStamp,
+            presentationTimestamp: lastReceivedFrame.presetationTimeStamp
           )
-        } catch {
-          logger.error("error during decoding image: \(error)")
-        }
+        )
       }
     }
   }
@@ -53,7 +48,7 @@ final class PreviewModel {
     return nil
   }
 
-  var lastReceivedFrameDecoded: VideoFrameDecoded?
+  var lastReceivedCMSampleBuffer: CMSampleBuffer?
 
   let imagePrecessingQueue = DispatchQueue(label: "com.queendom.QueenCam.imageProcessingQueue")
 
@@ -91,6 +86,14 @@ final class PreviewModel {
     self.networkService = networkService
 
     bind()
+
+    videoDecoderTask = Task { [weak self] in
+      guard let self else { return }
+
+      for await decodedSampleBuffer in self.videoDecoder.decodedSampleBuffers {
+        self.lastReceivedCMSampleBuffer = decodedSampleBuffer
+      }
+    }
   }
 
   private func bind() {
@@ -114,6 +117,7 @@ final class PreviewModel {
       .sink { [weak self] event in
         switch event {
         case .previewFrame(let framePayload):
+          let dateFromTimeInterval = Date(timeIntervalSince1970: framePayload.presetationTimeStamp)
           self?.handleReceivedFrame(framePayload)
         case .renderState(let state):
           self?.handleReceivedRenderStateReport(state)
@@ -178,7 +182,7 @@ extension PreviewModel {
   func frameDidRenderStablely() {
     Task.detached { [weak self] in
       await self?.networkService.send(for: .renderState(.stable))
-      self?.logger.warning("sent stable event")
+      // self?.logger.debug("sent stable event")
     }
   }
 }

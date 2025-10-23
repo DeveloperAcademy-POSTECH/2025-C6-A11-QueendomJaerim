@@ -9,6 +9,7 @@ import AVFoundation
 import CoreImage
 import Foundation
 import OSLog
+import Transcoding
 
 final actor PreviewCaptureService {
   private(set) var isCapturing: Bool = false
@@ -33,9 +34,15 @@ final actor PreviewCaptureService {
   /// 렌더링 품질
   var quality: PreviewFrameQuality = .medium
 
-  /// Goal FPS
-  private let transferingFPS: Double = 30.0  // 목표 FPS를 30으로 설정
-  private var lastPresentationTime: TimeInterval = 0.0
+  /// 비디오 인코더
+  let videoEncoder = VideoEncoder(config: .ultraLowLatency)
+  var encoderStreamTask: Task<Void, Never>?
+  lazy var videoEncoderAnnexBAdaptor = VideoEncoderAnnexBAdaptor(
+    videoEncoder: videoEncoder
+  )
+
+  /// 프레임 처리를 위한 CIContext
+  let ciContext = CIContext(options: nil)
 
   private let logger = Logger(
     subsystem: Bundle.main.bundleIdentifier ?? "com.queendom.QueenCam",
@@ -47,6 +54,7 @@ final actor PreviewCaptureService {
   }
 }
 
+// MARK: - 캡쳐 시작 / 중지
 extension PreviewCaptureService {
   // MARK: - Start to capture
 
@@ -74,8 +82,10 @@ extension PreviewCaptureService {
     logger.info("started to capture preveiw stream")
     logger.info("video settings: \(self.previewOutput.videoSettings ?? [:])")
 
-    // MARK: set to render frame
+    // MARK: setup HEVC encoder
+    setupEncoder()
 
+    // MARK: set to render frame
     Task {
       await setupFrameProcessing()
     }
@@ -102,104 +112,61 @@ extension PreviewCaptureService {
   }
 }
 
+// MARK: - 인코더 설정
 extension PreviewCaptureService {
-  private func setupFrameProcessing() async {
-    let ciContext = CIContext()
-    let colorSpace = CGColorSpace(name: CGColorSpace.sRGB)!
+  func setupEncoder() {
+    encoderStreamTask = Task { [weak self] in
+      guard let self else { return }
 
-    let minTimeInterval = 1.0 / self.transferingFPS
-
-    if let bufferStream = self.bufferStream {
-      for await buffer in bufferStream {
-        guard let pixelBuffer = CMSampleBufferGetImageBuffer(buffer) else {
-          self.logger.warning("video buffer에 imageBuffer가 없음")
-          continue  // 다음 프레임으로 넘어갑니다.
-        }
-
-        // --- FPS 제어 로직 ---
-        let currentTime = Date().timeIntervalSince1970
-
-        // 현재 시간과 마지막 처리 시간의 차이를 계산
-        let elapsedTime = currentTime - self.lastPresentationTime
-
-        // 시간 간격이 충분하지 않으면 이번 프레임은 건너뜁니다 (continue 사용).
-        guard elapsedTime >= minTimeInterval else {
-          // self.logger.debug("skip to capture frame")
-          continue
-        }
-
-        // 마지막 처리 시간을 현재 시간으로 업데이트
-        self.lastPresentationTime = currentTime
-
-        //        self.logger.debug("will capture frame. \(currentTime)")
-
-        // ----- 1. 현재 화질 가져오기 -----
-        let quality = self.quality
-        let scaleFactor = quality.scale
-        let jpegQuality = quality.jpegQuality
-
-        // ----- 2. 원본 CIImage -----
-        var ciImage = CIImage(cvPixelBuffer: pixelBuffer)
-        let originalSize = ciImage.extent.size
-
-        // ----- 3. 다운스케일 -----
-        if scaleFactor < 1.0 {
-          let filter = CIFilter(name: "CILanczosScaleTransform")!
-          filter.setValue(ciImage, forKey: kCIInputImageKey)
-          filter.setValue(scaleFactor, forKey: kCIInputScaleKey)
-          filter.setValue(1.0, forKey: kCIInputAspectRatioKey)
-          guard let output = filter.outputImage else {
-            self.logger.warning("CILanczosScaleTransform 실패")
-            continue
-          }
-          ciImage = output
-        }
-
-        let scaledSize = ciImage.extent.size
-
-        // ----- 4. JPEG 변환 -----
-        guard
-          let imageData = ciContext.jpegRepresentation(
-            of: ciImage,
-            colorSpace: colorSpace,
-            options: [kCGImageDestinationLossyCompressionQuality as CIImageRepresentationOption: jpegQuality]
-          )
-        else {
-          self.logger.warning("CIImage -> JPEG 변환 실패")
-          continue
-        }
-
-        // ----- 5. 프레임 방출 -----
+      for await payload in await videoEncoderAnnexBAdaptor.annexBData {
+        let framePayloadContinuation = await self.framePayloadContinuation
         framePayloadContinuation.yield(
           VideoFramePayload(
-            frameData: imageData,
-            originalSize: originalSize,
-            scaledSize: scaledSize,
-            quality: quality,
-            timestamp: Date()
+            hevcData: payload.annexBData,
+            firstFrameTimeStamp: payload.firstFrameTimestamp,
+            presetationTimeStamp: payload.presentationTimestamp,
+            quality: await self.quality
           )
         )
       }
     }
   }
+
+  private func setupFrameProcessing() async {
+    if let bufferStream = self.bufferStream {
+      for await buffer in bufferStream {
+        var resizedBuffer: CMSampleBuffer
+
+        // MARK: Quality에 따라 해상도 조정
+        let scale = quality.scale
+
+        if scale == 1.0 {
+          resizedBuffer = buffer
+        } else {
+          // 원본 픽셀 버퍼 가져오기
+          guard let originalPixelBuffer = CMSampleBufferGetImageBuffer(buffer) else {
+            self.logger.warning("Failed to get CVPixelBuffer from CMSampleBuffer.")
+            continue  // 이 프레임 건너뛰기
+          }
+
+          // 픽셀 버퍼 리사이징
+          guard let newPixelBuffer = resizePixelBuffer(originalPixelBuffer, scale: scale) else {
+            self.logger.warning("Failed to resize CVPixelBuffer.")
+            continue
+          }
+
+          // 리사이징된 픽셀 버퍼와 원본 시간 정보 조합
+          guard let newSampleBuffer = createSampleBuffer(from: newPixelBuffer, withTimingOf: buffer) else {
+            self.logger.warning("Failed to create new CMSampleBuffer.")
+            continue
+          }
+
+          resizedBuffer = newSampleBuffer
+        }
+
+        videoEncoder.encode(resizedBuffer)
+      }
+    }
+  }
 }
 
-// MARK: - Delegate
-nonisolated final class PreviewCaptureDelegate: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
-
-  let bufferStream: AsyncStream<CMSampleBuffer>
-  private let bufferStreamContinuation: AsyncStream<CMSampleBuffer>.Continuation
-
-  override init() {
-    let (bufferStream, bufferStreamContinuation) = AsyncStream.makeStream(of: CMSampleBuffer.self)
-
-    self.bufferStream = bufferStream
-    self.bufferStreamContinuation = bufferStreamContinuation
-
-    super.init()
-  }
-
-  func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-    bufferStreamContinuation.yield(sampleBuffer)
-  }
-}
