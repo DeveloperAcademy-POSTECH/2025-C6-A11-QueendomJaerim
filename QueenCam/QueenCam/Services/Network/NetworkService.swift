@@ -268,7 +268,7 @@ extension NetworkService {
     }
 
     if let lastHealthCheckTime {  // 타임 아웃 확인
-      if Date().timeIntervalSince1970 - lastHealthCheckTime.timeIntervalSince1970 > healthCheckTimeout {
+      if Date().timeIntervalSince(lastHealthCheckTime) > healthCheckTimeout {
         logger.warning("Health Check Timeout. Cancelling connection")
         stop()
       } else {
