@@ -244,7 +244,7 @@ extension CameraView: View {
                   }) {
                     Text(
                       item == activeZoom
-                        ? String(format: "%.1fx", currentZoomFactor) : String(format: "%.1fx", item)
+                        ? String(format: "%.1fx", currentZoomFactor) : String(format: "%.1f", item)
                     )
                     .foregroundStyle(item == activeZoom ? .yellow : .white)
                   }
