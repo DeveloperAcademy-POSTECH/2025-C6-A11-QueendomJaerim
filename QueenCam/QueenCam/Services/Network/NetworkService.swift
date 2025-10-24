@@ -184,9 +184,9 @@ final class NetworkService: NetworkServiceProtocol {
       await connectionManager.invalidate(connectionID)
 
       if mode == .viewer {
-        networkState = .viewer(.cancelled)
+        networkState = .viewer(.lost)
       } else {
-        networkState = .host(.cancelled)
+        networkState = .host(.lost)
       }
 
       if let waError = error {
