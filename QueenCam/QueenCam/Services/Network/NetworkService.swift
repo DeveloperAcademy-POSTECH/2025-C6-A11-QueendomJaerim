@@ -50,10 +50,18 @@ final class NetworkService: NetworkServiceProtocol {
 
       networkStateSubject.send(networkState)
 
-      // 연결이 취소되었다면 다음 태스크에서 stopped 상태로 전환한다
-      if networkState == .host(.cancelled) || networkState == .viewer(.cancelled) {
+      // 연결이 취소되거나 유실되었다면 헬스 체크를 리셋한다
+      if networkState == .host(.cancelled)
+          || networkState == .viewer(.cancelled)
+          || networkState == .host(.lost)
+          || networkState == .viewer(.lost) {
         resetHealthCheck()  // 헬스 체크 리셋
-
+      }
+      
+      // 연결이 취소되었다면 다음 태스크에서 stopped 상태로 전환한다
+      // 유실된 경우 추가적인 액션을 필요로 한다. 따라서 바로 stopped 상태로 전환하지 않는다.
+      if networkState == .host(.cancelled)
+          || networkState == .viewer(.cancelled) {
         Task {
           networkState = mode == .host ? .host(.stopped) : .viewer(.stopped)
         }
@@ -207,7 +215,7 @@ final class NetworkService: NetworkServiceProtocol {
 
     if case .willDisconnect = event {
       logger.info("Received willDisconnect event. Stopping connection.")
-      stop()
+      stop(byUser: true)
     }
 
     networkEventSubject.send(event)
@@ -231,15 +239,20 @@ final class NetworkService: NetworkServiceProtocol {
     Task {
       await send(for: .willDisconnect)
       try? await Task.sleep(for: .milliseconds(100)) // 상대가 연결 중단 이벤트를 처리할 수 있도록 조금 기다린다
-      stop()
+      stop(byUser: true)
     }
   }
 
-  func stop() {
+  func stop(byUser: Bool) {
     networkTask?.cancel()
     Task {
       await self.connectionManager.stopAll()
-      self.networkState = self.mode == .host ? .host(.cancelled) : .viewer(.cancelled)
+      
+      if byUser {
+        self.networkState = self.mode == .host ? .host(.cancelled) : .viewer(.cancelled)
+      } else {
+        self.networkState = self.mode == .host ? .host(.lost) : .viewer(.lost)
+      }
     }
   }
 
@@ -283,7 +296,7 @@ extension NetworkService {
     if let lastHealthCheckTime {  // 타임 아웃 확인
       if Date().timeIntervalSince(lastHealthCheckTime) > healthCheckTimeout {
         logger.warning("Health Check Timeout. Cancelling connection")
-        stop()
+        stop(byUser: false)
       } else {
         // logger.debug("Health okay")
       }
