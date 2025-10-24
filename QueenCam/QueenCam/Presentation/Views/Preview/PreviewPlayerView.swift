@@ -12,18 +12,15 @@ struct PreviewPlayerView: View {
   let previewModel: PreviewModel
 
   var body: some View {
-    if let imageSize = previewModel.imageSize {
-
-      CameraPreviewMTKViewContainer(
-        currentFrame: previewModel.lastReceivedFrameDecoded,
-        frameDidSkippedAction: { diff in
-          previewModel.frameDidSkipped()
-        },
-        frameDidRenderStablyAction: {
-          previewModel.frameDidRenderStablely()
-        }
-      )
-      .aspectRatio(3 / 4, contentMode: .fit)
-    }
+    CameraPreviewDisplayViewContainer(
+      currentSampleBuffer: previewModel.lastReceivedCMSampleBuffer,
+      frameDidSkippedAction: {
+        previewModel.frameDidSkipped()
+      },
+      frameDidRenderStablyAction: {
+        previewModel.frameDidRenderStablely()
+      }
+    )
+    .aspectRatio(3 / 4, contentMode: .fit)
   }
 }
