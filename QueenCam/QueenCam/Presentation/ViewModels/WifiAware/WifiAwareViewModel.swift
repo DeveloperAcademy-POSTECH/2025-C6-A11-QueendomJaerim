@@ -106,7 +106,7 @@ extension WifiAwareViewModel {
   }
 
   func disconnectButtonDidTap() {
-    networkService.stop()
+    networkService.disconnect()
   }
 
   func viewDidAppearTask() async {

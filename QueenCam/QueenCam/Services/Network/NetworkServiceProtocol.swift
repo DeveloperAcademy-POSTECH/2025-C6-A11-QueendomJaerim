@@ -37,6 +37,9 @@ protocol NetworkServiceProtocol: AnyObject {
   /// 네트워크 서비스를 중지합니다.
   func stop()
 
+  /// 사용자 요청으로 네트워크 연결을 중단합니다.
+  func disconnect()
+
   /// 이벤트를 보냅니다.
   func send(for event: NetworkEvent) async
 }

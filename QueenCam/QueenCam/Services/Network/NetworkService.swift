@@ -205,6 +205,11 @@ final class NetworkService: NetworkServiceProtocol {
       handleHealthCheckResponseEvent(code: randomCode)
     }
 
+    if case .willDisconnect = event {
+      logger.info("Received willDisconnect event. Stopping connection.")
+      stop()
+    }
+
     networkEventSubject.send(event)
   }
 
@@ -219,6 +224,14 @@ final class NetworkService: NetworkServiceProtocol {
           networkState = mode == .host ? .host(.stopped) : .viewer(.stopped)
         }
       }
+    }
+  }
+
+  func disconnect() {
+    Task {
+      await send(for: .willDisconnect)
+      try? await Task.sleep(for: .milliseconds(100)) // 상대가 연결 중단 이벤트를 처리할 수 있도록 조금 기다린다
+      stop()
     }
   }
 
