@@ -34,6 +34,7 @@ final class WifiAwareViewModel {
   }
 
   var lastPingAt: Date?
+  var connectionLost: Bool = false
 
   private let networkService: NetworkServiceProtocol
   private var cancellables: Set<AnyCancellable> = []
@@ -57,6 +58,9 @@ final class WifiAwareViewModel {
         self.networkState = state
         if state == .host(.cancelled) || state == .viewer(.cancelled) {
           role = nil
+        }
+        if state == .host(.lost) || state == .viewer(.lost) {
+          connectionLost = true
         }
       }
       .store(in: &cancellables)
