@@ -16,7 +16,7 @@ final class ReferenceViewModel {
   private(set) var image: UIImage?  // 선택된 레퍼런스 사진
 
   var state: ReferenceState = .open
-  let foldThreshold: CGFloat = -30
+  let foldThreshold: CGFloat = -50
   var dragOffset: CGSize = .zero  // 드래그 중 임시편차
   var location: ReferenceLocation = .topLeft
   var alignment: Alignment { location.alignment }
@@ -40,8 +40,14 @@ final class ReferenceViewModel {
     dragOffset = CGSize(width: x, height: y )
   }
   func dragEnded() {
-    if dragOffset.width <= foldThreshold {
-      state = .close
+    if ( location == .topLeft || location == .bottomLeft) {
+      if dragOffset.width <= foldThreshold {
+        state = .close
+      }
+    } else {
+      if dragOffset.width >= -foldThreshold {
+        state = .close
+      }
     }
     withAnimation(.snappy) {
       dragOffset = .zero
