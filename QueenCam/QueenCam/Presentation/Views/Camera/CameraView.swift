@@ -49,7 +49,7 @@ extension CameraView {
   }
 
   private var flashImage: String {
-    switch viewModel.currentFlashMode {
+    switch viewModel.isFlashMode {
     case .off:
       return "bolt.slash"
     case .on:
@@ -111,9 +111,13 @@ extension CameraView: View {
         VStack {
           ZStack {
             HStack {
-              Button(action: { viewModel.switchFlashMode() }) {
+              Button(action: {
+                viewModel.switchFlashMode()
+                print("viewModel.isFlashMode \(viewModel.isFlashMode)")
+                print("viewModel.manager.flashMode \(viewModel.manager.flashMode)")
+              }) {
                 Image(systemName: flashImage)
-                  .foregroundStyle(viewModel.currentFlashMode == .on ? .yellow : .white)
+                  .foregroundStyle(viewModel.isFlashMode == .on ? .yellow : .white)
               }
 
               Button(action: { viewModel.switchLivePhoto() }) {
@@ -353,6 +357,10 @@ extension CameraView: View {
     }
     .task {
       await viewModel.checkPermissions()
+    }
+    .onAppear {
+      print("viewModel.isFlashMode \(viewModel.isFlashMode)")
+      print("viewModel.manager.flashMode \(viewModel.manager.flashMode)")
     }
   }
 }

@@ -11,7 +11,7 @@ final class CameraViewModel {
     networkService: DependencyContainer.defaultContainer.networkService
   )
   let networkService = DependencyContainer.defaultContainer.networkService
-  
+
   let cameraSettings: CameraSettings
 
   var isCameraPermissionGranted = false
@@ -26,9 +26,9 @@ final class CameraViewModel {
 
   var isLivePhotoOn: Bool
   var isShowGrid: Bool
+  var isFlashMode: FlashMode
 
   var cameraPostion: AVCaptureDevice.Position?
-  var currentFlashMode: AVCaptureDevice.FlashMode = .off
 
   var errorMessage = ""
 
@@ -36,7 +36,8 @@ final class CameraViewModel {
     self.cameraSettings = cameraSettings
     self.isLivePhotoOn = cameraSettings.livePhotoOn
     self.isShowGrid = cameraSettings.gridOn
-    
+    self.isFlashMode = cameraSettings.flashMode
+
     manager.onPhotoCapture = { [weak self] image in
       self?.lastImage = image
     }
@@ -116,19 +117,19 @@ final class CameraViewModel {
   }
 
   func switchFlashMode() {
-    switch currentFlashMode {
-    case .off:
-      currentFlashMode = .on
-    case .on:
-      currentFlashMode = .auto
-    case .auto:
-      currentFlashMode = .off
-
-    @unknown default:
-      currentFlashMode = .off
+    switch isFlashMode {
+    case .off: isFlashMode = .on
+    case .on: isFlashMode = .auto
+    case .auto: isFlashMode = .off
     }
 
-    manager.flashMode = currentFlashMode
+    cameraSettings.flashMode = isFlashMode
+
+    switch isFlashMode {
+    case .off: manager.flashMode = .off
+    case .on: manager.flashMode = .on
+    case .auto: manager.flashMode = .auto
+    }
   }
 
   func switchLivePhoto() {
@@ -140,7 +141,7 @@ final class CameraViewModel {
   func setFocus(point: CGPoint) {
     manager.focusAndExpose(at: point)
   }
-  
+
   func switchGrid() {
     isShowGrid.toggle()
     cameraSettings.gridOn = isShowGrid
