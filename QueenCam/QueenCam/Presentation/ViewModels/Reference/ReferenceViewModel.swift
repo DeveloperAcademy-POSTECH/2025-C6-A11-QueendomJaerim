@@ -14,7 +14,6 @@ import UIKit
 final class ReferenceViewModel {
   // MARK: - Properties
   private(set) var image: UIImage?  // 선택된 레퍼런스 사진
-
   var state: ReferenceState = .open
   let foldThreshold: CGFloat = -50
   var dragOffset: CGSize = .zero  // 드래그 중 임시편차
@@ -29,15 +28,15 @@ final class ReferenceViewModel {
     networkService: NetworkServiceProtocol = DependencyContainer.defaultContainer.networkService
   ) {
     self.networkService = networkService
-
-    bind()
   }
+
   // MARK: - DRAG(for fold/unfold)
   func dragChanged(_ value: DragGesture.Value) {
     let x = value.translation.width
     let y = value.translation.height
     dragOffset = CGSize(width: x, height: y)
   }
+
   func dragEnded() {
     if location == .topLeft || location == .bottomLeft {
       if dragOffset.width <= foldThreshold {
@@ -52,12 +51,14 @@ final class ReferenceViewModel {
       dragOffset = .zero
     }
   }
+
   func unFold() {
     withAnimation(.snappy) {
       state = .open
       dragOffset = .zero
     }
   }
+
   // MARK: - DRAG(for location change)
   func updateLocation(end: CGPoint, size: CGSize) {
     let newLocation = ReferenceLocation.corner(point: end, size: size)

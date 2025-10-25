@@ -42,6 +42,7 @@ struct OpenView: View {
         Button {
           referenceViewModel.onDelete()
           showDelete = false
+          isLarge = false
         } label: {
           Image(systemName: "x.circle")
             .imageScale(.large)

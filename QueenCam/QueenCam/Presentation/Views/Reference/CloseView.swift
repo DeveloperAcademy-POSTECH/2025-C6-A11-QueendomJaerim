@@ -50,6 +50,3 @@ struct CloseView: View {
 
 }
 
-#Preview {
-  CloseView(referenceViewModel: ReferenceViewModel())
-}
