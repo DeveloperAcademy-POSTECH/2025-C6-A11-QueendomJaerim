@@ -221,6 +221,16 @@
         }
       }
     },
+    "연결이 유실되었습니다" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connection lost"
+          }
+        }
+      }
+    },
     "연결하기" : {
       "localizations" : {
         "en" : {

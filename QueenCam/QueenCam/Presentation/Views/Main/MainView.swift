@@ -52,6 +52,11 @@ struct MainView: View {
       }
     }
     #endif
+    .alert("연결이 유실되었습니다", isPresented: $wifiAwareViewModel.connectionLost) {
+      Button("확인") {
+        //
+      }
+    }
     .environment(\.router, router)
   }
 }
