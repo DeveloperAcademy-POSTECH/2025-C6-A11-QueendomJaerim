@@ -178,6 +178,7 @@ extension CameraView: View {
               ReferenceView(referenceViewModel: referenceViewModel, isLarge: $isLarge, role: .photographer)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding(12)
+                .clipped()
               PenDisplayView(penViewModel: penViewModel)
               FrameDisplayView(frameViewModel: frameViewModel)
             } else {  // 모델
@@ -197,6 +198,7 @@ extension CameraView: View {
               ReferenceView(referenceViewModel: referenceViewModel, isLarge: $isLarge, role: .model)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding(12)
+                .clipped()
               
 
               ZStack(alignment: .topTrailing) {
