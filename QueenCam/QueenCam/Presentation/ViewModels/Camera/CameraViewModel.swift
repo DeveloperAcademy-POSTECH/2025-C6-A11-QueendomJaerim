@@ -39,12 +39,7 @@ final class CameraViewModel {
     self.isFlashMode = cameraSettings.flashMode
 
     manager.isLivePhotoOn = isLivePhotoOn
-
-    switch isFlashMode {
-    case .off: manager.flashMode = .off
-    case .on: manager.flashMode = .on
-    case .auto: manager.flashMode = .auto
-    }
+    manager.flashMode = isFlashMode.convertAVCaptureDeviceFlashMode
 
     manager.onPhotoCapture = { [weak self] image in
       self?.lastImage = image
@@ -132,12 +127,7 @@ final class CameraViewModel {
     }
 
     cameraSettings.flashMode = isFlashMode
-
-    switch isFlashMode {
-    case .off: manager.flashMode = .off
-    case .on: manager.flashMode = .on
-    case .auto: manager.flashMode = .auto
-    }
+    manager.flashMode = isFlashMode.convertAVCaptureDeviceFlashMode
   }
 
   func switchLivePhoto() {
@@ -153,5 +143,18 @@ final class CameraViewModel {
   func switchGrid() {
     isShowGrid.toggle()
     cameraSettings.gridOn = isShowGrid
+  }
+}
+
+extension FlashMode {
+  var convertAVCaptureDeviceFlashMode: AVCaptureDevice.FlashMode {
+    switch self {
+    case .off:
+      return .off
+    case .on:
+      return .on
+    case .auto:
+      return .auto
+    }
   }
 }
