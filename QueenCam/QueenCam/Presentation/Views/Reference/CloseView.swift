@@ -9,10 +9,10 @@ import SwiftUI
 
 struct CloseView: View {
   @Bindable var referenceViewModel: ReferenceViewModel
-  
+
   var body: some View {
     ZStack {
-      if (referenceViewModel.alignment == .bottomLeading || referenceViewModel.alignment == .topLeading) {
+      if referenceViewModel.alignment == .bottomLeading || referenceViewModel.alignment == .topLeading {
         Rectangle()
           .fill(.black.opacity(0.8))
           .frame(width: 28, height: 120)
@@ -47,7 +47,7 @@ struct CloseView: View {
       }
     }
   }
-  
+
 }
 
 #Preview {

@@ -20,7 +20,6 @@ final class ReferenceViewModel {
   var dragOffset: CGSize = .zero  // 드래그 중 임시편차
   var location: ReferenceLocation = .topLeft
   var alignment: Alignment { location.alignment }
-  
 
   // MARK: - Network
   let networkService: NetworkServiceProtocol
@@ -37,10 +36,10 @@ final class ReferenceViewModel {
   func dragChanged(_ value: DragGesture.Value) {
     let x = value.translation.width
     let y = value.translation.height
-    dragOffset = CGSize(width: x, height: y )
+    dragOffset = CGSize(width: x, height: y)
   }
   func dragEnded() {
-    if ( location == .topLeft || location == .bottomLeft) {
+    if location == .topLeft || location == .bottomLeft {
       if dragOffset.width <= foldThreshold {
         state = .close
       }

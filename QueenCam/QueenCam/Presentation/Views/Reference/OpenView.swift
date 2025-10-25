@@ -12,7 +12,7 @@ struct OpenView: View {
   @Bindable var referenceViewModel: ReferenceViewModel
   @State private var showDelete: Bool = false
   @Binding var isLarge: Bool
-  
+
   let regularWidth: CGFloat = 90
   let regularHeight: CGFloat = 120
   let largeWidth: CGFloat = 151
@@ -27,8 +27,8 @@ struct OpenView: View {
             .resizable()
             .scaledToFit()
             .frame(
-              width: isLarge ? largeWidth: regularWidth,
-              height: isLarge ? largeHeight: regularHeight
+              width: isLarge ? largeWidth : regularWidth,
+              height: isLarge ? largeHeight : regularHeight
             )
             .clipShape(.rect(cornerRadius: 20))
             .onTapGesture {

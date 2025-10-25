@@ -187,19 +187,18 @@ extension CameraView: View {
               #else
               PreviewPlayerView(previewModel: previewModel)
               #endif
-              
+
               if isLarge {
                 Color.black.opacity(0.5)
                   .onTapGesture {
                     isLarge = false
                   }
               }
-              
+
               ReferenceView(referenceViewModel: referenceViewModel, isLarge: $isLarge, role: .model)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding(12)
                 .clipped()
-              
 
               ZStack(alignment: .topTrailing) {
                 Group {
