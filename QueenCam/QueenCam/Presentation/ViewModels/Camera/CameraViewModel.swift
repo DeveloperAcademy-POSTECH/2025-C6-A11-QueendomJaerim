@@ -11,6 +11,8 @@ final class CameraViewModel {
     networkService: DependencyContainer.defaultContainer.networkService
   )
   let networkService = DependencyContainer.defaultContainer.networkService
+  
+  let cameraSettings: CameraSettings
 
   var isCameraPermissionGranted = false
   var isPhotosPermissionGranted = false
@@ -22,14 +24,19 @@ final class CameraViewModel {
 
   var selectedZoom: CGFloat = 1.0
 
-  var isLivePhotoOn = false
+  var isLivePhotoOn: Bool
+  var isShowGrid: Bool
 
   var cameraPostion: AVCaptureDevice.Position?
   var currentFlashMode: AVCaptureDevice.FlashMode = .off
 
   var errorMessage = ""
 
-  init() {
+  init(cameraSettings: CameraSettings) {
+    self.cameraSettings = cameraSettings
+    self.isLivePhotoOn = cameraSettings.livePhotoOn
+    self.isShowGrid = cameraSettings.gridOn
+    
     manager.onPhotoCapture = { [weak self] image in
       self?.lastImage = image
     }
@@ -126,10 +133,16 @@ final class CameraViewModel {
 
   func switchLivePhoto() {
     isLivePhotoOn.toggle()
+    cameraSettings.livePhotoOn = isLivePhotoOn
     manager.isLivePhotoOn = isLivePhotoOn
   }
 
   func setFocus(point: CGPoint) {
     manager.focusAndExpose(at: point)
+  }
+  
+  func switchGrid() {
+    isShowGrid.toggle()
+    cameraSettings.gridOn = isShowGrid
   }
 }

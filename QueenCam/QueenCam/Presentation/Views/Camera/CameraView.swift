@@ -3,7 +3,7 @@ import SwiftUI
 import WiFiAware
 
 struct CameraView {
-  @State private var viewModel = CameraViewModel()
+  @State private var viewModel = CameraViewModel(cameraSettings: .init())
   @Environment(\.router) private var router
   let previewModel: PreviewModel
   let wifiAwareViewModel: WifiAwareViewModel
@@ -23,8 +23,6 @@ struct CameraView {
   @State private var currentZoomFactor: CGFloat = 1.0
   // 현재 하나의 핀치 동작 내에서 이전 배율 값을 임시 저장 (변화량을 계산하기 위해)
   @State private var previousMagnificationValue: CGFloat = 1.0
-
-  @State private var isShowGrid: Bool = false
 
   @State private var isFocused = false
   @State private var focusLocation: CGPoint = .zero
@@ -125,9 +123,9 @@ extension CameraView: View {
 
               Spacer()
 
-              Button(action: { isShowGrid.toggle() }) {
-                Text(isShowGrid ? "그리드 활성화" : "그리드 비활성화")
-                  .foregroundStyle(isShowGrid ? .yellow : .white)
+              Button(action: { viewModel.switchGrid() }) {
+                Text(viewModel.isShowGrid ? "그리드 활성화" : "그리드 비활성화")
+                  .foregroundStyle(viewModel.isShowGrid ? .yellow : .white)
               }
             }
 
@@ -227,7 +225,7 @@ extension CameraView: View {
                 .padding(20)
               }
             }
-            if isShowGrid {
+            if viewModel.isShowGrid {
               GridView()
                 .aspectRatio(3 / 4, contentMode: .fit)
             }
