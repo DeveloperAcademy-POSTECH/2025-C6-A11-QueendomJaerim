@@ -12,6 +12,7 @@
 - 라이브 포토 재생 기능
 - 핀치를 이용한 카메라 프리뷰 줌인, 줌아웃 기능
 - 커넥션 헬스 체크
+- Graceful Disconnection
 
 ### Changed
 

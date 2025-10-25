@@ -8,15 +8,25 @@
 import Foundation
 
 enum NetworkEvent: Sendable {
+  // MARK: - Infra Level Events
+  
   /// Wake Up Event. 처음 연결되면 Publisher는 임의의 메시지를 받아야 이후 이벤트를 받을 수 있다
   /// 모델 -> 작가
   case startSession
 
-  /// 스트리밍 시작 명령
-  case startStreaming
+  /// 헬스 체크 요청. 랜덤 문자열을 담아서 보낸다. (모델 -> 작가)
+  case healthCheckRequest(String)
+
+  /// 헬스 체크 응답. 받은 코드를 담아서 보낸다. (작가 -> 모델)
+  case healthCheckResponse(String)
+
+  /// 사용자 요청에 의한 연결 중단 예정 통지. Graceful Disconnection에 활용한다.
+  case willDisconnect
 
   /// 디버그용 핑 명령
   case ping(Date)
+
+  // MARK: - Domain Level Events
 
   /// 프리뷰 프레임 (작가 -> 모델)
   case previewFrame(VideoFramePayload)
@@ -32,12 +42,6 @@ enum NetworkEvent: Sendable {
 
   /// 프레임 이벤트
   case frameUpdated(FrameEventType)
-  
-  /// 헬스 체크 요청. 랜덤 문자열을 담아서 보낸다. (모델 -> 작가)
-  case healthCheckRequest(String)
-  
-  /// 헬스 체크 응답. 받은 코드를 담아서 보낸다. (작가 -> 모델)
-  case healthCheckResponse(String)
 }
 
 nonisolated extension NetworkEvent: Codable {

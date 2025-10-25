@@ -34,6 +34,7 @@ final class WifiAwareViewModel {
   }
 
   var lastPingAt: Date?
+  var connectionLost: Bool = false
 
   private let networkService: NetworkServiceProtocol
   private var cancellables: Set<AnyCancellable> = []
@@ -57,6 +58,9 @@ final class WifiAwareViewModel {
         self.networkState = state
         if state == .host(.cancelled) || state == .viewer(.cancelled) {
           role = nil
+        }
+        if state == .host(.lost) || state == .viewer(.lost) {
+          connectionLost = true
         }
       }
       .store(in: &cancellables)
@@ -106,7 +110,7 @@ extension WifiAwareViewModel {
   }
 
   func disconnectButtonDidTap() {
-    networkService.stop()
+    networkService.disconnect()
   }
 
   func viewDidAppearTask() async {
@@ -121,7 +125,7 @@ extension WifiAwareViewModel {
 
   func connectionViewDisappear() {
     if connections.isEmpty {  // 연결 중인 경우 연결 뷰에서 벗어나면 연결을 취소한다
-      networkService.stop()
+      networkService.stop(byUser: true)
     }
   }
 

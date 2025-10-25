@@ -35,7 +35,10 @@ protocol NetworkServiceProtocol: AnyObject {
   func run(for device: WAPairedDevice)
 
   /// 네트워크 서비스를 중지합니다.
-  func stop()
+  func stop(byUser: Bool)
+
+  /// 사용자 요청으로 네트워크 연결을 중단합니다.
+  func disconnect()
 
   /// 이벤트를 보냅니다.
   func send(for event: NetworkEvent) async
