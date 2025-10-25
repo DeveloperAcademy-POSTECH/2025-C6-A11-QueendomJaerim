@@ -38,6 +38,14 @@ final class CameraViewModel {
     self.isShowGrid = cameraSettings.gridOn
     self.isFlashMode = cameraSettings.flashMode
 
+    manager.isLivePhotoOn = isLivePhotoOn
+
+    switch isFlashMode {
+    case .off: manager.flashMode = .off
+    case .on: manager.flashMode = .on
+    case .auto: manager.flashMode = .auto
+    }
+
     manager.onPhotoCapture = { [weak self] image in
       self?.lastImage = image
     }

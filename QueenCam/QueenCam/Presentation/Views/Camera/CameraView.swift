@@ -113,8 +113,6 @@ extension CameraView: View {
             HStack {
               Button(action: {
                 viewModel.switchFlashMode()
-                print("viewModel.isFlashMode \(viewModel.isFlashMode)")
-                print("viewModel.manager.flashMode \(viewModel.manager.flashMode)")
               }) {
                 Image(systemName: flashImage)
                   .foregroundStyle(viewModel.isFlashMode == .on ? .yellow : .white)
@@ -357,10 +355,6 @@ extension CameraView: View {
     }
     .task {
       await viewModel.checkPermissions()
-    }
-    .onAppear {
-      print("viewModel.isFlashMode \(viewModel.isFlashMode)")
-      print("viewModel.manager.flashMode \(viewModel.manager.flashMode)")
     }
   }
 }
