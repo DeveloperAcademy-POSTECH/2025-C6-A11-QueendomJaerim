@@ -209,7 +209,7 @@ extension CameraView: View {
                   }
 
                   if isFrame {
-                    FrameControlView(frameViewModel: frameViewModel)
+                    FrameEditorView(frameViewModel: frameViewModel)
                   } else {
                     FrameDisplayView(frameViewModel: frameViewModel)
                   }

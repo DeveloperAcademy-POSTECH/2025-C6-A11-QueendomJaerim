@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct FrameControlView: View {
+struct FrameEditorView: View {
   @Bindable var frameViewModel: FrameViewModel
 
   var body: some View {
@@ -16,7 +16,7 @@ struct FrameControlView: View {
       GeometryReader { geo in
         ZStack {
           ForEach(frameViewModel.frames) { frame in
-            FrameLayerView(
+            FrameView(
               frame: frame,
               containerSize: geo.size,
               onDrag: {
@@ -28,6 +28,9 @@ struct FrameControlView: View {
                   translation: translation,
                   container: geo.size
                 )
+              },
+              onResize: {newRect in 
+                
               },
               onTap: {
                 frameViewModel.selectFrame(frame.id)

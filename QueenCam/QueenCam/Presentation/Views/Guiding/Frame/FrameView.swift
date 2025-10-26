@@ -7,14 +7,19 @@
 
 import SwiftUI
 
-struct FrameLayerView: View {
+struct FrameView: View {
   let frame: Frame
   let containerSize: CGSize
+  // 외부 콜백
   let onDrag: (_ startRect: CGRect, _ translation: CGSize) -> Void
+  let onResize: (_ newRect: CGRect) -> Void
   let onTap: () -> Void
   let onDelete: () -> Void
+  
   var isSelected: Bool
-  @State private var startRect: CGRect? = nil
+  
+  @State private var startRectMove: CGRect? = nil
+  
 
   var body: some View {
     let rect = frame.rect
@@ -38,11 +43,12 @@ struct FrameLayerView: View {
           isSelected
             ? DragGesture(minimumDistance: 0)
               .onChanged { value in
-                if startRect == nil { startRect = frame.rect }
-                onDrag(startRect!, value.translation)
+                if startRectMove == nil { startRectMove = frame.rect }
+                guard let start = startRectMove else {return}
+                onDrag(start, value.translation)
               }
               .onEnded { _ in
-                startRect = nil
+                startRectMove = nil
               }
             : nil
         )
