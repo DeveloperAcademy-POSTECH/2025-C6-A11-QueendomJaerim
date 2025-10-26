@@ -15,7 +15,7 @@ final class NetworkService: NetworkServiceProtocol {
   /// Wi-Fi Aware mode
   var mode: NetworkType? {
     didSet {
-      logger.debug("network mode updated: \(self.mode.debugDescription)")
+      logger.debug("network mode updated: \(self.mode.debugDescription, privacy: .public)")
       self.networkState = mode == .host ? .host(.stopped) : .viewer(.stopped)
     }
   }
@@ -46,7 +46,7 @@ final class NetworkService: NetworkServiceProtocol {
   }
   private(set) var networkState: NetworkState? {
     didSet {
-      logger.debug("network state updated: \(self.networkState?.debugDescription ?? "")")
+      logger.debug("network state updated: \(self.networkState?.debugDescription ?? "", privacy: .public)")
 
       networkStateSubject.send(networkState)
 
@@ -135,7 +135,7 @@ final class NetworkService: NetworkServiceProtocol {
   private func handleLocalEvent(_ event: LocalEvent?) async {
     guard let event else { return }
 
-    logger.debug("handleLocalEvent - \(String(describing: event))")
+    logger.debug("handleLocalEvent - \(String(describing: event), privacy: .public)")
 
     switch event {
     case .listenerRunning, .browserRunning:
@@ -148,7 +148,7 @@ final class NetworkService: NetworkServiceProtocol {
       networkState = mode == .host ? .host(.stopped) : .viewer(.stopped)
 
       if let waError = error {
-        logger.error("browserStopped 또는 listenerStopped 상태에서 에러가 발생했습니다. \(waError.localizedDescription)")
+        logger.error("browserStopped 또는 listenerStopped 상태에서 에러가 발생했습니다. \(waError.localizedDescription, privacy: .public)")
         lastErrorSubject.send(waError)
       }
 
@@ -179,7 +179,7 @@ final class NetworkService: NetworkServiceProtocol {
       deviceConnections[device] = connectionDetail
 
     case .stopped(let device, let connectionID, let error):
-      logger.info("handle stopped event \(error)")
+      logger.info("handle stopped event \(error, privacy: .public)")
       deviceConnections.removeValue(forKey: device)
       await connectionManager.invalidate(connectionID)
 
@@ -190,7 +190,7 @@ final class NetworkService: NetworkServiceProtocol {
       }
 
       if let waError = error {
-        logger.error("stopped 상태에서 에러가 발생했습니다. \(waError.localizedDescription)")
+        logger.error("stopped 상태에서 에러가 발생했습니다. \(waError.localizedDescription, privacy: .public)")
         lastErrorSubject.send(waError)
       }
     }
@@ -202,7 +202,7 @@ final class NetworkService: NetworkServiceProtocol {
     if case .previewFrame = event {
       // Skip logging for preview frames
     } else {
-      logger.debug("handleNetworkEvent - \(String(describing: event))")  // preview frame 이벤트가 아닐 때만 로깅
+      logger.debug("handleNetworkEvent - \(String(describing: event), privacy: .public)")  // preview frame 이벤트가 아닐 때만 로깅
     }
 
     if case .healthCheckRequest(let randomCode) = event {
