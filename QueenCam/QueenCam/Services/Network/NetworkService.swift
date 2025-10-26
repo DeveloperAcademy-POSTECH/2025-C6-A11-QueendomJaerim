@@ -150,7 +150,12 @@ final class NetworkService: NetworkServiceProtocol {
       if let waError = error {
         logger.error("browserStopped 또는 listenerStopped 상태에서 에러가 발생했습니다. \(waError.localizedDescription, privacy: .public)")
         lastErrorSubject.send(waError)
-        
+
+        if case .serviceAlreadyPublishing = waError {
+          logger.debug("The error was .serviceAlreadyPublishing, so do nothing.")
+          return
+        }
+
         if mode == .viewer {
           networkState = .viewer(.lost)
         } else {
@@ -180,6 +185,8 @@ final class NetworkService: NetworkServiceProtocol {
         healthCheckTimer = Timer.scheduledTimer(withTimeInterval: healthCheckPeriod, repeats: true) { [weak self] _ in
           self?.handleTimer()
         }
+      } else {
+        networkState = .host(.publishing)
       }
     case .performance(let device, let connectionDetail):
       deviceConnections[device] = connectionDetail
