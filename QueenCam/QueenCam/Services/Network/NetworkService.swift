@@ -334,5 +334,6 @@ extension NetworkService {
     healthCheckTimer?.invalidate()
     healthCheckTimer = nil
     lastHealthCheckTime = nil
+    healthCheckPending = false
   }
 }
