@@ -3,8 +3,8 @@ import SwiftUI
 import WiFiAware
 
 struct CameraView {
-  @State private var viewModel = CameraViewModel(cameraSettings: .init())
   @Environment(\.router) private var router
+  let camerViewModel: CameraViewModel
   let previewModel: PreviewModel
   let wifiAwareViewModel: WifiAwareViewModel
 
@@ -45,11 +45,11 @@ extension CameraView {
   }
 
   private var isFront: Bool {
-    viewModel.cameraPostion == .front
+    camerViewModel.cameraPostion == .front
   }
 
   private var flashImage: String {
-    switch viewModel.isFlashMode {
+    switch camerViewModel.isFlashMode {
     case .off:
       return "bolt.slash"
     case .on:
@@ -62,7 +62,7 @@ extension CameraView {
   }
 
   private var isPermissionGranted: Bool {
-    viewModel.isCameraPermissionGranted && viewModel.isCameraPermissionGranted
+    camerViewModel.isCameraPermissionGranted && camerViewModel.isCameraPermissionGranted
   }
 
   private var activeZoom: CGFloat {
@@ -92,11 +92,11 @@ extension CameraView: View {
         let clampedZoom = max(0.5, min(newZoom, 2.0))
         currentZoomFactor = clampedZoom
 
-        viewModel.setZoom(factor: currentZoomFactor, ramp: false)
+        camerViewModel.setZoom(factor: currentZoomFactor, ramp: false)
       }
       // 핀치를 마쳤을때 한 번 호출될 로직
       .onEnded { _ in
-        viewModel.setZoom(factor: currentZoomFactor, ramp: true)
+        camerViewModel.setZoom(factor: currentZoomFactor, ramp: true)
         previousMagnificationValue = 1.0
 
       }
@@ -112,22 +112,22 @@ extension CameraView: View {
           ZStack {
             HStack {
               Button(action: {
-                viewModel.switchFlashMode()
+                camerViewModel.switchFlashMode()
               }) {
                 Image(systemName: flashImage)
-                  .foregroundStyle(viewModel.isFlashMode == .on ? .yellow : .white)
+                  .foregroundStyle(camerViewModel.isFlashMode == .on ? .yellow : .white)
               }
 
-              Button(action: { viewModel.switchLivePhoto() }) {
-                Image(systemName: viewModel.isLivePhotoOn ? "livephoto" : "livephoto.slash")
-                  .foregroundStyle(viewModel.isLivePhotoOn ? .yellow : .white)
+              Button(action: { camerViewModel.switchLivePhoto() }) {
+                Image(systemName: camerViewModel.isLivePhotoOn ? "livephoto" : "livephoto.slash")
+                  .foregroundStyle(camerViewModel.isLivePhotoOn ? .yellow : .white)
               }
 
               Spacer()
 
-              Button(action: { viewModel.switchGrid() }) {
-                Text(viewModel.isShowGrid ? "그리드 활성화" : "그리드 비활성화")
-                  .foregroundStyle(viewModel.isShowGrid ? .yellow : .white)
+              Button(action: { camerViewModel.switchGrid() }) {
+                Text(camerViewModel.isShowGrid ? "그리드 활성화" : "그리드 비활성화")
+                  .foregroundStyle(camerViewModel.isShowGrid ? .yellow : .white)
               }
             }
 
@@ -146,12 +146,12 @@ extension CameraView: View {
 
           ZStack {
             if isPhotographerMode {  // 작가
-              CameraPreview(session: viewModel.manager.session)
+              CameraPreview(session: camerViewModel.cameraManager.session)
                 .aspectRatio(3 / 4, contentMode: .fit)
                 .onTapGesture { location in
                   isFocused = true
                   focusLocation = location
-                  viewModel.setFocus(point: location)
+                  camerViewModel.setFocus(point: location)
                 }
                 .gesture(magnificationGesture)
 
@@ -227,7 +227,7 @@ extension CameraView: View {
                 .padding(20)
               }
             }
-            if viewModel.isShowGrid {
+            if camerViewModel.isShowGrid {
               GridView()
                 .aspectRatio(3 / 4, contentMode: .fit)
             }
@@ -239,7 +239,7 @@ extension CameraView: View {
               if isPhotographerMode {
                 ForEach(zoomScaleItemList, id: \.self) { item in
                   Button(action: {
-                    viewModel.setZoom(factor: item, ramp: true)
+                    camerViewModel.setZoom(factor: item, ramp: true)
                     currentZoomFactor = item
                   }) {
                     Text(
@@ -259,7 +259,7 @@ extension CameraView: View {
 
           HStack {
             Button(action: { isShowPhotoPicker.toggle() }) {
-              if let image = viewModel.lastImage {
+              if let image = camerViewModel.lastImage {
                 Image(uiImage: image)
                   .resizable()
                   .aspectRatio(contentMode: .fit)
@@ -276,7 +276,7 @@ extension CameraView: View {
             Spacer()
 
             if isPhotographerMode {  // 작가 전용 뷰
-              Button(action: { viewModel.capturePhoto() }) {
+              Button(action: { camerViewModel.capturePhoto() }) {
                 Circle()
                   .fill(.white)
                   .frame(width: 70, height: 70)
@@ -289,7 +289,7 @@ extension CameraView: View {
 
               Button(action: {
                 Task {
-                  await viewModel.switchCamera()
+                  await camerViewModel.switchCamera()
                 }
               }) {
                 Image(systemName: "arrow.triangle.2.circlepath.camera")
@@ -331,7 +331,10 @@ extension CameraView: View {
     }
     .alert(
       "카메라 접근 권한",
-      isPresented: $viewModel.isShowSettingAlert,
+      isPresented: .init(
+        get: { camerViewModel.isShowSettingAlert },
+        set: { camerViewModel.isShowSettingAlert = $0 }
+      ),
       actions: {
         Button(role: .cancel, action: {}) {
           Text("취소")
@@ -354,7 +357,7 @@ extension CameraView: View {
       .presentationDetents([.medium, .large])
     }
     .task {
-      await viewModel.checkPermissions()
+      await camerViewModel.checkPermissions()
     }
   }
 }

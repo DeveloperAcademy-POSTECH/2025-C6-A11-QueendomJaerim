@@ -1,15 +1,9 @@
 import Foundation
 
-enum FlashMode: Int {
-  case off = 0
-  case on
-  case auto
-}
-
-final class CameraSettings {
+final class CamerSettingsService: CamerSettingsServiceProtocol {
   private let livePhotoKey = "livePhotoOn"
   private let gridKey = "gridOn"
-  private let flashKey = "falshMode"
+  private let flashKey = "flashMode"
 
   init() {
     UserDefaults.standard.register(defaults: [

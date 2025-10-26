@@ -6,13 +6,9 @@ import UIKit
 @Observable
 @MainActor
 final class CameraViewModel {
-  let manager = CameraManager(
-    previewCaptureService: DependencyContainer.defaultContainer.previewCaptureService,
-    networkService: DependencyContainer.defaultContainer.networkService
-  )
-  let networkService = DependencyContainer.defaultContainer.networkService
-
-  let cameraSettings: CameraSettings
+  let cameraManager: CameraManager
+  let networkService: NetworkServiceProtocol
+  let camerSettingsService: CamerSettingsServiceProtocol
 
   var isCameraPermissionGranted = false
   var isPhotosPermissionGranted = false
@@ -32,25 +28,36 @@ final class CameraViewModel {
 
   var errorMessage = ""
 
-  init(cameraSettings: CameraSettings) {
-    self.cameraSettings = cameraSettings
-    self.isLivePhotoOn = cameraSettings.livePhotoOn
-    self.isShowGrid = cameraSettings.gridOn
-    self.isFlashMode = cameraSettings.flashMode
+  init(
+    previewCaptureService: PreviewCaptureService,
+    networkService: NetworkServiceProtocol,
+    camerSettingsService: CamerSettingsServiceProtocol
+  ) {
+    self.networkService = networkService
+    self.camerSettingsService = camerSettingsService
+    self.cameraManager = CameraManager(
+      previewCaptureService: previewCaptureService,
+      networkService: networkService
+    )
 
-    manager.isLivePhotoOn = isLivePhotoOn
-    manager.flashMode = isFlashMode.convertAVCaptureDeviceFlashMode
+    self.isLivePhotoOn = camerSettingsService.livePhotoOn
+    self.isShowGrid = camerSettingsService.gridOn
+    self.isFlashMode = camerSettingsService.flashMode
 
-    manager.onPhotoCapture = { [weak self] image in
+    cameraManager.isLivePhotoOn = isLivePhotoOn
+    cameraManager.flashMode = isFlashMode.convertAVCaptureDeviceFlashMode
+
+    cameraManager.onPhotoCapture = { [weak self] image in
       self?.lastImage = image
     }
 
-    manager.onTapCameraSwitch = { [weak self] position in
+    cameraManager.onTapCameraSwitch = { [weak self] position in
       self?.cameraPostion = position
       if position == .back {
         self?.selectedZoom = 1.0
       }
     }
+
   }
 
   func checkPermissions() async {
@@ -89,18 +96,18 @@ final class CameraViewModel {
       isCameraPermissionGranted = true
       isMicPermissionGranted = true
       isPhotosPermissionGranted = photoGranted
-      try? await manager.configureSession()
+      try? await cameraManager.configureSession()
     } else {
       isShowSettingAlert = true
     }
   }
 
   func stopSession() {
-    manager.stopSession()
+    cameraManager.stopSession()
   }
 
   func capturePhoto() {
-    manager.capturePhoto()
+    cameraManager.capturePhoto()
   }
 
   func setZoom(factor: CGFloat, ramp: Bool) {
@@ -108,12 +115,12 @@ final class CameraViewModel {
       selectedZoom = factor
     }
 
-    manager.setZoomScale(factor: factor, ramp: ramp)
+    cameraManager.setZoomScale(factor: factor, ramp: ramp)
   }
 
   func switchCamera() async {
     do {
-      try await manager.switchCamera()
+      try await cameraManager.switchCamera()
     } catch {
       errorMessage = error.localizedDescription
     }
@@ -126,23 +133,23 @@ final class CameraViewModel {
     case .auto: isFlashMode = .off
     }
 
-    cameraSettings.flashMode = isFlashMode
-    manager.flashMode = isFlashMode.convertAVCaptureDeviceFlashMode
+    camerSettingsService.flashMode = isFlashMode
+    cameraManager.flashMode = isFlashMode.convertAVCaptureDeviceFlashMode
   }
 
   func switchLivePhoto() {
     isLivePhotoOn.toggle()
-    cameraSettings.livePhotoOn = isLivePhotoOn
-    manager.isLivePhotoOn = isLivePhotoOn
+    camerSettingsService.livePhotoOn = isLivePhotoOn
+    cameraManager.isLivePhotoOn = isLivePhotoOn
   }
 
   func setFocus(point: CGPoint) {
-    manager.focusAndExpose(at: point)
+    cameraManager.focusAndExpose(at: point)
   }
 
   func switchGrid() {
     isShowGrid.toggle()
-    cameraSettings.gridOn = isShowGrid
+    camerSettingsService.gridOn = isShowGrid
   }
 }
 
