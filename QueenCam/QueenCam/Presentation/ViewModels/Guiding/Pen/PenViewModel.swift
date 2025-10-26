@@ -9,9 +9,9 @@ import SwiftUI
 
 @Observable
 final class PenViewModel {
-  var strokes: [Pen] = []  // 현재 그려진 모든 선들(Pen의 배열)
-  var disappearStokes: [Pen] = []  
-  var redoStrokes: [Pen] = []  // 사용자가 Redo(복귀) 했을때 되돌릴 수 있는 선들
+  var strokes: [Stroke] = []  // 현재 그려진 모든 선들(Pen의 배열)
+  var disappearStokes: [Stroke] = []
+  var redoStrokes: [Stroke] = []  // 사용자가 Redo(복귀) 했을때 되돌릴 수 있는 선들
   // MARK: - 선 삭제
   func clearAll() {  // 전체 삭제
     strokes.removeAll()

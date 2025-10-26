@@ -14,13 +14,12 @@ struct PenWriteView: View {
   @State private var tempPoints: [CGPoint] = []  // 현재 그리고 있는 선의 좌표(임시)
   private var outerColor = Color.white
   private var innerColor = Color.orange
-
+  private let disappearAfter: TimeInterval = 3.0
   init(penViewModel: PenViewModel, isPen: Binding<Bool>, isDisappearPen: Binding<Bool>) {
     self.penViewModel = penViewModel
     self._isPen = isPen
     self._isDisappearPen = isDisappearPen
   }
-
   var body: some View {
     VStack {
       GeometryReader { _ in
@@ -42,16 +41,13 @@ struct PenWriteView: View {
               path.addLines(stroke.points)
               context.stroke(path, with: .color(outerColor), style: StrokeStyle(lineWidth: 8, lineCap: .round, lineJoin: .round))
               context.stroke(path, with: .color(innerColor), style: StrokeStyle(lineWidth: 4, lineCap: .round, lineJoin: .round))
-              DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                penViewModel.disappearStokes.removeAll()
-              }
             }
           }
 
           // 지금 드래그 중인 선들(tempPoints) 그리기: 아직 저장 안된 stroke
           if tempPoints.count > 1 {
             var path = Path()
-              path.addLines(tempPoints)
+            path.addLines(tempPoints)
             context.stroke(path, with: .color(outerColor), style: StrokeStyle(lineWidth: 8, lineCap: .round, lineJoin: .round))
             context.stroke(path, with: .color(innerColor), style: StrokeStyle(lineWidth: 4, lineCap: .round, lineJoin: .round))
           }
@@ -65,9 +61,13 @@ struct PenWriteView: View {
             .onEnded { _ in
               guard !tempPoints.isEmpty else { return }
               if isPen {
-                penViewModel.strokes.append(Pen(points: tempPoints))
+                penViewModel.strokes.append(Stroke(points: tempPoints))
               } else {
-                penViewModel.disappearStokes.append(Pen(points: tempPoints))
+                let stroke = Stroke(points: tempPoints)
+                penViewModel.disappearStokes.append(stroke)
+                DispatchQueue.main.asyncAfter(deadline: .now() + disappearAfter) {
+                  penViewModel.disappearStokes.removeAll { $0.id == stroke.id }
+                }
               }
               tempPoints.removeAll()
               penViewModel.redoStrokes.removeAll()
