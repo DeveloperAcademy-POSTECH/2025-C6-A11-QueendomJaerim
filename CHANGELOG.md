@@ -14,6 +14,7 @@
 - 커넥션 헬스 체크
 - Graceful Disconnection
 - 레퍼런스의 이동 기능
+- 사라지는 펜 기능
 - 연결 유실 시 재연결
 
 ### Changed
