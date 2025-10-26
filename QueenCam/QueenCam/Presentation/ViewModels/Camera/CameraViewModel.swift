@@ -6,11 +6,9 @@ import UIKit
 @Observable
 @MainActor
 final class CameraViewModel {
-  let manager = CameraManager(
-    previewCaptureService: DependencyContainer.defaultContainer.previewCaptureService,
-    networkService: DependencyContainer.defaultContainer.networkService
-  )
-  let networkService = DependencyContainer.defaultContainer.networkService
+  let cameraManager: CameraManager
+  let networkService: NetworkServiceProtocol
+  let camerSettingsService: CamerSettingsServiceProtocol
 
   var isCameraPermissionGranted = false
   var isPhotosPermissionGranted = false
@@ -22,24 +20,44 @@ final class CameraViewModel {
 
   var selectedZoom: CGFloat = 1.0
 
-  var isLivePhotoOn = false
+  var isLivePhotoOn: Bool
+  var isShowGrid: Bool
+  var isFlashMode: FlashMode
 
   var cameraPostion: AVCaptureDevice.Position?
-  var currentFlashMode: AVCaptureDevice.FlashMode = .off
 
   var errorMessage = ""
 
-  init() {
-    manager.onPhotoCapture = { [weak self] image in
+  init(
+    previewCaptureService: PreviewCaptureService,
+    networkService: NetworkServiceProtocol,
+    camerSettingsService: CamerSettingsServiceProtocol
+  ) {
+    self.networkService = networkService
+    self.camerSettingsService = camerSettingsService
+    self.cameraManager = CameraManager(
+      previewCaptureService: previewCaptureService,
+      networkService: networkService
+    )
+
+    self.isLivePhotoOn = camerSettingsService.livePhotoOn
+    self.isShowGrid = camerSettingsService.gridOn
+    self.isFlashMode = camerSettingsService.flashMode
+
+    cameraManager.isLivePhotoOn = isLivePhotoOn
+    cameraManager.flashMode = isFlashMode.convertAVCaptureDeviceFlashMode
+
+    cameraManager.onPhotoCapture = { [weak self] image in
       self?.lastImage = image
     }
 
-    manager.onTapCameraSwitch = { [weak self] position in
+    cameraManager.onTapCameraSwitch = { [weak self] position in
       self?.cameraPostion = position
       if position == .back {
         self?.selectedZoom = 1.0
       }
     }
+
   }
 
   func checkPermissions() async {
@@ -78,18 +96,18 @@ final class CameraViewModel {
       isCameraPermissionGranted = true
       isMicPermissionGranted = true
       isPhotosPermissionGranted = photoGranted
-      try? await manager.configureSession()
+      try? await cameraManager.configureSession()
     } else {
       isShowSettingAlert = true
     }
   }
 
   func stopSession() {
-    manager.stopSession()
+    cameraManager.stopSession()
   }
 
   func capturePhoto() {
-    manager.capturePhoto()
+    cameraManager.capturePhoto()
   }
 
   func setZoom(factor: CGFloat, ramp: Bool) {
@@ -97,39 +115,53 @@ final class CameraViewModel {
       selectedZoom = factor
     }
 
-    manager.setZoomScale(factor: factor, ramp: ramp)
+    cameraManager.setZoomScale(factor: factor, ramp: ramp)
   }
 
   func switchCamera() async {
     do {
-      try await manager.switchCamera()
+      try await cameraManager.switchCamera()
     } catch {
       errorMessage = error.localizedDescription
     }
   }
 
   func switchFlashMode() {
-    switch currentFlashMode {
-    case .off:
-      currentFlashMode = .on
-    case .on:
-      currentFlashMode = .auto
-    case .auto:
-      currentFlashMode = .off
-
-    @unknown default:
-      currentFlashMode = .off
+    switch isFlashMode {
+    case .off: isFlashMode = .on
+    case .on: isFlashMode = .auto
+    case .auto: isFlashMode = .off
     }
 
-    manager.flashMode = currentFlashMode
+    camerSettingsService.flashMode = isFlashMode
+    cameraManager.flashMode = isFlashMode.convertAVCaptureDeviceFlashMode
   }
 
   func switchLivePhoto() {
     isLivePhotoOn.toggle()
-    manager.isLivePhotoOn = isLivePhotoOn
+    camerSettingsService.livePhotoOn = isLivePhotoOn
+    cameraManager.isLivePhotoOn = isLivePhotoOn
   }
 
   func setFocus(point: CGPoint) {
-    manager.focusAndExpose(at: point)
+    cameraManager.focusAndExpose(at: point)
+  }
+
+  func switchGrid() {
+    isShowGrid.toggle()
+    camerSettingsService.gridOn = isShowGrid
+  }
+}
+
+extension FlashMode {
+  var convertAVCaptureDeviceFlashMode: AVCaptureDevice.FlashMode {
+    switch self {
+    case .off:
+      return .off
+    case .on:
+      return .on
+    case .auto:
+      return .auto
+    }
   }
 }

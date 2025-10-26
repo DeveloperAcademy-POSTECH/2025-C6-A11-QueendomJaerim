@@ -47,6 +47,7 @@ identifier_name:
     - dx
     - dy
     - i
+    - on
 
 type_name:
   excluded:
