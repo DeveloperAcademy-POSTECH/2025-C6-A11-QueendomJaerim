@@ -35,11 +35,9 @@ final actor PreviewCaptureService {
   var quality: PreviewFrameQuality = .medium
 
   /// 비디오 인코더
-  let videoEncoder = VideoEncoder(config: .ultraLowLatency)
+  var videoEncoder: VideoEncoder?
   var encoderStreamTask: Task<Void, Never>?
-  lazy var videoEncoderAnnexBAdaptor = VideoEncoderAnnexBAdaptor(
-    videoEncoder: videoEncoder
-  )
+  var videoEncoderAnnexBAdaptor: VideoEncoderAnnexBAdaptor?
 
   /// 프레임 처리를 위한 CIContext
   let ciContext = CIContext(options: nil)
@@ -115,10 +113,16 @@ extension PreviewCaptureService {
 // MARK: - 인코더 설정
 extension PreviewCaptureService {
   func setupEncoder() {
+    let videoEncoder = VideoEncoder(config: .ultraLowLatency)
+    self.videoEncoder = videoEncoder
+    
+    let videoEncoderAnnexBAdaptor = VideoEncoderAnnexBAdaptor(videoEncoder: videoEncoder)
+    self.videoEncoderAnnexBAdaptor = videoEncoderAnnexBAdaptor
+    
     encoderStreamTask = Task { [weak self] in
       guard let self else { return }
 
-      for await payload in await videoEncoderAnnexBAdaptor.annexBData {
+      for await payload in videoEncoderAnnexBAdaptor.annexBData {
         let framePayloadContinuation = await self.framePayloadContinuation
         framePayloadContinuation.yield(
           VideoFramePayload(
@@ -164,7 +168,7 @@ extension PreviewCaptureService {
           resizedBuffer = newSampleBuffer
         }
 
-        videoEncoder.encode(resizedBuffer)
+        videoEncoder?.encode(resizedBuffer)
       }
     }
   }
