@@ -150,6 +150,12 @@ final class NetworkService: NetworkServiceProtocol {
       if let waError = error {
         logger.error("browserStopped 또는 listenerStopped 상태에서 에러가 발생했습니다. \(waError.localizedDescription, privacy: .public)")
         lastErrorSubject.send(waError)
+        
+        if mode == .viewer {
+          networkState = .viewer(.lost)
+        } else {
+          networkState = .host(.lost)
+        }
       }
 
     case .connection(let conectionEvent):
@@ -183,15 +189,15 @@ final class NetworkService: NetworkServiceProtocol {
       deviceConnections.removeValue(forKey: device)
       await connectionManager.invalidate(connectionID)
 
-      if mode == .viewer {
-        networkState = .viewer(.lost)
-      } else {
-        networkState = .host(.lost)
-      }
-
       if let waError = error {
         logger.error("stopped 상태에서 에러가 발생했습니다. \(waError.localizedDescription, privacy: .public)")
         lastErrorSubject.send(waError)
+
+        if mode == .viewer {
+          networkState = .viewer(.lost)
+        } else {
+          networkState = .host(.lost)
+        }
       }
     }
   }
