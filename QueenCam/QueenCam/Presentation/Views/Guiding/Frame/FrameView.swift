@@ -3,69 +3,83 @@
 //  QueenCam
 //
 //  Created by Bora Yun on 10/16/25.
-//  개별 프레임 뷰
 
 import SwiftUI
 
+/// 한개의 프레임에 대한 모든 제스처 관리
 struct FrameView: View {
   let frame: Frame
   let containerSize: CGSize
-  // 외부 콜백
-  let onDrag: (_ startRect: CGRect, _ translation: CGSize) -> Void
-  let onResize: (_ newRect: CGRect) -> Void
-  let onTap: () -> Void
-  let onDelete: () -> Void
-  
+  @Bindable var frameViewModel: FrameViewModel
   var isSelected: Bool
   
-  @State private var startRectMove: CGRect? = nil
-  
+  @State private var frameMove: CGRect? = nil
+  @State private var frameScale: CGRect? = nil
 
   var body: some View {
     let rect = frame.rect
-
-    //픽셀(절대) 단위로 변환
-    let newWidth = rect.width * containerSize.width
-    let newHeight = rect.height * containerSize.height
-    let newX = (rect.minX + rect.width / 2) * containerSize.width
-    let newY = (rect.minY + rect.height / 2) * containerSize.height
+    let width = rect.width * containerSize.width
+    let height = rect.height * containerSize.height
+    let x = (rect.origin.x + rect.width / 2) * containerSize.width
+    let y = (rect.origin.y + rect.height / 2) * containerSize.height
 
     //프레임 사격형 표시
-    ZStack(alignment: .topTrailing) {
-
+    ZStack(alignment: .center) {
       Rectangle()
         .fill(frame.color)
-        .overlay(
-          Rectangle().stroke(isSelected ? .black : frame.color, lineWidth: 2)
-        )
-        .frame(width: newWidth, height: newHeight)
+        .overlay(Rectangle().stroke(isSelected ? .white : frame.color, lineWidth: 2))
+        .frame(width: width, height: height)
+        .onTapGesture { frameViewModel.selectFrame(frame.id)}
         .gesture(
-          isSelected
-            ? DragGesture(minimumDistance: 0)
+          DragGesture(minimumDistance: 2)
               .onChanged { value in
-                if startRectMove == nil { startRectMove = frame.rect }
-                guard let start = startRectMove else {return}
-                onDrag(start, value.translation)
+                if frameMove == nil { frameMove = frame.rect }
+                guard let start = frameMove else {return}
+                frameViewModel.moveFrame(id: frame.id, start: start, translation: value.translation, container: containerSize)
               }
-              .onEnded { _ in
-                startRectMove = nil
-              }
-            : nil
+              .onEnded { _ in frameMove = nil }
         )
-        .onTapGesture {
-          onTap()
-        }
+        .simultaneousGesture(
+          MagnifyGesture()
+            .onChanged { value in
+              if frameScale == nil { frameScale = frame.rect }
+              guard let start = frameScale else {return}
+              frameViewModel.resizeFrame(id: frame.id, start: start, scale: value.magnification)
+            }
+            .onEnded { _ in frameScale = nil }
+        )
         .animation(.snappy, value: frame.rect)
 
+      // Corner 핸들 표시
       if isSelected {
-        Button {
-          onDelete()
-        } label: {
-          Image(systemName: "xmark.circle.fill")
-            .foregroundStyle(.blue)
+        ForEach([Corner.topLeft, .topRight, .bottomLeft, .bottomRight], id: \.self) { corner in
+          Circle()
+            .fill(.white)
+            .frame(width: 14, height: 14)
+            .position(cornerPosition(for: corner))
+            .gesture(
+              DragGesture()
+                .onChanged { value in
+                  frameViewModel.resizeCorner(id: frame.id, corner: corner, translation: value.translation, container: containerSize)
+                }
+            )
         }
       }
-    }.position(x: newX, y: newY)
-      .animation(.snappy, value: frame.rect)
+    }
+    .animation(.easeOut, value: frame.rect)
+  }
+  /// 모서리 핸들의 위치에 대한 함수
+  private func cornerPosition(for corner: Corner) -> CGPoint {
+    let rect = frame.rect
+    switch corner {
+    case .topLeft:
+      return CGPoint(x: rect.minX * containerSize.width, y: rect.minY * containerSize.height)
+    case .topRight:
+      return CGPoint(x: rect.maxX * containerSize.width, y: rect.minY * containerSize.height)
+    case .bottomLeft:
+      return CGPoint(x: rect.minX * containerSize.width, y: rect.maxY * containerSize.height)
+    case .bottomRight:
+      return CGPoint(x: rect.maxX * containerSize.width, y: rect.maxY * containerSize.height)
+    }
   }
 }

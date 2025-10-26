@@ -8,14 +8,14 @@ import Combine
 import Foundation
 import SwiftUI
 
+/// 프레임의 상태 관리(이동, 확대, 축소, 모서리 크기 조절)
 @Observable
 final class FrameViewModel {
   var frames: [Frame] = []
   var selectedFrameID: UUID? = nil
-  let maxFrames = 2
+  let maxFrames = 1
   private let colors: [Color] = [
-    .green.opacity(0.5),
-    .blue.opacity(0.5),
+    .green.opacity(0.5)
   ]
 
   // MARK: - 네트워크
