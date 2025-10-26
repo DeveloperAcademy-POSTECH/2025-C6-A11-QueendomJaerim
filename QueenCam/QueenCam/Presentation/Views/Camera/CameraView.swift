@@ -333,7 +333,9 @@ extension CameraView: View {
       "카메라 접근 권한",
       isPresented: $viewModel.isShowSettingAlert,
       actions: {
-        Button(role: .cancel, action: {}) {}
+        Button(role: .cancel, action: {}) {
+          Text("취소")
+        }
 
         Button(action: { openSetting() }) {
           Text("설정으로 이동")
