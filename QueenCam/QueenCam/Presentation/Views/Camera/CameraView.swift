@@ -372,6 +372,11 @@ extension CameraView: View {
       }
       .presentationDetents([.medium, .large])
     }
+    .onChange(of: wifiAwareViewModel.connections) { _, newValue in
+      if !newValue.isEmpty && wifiAwareViewModel.role == .photographer {
+        previewModel.startCapture()
+      }
+    }
     .task {
       await camerViewModel.checkPermissions()
     }
