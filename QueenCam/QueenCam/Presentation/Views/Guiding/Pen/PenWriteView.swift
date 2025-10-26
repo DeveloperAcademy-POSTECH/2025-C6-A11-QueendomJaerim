@@ -74,15 +74,17 @@ struct PenWriteView: View {
             }
         )
       }
-      // MARK: - 버튼 툴바 Undo / Redo / clearAll
-      GuidingToolBarView { action in
-        switch action {
-        case .clearAll:
-          penViewModel.clearAll()
-        case .undo:
-          penViewModel.undo()
-        case .redo:
-          penViewModel.redo()
+      if isPen {
+        // MARK: - 버튼 툴바 Undo / Redo / clearAll
+        GuidingToolBarView { action in
+          switch action {
+          case .clearAll:
+            penViewModel.clearAll()
+          case .undo:
+            penViewModel.undo()
+          case .redo:
+            penViewModel.redo()
+          }
         }
       }
     }
