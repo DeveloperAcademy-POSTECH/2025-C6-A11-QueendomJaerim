@@ -9,26 +9,44 @@
 
 ### Added
 
+
+### Changed
+
+
+### Deprecated
+
+
+### Removed
+
+
+### Fixed
+
+
+### Security
+
+
+## [0.1.0]
+
+### Added
+
 - 라이브 포토 재생 기능
 - 핀치를 이용한 카메라 프리뷰 줌인, 줌아웃 기능
 - 커넥션 헬스 체크
 - Graceful Disconnection
 - 레퍼런스의 이동 기능
+- 사라지는 펜 기능
+- 연결 유실 시 재연결
 
 ### Changed
 
 - 카메라 프리뷰 스트리밍에 HEVC 코덱 적용
 - 카메라 세팅 관련 로컬 저장 적용
 
-### Deprecated
-
-### Removed
-
 ### Fixed
 
 - 접근 권한 거부에 따른 앱 크래시 나는 이슈 수정
+- HEVC 코덱 적용 이후, 작가 재연결시 가끔 스트리밍이 안되었던 문제
 
-### Security
 
 ## [0.0.1]
 
@@ -66,5 +84,6 @@
 - Wi-Fi Aware 연결 후, 라이브 포토 촬영 시 앱이 크래시되는 문제
 - 레퍼런스 삭제 후 재등록에 관한 상태 초기화 문제
 
+[0.1.0]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v0.0.1...v0.1.0
 [0.0.1]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/releases/tag/v0.0.1
 [unreleased]: hhttps://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim

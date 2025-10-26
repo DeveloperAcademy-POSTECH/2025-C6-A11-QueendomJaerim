@@ -46,10 +46,6 @@ extension ConnectionView {
     }
     .onChange(of: viewModel.connections) { _, newValue in
       if !newValue.isEmpty {
-        if viewModel.role == .photographer {
-          previewStreamingViewModel.startCapture()
-        }
-
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
           router.reset()
         }

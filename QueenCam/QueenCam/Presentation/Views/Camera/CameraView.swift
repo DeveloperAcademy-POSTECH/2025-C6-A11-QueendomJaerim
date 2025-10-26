@@ -32,6 +32,7 @@ struct CameraView {
   @State private var isLarge: Bool = false
 
   @State private var isPen: Bool = false
+  @State private var isDisappearPen: Bool = false
   @State private var penViewModel = PenViewModel()
 
   @State private var frameViewModel = FrameViewModel()
@@ -202,8 +203,8 @@ extension CameraView: View {
 
               ZStack(alignment: .topTrailing) {
                 Group {
-                  if isPen {
-                    PenWriteView(penViewModel: penViewModel)
+                  if isPen || isDisappearPen {
+                    PenWriteView(penViewModel: penViewModel, isPen: $isPen, isDisappearPen: $isDisappearPen)
                   } else {
                     PenDisplayView(penViewModel: penViewModel)
                   }
@@ -221,6 +222,15 @@ extension CameraView: View {
                   ) {
                     isPen.toggle()
                     isFrame = false
+                    isDisappearPen = false
+                  }
+                  CircleButton(
+                    systemImage: "pointer.arrow.rays",
+                    isActive: isDisappearPen
+                  ) {
+                    isDisappearPen.toggle()
+                    isPen = false
+                    isFrame = false
                   }
                   CircleButton(
                     systemImage: "camera.metering.center.weighted.average",
@@ -228,6 +238,8 @@ extension CameraView: View {
                   ) {
                     isFrame.toggle()
                     isPen = false
+                    isDisappearPen = false
+
                   }
                 }
                 .background(
@@ -371,6 +383,18 @@ extension CameraView: View {
         isShowPhotoPicker = false
       }
       .presentationDetents([.medium, .large])
+    }
+    .overlay {
+      if wifiAwareViewModel.connectionLost {
+        ReconnectingOverlayView {
+          wifiAwareViewModel.reconnectCancelButtonDidTap()
+        }
+      }
+    }
+    .onChange(of: wifiAwareViewModel.connections) { _, newValue in
+      if !newValue.isEmpty && wifiAwareViewModel.role == .photographer {
+        previewModel.startCapture()
+      }
     }
     .task {
       await camerViewModel.checkPermissions()
