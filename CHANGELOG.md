@@ -13,6 +13,7 @@
 - 핀치를 이용한 카메라 프리뷰 줌인, 줌아웃 기능
 - 커넥션 헬스 체크
 - Graceful Disconnection
+- 레퍼런스의 이동 기능
 
 ### Changed
 

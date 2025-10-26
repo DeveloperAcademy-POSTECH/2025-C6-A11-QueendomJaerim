@@ -8,27 +8,45 @@
 import SwiftUI
 
 struct CloseView: View {
+  @Bindable var referenceViewModel: ReferenceViewModel
+
   var body: some View {
     ZStack {
-      Rectangle()
-        .fill(.black.opacity(0.8))
-        .frame(width: 28, height: 120)
-        .clipShape(
-          UnevenRoundedRectangle(
-            cornerRadii: RectangleCornerRadii(
-              topLeading: 0,
-              bottomLeading: 0,
-              bottomTrailing: 10,
-              topTrailing: 10
-            ),
+      if referenceViewModel.alignment == .bottomLeading || referenceViewModel.alignment == .topLeading {
+        Rectangle()
+          .fill(.black.opacity(0.8))
+          .frame(width: 28, height: 120)
+          .clipShape(
+            UnevenRoundedRectangle(
+              cornerRadii: RectangleCornerRadii(
+                topLeading: 0,
+                bottomLeading: 0,
+                bottomTrailing: 10,
+                topTrailing: 10
+              ),
+            )
           )
-        )
-      Image(systemName: "chevron.right")
-        .foregroundStyle(.white)
+        Image(systemName: "chevron.right")
+          .foregroundStyle(.white)
+      } else {
+        Rectangle()
+          .fill(.black.opacity(0.8))
+          .frame(width: 28, height: 120)
+          .clipShape(
+            UnevenRoundedRectangle(
+              cornerRadii: RectangleCornerRadii(
+                topLeading: 10,
+                bottomLeading: 10,
+                bottomTrailing: 0,
+                topTrailing: 0
+              ),
+            )
+          )
+        Image(systemName: "chevron.left")
+          .foregroundStyle(.white)
+      }
     }
   }
+
 }
 
-#Preview {
-  CloseView()
-}

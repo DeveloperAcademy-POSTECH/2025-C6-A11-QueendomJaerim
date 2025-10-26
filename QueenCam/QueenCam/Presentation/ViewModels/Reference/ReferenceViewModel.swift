@@ -12,48 +12,62 @@ import UIKit
 
 @Observable
 final class ReferenceViewModel {
+  // MARK: - Properties
   private(set) var image: UIImage?  // 선택된 레퍼런스 사진
-
   var state: ReferenceState = .open
+  let foldThreshold: CGFloat = -50
   var dragOffset: CGSize = .zero  // 드래그 중 임시편차
+  var location: ReferenceLocation = .topLeft
+  var alignment: Alignment { location.alignment }
 
-  // MARK: - 네트워크
+  // MARK: - Network
   let networkService: NetworkServiceProtocol
   var cancellables: Set<AnyCancellable> = []
-
-  // MARK: - 드래그 Close(Fold) 제스쳐
-  let foldThreshold: CGFloat = -30  // FIXME: fold(접힘) 전환 임계값 - 변경 예정
-  let maxDrag: CGFloat = 60  // 최대 드래그 허용 범위(양수: 오른쪽, 음수: 왼쪽)
 
   init(
     networkService: NetworkServiceProtocol = DependencyContainer.defaultContainer.networkService
   ) {
     self.networkService = networkService
-
-    bind()
   }
 
-  // 드래그 중: 수평만 처리
+  // MARK: - DRAG(for fold/unfold)
   func dragChanged(_ value: DragGesture.Value) {
     let x = value.translation.width
-    dragOffset = .init(width: min(x, maxDrag), height: 0)
+    let y = value.translation.height
+    dragOffset = CGSize(width: x, height: y)
   }
-  // 드래그 끝: 임계값(foldThreshold) 넘기면 접힘
+
   func dragEnded() {
-    if dragOffset.width <= foldThreshold {
-      state = .close
+    if location == .topLeft || location == .bottomLeft {
+      if dragOffset.width <= foldThreshold {
+        state = .close
+      }
+    } else {
+      if dragOffset.width >= -foldThreshold {
+        state = .close
+      }
     }
     withAnimation(.snappy) {
       dragOffset = .zero
     }
   }
-  // MARK: - 드래그 Open(Unfold) 제스쳐
+
   func unFold() {
     withAnimation(.snappy) {
       state = .open
       dragOffset = .zero
     }
   }
+
+  // MARK: - DRAG(for location change)
+  func updateLocation(end: CGPoint, size: CGSize) {
+    let newLocation = ReferenceLocation.corner(point: end, size: size)
+    withAnimation(.snappy) {
+      location = newLocation
+      dragOffset = .zero
+    }
+  }
+
   // MARK: - Reference 삭제
   func onDelete() {  // 초기화
     withAnimation(.snappy) {
@@ -61,13 +75,11 @@ final class ReferenceViewModel {
       image = nil
       state = .open
     }
-
     self.sendReferenceImageCommand(command: .remove)
   }
 
   func onRegister(uiImage: UIImage?) {
     guard let uiImage else { return }
-
     self.image = uiImage
     self.sendReferenceImageCommand(command: .register(image: uiImage))
   }

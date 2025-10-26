@@ -29,6 +29,7 @@ struct CameraView {
 
   @State private var isShowPhotoPicker = false
   @State private var referenceViewModel = ReferenceViewModel()
+  @State private var isLarge: Bool = false
 
   @State private var isPen: Bool = false
   @State private var penViewModel = PenViewModel()
@@ -167,10 +168,17 @@ extension CameraView: View {
                         }
                       }
                   }
+                  if isLarge {
+                    Color.black.opacity(0.5)
+                      .onTapGesture {
+                        isLarge = false
+                      }
+                  }
                 }
-              ReferenceView(referenceViewModel: referenceViewModel, role: .photographer)  //레퍼런스 - 삭제 불가능
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+              ReferenceView(referenceViewModel: referenceViewModel, isLarge: $isLarge, role: .photographer)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding(12)
+                .clipped()
               PenDisplayView(penViewModel: penViewModel)
               FrameDisplayView(frameViewModel: frameViewModel)
             } else {  // 모델
@@ -180,9 +188,17 @@ extension CameraView: View {
               PreviewPlayerView(previewModel: previewModel)
               #endif
 
-              ReferenceView(referenceViewModel: referenceViewModel, role: .model)  // 레퍼런스 - 삭제 가능
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+              if isLarge {
+                Color.black.opacity(0.5)
+                  .onTapGesture {
+                    isLarge = false
+                  }
+              }
+
+              ReferenceView(referenceViewModel: referenceViewModel, isLarge: $isLarge, role: .model)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding(12)
+                .clipped()
 
               ZStack(alignment: .topTrailing) {
                 Group {
