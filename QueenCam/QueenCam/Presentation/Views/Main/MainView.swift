@@ -20,18 +20,28 @@ struct MainView: View {
     networkService: DependencyContainer.defaultContainer.networkService
   )
 
+  @State private var cameraViewModel = CameraViewModel(
+    previewCaptureService: DependencyContainer.defaultContainer.previewCaptureService,
+    networkService: DependencyContainer.defaultContainer.networkService,
+    camerSettingsService: DependencyContainer.defaultContainer.cameraSettingServcice
+  )
+
   var body: some View {
     Group {
       NavigationStack(path: $router.path) {
         ZStack {
-          CameraView(previewModel: previewModel, wifiAwareViewModel: wifiAwareViewModel)
-            .navigationDestination(for: Route.self) { route in
-              NavigationRouteView(
-                currentRoute: route,
-                wifiAwareViewModel: wifiAwareViewModel,
-                previewModel: previewModel
-              )
-            }
+          CameraView(
+            camerViewModel: cameraViewModel,
+            previewModel: previewModel,
+            wifiAwareViewModel: wifiAwareViewModel
+          )
+          .navigationDestination(for: Route.self) { route in
+            NavigationRouteView(
+              currentRoute: route,
+              wifiAwareViewModel: wifiAwareViewModel,
+              previewModel: previewModel
+            )
+          }
         }
       }
     }

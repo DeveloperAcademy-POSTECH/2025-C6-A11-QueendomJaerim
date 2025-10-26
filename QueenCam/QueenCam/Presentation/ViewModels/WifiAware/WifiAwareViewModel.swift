@@ -32,8 +32,12 @@ final class WifiAwareViewModel {
   var connectedDeviceName: String? {
     connectedDevice?.pairingInfo?.pairingName
   }
+  var lastConnectedDevice: WAPairedDevice?
 
   var lastPingAt: Date?
+
+  /// 연결 유실 여부를 표현하는 플래그. true이면 재연결을 시작하고 관련 UI를 표시
+  var connectionLost: Bool = false
 
   private let networkService: NetworkServiceProtocol
   private var cancellables: Set<AnyCancellable> = []
@@ -55,8 +59,14 @@ final class WifiAwareViewModel {
       .sink { [weak self] state in
         guard let self else { return }
         self.networkState = state
+
+        // 이벤트 전파 후 핸들링
         if state == .host(.cancelled) || state == .viewer(.cancelled) {
           role = nil
+        }
+        if state == .host(.lost) || state == .viewer(.lost) {
+          connectionLost = true
+          tryReconnect()
         }
       }
       .store(in: &cancellables)
@@ -65,6 +75,9 @@ final class WifiAwareViewModel {
       .compactMap { $0 }
       .sink { [weak self] connections in
         self?.connections = connections
+
+        // 이벤트 전파 후 핸들링
+        self?.didEstablishConnection(connections: connections)
       }
       .store(in: &cancellables)
 
@@ -106,7 +119,7 @@ extension WifiAwareViewModel {
   }
 
   func disconnectButtonDidTap() {
-    networkService.stop()
+    networkService.disconnect()
   }
 
   func viewDidAppearTask() async {
@@ -121,11 +134,36 @@ extension WifiAwareViewModel {
 
   func connectionViewDisappear() {
     if connections.isEmpty {  // 연결 중인 경우 연결 뷰에서 벗어나면 연결을 취소한다
-      networkService.stop()
+      networkService.stop(byUser: true)
     }
   }
 
   func selectRole(for role: Role?) {
     self.role = role
+  }
+
+  func reconnectCancelButtonDidTap() {
+    networkService.stop(byUser: true)
+    lastConnectedDevice = nil
+    connectionLost = false
+  }
+}
+
+// MARK: - Connecting
+extension WifiAwareViewModel {
+  private func didEstablishConnection(connections: [WAPairedDevice: ConnectionDetail]) {
+    if let firstConnection = connections.first {
+      lastConnectedDevice = firstConnection.key
+      connectionLost = false  // 재연결인 경우 connectionLost 플래그를 초기화
+    }
+  }
+
+  private func tryReconnect() {
+    if let lastConnectedDevice {
+      logger.info("try to reconnect to \(lastConnectedDevice)")
+      networkService.run(for: lastConnectedDevice)
+    } else {
+      logger.warning("최근 연결한 디바이스 정보가 없어 재연결에 실패했습니다.")
+    }
   }
 }
