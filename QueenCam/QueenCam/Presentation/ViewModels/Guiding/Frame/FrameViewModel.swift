@@ -71,8 +71,8 @@ final class FrameViewModel {
     guard let frame = frames.firstIndex(where: { $0.id == id }) else { return }
 
     var new = start
-    new.size.width *= min(max(start.size.width * scale, 0.05), 1.0)
-    new.size.height *= min(max(start.size.height * scale, 0.05), 1.0)
+    new.size.width = min(max(start.size.width * scale, 0.05), 1.0)
+    new.size.height = min(max(start.size.height * scale, 0.05), 1.0)
     let dx = (start.size.width - new.size.width) / 2
     let dy = (start.size.height - new.size.height) / 2
     new.origin.x += dx
@@ -82,10 +82,10 @@ final class FrameViewModel {
     frames[frame].rect = new
   }
   // MARK: - 모서리 핸들로 비율 조절
-  func resizeCorner(id: UUID, corner: Corner, translation: CGSize, container: CGSize) {
+  func resizeCorner(id: UUID, corner: Corner, start: CGRect, translation: CGSize, container: CGSize) {
     guard let frame = frames.firstIndex(where: { $0.id == id }) else { return }
 
-    var new = frames[frame].rect
+    var new = start
     let dx = translation.width / container.width
     let dy = translation.height / container.height
 

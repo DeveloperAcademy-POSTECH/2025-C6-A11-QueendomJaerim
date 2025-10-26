@@ -9,14 +9,18 @@ import SwiftUI
 
 /// 전체 프레임을 수정 및 관리 하는 뷰
 struct FrameEditorView: View {
-  @State var frameViewModel = FrameViewModel()
+  @Bindable var frameViewModel: FrameViewModel
 
   var body: some View {
     ZStack {
       GeometryReader { geo in
         ZStack {
           ForEach(frameViewModel.frames) { frame in
-            FrameView( frame: frame, containerSize: geo.size, frameViewModel: frameViewModel, isSelected: frameViewModel.isSelected(frame.id)
+            FrameView(
+              frameViewModel: frameViewModel,
+              frame: frame,
+              containerSize: geo.size,
+              isSelected: frameViewModel.isSelected(frame.id)
             )
           }
         }
