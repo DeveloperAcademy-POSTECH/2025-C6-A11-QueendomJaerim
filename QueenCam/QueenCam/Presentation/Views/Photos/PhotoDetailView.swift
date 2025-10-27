@@ -25,11 +25,27 @@ extension PhotoDetailView {}
 extension PhotoDetailView: View {
   var body: some View {
     ZStack {
-      VStack {
-        Button(action: { onTapClose() }) {
-          Text("닫기")
+      ScrollView(.horizontal) {
+        LazyHStack(spacing: .zero) {
+          ForEach(assetList.indices, id: \.self) { index in
+            let asset = assetList[index]
+
+            ItemComponent(
+              asset: asset,
+              manager: manager,
+              selectedImageID: selectedImageID,
+              onTapConfirm: { onTapConfirm($0) },
+              onTapClose: { onTapClose() }
+            )
+            .containerRelativeFrame(.horizontal)
+            .id(index)
+          }
         }
+        .scrollTargetLayout()
       }
+      .scrollTargetBehavior(.paging)
+      .scrollPosition(id: $currentIndex)
+
     }
     .onAppear {
       self.currentIndex = selectedIndex

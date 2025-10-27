@@ -30,7 +30,10 @@ extension PhotoDetailView {
 
     @State private var livePhoto: PHLivePhoto?
 
-    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.queendom.QueenCam", category: "PhotoDetailView+ItemComponent")
+    private let logger = Logger(
+      subsystem: Bundle.main.bundleIdentifier ?? "com.queendom.QueenCam",
+      category: "PhotoDetailView+ItemComponent"
+    )
   }
 }
 
@@ -205,7 +208,7 @@ extension PhotoDetailView.ItemComponent: View {
       detailSelectedImageID = selectedImageID
       requestImage()
 
-      if asset.mediaSubtypes.contains(.photoLive) {
+      if isLivePhoto {
         requestLivePhoto()
         requestVideoResouceData()
       }
