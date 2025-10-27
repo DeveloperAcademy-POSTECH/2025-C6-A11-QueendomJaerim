@@ -1,4 +1,3 @@
-import Combine
 //
 //  FrameViewModel.swift
 //  QueenCam
@@ -7,10 +6,14 @@ import Combine
 //
 import Foundation
 import SwiftUI
+import Combine
 
 /// 프레임의 상태 관리(이동, 확대, 축소, 모서리 크기 조절)
 @Observable
 final class FrameViewModel {
+  static let frameWidth : CGFloat = 0.3
+  static let frameHeight : CGFloat = 0.4
+  
   var frames: [Frame] = []
   var selectedFrameID: UUID? = nil
   let maxFrames = 1
@@ -29,9 +32,9 @@ final class FrameViewModel {
 
     bind()
   }
-
+  
   //MARK: - 프레임 추가
-  func addFrame(at origin: CGPoint, size: CGSize = .init(width: 0.3, height: 0.4)) {
+  func addFrame(at origin: CGPoint, size: CGSize = .init(width: frameWidth, height: frameHeight)) {
     guard frames.count < maxFrames else { return }
     let newX = min(max(origin.x, 0), 1 - size.width)
     let newY = min(max(origin.y, 0), 1 - size.height)
@@ -51,7 +54,7 @@ final class FrameViewModel {
 
   // MARK: - 프레임 이동
   func moveFrame(id: UUID, start: CGRect, translation: CGSize, container: CGSize) {
-    guard let frame = frames.firstIndex(where: { $0.id == id }) else { return }
+    guard let frameIndex = frames.firstIndex(where: { $0.id == id }) else { return }
 
     let dx = container.width > 0 ? translation.width / container.width : 0
     let dy = container.height > 0 ? translation.height / container.height : 0
@@ -61,14 +64,14 @@ final class FrameViewModel {
     new.origin.y += dy
     new.origin.x = min(max(new.origin.x, 0), 1 - new.size.width)
     new.origin.y = min(max(new.origin.y, 0), 1 - new.size.height)
-    frames[frame].rect = new
+    frames[frameIndex].rect = new
 
     // Send to network
-    sendFrameCommand(command: .move(frame: frames[frame]))
+    sendFrameCommand(command: .move(frame: frames[frameIndex]))
   }
   // MARK: - 프레임 크기 조절 (Pinch/Magnify)
   func resizeFrame(id: UUID, start: CGRect, scale: CGFloat) {
-    guard let frame = frames.firstIndex(where: { $0.id == id }) else { return }
+    guard let frameIndex = frames.firstIndex(where: { $0.id == id }) else { return }
 
     var new = start
     new.size.width = min(max(start.size.width * scale, 0.05), 1.0)
@@ -79,11 +82,11 @@ final class FrameViewModel {
     new.origin.y += dy
     new.origin.x = min(max(new.origin.x, 0), 1 - new.size.width)
     new.origin.y = min(max(new.origin.y, 0), 1 - new.size.height)
-    frames[frame].rect = new
+    frames[frameIndex].rect = new
   }
   // MARK: - 모서리 핸들로 비율 조절
   func resizeCorner(id: UUID, corner: Corner, start: CGRect, translation: CGSize, container: CGSize) {
-    guard let frame = frames.firstIndex(where: { $0.id == id }) else { return }
+    guard let frameIndex = frames.firstIndex(where: { $0.id == id }) else { return }
 
     var new = start
     let dx = translation.width / container.width
@@ -114,7 +117,7 @@ final class FrameViewModel {
     new.size.height = min(max(new.height, 0.05), 1.0)
     new.origin.x = min(max(new.minX, 0), 1 - new.width)
     new.origin.y = min(max(new.minY, 0), 1 - new.height)
-    frames[frame].rect = new
+    frames[frameIndex].rect = new
   }
   // MARK: - 프레임의 삭제
   func remove(_ id: UUID) {

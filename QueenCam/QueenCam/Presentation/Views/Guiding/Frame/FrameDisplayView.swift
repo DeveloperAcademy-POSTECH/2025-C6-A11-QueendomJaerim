@@ -9,7 +9,7 @@ import SwiftUI
 
 /// 프레임의 결과만 보여주는 뷰(읽기 전용)
 struct FrameDisplayView: View {
-  @Bindable var frameViewModel: FrameViewModel
+  var frameViewModel: FrameViewModel
 
   var body: some View {
     GeometryReader { geo in
