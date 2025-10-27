@@ -21,13 +21,10 @@ extension PhotoDetailView {
   struct ItemComponent {
     let asset: PHAsset
     let manager: PHCachingImageManager
-    let selectedImageID: String?
-    let onTapConfirm: (UIImage) -> Void
-    let onTapClose: () -> Void
 
-    @State private var detailImage: UIImage?
-    @State private var detailSelectedImageID: String?
+    @Binding var loadedImageList: [String: UIImage]
 
+    @State private var detailImage: UIImage?  // 로드한 이미지를 담을 개별 상태
     @State private var livePhoto: PHLivePhoto?
 
     private let logger = Logger(
@@ -40,10 +37,19 @@ extension PhotoDetailView {
 extension PhotoDetailView.ItemComponent {
   private func requestImage() {
     logger.debug("일반 이미지 요청 시작")
+
+    // 캐시를 먼저 확인하고 이미 있으면 해당 이미지를 사용 (함수를 다 돌필요 X)
+    if let cachedImage = loadedImageList[asset.localIdentifier] {
+      self.detailImage = cachedImage
+      logger.debug("캐시된 이미지 사용")
+      return
+    }
+
     let options = PHImageRequestOptions()
     options.isNetworkAccessAllowed = true
     options.deliveryMode = .opportunistic
     options.resizeMode = .none
+
     manager.requestImage(
       for: asset,
       targetSize: PHImageManagerMaximumSize,
@@ -54,6 +60,12 @@ extension PhotoDetailView.ItemComponent {
         self.detailImage = result
         let isDegraded = (info?[PHImageResultIsDegradedKey] as? NSNumber)?.boolValue ?? false
         self.logger.debug("\(isDegraded ? "저화질 썸네일 로드" : "고화질 원본 로드")")
+
+        if !isDegraded {
+          // 고화질 로드에 성공하면 캐시 저장 (캐시에는 원본 고화질이 저장됌)
+          self.loadedImageList[asset.localIdentifier] = result
+          self.logger.debug("고화질 원본 로드 및 캐시")
+        }
       }
     }
   }
@@ -153,59 +165,8 @@ extension PhotoDetailView.ItemComponent: View {
           }
         }
       }
-
-      VStack {
-        HStack {
-          Spacer()
-          Button(action: {
-            if detailSelectedImageID == asset.localIdentifier {
-              detailSelectedImageID = nil
-            } else {
-              detailSelectedImageID = asset.localIdentifier
-            }
-          }) {
-            Image(systemName: detailSelectedImageID == asset.localIdentifier ? "checkmark.circle.fill" : "circle")
-              .imageScale(.large)
-              .padding()
-          }
-          .padding(.top, 128)
-
-        }
-
-        Spacer()
-      }
-
-      VStack {
-        HStack {
-          Button(action: { onTapClose() }) {
-            Image(systemName: "xmark.circle.fill")
-              .font(.title)
-              .foregroundStyle(.white.opacity(0.9))
-          }
-
-          Spacer()
-
-          Button(action: {
-            if let image = detailImage,
-              detailSelectedImageID == asset.localIdentifier
-            {
-              onTapConfirm(image)
-            }
-          }) {
-            Text("완료")
-              .foregroundStyle(.white)
-              .padding()
-          }
-          .disabled(detailSelectedImageID != asset.localIdentifier)
-        }
-        .padding()
-
-        Spacer()
-
-      }
     }
     .onAppear {
-      detailSelectedImageID = selectedImageID
       requestImage()
 
       if isLivePhoto {

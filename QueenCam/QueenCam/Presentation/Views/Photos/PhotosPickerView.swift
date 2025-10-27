@@ -98,9 +98,9 @@ extension PhotosPickerView: View {
             selectedIndex: item.selectedAssetIndex,
             manager: viewModel.cachingManager,
             selectedImageID: sheetSelectedImageID,
-            onTapConfirm: { image in
+            onTapConfirm: { image, assetID in
               sheetSelectedImage = image
-              sheetSelectedImageID = item.asset.localIdentifier
+              sheetSelectedImageID = assetID
               onTapComplete(image)
               selectedImageID = sheetSelectedImageID
               selectedImageAsset = nil
