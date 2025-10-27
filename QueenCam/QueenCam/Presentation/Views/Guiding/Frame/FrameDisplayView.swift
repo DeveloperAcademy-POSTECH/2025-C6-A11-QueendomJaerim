@@ -7,31 +7,23 @@
 
 import SwiftUI
 
+/// 프레임의 결과만 보여주는 뷰(읽기 전용)
 struct FrameDisplayView: View {
-  @Bindable var frameViewModel: FrameViewModel
-  init(frameViewModel: FrameViewModel) {
-    self.frameViewModel = frameViewModel
-  }
+  var frameViewModel: FrameViewModel
+
   var body: some View {
     GeometryReader { geo in
       ForEach(frameViewModel.frames) { frame in
         let rect = frame.rect
-        let containerSize = geo.size
-        let newWidth = rect.width * containerSize.width
-        let newHeight = rect.height * containerSize.height
-        let newX = (rect.minX + rect.width / 2) * containerSize.width
-        let newY = (rect.minY + rect.height / 2) * containerSize.height
-
         Rectangle()
           .fill(frame.color)
-          .overlay(
-            Rectangle().stroke(frame.color, lineWidth: 2)
+          .overlay(Rectangle().stroke(frame.color, lineWidth: 2))
+          .frame(width: rect.width * geo.size.width, height: rect.height * geo.size.height)
+          .position(
+            x: (rect.minX + rect.width / 2) * geo.size.width,
+            y: (rect.minY + rect.height / 2) * geo.size.height
           )
-          .frame(width: newWidth, height: newHeight)
-          .position(x: newX, y: newY)
-
       }
     }
-    .background(.clear)
   }
 }

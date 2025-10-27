@@ -7,34 +7,19 @@
 
 import SwiftUI
 
-struct FrameControlView: View {
+/// 전체 프레임을 수정 및 관리 하는 뷰
+struct FrameEditorView: View {
   @Bindable var frameViewModel: FrameViewModel
 
   var body: some View {
     ZStack {
-      // MARK: - 프레임 생성 및 이동
       GeometryReader { geo in
         ZStack {
           ForEach(frameViewModel.frames) { frame in
-            FrameLayerView(
+            FrameView(
+              frameViewModel: frameViewModel,
               frame: frame,
               containerSize: geo.size,
-              onDrag: {
-                start,
-                translation in
-                frameViewModel.moveFrame(
-                  id: frame.id,
-                  start: start,
-                  translation: translation,
-                  container: geo.size
-                )
-              },
-              onTap: {
-                frameViewModel.selectFrame(frame.id)
-              },
-              onDelete: {
-                frameViewModel.remove(frame.id)
-              },
               isSelected: frameViewModel.isSelected(frame.id)
             )
           }
@@ -44,12 +29,10 @@ struct FrameControlView: View {
           frameViewModel.selectFrame(nil)
         }
       }
-      .background(.clear)
 
-      // MARK: Toolbar
+      // MARK: - 프레임의 Toolbar(추가,삭제)
       VStack {
         Spacer()
-
         HStack(spacing: 28) {
           Button {
             frameViewModel.addFrame(at: CGPoint(x: 0.3, y: 0.4))
@@ -64,7 +47,6 @@ struct FrameControlView: View {
           }
           .disabled(frameViewModel.frames.count >= frameViewModel.maxFrames)
 
-          // MARK: - GuidingToolBar
           Button {
             frameViewModel.removeAll()
           } label: {
@@ -77,6 +59,7 @@ struct FrameControlView: View {
               .shadow(color: .black.opacity(0.2), radius: 5, x: 0, y: 2)
           }
         }
+        .padding(.bottom, 30)
       }
     }
   }
