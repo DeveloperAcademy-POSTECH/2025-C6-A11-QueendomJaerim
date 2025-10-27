@@ -9,45 +9,39 @@ import SwiftUI
 /// 펜 가이드라인 작성 뷰 (only 모델)
 struct PenWriteView: View {
   @Bindable var penViewModel: PenViewModel
-  @Binding var isPen: Bool
-  @Binding var isMagicPen: Bool
+  var isPen: Bool
+  var isMagicPen: Bool
+
   @State private var tempPoints: [CGPoint] = []  // 현재 그리고 있는 선의 좌표(임시)
   private var outerColor = Color.white
   private var innerColor = Color.orange
   private let magicAfter: TimeInterval = 0.7
-  init(penViewModel: PenViewModel, isPen: Binding<Bool>, isMagicPen: Binding<Bool>) {
+
+  init(penViewModel: PenViewModel, isPen: Bool, isMagicPen: Bool) {
     self.penViewModel = penViewModel
-    self._isPen = isPen
-    self._isMagicPen = isMagicPen
+    self.isPen = isPen
+    self.isMagicPen = isMagicPen
   }
+
   var body: some View {
     VStack {
-      GeometryReader { _ in
+      GeometryReader { geo in
         // MARK: - 실제 드로잉 영역
         Canvas { context, _ in
-          // 이미 strokes에 저장된 모든 선들 그리기
-          if isPen {
-            for stroke in penViewModel.strokes {
-              guard stroke.points.count > 1 else { continue }
-              var path = Path()  // Line을 담는 객체
-              path.addLines(stroke.points)
-              context.stroke(path, with: .color(outerColor), style: StrokeStyle(lineWidth: 8, lineCap: .round, lineJoin: .round))
-              context.stroke(path, with: .color(innerColor), style: StrokeStyle(lineWidth: 4, lineCap: .round, lineJoin: .round))
-            }
-          } else if isMagicPen {
-            for stroke in penViewModel.disappearStokes {
-              guard stroke.points.count > 1 else { continue }
-              var path = Path()
-              path.addLines(stroke.points)
-              context.stroke(path, with: .color(outerColor), style: StrokeStyle(lineWidth: 8, lineCap: .round, lineJoin: .round))
-              context.stroke(path, with: .color(innerColor), style: StrokeStyle(lineWidth: 4, lineCap: .round, lineJoin: .round))
-            }
+          for stroke in penViewModel.strokes where stroke.points.count > 1 {
+            var path = Path()
+            path.addLines(stroke.absolutePoints(in: geo.size))
+            context.stroke(path, with: .color(outerColor), style: StrokeStyle(lineWidth: 8, lineCap: .round, lineJoin: .round))
+            context.stroke(path, with: .color(innerColor), style: StrokeStyle(lineWidth: 4, lineCap: .round, lineJoin: .round))
           }
-
-          // 지금 드래그 중인 선들(tempPoints) 그리기: 아직 저장 안된 stroke
+          // 현재 드래그 중인 선
           if tempPoints.count > 1 {
             var path = Path()
-            path.addLines(tempPoints)
+            path.addLines(
+              tempPoints.map {
+                CGPoint(x: $0.x * geo.size.width, y: $0.y * geo.size.height)
+              }
+            )
             context.stroke(path, with: .color(outerColor), style: StrokeStyle(lineWidth: 8, lineCap: .round, lineJoin: .round))
             context.stroke(path, with: .color(innerColor), style: StrokeStyle(lineWidth: 4, lineCap: .round, lineJoin: .round))
           }
@@ -56,18 +50,17 @@ struct PenWriteView: View {
         .gesture(
           DragGesture(minimumDistance: 0)
             .onChanged { value in
-              tempPoints.append(value.location)
+              let relativePoint = CGPoint(x: value.location.x / geo.size.width, y: value.location.y / geo.size.height)
+              tempPoints.append(relativePoint)
             }
             .onEnded { _ in
               guard !tempPoints.isEmpty else { return }
-              if isPen {
-                penViewModel.strokes.append(Stroke(points: tempPoints))
-              } else if isMagicPen {
-                let stroke = Stroke(points: tempPoints)
-                penViewModel.disappearStokes.append(stroke)
+              let stroke = Stroke(points: tempPoints)
+              penViewModel.strokes.append(stroke)
+
+              if isMagicPen {
                 DispatchQueue.main.asyncAfter(deadline: .now() + magicAfter) {
-                  penViewModel.disappearStokes.removeAll { $0.id == stroke.id }
-                    
+                  penViewModel.strokes.removeAll { $0.id == stroke.id }
                 }
               }
               tempPoints.removeAll()
