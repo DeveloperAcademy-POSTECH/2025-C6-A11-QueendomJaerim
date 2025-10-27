@@ -13,15 +13,7 @@ import WiFiAware
 @Observable
 @MainActor
 final class ConnectionViewModel {
-  private(set) var role: Role? {
-    didSet {
-      if role == .model {
-        networkService.mode = .viewer
-      } else if role == .photographer {
-        networkService.mode = .host
-      }
-    }
-  }
+  private(set) var role: Role?
   var pairedDevices: [WAPairedDevice] = []
 
   var networkState: NetworkState?
@@ -113,6 +105,12 @@ extension ConnectionViewModel {
   }
 
   func connectButtonDidTap(for device: WAPairedDevice) {
+    if role == .model {
+      networkService.mode = .viewer
+    } else if role == .photographer {
+      networkService.mode = .host
+    }
+
     if networkState == .host(.stopped) || networkState == .viewer(.stopped) {
       networkService.run(for: device)
     }
