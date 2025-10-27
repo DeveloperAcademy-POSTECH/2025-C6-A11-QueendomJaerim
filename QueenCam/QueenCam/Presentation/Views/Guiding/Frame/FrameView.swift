@@ -57,8 +57,8 @@ struct FrameView: View {
 
       // Corner 핸들 표시
       if isSelected {
-        let cornerList: [Corner] = [Corner.topLeft, .topRight, .bottomLeft, .bottomLeft]
-        ForEach(cornerList, id: \.self) { corner in
+        let cornerList: [Corner] = [Corner.topLeft, .topRight, .bottomLeft, .bottomRight]
+        ForEach( cornerList, id: \.self) { corner in
           Circle()
             .fill(.white)
             .frame(width: 14, height: 14)

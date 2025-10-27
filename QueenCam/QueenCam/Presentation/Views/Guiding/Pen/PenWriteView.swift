@@ -10,15 +10,15 @@ import SwiftUI
 struct PenWriteView: View {
   @Bindable var penViewModel: PenViewModel
   @Binding var isPen: Bool
-  @Binding var isDisappearPen: Bool
+  @Binding var isMagicPen: Bool
   @State private var tempPoints: [CGPoint] = []  // 현재 그리고 있는 선의 좌표(임시)
   private var outerColor = Color.white
   private var innerColor = Color.orange
-  private let disappearAfter: TimeInterval = 3.0
-  init(penViewModel: PenViewModel, isPen: Binding<Bool>, isDisappearPen: Binding<Bool>) {
+  private let magicAfter: TimeInterval = 0.7
+  init(penViewModel: PenViewModel, isPen: Binding<Bool>, isMagicPen: Binding<Bool>) {
     self.penViewModel = penViewModel
     self._isPen = isPen
-    self._isDisappearPen = isDisappearPen
+    self._isMagicPen = isMagicPen
   }
   var body: some View {
     VStack {
@@ -34,7 +34,7 @@ struct PenWriteView: View {
               context.stroke(path, with: .color(outerColor), style: StrokeStyle(lineWidth: 8, lineCap: .round, lineJoin: .round))
               context.stroke(path, with: .color(innerColor), style: StrokeStyle(lineWidth: 4, lineCap: .round, lineJoin: .round))
             }
-          } else {
+          } else if isMagicPen {
             for stroke in penViewModel.disappearStokes {
               guard stroke.points.count > 1 else { continue }
               var path = Path()
@@ -62,11 +62,12 @@ struct PenWriteView: View {
               guard !tempPoints.isEmpty else { return }
               if isPen {
                 penViewModel.strokes.append(Stroke(points: tempPoints))
-              } else {
+              } else if isMagicPen {
                 let stroke = Stroke(points: tempPoints)
                 penViewModel.disappearStokes.append(stroke)
-                DispatchQueue.main.asyncAfter(deadline: .now() + disappearAfter) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + magicAfter) {
                   penViewModel.disappearStokes.removeAll { $0.id == stroke.id }
+                    
                 }
               }
               tempPoints.removeAll()

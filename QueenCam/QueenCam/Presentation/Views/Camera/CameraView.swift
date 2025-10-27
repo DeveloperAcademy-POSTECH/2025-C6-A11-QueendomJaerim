@@ -32,7 +32,7 @@ struct CameraView {
   @State private var isLarge: Bool = false
 
   @State private var isPen: Bool = false
-  @State private var isDisappearPen: Bool = false
+  @State private var isMagicPen: Bool = false
   @State private var penViewModel = PenViewModel()
 
   @State private var frameViewModel = FrameViewModel()
@@ -203,8 +203,8 @@ extension CameraView: View {
 
               ZStack(alignment: .topTrailing) {
                 Group {
-                  if isPen || isDisappearPen {
-                    PenWriteView(penViewModel: penViewModel, isPen: $isPen, isDisappearPen: $isDisappearPen)
+                  if isPen || isMagicPen {
+                    PenWriteView(penViewModel: penViewModel, isPen: $isPen, isMagicPen: $isMagicPen)
                   } else {
                     PenDisplayView(penViewModel: penViewModel)
                   }
@@ -222,13 +222,13 @@ extension CameraView: View {
                   ) {
                     isPen.toggle()
                     isFrame = false
-                    isDisappearPen = false
+                    isMagicPen = false
                   }
                   CircleButton(
                     systemImage: "pointer.arrow.rays",
-                    isActive: isDisappearPen
+                    isActive: isMagicPen
                   ) {
-                    isDisappearPen.toggle()
+                    isMagicPen.toggle()
                     isPen = false
                     isFrame = false
                   }
@@ -238,7 +238,7 @@ extension CameraView: View {
                   ) {
                     isFrame.toggle()
                     isPen = false
-                    isDisappearPen = false
+                    isMagicPen = false
 
                   }
                 }
