@@ -3,20 +3,6 @@ import Photos
 import PhotosUI
 import SwiftUI
 
-struct LivePhotoView: UIViewRepresentable {
-  let livePhoto: PHLivePhoto
-
-  func makeUIView(context: Context) -> PHLivePhotoView {
-    let livePhotoView = PHLivePhotoView()
-    livePhotoView.contentMode = .scaleAspectFit
-    return livePhotoView
-  }
-
-  func updateUIView(_ uiView: PHLivePhotoView, context: Context) {
-    uiView.livePhoto = livePhoto
-  }
-}
-
 struct PhotoDetailView {
   // 상위로 부터 받는 데이터
   let assetList: [PHAsset]  // 스와이프할 전체 사진
