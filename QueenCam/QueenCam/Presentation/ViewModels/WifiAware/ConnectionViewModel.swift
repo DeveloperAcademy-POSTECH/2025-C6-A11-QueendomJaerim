@@ -31,6 +31,29 @@ final class ConnectionViewModel {
   /// 연결 유실 여부를 표현하는 플래그. true이면 재연결을 시작하고 관련 UI를 표시
   var connectionLost: Bool = false
 
+  /// 현재 역할 스왑 요청을 보내둔 상태임을 표현하는 플래그. 이 시점에 상대에게서 역할 스왑 요청이 오면 무시한다.
+  /// 내가 요청한 거에 먼저 답변하라는 의미.
+  private var isRequestingRoleSwap: Bool = false {
+    didSet {
+      guard isRequestingRoleSwap else {
+        // when set to false
+        cancelRoleSwapTimer?.invalidate()
+        cancelRoleSwapTimer = nil
+        logger.info("Responded to role swap request. Cancelling timer invalidated")
+        return
+      }
+
+      // when set to true
+      cancelRoleSwapTimer = Timer.scheduledTimer(withTimeInterval: roleSwapTimeout, repeats: false) { [weak self] timer in
+        self?.logger.info("Requesting role swap cancelled")
+        self?.isRequestingRoleSwap = false
+        timer.invalidate()
+      }
+    }
+  }
+  private let roleSwapTimeout: TimeInterval = 4
+  private var cancelRoleSwapTimer: Timer?
+
   private let networkService: NetworkServiceProtocol
   private var cancellables: Set<AnyCancellable> = []
 
@@ -150,6 +173,8 @@ extension ConnectionViewModel {
       return
     }
 
+    isRequestingRoleSwap = true
+    
     Task.detached {
       // 상대에게 지금 나의 현재 역할로 바꾸라고 요청한다
       await self.networkService.send(for: .requestChangeRole(yourNewRole: role))
@@ -185,6 +210,11 @@ extension ConnectionViewModel {
 // MARK: - Incomming NetworkEvent Handler
 extension ConnectionViewModel {
   private func handleReceivedRequestChangeRole(newRole: Role) {
+    guard !isRequestingRoleSwap else {
+      logger.warning("역할 바꾸기 요청을 받았으나, 이미 보내둔 요청이 있어 무시합니다.")
+      return
+    }
+
     Task.detached {
       await self.networkService.send(for: .acceptChangeRole(myNewRole: newRole))
     }
@@ -197,8 +227,16 @@ extension ConnectionViewModel {
       counterpartNewRole == myCurrentRole {
       role = myCurrentRole.counterpart
     } else {
-      logger.error("failed to change role... inconsistency in roles")
+      logger.error(
+        """
+        failed to change role... inconsistency in roles.
+        myCurrentRole=\(self.role?.displayName ?? "N/A", privacy: .public)
+        counterpartNewRole=\(counterpartNewRole.displayName, privacy: .public)
+        """
+      )
       networkService.stop(byUser: false)
     }
+    
+    isRequestingRoleSwap = false
   }
 }
