@@ -125,10 +125,15 @@ final class PreviewModel {
       .sink { [weak self] event in
         switch event {
         case .previewFrame(let framePayload):
-          let dateFromTimeInterval = Date(timeIntervalSince1970: framePayload.presetationTimeStamp)
           self?.handleReceivedFrame(framePayload)
         case .renderState(let state):
           self?.handleReceivedRenderStateReport(state)
+        case .changeRole(let myNewRole):
+          if myNewRole == .photographer {
+            self?.startCapture()
+          } else if myNewRole == .model {
+            self?.stopCapture()
+          }
         default: break
         }
       }

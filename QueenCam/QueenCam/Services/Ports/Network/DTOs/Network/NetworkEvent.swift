@@ -42,9 +42,12 @@ enum NetworkEvent: Sendable {
 
   /// 프레임 이벤트
   case frameUpdated(FrameEventType)
-  
+
   /// 펜 이벤트
   case penUpdated(PenEventType)
+
+  /// 역할 바꾸기 요청. 이 이벤트를 받으면 상대가 요청한 역할로 자신의 역할을 바꾼다.
+  case changeRole(yourNewRole: Role)
 }
 
 nonisolated extension NetworkEvent: Codable {

@@ -80,6 +80,8 @@ final class ConnectionViewModel {
         switch event {
         case .ping(let pingAt):
           self?.lastPingAt = pingAt
+        case .changeRole(let myNewRole):
+          self?.role = myNewRole
         default: break
         }
       }
@@ -138,6 +140,19 @@ extension ConnectionViewModel {
 
   func selectRole(for role: Role?) {
     self.role = role
+  }
+
+  func swapRole() {
+    guard let role else {
+      logger.warning("The user requested to swap current role but it is nil. skipping.")
+      return
+    }
+
+    Task.detached {
+      await self.networkService.send(for: .changeRole(yourNewRole: role)) // 상대에게 지금 나의 현재 역할로 바꾸라고 요청한다
+    }
+
+    self.role = role.counterpart // 나의 역할을 반대로 바꾼다
   }
 
   func reconnectCancelButtonDidTap() {

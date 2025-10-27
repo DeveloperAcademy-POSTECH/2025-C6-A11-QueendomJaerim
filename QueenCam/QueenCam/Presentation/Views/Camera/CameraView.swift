@@ -352,7 +352,16 @@ extension CameraView: View {
             connectionViewModel.disconnectButtonDidTap()
           },
           changeRoleButtonDidTap: {
-            // TODO: 역할 바꾸기 기능 구현
+            connectionViewModel.swapRole()
+
+            // 새 역할에 따라 캡쳐를 시작/중단한다
+            if let newRole = connectionViewModel.role {
+              if newRole == .model {
+                previewModel.stopCapture()
+              } else if newRole == .photographer {
+                previewModel.startCapture()
+              }
+            }
           }
         )
       }
