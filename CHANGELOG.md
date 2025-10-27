@@ -13,6 +13,7 @@
 
 ### Changed
 
+- 펜 가이드라인 상대위치 반영 추가
 
 ### Deprecated
 

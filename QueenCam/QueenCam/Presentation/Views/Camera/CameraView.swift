@@ -204,7 +204,7 @@ extension CameraView: View {
               ZStack(alignment: .topTrailing) {
                 Group {
                   if isPen || isMagicPen {
-                    PenWriteView(penViewModel: penViewModel, isPen: $isPen, isMagicPen: $isMagicPen)
+                    PenWriteView(penViewModel: penViewModel, isPen: isPen, isMagicPen: isMagicPen)
                   } else {
                     PenDisplayView(penViewModel: penViewModel)
                   }
