@@ -46,8 +46,11 @@ enum NetworkEvent: Sendable {
   /// 펜 이벤트
   case penUpdated(PenEventType)
 
-  /// 역할 바꾸기 요청. 이 이벤트를 받으면 상대가 요청한 역할로 자신의 역할을 바꾼다.
-  case changeRole(yourNewRole: Role)
+  /// 역할 바꾸기 요청. 상대의 새 역할을 제안한다
+  case requestChangeRole(yourNewRole: Role)
+
+  /// 역할 바꾸기 요청에 대한 응답. 자신의 새 역할을 다시 반환한다
+  case acceptChangeRole(myNewRole: Role)
 }
 
 nonisolated extension NetworkEvent: Codable {

@@ -80,8 +80,10 @@ final class ConnectionViewModel {
         switch event {
         case .ping(let pingAt):
           self?.lastPingAt = pingAt
-        case .changeRole(let myNewRole):
-          self?.role = myNewRole
+        case .requestChangeRole(let myNewRole):
+          self?.handleReceivedRequestChangeRole(newRole: myNewRole)
+        case .acceptChangeRole(let counterpartNewRole):
+          self?.handleReceivedAcceptChangeRole(counterpartNewRole: counterpartNewRole)
         default: break
         }
       }
@@ -149,10 +151,9 @@ extension ConnectionViewModel {
     }
 
     Task.detached {
-      await self.networkService.send(for: .changeRole(yourNewRole: role)) // 상대에게 지금 나의 현재 역할로 바꾸라고 요청한다
+      // 상대에게 지금 나의 현재 역할로 바꾸라고 요청한다
+      await self.networkService.send(for: .requestChangeRole(yourNewRole: role))
     }
-
-    self.role = role.counterpart // 나의 역할을 반대로 바꾼다
   }
 
   func reconnectCancelButtonDidTap() {
@@ -177,6 +178,27 @@ extension ConnectionViewModel {
       networkService.run(for: lastConnectedDevice)
     } else {
       logger.warning("최근 연결한 디바이스 정보가 없어 재연결에 실패했습니다.")
+    }
+  }
+}
+
+// MARK: - Incomming NetworkEvent Handler
+extension ConnectionViewModel {
+  private func handleReceivedRequestChangeRole(newRole: Role) {
+    Task.detached {
+      await self.networkService.send(for: .acceptChangeRole(myNewRole: newRole))
+    }
+
+    role = newRole
+  }
+
+  private func handleReceivedAcceptChangeRole(counterpartNewRole: Role) {
+    if let myCurrentRole = role,
+      counterpartNewRole == myCurrentRole {
+      role = myCurrentRole.counterpart
+    } else {
+      logger.error("failed to change role... inconsistency in roles")
+      networkService.stop(byUser: false)
     }
   }
 }

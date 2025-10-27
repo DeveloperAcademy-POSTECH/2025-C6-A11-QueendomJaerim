@@ -128,12 +128,10 @@ final class PreviewModel {
           self?.handleReceivedFrame(framePayload)
         case .renderState(let state):
           self?.handleReceivedRenderStateReport(state)
-        case .changeRole(let myNewRole):
-          if myNewRole == .photographer {
-            self?.startCapture()
-          } else if myNewRole == .model {
-            self?.stopCapture()
-          }
+        case .requestChangeRole(let myNewRole):
+          self?.handleReceivedChangeRole(newRole: myNewRole)
+        case .acceptChangeRole(let counterpartNewRole):
+          self?.handleReceivedAcceptChangeRole(counterpartNewRole: counterpartNewRole)
         default: break
         }
       }
@@ -154,7 +152,29 @@ final class PreviewModel {
       previewFrameQuality = previewFrameQuality.getWorse()
     }
   }
-  
+
+  private func handleReceivedChangeRole(newRole: Role) {
+    if newRole == .photographer {
+      logger.info("started preview capture because the counterpart requested change role")
+      self.startCapture()
+    } else if newRole == .model {
+      logger.info("stopped preview capture because the counterpart requested change role")
+      self.stopCapture()
+    }
+  }
+
+  private func handleReceivedAcceptChangeRole(counterpartNewRole: Role) {
+    let myNewRole = counterpartNewRole.counterpart
+
+    if myNewRole == .photographer {
+      logger.info("started preview capture because the counterpart accepted my change role request")
+      self.startCapture()
+    } else if myNewRole == .model {
+      logger.info("stopped preview capture because the counterpart accepted my change role request")
+      self.stopCapture()
+    }
+  }
+
   // MARK: - Observer
   private func startFrameCheckObserver() {
     observeFrameIncomingTimer = Timer.scheduledTimer(withTimeInterval: 2.5, repeats: true) { [weak self] _ in
