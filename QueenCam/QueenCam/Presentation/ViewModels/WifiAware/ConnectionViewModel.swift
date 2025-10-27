@@ -1,5 +1,5 @@
 //
-//  WifiAwareViewModel.swift
+//  ConnectionViewModel.swift
 //  QueenCam
 //
 //  Created by 임영택 on 10/13/25.
@@ -12,7 +12,7 @@ import WiFiAware
 
 @Observable
 @MainActor
-final class WifiAwareViewModel {
+final class ConnectionViewModel {
   private(set) var role: Role? {
     didSet {
       if role == .model {
@@ -107,7 +107,7 @@ final class WifiAwareViewModel {
   }
 }
 
-extension WifiAwareViewModel {
+extension ConnectionViewModel {
   func didEndpointSelect(endpoint: WASubscriberBrowser.Endpoint) {
     logger.info("endpoint selected. \(endpoint)")
   }
@@ -150,7 +150,7 @@ extension WifiAwareViewModel {
 }
 
 // MARK: - Connecting
-extension WifiAwareViewModel {
+extension ConnectionViewModel {
   private func didEstablishConnection(connections: [WAPairedDevice: ConnectionDetail]) {
     if let firstConnection = connections.first {
       lastConnectedDevice = firstConnection.key
