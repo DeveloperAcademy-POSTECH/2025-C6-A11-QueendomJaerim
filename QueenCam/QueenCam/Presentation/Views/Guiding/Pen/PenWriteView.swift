@@ -37,11 +37,7 @@ struct PenWriteView: View {
           // 현재 드래그 중인 선
           if tempPoints.count > 1 {
             var path = Path()
-            path.addLines(
-              tempPoints.map {
-                CGPoint(x: $0.x * geo.size.width, y: $0.y * geo.size.height)
-              }
-            )
+            path.addLines( tempPoints.map { CGPoint(x: $0.x * geo.size.width, y: $0.y * geo.size.height)} )
             context.stroke(path, with: .color(outerColor), style: StrokeStyle(lineWidth: 8, lineCap: .round, lineJoin: .round))
             context.stroke(path, with: .color(innerColor), style: StrokeStyle(lineWidth: 4, lineCap: .round, lineJoin: .round))
           }
