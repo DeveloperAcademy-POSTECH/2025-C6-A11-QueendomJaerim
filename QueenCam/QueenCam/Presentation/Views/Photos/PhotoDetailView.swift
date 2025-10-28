@@ -18,6 +18,9 @@ struct PhotoDetailView {
   @State private var detailSelectedImageID: String?  // 체크박스 상태 관리
   @State private var loadedImageList: [String: UIImage] = [:]  // 캐시된 이미지 리스트들 원본 (사진 ID: 고화질 원본)
 
+  // 한번 탭 UI 변경용
+  @State private var isSingleTapped: Bool = false
+
   private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.queendom.QueenCam", category: "PhotoDetailView")
 }
 
@@ -41,6 +44,7 @@ extension PhotoDetailView: View {
             ItemComponent(
               asset: asset,
               manager: manager,
+              onSingleTapAction: { isSingleTapped.toggle() },
               loadedImageList: $loadedImageList
             )
             .containerRelativeFrame(.horizontal)
@@ -52,61 +56,63 @@ extension PhotoDetailView: View {
       .scrollTargetBehavior(.paging)
       .scrollPosition(id: $currentIndex)
 
-      VStack {
-        HStack {
-          Spacer()
-          Button(action: {
-            guard let assetID = currentAssetID else { return }
+      if isSingleTapped {
+        VStack {
+          HStack {
+            Spacer()
+            Button(action: {
+              guard let assetID = currentAssetID else { return }
 
-            if detailSelectedImageID == assetID {
-              detailSelectedImageID = nil
-            } else {
-              detailSelectedImageID = assetID
+              if detailSelectedImageID == assetID {
+                detailSelectedImageID = nil
+              } else {
+                detailSelectedImageID = assetID
+              }
+
+            }) {
+              Image(systemName: detailSelectedImageID == currentAssetID ? "checkmark.circle.fill" : "circle")
+                .imageScale(.large)
+                .padding()
             }
-
-          }) {
-            Image(systemName: detailSelectedImageID == currentAssetID ? "checkmark.circle.fill" : "circle")
-              .imageScale(.large)
-              .padding()
+            .padding(.top, 128)
           }
-          .padding(.top, 128)
+
+          Spacer()
         }
 
-        Spacer()
-      }
-
-      VStack {
-        HStack {
-          Button(action: { onTapClose() }) {
-            Image(systemName: "xmark.circle.fill")
-              .font(.title)
-              .foregroundStyle(.white.opacity(0.9))
-          }
-
-          Spacer()
-
-          Text("\((currentIndex ?? .zero) + 1) / \(assetList.count)")
-            .foregroundStyle(.white)
-            .font(.headline)
-
-          Spacer()
-
-          Button(action: {
-            if let confirmAssetID = detailSelectedImageID,
-              let confirmImage = loadedImageList[confirmAssetID]
-            {
-              onTapConfirm(confirmImage, confirmAssetID)
+        VStack {
+          HStack {
+            Button(action: { onTapClose() }) {
+              Image(systemName: "xmark.circle.fill")
+                .font(.title)
+                .foregroundStyle(.white.opacity(0.9))
             }
-          }) {
-            Text("완료")
+
+            Spacer()
+
+            Text("\((currentIndex ?? .zero) + 1) / \(assetList.count)")
               .foregroundStyle(.white)
-              .padding()
+              .font(.headline)
+
+            Spacer()
+
+            Button(action: {
+              if let confirmAssetID = detailSelectedImageID,
+                let confirmImage = loadedImageList[confirmAssetID]
+              {
+                onTapConfirm(confirmImage, confirmAssetID)
+              }
+            }) {
+              Text("완료")
+                .foregroundStyle(.white)
+                .padding()
+            }
           }
+          .padding()
+
+          Spacer()
+
         }
-        .padding()
-
-        Spacer()
-
       }
     }
     .onAppear {

@@ -21,6 +21,7 @@ extension PhotoDetailView {
   struct ItemComponent {
     let asset: PHAsset
     let manager: PHCachingImageManager
+    let onSingleTapAction: () -> Void  // 한번 탭
 
     @Binding var loadedImageList: [String: UIImage]
 
@@ -166,6 +167,10 @@ extension PhotoDetailView.ItemComponent: View {
         }
       }
     }
+    .onTapGesture {
+      onSingleTapAction()
+    }
+
     .onAppear {
       requestImage()
 
