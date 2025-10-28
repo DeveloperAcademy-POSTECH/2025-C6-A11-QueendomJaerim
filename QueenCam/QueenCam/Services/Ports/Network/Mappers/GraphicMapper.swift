@@ -18,6 +18,15 @@ struct GraphicMapper {
     PointPayload(x: cgPoint.x, y: cgPoint.y)
   }
 
+  // MARK: - [CGPoint] <-> [PointPayload]
+  static func convert(pointsPayload: [PointPayload]) -> [CGPoint] {
+    pointsPayload.map { convert(pointPayload: $0) }
+  }
+  
+  static func convert(cgPoints: [CGPoint]) -> [PointPayload] {
+    cgPoints.map { convert(cgPoint: $0) }
+  }
+  
   // MARK: - CGSize <-> SizePayload
   static func convert(sizePayload: SizePayload) -> CGSize {
     CGSize(width: sizePayload.width, height: sizePayload.height)
