@@ -32,8 +32,8 @@ final class FrameViewModel {
 
     bind()
   }
-  
-  //MARK: - 프레임 추가
+
+  // MARK: - 프레임 추가
   func addFrame(at origin: CGPoint, size: CGSize = .init(width: frameWidth, height: frameHeight)) {
     guard frames.count < maxFrames else { return }
     let newX = min(max(origin.x, 0), 1 - size.width)
@@ -48,7 +48,7 @@ final class FrameViewModel {
     sendFrameCommand(command: .add(frame: frame))
   }
 
-  //MARK: - 프레임 선택
+  // MARK: - 프레임 선택
   func selectFrame(_ id: UUID?) { selectedFrameID = id }
   func isSelected(_ id: UUID) -> Bool { return selectedFrameID == id }
 
@@ -83,6 +83,9 @@ final class FrameViewModel {
     new.origin.x = min(max(new.origin.x, 0), 1 - new.size.width)
     new.origin.y = min(max(new.origin.y, 0), 1 - new.size.height)
     frames[frameIndex].rect = new
+    
+    // Send to network
+    sendFrameCommand(command: .modify(frame: frames[frameIndex]))
   }
   // MARK: - 모서리 핸들로 비율 조절
   func resizeCorner(id: UUID, corner: Corner, start: CGRect, translation: CGSize, container: CGSize) {
@@ -118,6 +121,9 @@ final class FrameViewModel {
     new.origin.x = min(max(new.minX, 0), 1 - new.width)
     new.origin.y = min(max(new.minY, 0), 1 - new.height)
     frames[frameIndex].rect = new
+    
+    // Send to network
+    sendFrameCommand(command: .modify(frame: frames[frameIndex]))
   }
   // MARK: - 프레임의 삭제
   func remove(_ id: UUID) {
@@ -189,6 +195,8 @@ extension FrameViewModel {
       sendingEventType = .add(FrameMapper.convert(frame: frame))
     case .move(let frame):
       sendingEventType = .replace(FrameMapper.convert(frame: frame))
+    case .modify(let frame):
+      sendingEventType = .replace(FrameMapper.convert(frame: frame))
     case .remove(let id):
       sendingEventType = .delete(id: id)
     case .removeAll:
@@ -205,6 +213,7 @@ extension FrameViewModel {
 private enum FrameNetworkCommand {
   case add(frame: Frame)
   case move(frame: Frame)
+  case modify(frame: Frame)
   case remove(id: UUID)
   case removeAll
 }
