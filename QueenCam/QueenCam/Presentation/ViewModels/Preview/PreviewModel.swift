@@ -98,6 +98,13 @@ final class PreviewModel {
         self.lastReceivedCMSampleBuffer = decodedSampleBuffer
       }
     }
+    
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(roleChangeNotificationHandler(notification:)),
+      name: .QueenCamRoleChangedNotification,
+      object: nil
+    )
   }
 
   private func bind() {
@@ -124,14 +131,16 @@ final class PreviewModel {
           self?.handleReceivedFrame(framePayload)
         case .renderState(let state):
           self?.handleReceivedRenderStateReport(state)
-        case .requestChangeRole(let myNewRole):
-          self?.handleReceivedChangeRole(newRole: myNewRole)
-        case .acceptChangeRole(let counterpartNewRole):
-          self?.handleReceivedAcceptChangeRole(counterpartNewRole: counterpartNewRole)
         default: break
         }
       }
       .store(in: &cancellables)
+  }
+  
+  @objc private func roleChangeNotificationHandler(notification: Notification) {
+    guard let userInfo = notification.userInfo,
+          let newRole = userInfo["newRole"] as? Role else { return }
+    handleRoleChanged(newRole: newRole)
   }
 
   // MARK: Handlers
@@ -149,24 +158,12 @@ final class PreviewModel {
     }
   }
 
-  private func handleReceivedChangeRole(newRole: Role) {
+  private func handleRoleChanged(newRole: Role) {
     if newRole == .photographer {
       logger.info("started preview capture because the counterpart requested change role")
       self.startCapture()
     } else if newRole == .model {
       logger.info("stopped preview capture because the counterpart requested change role")
-      self.stopCapture()
-    }
-  }
-
-  private func handleReceivedAcceptChangeRole(counterpartNewRole: Role) {
-    let myNewRole = counterpartNewRole.counterpart
-
-    if myNewRole == .photographer {
-      logger.info("started preview capture because the counterpart accepted my change role request")
-      self.startCapture()
-    } else if myNewRole == .model {
-      logger.info("stopped preview capture because the counterpart accepted my change role request")
       self.stopCapture()
     }
   }

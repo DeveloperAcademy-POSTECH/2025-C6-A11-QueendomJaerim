@@ -47,10 +47,7 @@ enum NetworkEvent: Sendable {
   case penUpdated(PenEventType)
 
   /// 역할 바꾸기 요청. 상대의 새 역할을 제안한다
-  case requestChangeRole(yourNewRole: Role)
-
-  /// 역할 바꾸기 요청에 대한 응답. 자신의 새 역할을 다시 반환한다
-  case acceptChangeRole(myNewRole: Role)
+  case changeRole(RolePayload, LWWRegister)
 }
 
 nonisolated extension NetworkEvent: Codable {

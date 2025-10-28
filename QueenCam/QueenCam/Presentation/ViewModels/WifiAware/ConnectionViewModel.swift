@@ -13,7 +13,17 @@ import WiFiAware
 @Observable
 @MainActor
 final class ConnectionViewModel {
-  private(set) var role: Role?
+  private(set) var role: Role? {
+    didSet {
+      if let role {
+        NotificationCenter.default.post(
+          name: .QueenCamRoleChangedNotification,
+          object: nil,
+          userInfo: ["newRole": role as Any]
+        )
+      }
+    }
+  }
   var pairedDevices: [WAPairedDevice] = []
 
   var networkState: NetworkState?
@@ -30,6 +40,10 @@ final class ConnectionViewModel {
 
   /// 연결 유실 여부를 표현하는 플래그. true이면 재연결을 시작하고 관련 UI를 표시
   var connectionLost: Bool = false
+
+  /// 최근 역할 스왑 LWW 기록
+  private var lastSwapRoleLWWRegister: LWWRegister?
+  private let myLWWActorId: String = UUID().uuidString
 
   private let networkService: NetworkServiceProtocol
   private var cancellables: Set<AnyCancellable> = []
@@ -80,10 +94,8 @@ final class ConnectionViewModel {
         switch event {
         case .ping(let pingAt):
           self?.lastPingAt = pingAt
-        case .requestChangeRole(let myNewRole):
-          self?.handleReceivedRequestChangeRole(newRole: myNewRole)
-        case .acceptChangeRole(let counterpartNewRole):
-          self?.handleReceivedAcceptChangeRole(counterpartNewRole: counterpartNewRole)
+        case .changeRole(let roles, let lwwValue):
+          self?.handleReceivedRequestChangeRole(receivedNewRoles: roles, receviedLwwRegister: lwwValue)
         default: break
         }
       }
@@ -150,9 +162,14 @@ extension ConnectionViewModel {
       return
     }
 
+    let lwwValue = LWWRegister(actorId: myLWWActorId, timestamp: Date())
+    lastSwapRoleLWWRegister = lwwValue
+
+    self.role = role.counterpart
+
     Task.detached {
       // 상대에게 지금 나의 현재 역할로 바꾸라고 요청한다
-      await self.networkService.send(for: .requestChangeRole(yourNewRole: role))
+      await self.networkService.send(for: .changeRole(.init(myRole: role.counterpart), lwwValue))
     }
   }
 
@@ -184,21 +201,27 @@ extension ConnectionViewModel {
 
 // MARK: - Incomming NetworkEvent Handler
 extension ConnectionViewModel {
-  private func handleReceivedRequestChangeRole(newRole: Role) {
-    Task.detached {
-      await self.networkService.send(for: .acceptChangeRole(myNewRole: newRole))
-    }
+  private func handleReceivedRequestChangeRole(receivedNewRoles: RolePayload, receviedLwwRegister: LWWRegister) {
+    let newMyRole = receivedNewRoles.counterpartRole
+    let newCounterpartRole = receivedNewRoles.myRole
 
-    role = newRole
+    if let lastSwapRoleLWWRegister {
+      if receviedLwwRegister.timestamp > lastSwapRoleLWWRegister.timestamp { // 타임스탬프가 최근이면 채택
+        updateRole(with: newMyRole, lwwRegister: receviedLwwRegister)
+      } else if receviedLwwRegister.timestamp == lastSwapRoleLWWRegister.timestamp,
+        receviedLwwRegister.actorId > lastSwapRoleLWWRegister.actorId { // 타임스탬프가 같으면 actorId가 앞에 있을 때 채택
+        updateRole(with: newMyRole, lwwRegister: receviedLwwRegister)
+      } else {
+        logger.warning("Received swapping role request but I already have the latest value, skipping.")
+      }
+    } else {
+      updateRole(with: newMyRole, lwwRegister: receviedLwwRegister)
+    }
   }
 
-  private func handleReceivedAcceptChangeRole(counterpartNewRole: Role) {
-    if let myCurrentRole = role,
-      counterpartNewRole == myCurrentRole {
-      role = myCurrentRole.counterpart
-    } else {
-      logger.error("failed to change role... inconsistency in roles")
-      networkService.stop(byUser: false)
-    }
+  private func updateRole(with newRole: Role, lwwRegister: LWWRegister) {
+    logger.debug("Role updated to \(newRole.displayName, privacy: .public) (lwwRegister: \(lwwRegister, privacy: .public)")
+    self.role = newRole
+    self.lastSwapRoleLWWRegister = lwwRegister
   }
 }
