@@ -1,10 +1,10 @@
-import Combine
 //
 //  PenViewModel.swift
 //  QueenCam
 //
 //  Created by 윤보라 on 10/15/25.
 //
+import Combine
 import Foundation
 import SwiftUI
 
@@ -12,7 +12,7 @@ import SwiftUI
 final class PenViewModel {
   var strokes: [Stroke] = []  // 현재 그려진 모든 선들(Pen의 배열)
   var redoStrokes: [Stroke] = []  // 사용자가 Redo(복귀) 했을때 되돌릴 수 있는 선들
-  
+
   // MARK: - 네트워크
   let networkService: NetworkServiceProtocol
   var cancellables: Set<AnyCancellable> = []
@@ -24,46 +24,58 @@ final class PenViewModel {
 
     bind()
   }
-  
-  //MARK: - 스트로크 추가
-  func add(stroke: Stroke) {
-    if !strokes.contains(where: {$0.id == stroke.id}) {
-      strokes.append(stroke)
-      redoStrokes.removeAll()
-      sendPenCommand(command: .add(stroke: stroke))
-    }
+
+  // MARK: - 드로잉 시작/진행 업데이트
+  func add(initialPoints: [CGPoint]) -> UUID {
+    let stroke = Stroke(points: initialPoints)
+    strokes.append(stroke)
+    redoStrokes.removeAll()
+
+    // Send to network
+    sendPenCommand(command: .add(stroke: stroke))
+    return stroke.id
   }
+
+  /// 진행 중 스트로크의 포인트를 갱신하고 .replace 이벤트를 전송한다.
+  func updateStroke(id: UUID, points: [CGPoint]) {
+    guard let strokeIndex = strokes.firstIndex(where: { $0.id == id }) else { return }
+    strokes[strokeIndex].points = points
+
+    // Send to network
+    sendPenCommand(command: .replace(stroke: strokes[strokeIndex]))
+  }
+
   // MARK: - 스트로크 삭제
   func remove(_ id: UUID) {
     strokes.removeAll { $0.id == id }
-    
+
     // Send to network
     sendPenCommand(command: .remove(id: id))
   }
-  
+
   func removeAll() {  // 전체 삭제
     strokes.removeAll()
     redoStrokes.removeAll()
-    
+
     // Send to network
     sendPenCommand(command: .removeAll)
   }
-  
+
   // MARK: - 스트로크 실행취소/재실행
   func undo() {
     guard let last = strokes.popLast() else { return }
     redoStrokes.append(last)
-    
+
     // Send to network
-    sendPenCommand(command: .undo(id: last.id))
-    
+    sendPenCommand(command: .remove(id: last.id))
   }
+
   func redo() {
     guard let redoStroke = redoStrokes.popLast() else { return }
     strokes.append(redoStroke)
-    
+
     // Send to network
-    sendPenCommand(command: .redo(stroke: redoStroke))
+    sendPenCommand(command: .add(stroke: redoStroke))
   }
 }
 
@@ -98,7 +110,6 @@ extension PenViewModel {
         if stroke.id == targetId {
           return replaceTo
         }
-
         return stroke
       }
     case .delete(let id):
@@ -110,6 +121,13 @@ extension PenViewModel {
 }
 
 // MARK: Sending network event
+private enum PenNetworkCommand {
+  case add(stroke: Stroke)
+  case replace(stroke: Stroke)
+  case remove(id: UUID)
+  case removeAll
+}
+
 extension PenViewModel {
   private func sendPenCommand(command: PenNetworkCommand) {
     var sendingEventType: PenEventType
@@ -117,10 +135,8 @@ extension PenViewModel {
     switch command {
     case .add(let stroke):
       sendingEventType = .add(PenMapper.convert(stroke: stroke))
-    case .undo(let id):
-      sendingEventType = .delete(id: id)
-    case .redo(let stroke):
-      sendingEventType = .add(PenMapper.convert(stroke: stroke))
+    case .replace(let stroke):
+      sendingEventType = .replace(PenMapper.convert(stroke: stroke))
     case .remove(let id):
       sendingEventType = .delete(id: id)
     case .removeAll:
@@ -131,12 +147,4 @@ extension PenViewModel {
       await self.networkService.send(for: .penUpdated(sendingEventType))
     }
   }
-}
-
-private enum PenNetworkCommand {
-  case add(stroke: Stroke)
-  case undo(id: UUID)
-  case redo(stroke: Stroke)
-  case remove(id: UUID)
-  case removeAll
 }
