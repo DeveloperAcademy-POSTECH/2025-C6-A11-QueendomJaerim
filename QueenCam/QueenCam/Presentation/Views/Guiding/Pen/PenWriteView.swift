@@ -52,15 +52,18 @@ struct PenWriteView: View {
             .onEnded { _ in
               guard !tempPoints.isEmpty else { return }
               let stroke = Stroke(points: tempPoints)
-              penViewModel.strokes.append(stroke)
+              penViewModel.add(stroke: stroke)
 
               if isMagicPen {
                 DispatchQueue.main.asyncAfter(deadline: .now() + magicAfter) {
-                  penViewModel.strokes.removeAll { $0.id == stroke.id }
+                  penViewModel.remove(stroke.id)
+                  
                 }
               }
               tempPoints.removeAll()
               penViewModel.redoStrokes.removeAll()
+              
+              
             }
         )
       }
@@ -69,7 +72,7 @@ struct PenWriteView: View {
         GuidingToolBarView { action in
           switch action {
           case .clearAll:
-            penViewModel.clearAll()
+            penViewModel.removeAll()
           case .undo:
             penViewModel.undo()
           case .redo:

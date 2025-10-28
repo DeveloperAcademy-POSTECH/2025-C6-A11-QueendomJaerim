@@ -11,9 +11,9 @@ import Combine
 /// 프레임의 상태 관리(이동, 확대, 축소, 모서리 크기 조절)
 @Observable
 final class FrameViewModel {
-  static let frameWidth : CGFloat = 0.3
-  static let frameHeight : CGFloat = 0.4
-  
+  static let frameWidth: CGFloat = 0.3
+  static let frameHeight: CGFloat = 0.4
+
   var frames: [Frame] = []
   var selectedFrameID: UUID? = nil
   let maxFrames = 1
@@ -32,7 +32,7 @@ final class FrameViewModel {
 
     bind()
   }
-  
+
   //MARK: - 프레임 추가
   func addFrame(at origin: CGPoint, size: CGSize = .init(width: frameWidth, height: frameHeight)) {
     guard frames.count < maxFrames else { return }
