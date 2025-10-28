@@ -179,6 +179,25 @@ extension PhotoDetailView.ItemComponent: View {
         gestureOffset = .zero
       }
   }
+  
+  var singleTapGesture: some Gesture {
+    TapGesture(count: 1)
+      .onEnded {
+        onSingleTapAction()
+      }
+  }
+  
+  var doubleTapGesture: some Gesture {
+    TapGesture(count: 2)
+      .onEnded { _ in
+        if currentScale > 1.0 {
+          currentScale = 1.0
+          currentOffset = .zero
+        } else {
+          currentScale = 2.0
+        }
+      }
+  }
 
   var body: some View {
     ZStack {
@@ -219,12 +238,7 @@ extension PhotoDetailView.ItemComponent: View {
       )
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity)
-    .simultaneousGesture(
-      TapGesture(count: 1)
-        .onEnded {
-          onSingleTapAction()
-        }
-    )
+    .simultaneousGesture(doubleTapGesture.exclusively(before: singleTapGesture))
     .simultaneousGesture(magnificationGesture)
     .simultaneousGesture(
       currentScale > 1.0 ? dragGesture : nil
