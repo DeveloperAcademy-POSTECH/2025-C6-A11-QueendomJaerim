@@ -38,6 +38,8 @@ extension PhotoDetailView {
     // 현재 드래그 중인 이동 위치 (임시)
     @State private var gestureOffset: CGSize = .zero
 
+    @State private var containerSize: CGSize = .zero
+
     private let logger = Logger(
       subsystem: Bundle.main.bundleIdentifier ?? "com.queendom.QueenCam",
       category: "PhotoDetailView+ItemComponent"
@@ -179,79 +181,101 @@ extension PhotoDetailView.ItemComponent: View {
         gestureOffset = .zero
       }
   }
-  
+
   var singleTapGesture: some Gesture {
     TapGesture(count: 1)
       .onEnded {
         onSingleTapAction()
       }
   }
-  
+
   var doubleTapGesture: some Gesture {
-    TapGesture(count: 2)
-      .onEnded { _ in
+    SpatialTapGesture(count: 2)
+      .onEnded { value in
         if currentScale > 1.0 {
           currentScale = 1.0
           currentOffset = .zero
         } else {
-          currentScale = 2.0
+          let targetScale: CGFloat = 2.0
+
+          // 해당 뷰의 정중앙
+          let containerCenter = CGPoint(
+            x: containerSize.width / 2,
+            y: containerSize.height / 2
+          )
+
+          // 탭한 위치의 좌표
+          let location = value.location
+
+          // 수정 위치 계산
+          let offSetX = (containerCenter.x - location.x) * targetScale
+          let offSetY = (containerCenter.y - location.y) * targetScale
+
+          currentScale = targetScale
+          currentOffset = CGSize(width: offSetX, height: offSetY)
+
         }
       }
   }
 
   var body: some View {
-    ZStack {
-      Color.black.ignoresSafeArea()
+    GeometryReader { proxy in
 
-      Group {
-        switch self.isLivePhoto {
-        case true:
-          if let livePhoto = livePhoto {
-            LivePhotoView(livePhoto: livePhoto)
-              .background(.red.opacity(0.2))
-          } else if let image = detailImage {
-            Image(uiImage: image)
-              .resizable()
-              .scaledToFit()
-              .frame(maxWidth: .infinity, maxHeight: .infinity)
-              .background(.green.opacity(0.2))
+      ZStack {
+        Color.black.ignoresSafeArea()
 
-          } else {
-            ProgressView()
-          }
+        Group {
+          switch self.isLivePhoto {
+          case true:
+            if let livePhoto = livePhoto {
+              LivePhotoView(livePhoto: livePhoto)
+                .background(.red.opacity(0.2))
+            } else if let image = detailImage {
+              Image(uiImage: image)
+                .resizable()
+                .scaledToFit()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(.green.opacity(0.2))
 
-        case false:
-          if let image = detailImage {
-            Image(uiImage: image)
-              .resizable()
-              .scaledToFit()
-              .background(.green.opacity(0.2))
-          } else {
-            ProgressView()
+            } else {
+              ProgressView()
+            }
+
+          case false:
+            if let image = detailImage {
+              Image(uiImage: image)
+                .resizable()
+                .scaledToFit()
+                .background(.green.opacity(0.2))
+            } else {
+              ProgressView()
+            }
           }
         }
+        .scaleEffect(currentScale * gestureScale)
+        .offset(
+          x: currentOffset.width + gestureOffset.width,
+          y: currentOffset.height + gestureOffset.height
+        )
       }
-      .scaleEffect(currentScale * gestureScale)
-      .offset(
-        x: currentOffset.width + gestureOffset.width,
-        y: currentOffset.height + gestureOffset.height
+      .frame(width: proxy.size.width, height: proxy.size.height)
+      .simultaneousGesture(doubleTapGesture.exclusively(before: singleTapGesture))
+      .simultaneousGesture(magnificationGesture)
+      .simultaneousGesture(
+        currentScale > 1.0 ? dragGesture : nil
       )
-    }
-    .frame(maxWidth: .infinity, maxHeight: .infinity)
-    .simultaneousGesture(doubleTapGesture.exclusively(before: singleTapGesture))
-    .simultaneousGesture(magnificationGesture)
-    .simultaneousGesture(
-      currentScale > 1.0 ? dragGesture : nil
-    )
-    .onAppear {
-      currentScale = 1.0
-      currentOffset = .zero
+      .onAppear {
+        containerSize = proxy.size
 
-      requestImage()
+        currentScale = 1.0
+        currentOffset = .zero
 
-      if isLivePhoto {
-        requestLivePhoto()
-        requestVideoResouceData()
+        requestImage()
+
+        if isLivePhoto {
+          requestLivePhoto()
+          requestVideoResouceData()
+        }
       }
     }
   }
