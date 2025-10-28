@@ -62,7 +62,7 @@ extension PhotoDetailView.ItemComponent {
         self.logger.debug("\(isDegraded ? "저화질 썸네일 로드" : "고화질 원본 로드")")
 
         if !isDegraded {
-          // 고화질 로드에 성공하면 캐시 저장 (캐시에는 원본 고화질이 저장됌)
+          // 고화질 로드에 성공하면 캐시 저장 (캐시에는 원본 고화질이 저장됨)
           self.loadedImageList[asset.localIdentifier] = result
           self.logger.debug("고화질 원본 로드 및 캐시")
         }
