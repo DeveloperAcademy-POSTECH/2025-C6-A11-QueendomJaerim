@@ -67,8 +67,6 @@ final class PreviewModel {
     }
   }
 
-  var observeFrameIncomingTimer: Timer?
-
   // MARK: - 네트워크 관련 프로퍼티
   /// 현재 네트워크가 연결되어 전송 가능함
   var transferEnabled: Bool = false {
@@ -85,7 +83,7 @@ final class PreviewModel {
   /// 연결 목록
   var connections: [WAPairedDevice: ConnectionDetail] = [:]
 
-  private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.queendom.QueenCam", category: "NetworkManager")
+  private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.queendom.QueenCam", category: "PreviewModel")
 
   init(previewCaptureService: PreviewCaptureService, networkService: NetworkServiceProtocol) {
     self.previewCaptureService = previewCaptureService
@@ -100,8 +98,6 @@ final class PreviewModel {
         self.lastReceivedCMSampleBuffer = decodedSampleBuffer
       }
     }
-    
-    startFrameCheckObserver()
   }
 
   private func bind() {
@@ -172,20 +168,6 @@ final class PreviewModel {
     } else if myNewRole == .model {
       logger.info("stopped preview capture because the counterpart accepted my change role request")
       self.stopCapture()
-    }
-  }
-
-  // MARK: - Observer
-  private func startFrameCheckObserver() {
-    observeFrameIncomingTimer = Timer.scheduledTimer(withTimeInterval: 2.5, repeats: true) { [weak self] _ in
-      guard let self,
-        let lastReceivedTime = self.lastReceivedTime else { return }
-
-      if Date().timeIntervalSince(lastReceivedTime) > 5.0 {
-        self.logger.error("마지막 프레임을 \(Date().timeIntervalSince(lastReceivedTime), privacy: .public) 초 전에 받았습니다. 네트워크나 기기 문제가 있을 수 있습니다.")
-      } else {
-        // self.logger.debug("마지막 프레임을 \(Date().timeIntervalSince(lastReceivedTime), privacy: .public)초 전에 받았습니다.")
-      }
     }
   }
 }
