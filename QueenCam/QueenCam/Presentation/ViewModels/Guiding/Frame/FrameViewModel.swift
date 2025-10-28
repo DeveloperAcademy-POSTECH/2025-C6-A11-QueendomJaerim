@@ -85,7 +85,7 @@ final class FrameViewModel {
     frames[frameIndex].rect = new
     
     // Send to network
-    sendFrameCommand(command: .move(frame: frames[frameIndex]))
+    sendFrameCommand(command: .modify(frame: frames[frameIndex]))
   }
   // MARK: - 모서리 핸들로 비율 조절
   func resizeCorner(id: UUID, corner: Corner, start: CGRect, translation: CGSize, container: CGSize) {
@@ -123,7 +123,7 @@ final class FrameViewModel {
     frames[frameIndex].rect = new
     
     // Send to network
-    sendFrameCommand(command: .move(frame: frames[frameIndex]))
+    sendFrameCommand(command: .modify(frame: frames[frameIndex]))
   }
   // MARK: - 프레임의 삭제
   func remove(_ id: UUID) {
