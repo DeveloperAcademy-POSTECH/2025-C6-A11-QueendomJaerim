@@ -33,6 +33,11 @@ extension PhotoDetailView {
     // 현재 핀치 동작 중인 배율 (임시)
     @State private var gestureScale: CGFloat = 1.0
 
+    // 최종 확정된 위치 (손가락을 뗐을때)
+    @State private var currentOffset: CGSize = .zero
+    // 현재 드래그 중인 이동 위치 (임시)
+    @State private var gestureOffset: CGSize = .zero
+
     private let logger = Logger(
       subsystem: Bundle.main.bundleIdentifier ?? "com.queendom.QueenCam",
       category: "PhotoDetailView+ItemComponent"
@@ -153,6 +158,25 @@ extension PhotoDetailView.ItemComponent: View {
         } else if currentScale > 4.0 {
           currentScale = 4.0
         }
+
+        if currentScale == 1.0 {
+          currentOffset = .zero
+        }
+      }
+  }
+
+  var dragGesture: some Gesture {
+    DragGesture()
+      .onChanged { value in
+        if currentScale > 1.0 {
+          gestureOffset = value.translation
+        }
+      }
+      .onEnded { _ in
+        currentOffset.width += gestureOffset.width
+        currentOffset.height += gestureOffset.height
+
+        gestureOffset = .zero
       }
   }
 
@@ -182,7 +206,6 @@ extension PhotoDetailView.ItemComponent: View {
             Image(uiImage: image)
               .resizable()
               .scaledToFit()
-              .frame(maxWidth: .infinity, maxHeight: .infinity)
               .background(.green.opacity(0.2))
           } else {
             ProgressView()
@@ -190,6 +213,10 @@ extension PhotoDetailView.ItemComponent: View {
         }
       }
       .scaleEffect(currentScale * gestureScale)
+      .offset(
+        x: currentOffset.width + gestureOffset.width,
+        y: currentOffset.height + gestureOffset.height
+      )
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity)
     .simultaneousGesture(
@@ -199,8 +226,12 @@ extension PhotoDetailView.ItemComponent: View {
         }
     )
     .simultaneousGesture(magnificationGesture)
+    .simultaneousGesture(
+      currentScale > 1.0 ? dragGesture : nil
+    )
     .onAppear {
       currentScale = 1.0
+      currentOffset = .zero
 
       requestImage()
 
