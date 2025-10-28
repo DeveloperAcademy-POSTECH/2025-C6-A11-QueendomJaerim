@@ -28,6 +28,11 @@ extension PhotoDetailView {
     @State private var detailImage: UIImage?  // 로드한 이미지를 담을 개별 상태
     @State private var livePhoto: PHLivePhoto?
 
+    // 최종 확정된 배율 (손가락을 뗐을때)
+    @State private var currentScale: CGFloat = 1.0
+    // 현재 핀치 동작 중인 배율 (임시)
+    @State private var gestureScale: CGFloat = 1.0
+
     private let logger = Logger(
       subsystem: Bundle.main.bundleIdentifier ?? "com.queendom.QueenCam",
       category: "PhotoDetailView+ItemComponent"
@@ -133,6 +138,24 @@ extension PhotoDetailView.ItemComponent {
 }
 
 extension PhotoDetailView.ItemComponent: View {
+  var magnificationGesture: some Gesture {
+    MagnifyGesture()
+      .onChanged { value in
+        gestureScale = value.magnification
+
+      }
+      .onEnded { _ in
+        currentScale *= gestureScale
+        gestureScale = 1.0
+
+        if currentScale < 1.0 {
+          currentScale = 1.0
+        } else if currentScale > 4.0 {
+          currentScale = 4.0
+        }
+      }
+  }
+
   var body: some View {
     ZStack {
       Color.black.ignoresSafeArea()
@@ -166,12 +189,16 @@ extension PhotoDetailView.ItemComponent: View {
           }
         }
       }
+      .scaleEffect(currentScale * gestureScale)
     }
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
     .onTapGesture {
       onSingleTapAction()
     }
-
+    .gesture(magnificationGesture)
     .onAppear {
+      currentScale = 1.0
+
       requestImage()
 
       if isLivePhoto {
