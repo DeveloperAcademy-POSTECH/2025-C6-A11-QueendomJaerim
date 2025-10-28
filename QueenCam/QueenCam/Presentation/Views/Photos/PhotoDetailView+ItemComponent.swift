@@ -192,10 +192,13 @@ extension PhotoDetailView.ItemComponent: View {
       .scaleEffect(currentScale * gestureScale)
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity)
-    .onTapGesture {
-      onSingleTapAction()
-    }
-    .gesture(magnificationGesture)
+    .simultaneousGesture(
+      TapGesture(count: 1)
+        .onEnded {
+          onSingleTapAction()
+        }
+    )
+    .simultaneousGesture(magnificationGesture)
     .onAppear {
       currentScale = 1.0
 
