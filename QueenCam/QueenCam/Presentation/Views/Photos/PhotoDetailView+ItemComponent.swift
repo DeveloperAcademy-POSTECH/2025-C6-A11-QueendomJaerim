@@ -142,6 +142,27 @@ extension PhotoDetailView.ItemComponent {
 
     }
   }
+
+  private func applyOffsetBounds() {
+    guard currentScale > 1.0 else {
+      if currentScale == 1.0 {
+        currentOffset = .zero
+      }
+      return
+    }
+
+    let viewWidth = containerSize.width
+    let viewHeight = containerSize.height
+
+    let scaledWidth = viewWidth * currentScale
+    let scaledHeight = viewHeight * currentScale
+
+    let maxOffsetX = (scaledWidth - viewWidth) / 2
+    let maxOffsetY = (scaledHeight - viewHeight) / 2
+
+    currentOffset.width = min(max(currentOffset.width, -maxOffsetX), maxOffsetX)
+    currentOffset.height = min(max(currentOffset.height, -maxOffsetY), maxOffsetY)
+  }
 }
 
 extension PhotoDetailView.ItemComponent: View {
@@ -164,6 +185,8 @@ extension PhotoDetailView.ItemComponent: View {
         if currentScale == 1.0 {
           currentOffset = .zero
         }
+
+        applyOffsetBounds()
       }
   }
 
@@ -179,6 +202,7 @@ extension PhotoDetailView.ItemComponent: View {
         currentOffset.height += gestureOffset.height
 
         gestureOffset = .zero
+        applyOffsetBounds()
       }
   }
 
@@ -215,6 +239,8 @@ extension PhotoDetailView.ItemComponent: View {
           currentOffset = CGSize(width: offSetX, height: offSetY)
 
         }
+
+        applyOffsetBounds()
       }
   }
 
@@ -235,7 +261,6 @@ extension PhotoDetailView.ItemComponent: View {
                 .resizable()
                 .scaledToFit()
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(.green.opacity(0.2))
 
             } else {
               ProgressView()
@@ -246,7 +271,6 @@ extension PhotoDetailView.ItemComponent: View {
               Image(uiImage: image)
                 .resizable()
                 .scaledToFit()
-                .background(.green.opacity(0.2))
             } else {
               ProgressView()
             }
