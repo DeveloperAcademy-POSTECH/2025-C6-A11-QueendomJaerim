@@ -38,24 +38,26 @@ extension PhotosPickerView: View {
         NavigationStack {
           ScrollView {
             LazyVGrid(columns: columnList, spacing: 1) {
-              ForEach(viewModel.assets, id: \.localIdentifier) { asset in
+              ForEach(viewModel.assetList.indices, id: \.self) { index in
+                let asset = viewModel.assetList[index]
+
                 ThumbnailView(
                   asset: asset,
                   manager: viewModel.cachingManager,
                   isSelected: sheetSelectedImageID == asset.localIdentifier,
                   onTapCheck: { image in
-                    // 선택되어있을때 탭하면 선택 해제 (체크박스)
+                    // 선택된 상태에서 체크박스 탭하면 선택 해제
                     if sheetSelectedImageID == asset.localIdentifier {
-                      sheetSelectedImageID = nil
                       sheetSelectedImage = nil
+                      sheetSelectedImageID = nil
                     } else {
-                      sheetSelectedImageID = asset.localIdentifier
                       sheetSelectedImage = image
+                      sheetSelectedImageID = asset.localIdentifier
                     }
                   },
                   onTapThumbnail: { _ in
-                    // 디테일로 이동
-                    selectedImageAsset = IdentifiableAsset(asset: asset)
+                    // 풀 스크린으로 이동
+                    selectedImageAsset = IdentifiableAsset(asset: asset, selectedAssetIndex: index)
                   }
                 )
               }
@@ -92,12 +94,13 @@ extension PhotosPickerView: View {
         }
         .fullScreenCover(item: $selectedImageAsset) { item in
           PhotoDetailView(
-            asset: item.asset,
+            assetList: viewModel.assetList,
+            selectedIndex: item.selectedAssetIndex,
             manager: viewModel.cachingManager,
             selectedImageID: sheetSelectedImageID,
-            onTapConfirm: { image in
+            onTapConfirm: { image, assetID in
               sheetSelectedImage = image
-              sheetSelectedImageID = item.asset.localIdentifier
+              sheetSelectedImageID = assetID
               onTapComplete(image)
               selectedImageID = sheetSelectedImageID
               selectedImageAsset = nil
@@ -120,4 +123,5 @@ struct IdentifiableAsset: Identifiable {
   }
 
   let asset: PHAsset
+  let selectedAssetIndex: Int
 }
