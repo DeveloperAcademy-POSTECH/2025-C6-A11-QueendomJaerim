@@ -176,10 +176,7 @@ extension CameraView: View {
                       }
                   }
                 }
-              ReferenceView(referenceViewModel: referenceViewModel, isLarge: $isLarge)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .padding(12)
-                .clipped()
+              
               ZStack(alignment: .topTrailing) {
                 Group {
                   if isPen || isMagicPen {
@@ -248,11 +245,6 @@ extension CameraView: View {
                   }
               }
 
-              ReferenceView(referenceViewModel: referenceViewModel, isLarge: $isLarge)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .padding(12)
-                .clipped()
-
               ZStack(alignment: .topTrailing) {
                 Group {
                   if isPen || isMagicPen {
@@ -307,6 +299,10 @@ extension CameraView: View {
                 .padding(20)
               }
             }
+            ReferenceView(referenceViewModel: referenceViewModel, isLarge: $isLarge)
+              .frame(maxWidth: .infinity, maxHeight: .infinity)
+              .padding(12)
+              .clipped()
             if camerViewModel.isShowGrid {
               GridView()
                 .aspectRatio(3 / 4, contentMode: .fit)
