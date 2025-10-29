@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum Role: CustomDebugStringConvertible {
+enum Role: String, Codable, CustomDebugStringConvertible {
   case photographer
   case model
 

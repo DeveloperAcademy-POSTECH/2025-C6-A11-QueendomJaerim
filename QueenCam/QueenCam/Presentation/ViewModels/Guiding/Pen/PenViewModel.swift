@@ -26,8 +26,8 @@ final class PenViewModel {
   }
 
   // MARK: - 드로잉 시작/진행 업데이트
-  func add(initialPoints: [CGPoint]) -> UUID {
-    let stroke = Stroke(points: initialPoints)
+  func add(initialPoints: [CGPoint], author: Role) -> UUID {
+    let stroke = Stroke(points: initialPoints, author: author)
     strokes.append(stroke)
     redoStrokes.removeAll()
 
