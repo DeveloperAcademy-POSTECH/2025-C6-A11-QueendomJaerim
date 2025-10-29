@@ -11,11 +11,16 @@ struct PenMapper {
   static func convert(payload: PenPayload) -> Stroke {
     Stroke(
       id: payload.id,
-      points: GraphicMapper.convert(pointsPayload: payload.points)
+      points: GraphicMapper.convert(pointsPayload: payload.points),
+      author: payload.author
     )
   }
-  
+
   static func convert(stroke: Stroke) -> PenPayload {
-    PenPayload(id: stroke.id, points: GraphicMapper.convert(cgPoints: stroke.points))
+    PenPayload(
+      id: stroke.id,
+      points: GraphicMapper.convert(cgPoints: stroke.points),
+      author: stroke.author
+    )
   }
 }

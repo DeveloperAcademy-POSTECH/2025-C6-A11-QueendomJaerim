@@ -176,12 +176,6 @@ extension CameraView: View {
                       }
                   }
                 }
-              ReferenceView(referenceViewModel: referenceViewModel, isLarge: $isLarge, role: .photographer)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .padding(12)
-                .clipped()
-              PenDisplayView(penViewModel: penViewModel)
-              FrameDisplayView(frameViewModel: frameViewModel)
             } else {  // 모델
               #if DEBUG
               DebugPreviewPlayerView(previewModel: previewModel)
@@ -195,18 +189,14 @@ extension CameraView: View {
                     isLarge = false
                   }
               }
-
-              ReferenceView(referenceViewModel: referenceViewModel, isLarge: $isLarge, role: .model)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .padding(12)
-                .clipped()
-
+            }
+            if wifiAwareViewModel.role != nil {
               ZStack(alignment: .topTrailing) {
                 Group {
                   if isPen || isMagicPen {
-                    PenWriteView(penViewModel: penViewModel, isPen: isPen, isMagicPen: isMagicPen)
+                    PenWriteView(penViewModel: penViewModel, isPen: isPen, isMagicPen: isMagicPen, role: wifiAwareViewModel.role)
                   } else {
-                    PenDisplayView(penViewModel: penViewModel)
+                    PenDisplayView(penViewModel: penViewModel, role: wifiAwareViewModel.role)
                   }
 
                   if isFrame {
@@ -259,6 +249,10 @@ extension CameraView: View {
               GridView()
                 .aspectRatio(3 / 4, contentMode: .fit)
             }
+            ReferenceView(referenceViewModel: referenceViewModel, isLarge: $isLarge)
+              .frame(maxWidth: .infinity, maxHeight: .infinity)
+              .padding(12)
+              .clipped()
 
           }
 
