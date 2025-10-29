@@ -42,6 +42,9 @@ enum NetworkEvent: Sendable {
 
   /// 프레임 이벤트
   case frameUpdated(FrameEventType)
+  
+  /// 펜 이벤트
+  case penUpdated(PenEventType)
 }
 
 nonisolated extension NetworkEvent: Codable {

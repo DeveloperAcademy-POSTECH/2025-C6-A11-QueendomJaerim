@@ -13,6 +13,7 @@ struct PenWriteView: View {
   var isMagicPen: Bool
 
   @State private var tempPoints: [CGPoint] = []  // 현재 그리고 있는 선의 좌표(임시)
+  @State private var currentStrokeID: UUID?  // 진행 중 스트로크 ID
   private var outerColor = Color.white
   private var innerColor = Color.orange
   private let magicAfter: TimeInterval = 0.7
@@ -37,7 +38,7 @@ struct PenWriteView: View {
           // 현재 드래그 중인 선
           if tempPoints.count > 1 {
             var path = Path()
-            path.addLines( tempPoints.map { CGPoint(x: $0.x * geo.size.width, y: $0.y * geo.size.height)} )
+            path.addLines(tempPoints.map { CGPoint(x: $0.x * geo.size.width, y: $0.y * geo.size.height) })
             context.stroke(path, with: .color(outerColor), style: StrokeStyle(lineWidth: 8, lineCap: .round, lineJoin: .round))
             context.stroke(path, with: .color(innerColor), style: StrokeStyle(lineWidth: 4, lineCap: .round, lineJoin: .round))
           }
@@ -46,20 +47,37 @@ struct PenWriteView: View {
         .gesture(
           DragGesture(minimumDistance: 0)
             .onChanged { value in
-              let relativePoint = CGPoint(x: value.location.x / geo.size.width, y: value.location.y / geo.size.height)
+              let relativePoint = CGPoint(
+                x: geo.size.width > 0 ? value.location.x / geo.size.width : 0,
+                y: geo.size.height > 0 ? value.location.y / geo.size.height : 0
+              )
               tempPoints.append(relativePoint)
+
+              // 첫 onChanged에서 시작(.add), 이후에는 진행 업데이트(.replace)
+              if currentStrokeID == nil {
+                currentStrokeID = penViewModel.add(initialPoints: tempPoints)
+              } else if let id = currentStrokeID {
+                penViewModel.updateStroke(id: id, points: tempPoints)
+              }
             }
             .onEnded { _ in
-              guard !tempPoints.isEmpty else { return }
-              let stroke = Stroke(points: tempPoints)
-              penViewModel.strokes.append(stroke)
+              guard let id = currentStrokeID, !tempPoints.isEmpty else {
+                tempPoints.removeAll()
+                currentStrokeID = nil
+                return
+              }
+
+              // 마지막 상태 반영(.replace)
+              penViewModel.updateStroke(id: id, points: tempPoints)
 
               if isMagicPen {
                 DispatchQueue.main.asyncAfter(deadline: .now() + magicAfter) {
-                  penViewModel.strokes.removeAll { $0.id == stroke.id }
+                  penViewModel.remove(id)
                 }
               }
+
               tempPoints.removeAll()
+              currentStrokeID = nil
               penViewModel.redoStrokes.removeAll()
             }
         )
@@ -69,7 +87,7 @@ struct PenWriteView: View {
         GuidingToolBarView { action in
           switch action {
           case .clearAll:
-            penViewModel.clearAll()
+            penViewModel.removeAll()
           case .undo:
             penViewModel.undo()
           case .redo:
