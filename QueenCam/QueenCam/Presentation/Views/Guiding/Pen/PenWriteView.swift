@@ -11,17 +11,20 @@ struct PenWriteView: View {
   @Bindable var penViewModel: PenViewModel
   var isPen: Bool
   var isMagicPen: Bool
+  let role: Role?
 
   @State private var tempPoints: [CGPoint] = []  // 현재 그리고 있는 선의 좌표(임시)
   @State private var currentStrokeID: UUID?  // 진행 중 스트로크 ID
   private var outerColor = Color.white
-  private var innerColor = Color.orange
+  private var photographerColor = Color.blue
+  private var modelColor = Color.orange
   private let magicAfter: TimeInterval = 0.7
 
   init(penViewModel: PenViewModel, isPen: Bool, isMagicPen: Bool) {
     self.penViewModel = penViewModel
     self.isPen = isPen
     self.isMagicPen = isMagicPen
+    self.role = nil
   }
 
   var body: some View {
@@ -33,14 +36,20 @@ struct PenWriteView: View {
             var path = Path()
             path.addLines(stroke.absolutePoints(in: geo.size))
             context.stroke(path, with: .color(outerColor), style: StrokeStyle(lineWidth: 8, lineCap: .round, lineJoin: .round))
-            context.stroke(path, with: .color(innerColor), style: StrokeStyle(lineWidth: 4, lineCap: .round, lineJoin: .round))
+            context.stroke(
+              path,
+              with: role == .model ? .color(modelColor) : .color(photographerColor),
+              style: StrokeStyle(lineWidth: 4, lineCap: .round, lineJoin: .round))
           }
           // 현재 드래그 중인 선
           if tempPoints.count > 1 {
             var path = Path()
             path.addLines(tempPoints.map { CGPoint(x: $0.x * geo.size.width, y: $0.y * geo.size.height) })
             context.stroke(path, with: .color(outerColor), style: StrokeStyle(lineWidth: 8, lineCap: .round, lineJoin: .round))
-            context.stroke(path, with: .color(innerColor), style: StrokeStyle(lineWidth: 4, lineCap: .round, lineJoin: .round))
+            context.stroke(
+              path,
+              with: role == .model ? .color(modelColor) :.color(photographerColor),
+              style: StrokeStyle(lineWidth: 4, lineCap: .round, lineJoin: .round))
           }
         }
         .background(.clear)

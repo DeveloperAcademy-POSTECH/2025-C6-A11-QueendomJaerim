@@ -176,11 +176,63 @@ extension CameraView: View {
                       }
                   }
                 }
-              ReferenceView(referenceViewModel: referenceViewModel, isLarge: $isLarge, role: .photographer)
+              ReferenceView(referenceViewModel: referenceViewModel, isLarge: $isLarge)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding(12)
                 .clipped()
-              PenDisplayView(penViewModel: penViewModel)
+              ZStack(alignment: .topTrailing) {
+                Group {
+                  if isPen || isMagicPen {
+                    PenWriteView(penViewModel: penViewModel, isPen: isPen, isMagicPen: isMagicPen, role: .photographer)
+                  } else {
+                    PenDisplayView(penViewModel: penViewModel, role: .photographer)
+                  }
+
+                  if isFrame {
+                    FrameEditorView(frameViewModel: frameViewModel)
+                  } else {
+                    FrameDisplayView(frameViewModel: frameViewModel)
+                  }
+                }
+                HStack(spacing: 0) {
+                  CircleButton(
+                    systemImage: "pencil",
+                    isActive: isPen
+                  ) {
+                    isPen.toggle()
+                    isFrame = false
+                    isMagicPen = false
+                  }
+                  CircleButton(
+                    systemImage: "pointer.arrow.rays",
+                    isActive: isMagicPen
+                  ) {
+                    isMagicPen.toggle()
+                    isPen = false
+                    isFrame = false
+                  }
+                  CircleButton(
+                    systemImage: "camera.metering.center.weighted.average",
+                    isActive: isFrame
+                  ) {
+                    isFrame.toggle()
+                    isPen = false
+                    isMagicPen = false
+
+                  }
+                }
+                .background(
+                  Capsule()
+                    .fill(.ultraThinMaterial)
+                    .shadow(color: .black.opacity(0.2), radius: 5, x: 0, y: 2)
+                )
+                .overlay(
+                  Capsule()
+                    .stroke(Color.white.opacity(0.15), lineWidth: 1)
+                )
+                .frame(width: 120, height: 60)
+                .padding(20)
+              }
               FrameDisplayView(frameViewModel: frameViewModel)
             } else {  // 모델
               #if DEBUG
@@ -196,7 +248,7 @@ extension CameraView: View {
                   }
               }
 
-              ReferenceView(referenceViewModel: referenceViewModel, isLarge: $isLarge, role: .model)
+              ReferenceView(referenceViewModel: referenceViewModel, isLarge: $isLarge)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding(12)
                 .clipped()
@@ -204,9 +256,9 @@ extension CameraView: View {
               ZStack(alignment: .topTrailing) {
                 Group {
                   if isPen || isMagicPen {
-                    PenWriteView(penViewModel: penViewModel, isPen: isPen, isMagicPen: isMagicPen)
+                    PenWriteView(penViewModel: penViewModel, isPen: isPen, isMagicPen: isMagicPen, role: .model)
                   } else {
-                    PenDisplayView(penViewModel: penViewModel)
+                    PenDisplayView(penViewModel: penViewModel, role: .model)
                   }
 
                   if isFrame {
