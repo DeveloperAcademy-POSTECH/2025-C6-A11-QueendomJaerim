@@ -176,61 +176,6 @@ extension CameraView: View {
                       }
                   }
                 }
-              
-              ZStack(alignment: .topTrailing) {
-                Group {
-                  if isPen || isMagicPen {
-                    PenWriteView(penViewModel: penViewModel, isPen: isPen, isMagicPen: isMagicPen, role: .photographer)
-                  } else {
-                    PenDisplayView(penViewModel: penViewModel, role: .photographer)
-                  }
-
-                  if isFrame {
-                    FrameEditorView(frameViewModel: frameViewModel)
-                  } else {
-                    FrameDisplayView(frameViewModel: frameViewModel)
-                  }
-                }
-                HStack(spacing: 0) {
-                  CircleButton(
-                    systemImage: "pencil",
-                    isActive: isPen
-                  ) {
-                    isPen.toggle()
-                    isFrame = false
-                    isMagicPen = false
-                  }
-                  CircleButton(
-                    systemImage: "pointer.arrow.rays",
-                    isActive: isMagicPen
-                  ) {
-                    isMagicPen.toggle()
-                    isPen = false
-                    isFrame = false
-                  }
-                  CircleButton(
-                    systemImage: "camera.metering.center.weighted.average",
-                    isActive: isFrame
-                  ) {
-                    isFrame.toggle()
-                    isPen = false
-                    isMagicPen = false
-
-                  }
-                }
-                .background(
-                  Capsule()
-                    .fill(.ultraThinMaterial)
-                    .shadow(color: .black.opacity(0.2), radius: 5, x: 0, y: 2)
-                )
-                .overlay(
-                  Capsule()
-                    .stroke(Color.white.opacity(0.15), lineWidth: 1)
-                )
-                .frame(width: 120, height: 60)
-                .padding(20)
-              }
-              FrameDisplayView(frameViewModel: frameViewModel)
             } else {  // 모델
               #if DEBUG
               DebugPreviewPlayerView(previewModel: previewModel)
@@ -244,13 +189,14 @@ extension CameraView: View {
                     isLarge = false
                   }
               }
-
+            }
+            if wifiAwareViewModel.role != nil {
               ZStack(alignment: .topTrailing) {
                 Group {
                   if isPen || isMagicPen {
-                    PenWriteView(penViewModel: penViewModel, isPen: isPen, isMagicPen: isMagicPen, role: .model)
+                    PenWriteView(penViewModel: penViewModel, isPen: isPen, isMagicPen: isMagicPen, role: wifiAwareViewModel.role)
                   } else {
-                    PenDisplayView(penViewModel: penViewModel, role: .model)
+                    PenDisplayView(penViewModel: penViewModel, role: wifiAwareViewModel.role)
                   }
 
                   if isFrame {
@@ -299,14 +245,14 @@ extension CameraView: View {
                 .padding(20)
               }
             }
-            ReferenceView(referenceViewModel: referenceViewModel, isLarge: $isLarge)
-              .frame(maxWidth: .infinity, maxHeight: .infinity)
-              .padding(12)
-              .clipped()
             if camerViewModel.isShowGrid {
               GridView()
                 .aspectRatio(3 / 4, contentMode: .fit)
             }
+            ReferenceView(referenceViewModel: referenceViewModel, isLarge: $isLarge)
+              .frame(maxWidth: .infinity, maxHeight: .infinity)
+              .padding(12)
+              .clipped()
 
           }
 
