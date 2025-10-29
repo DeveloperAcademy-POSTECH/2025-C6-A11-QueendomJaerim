@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum Role: CustomDebugStringConvertible {
+enum Role: CustomDebugStringConvertible, Codable {
   case photographer
   case model
 
@@ -22,6 +22,13 @@ enum Role: CustomDebugStringConvertible {
     switch self {
     case .photographer: return "작가"
     case .model: return "모델"
+    }
+  }
+  
+  var counterpart: Role {
+    switch self {
+    case .photographer: return .model
+    case .model: return .photographer
     }
   }
 }
