@@ -17,7 +17,6 @@ struct OpenView: View {
   let regularHeight: CGFloat = 120
   let largeWidth: CGFloat = 151
   let largeHeight: CGFloat = 202
-  let role: Role?
 
   var body: some View {
     ZStack(alignment: .topTrailing) {
@@ -33,8 +32,7 @@ struct OpenView: View {
             .clipShape(.rect(cornerRadius: 20))
             .onTapGesture {
               isLarge = true
-              guard role == .model else { return }  // 작가의 경우 레퍼런스 삭제 불가능
-              showDelete.toggle()  //모델의 경우 레퍼런스 삭제 가능
+              showDelete.toggle()
             }
         }
       }
@@ -54,5 +52,5 @@ struct OpenView: View {
 }
 
 #Preview {
-  OpenView(referenceViewModel: ReferenceViewModel(), isLarge: .constant(false), role: .model)
+  OpenView(referenceViewModel: ReferenceViewModel(), isLarge: .constant(false))
 }
