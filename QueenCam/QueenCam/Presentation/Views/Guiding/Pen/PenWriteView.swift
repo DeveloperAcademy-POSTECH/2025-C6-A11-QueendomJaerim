@@ -24,7 +24,8 @@ struct PenWriteView: View {
     self.penViewModel = penViewModel
     self.isPen = isPen
     self.isMagicPen = isMagicPen
-    self.role = role  // 중요: 전달된 role을 저장
+    self.role = role
+    self.penViewModel.currentRole = role
   }
 
   var body: some View {
@@ -101,6 +102,12 @@ struct PenWriteView: View {
           }
         }
       }
+    }
+    .onAppear {
+      penViewModel.currentRole = role
+    }
+    .onChange(of: role) { _, newRole in
+      penViewModel.currentRole = newRole
     }
   }
 }

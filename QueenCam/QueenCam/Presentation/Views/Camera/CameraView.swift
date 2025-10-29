@@ -147,7 +147,7 @@ extension CameraView: View {
           .padding()
 
           ZStack {
-            if isPhotographerMode {  // 작가
+            if isPhotographerMode {  // 작가 + Default
               CameraPreview(session: camerViewModel.cameraManager.session)
                 .aspectRatio(3 / 4, contentMode: .fit)
                 .onTapGesture { location in
