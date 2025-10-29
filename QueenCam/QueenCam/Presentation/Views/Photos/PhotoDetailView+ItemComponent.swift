@@ -21,11 +21,24 @@ extension PhotoDetailView {
   struct ItemComponent {
     let asset: PHAsset
     let manager: PHCachingImageManager
+    let onSingleTapAction: () -> Void  // 한번 탭
 
     @Binding var loadedImageList: [String: UIImage]
 
     @State private var detailImage: UIImage?  // 로드한 이미지를 담을 개별 상태
     @State private var livePhoto: PHLivePhoto?
+
+    // 최종 확정된 배율 (손가락을 뗐을때)
+    @State private var currentScale: CGFloat = 1.0
+    // 현재 핀치 동작 중인 배율 (임시)
+    @State private var gestureScale: CGFloat = 1.0
+
+    // 최종 확정된 위치 (손가락을 뗐을때)
+    @State private var currentOffset: CGSize = .zero
+    // 현재 드래그 중인 이동 위치 (임시)
+    @State private var gestureOffset: CGSize = .zero
+
+    @State private var containerSize: CGSize = .zero
 
     private let logger = Logger(
       subsystem: Bundle.main.bundleIdentifier ?? "com.queendom.QueenCam",
@@ -129,49 +142,164 @@ extension PhotoDetailView.ItemComponent {
 
     }
   }
+
+  private func applyOffsetBounds() {
+    guard currentScale > 1.0 else {
+      if currentScale == 1.0 {
+        currentOffset = .zero
+      }
+      return
+    }
+
+    let viewWidth = containerSize.width
+    let viewHeight = containerSize.height
+
+    let scaledWidth = viewWidth * currentScale
+    let scaledHeight = viewHeight * currentScale
+
+    let maxOffsetX = (scaledWidth - viewWidth) / 2
+    let maxOffsetY = (scaledHeight - viewHeight) / 2
+
+    currentOffset.width = min(max(currentOffset.width, -maxOffsetX), maxOffsetX)
+    currentOffset.height = min(max(currentOffset.height, -maxOffsetY), maxOffsetY)
+  }
 }
 
 extension PhotoDetailView.ItemComponent: View {
-  var body: some View {
-    ZStack {
-      Color.black.ignoresSafeArea()
+  var magnificationGesture: some Gesture {
+    MagnifyGesture()
+      .onChanged { value in
+        gestureScale = value.magnification
 
-      Group {
-        switch self.isLivePhoto {
-        case true:
-          if let livePhoto = livePhoto {
-            LivePhotoView(livePhoto: livePhoto)
-              .background(.red.opacity(0.2))
-          } else if let image = detailImage {
-            Image(uiImage: image)
-              .resizable()
-              .scaledToFit()
-              .frame(maxWidth: .infinity, maxHeight: .infinity)
-              .background(.green.opacity(0.2))
+      }
+      .onEnded { _ in
+        currentScale *= gestureScale
+        gestureScale = 1.0
 
-          } else {
-            ProgressView()
-          }
+        if currentScale < 1.0 {
+          currentScale = 1.0
+        } else if currentScale > 4.0 {
+          currentScale = 4.0
+        }
 
-        case false:
-          if let image = detailImage {
-            Image(uiImage: image)
-              .resizable()
-              .scaledToFit()
-              .frame(maxWidth: .infinity, maxHeight: .infinity)
-              .background(.green.opacity(0.2))
-          } else {
-            ProgressView()
-          }
+        if currentScale == 1.0 {
+          currentOffset = .zero
+        }
+
+        applyOffsetBounds()
+      }
+  }
+
+  var dragGesture: some Gesture {
+    DragGesture()
+      .onChanged { value in
+        if currentScale > 1.0 {
+          gestureOffset = value.translation
         }
       }
-    }
-    .onAppear {
-      requestImage()
+      .onEnded { _ in
+        currentOffset.width += gestureOffset.width
+        currentOffset.height += gestureOffset.height
 
-      if isLivePhoto {
-        requestLivePhoto()
-        requestVideoResouceData()
+        gestureOffset = .zero
+        applyOffsetBounds()
+      }
+  }
+
+  var singleTapGesture: some Gesture {
+    TapGesture(count: 1)
+      .onEnded {
+        onSingleTapAction()
+      }
+  }
+
+  var doubleTapGesture: some Gesture {
+    SpatialTapGesture(count: 2)
+      .onEnded { value in
+        if currentScale > 1.0 {
+          currentScale = 1.0
+          currentOffset = .zero
+        } else {
+          let targetScale: CGFloat = 2.0
+
+          // 해당 뷰의 정중앙
+          let containerCenter = CGPoint(
+            x: containerSize.width / 2,
+            y: containerSize.height / 2
+          )
+
+          // 탭한 위치의 좌표
+          let location = value.location
+
+          // 수정 위치 계산
+          let offSetX = (containerCenter.x - location.x) * targetScale
+          let offSetY = (containerCenter.y - location.y) * targetScale
+
+          currentScale = targetScale
+          currentOffset = CGSize(width: offSetX, height: offSetY)
+
+        }
+
+        applyOffsetBounds()
+      }
+  }
+
+  var body: some View {
+    GeometryReader { proxy in
+
+      ZStack {
+        Color.black.ignoresSafeArea()
+
+        Group {
+          switch self.isLivePhoto {
+          case true:
+            if let livePhoto = livePhoto {
+              LivePhotoView(livePhoto: livePhoto)
+                .background(.red.opacity(0.2))
+            } else if let image = detailImage {
+              Image(uiImage: image)
+                .resizable()
+                .scaledToFit()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+            } else {
+              ProgressView()
+            }
+
+          case false:
+            if let image = detailImage {
+              Image(uiImage: image)
+                .resizable()
+                .scaledToFit()
+            } else {
+              ProgressView()
+            }
+          }
+        }
+        .scaleEffect(currentScale * gestureScale)
+        .offset(
+          x: currentOffset.width + gestureOffset.width,
+          y: currentOffset.height + gestureOffset.height
+        )
+      }
+      .frame(width: proxy.size.width, height: proxy.size.height)
+      .simultaneousGesture(doubleTapGesture.exclusively(before: singleTapGesture))
+      .simultaneousGesture(magnificationGesture)
+      .simultaneousGesture(
+        currentScale > 1.0 ? dragGesture : nil
+      )
+      .onAppear {
+        containerSize = proxy.size
+
+        currentScale = 1.0
+        currentOffset = .zero
+
+        requestImage()
+
+        if isLivePhoto {
+          requestLivePhoto()
+          requestVideoResouceData()
+        }
       }
     }
   }
