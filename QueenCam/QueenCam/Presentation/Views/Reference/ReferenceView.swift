@@ -14,7 +14,7 @@ struct ReferenceView: View {
   // FIXME: 레퍼런스 임시 배치 위치 => 스프린트2,3에 수정 예정
   var top: CGFloat = 8
   var leading: CGFloat = 0
-  let role: Role?
+
   private let containerName = "ReferenceViewContainer"
 
   var body: some View {
@@ -24,7 +24,7 @@ struct ReferenceView: View {
         Group {
           switch referenceViewModel.state {
           case .open:  // 레퍼런스 On
-            OpenView(referenceViewModel: referenceViewModel, isLarge: $isLarge, role: role)
+            OpenView(referenceViewModel: referenceViewModel, isLarge: $isLarge)
               .offset(referenceViewModel.dragOffset)
               .highPriorityGesture(
                 DragGesture(minimumDistance: 5, coordinateSpace: .named(containerName))

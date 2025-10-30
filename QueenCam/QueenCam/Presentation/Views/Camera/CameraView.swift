@@ -9,7 +9,7 @@ struct CameraView {
   let connectionViewModel: ConnectionViewModel
 
   /// 네트워크 상태 모달 노출 여부
-  @State private var isShwoingCurrentConnectionModal: Bool = false
+  @State private var isShowingCurrentConnectionModal: Bool = false
   private var isPhotographerMode: Bool {
     connectionViewModel.role == nil || connectionViewModel.role == .photographer
   }
@@ -138,7 +138,7 @@ extension CameraView: View {
               connectedDeviceName: connectionViewModel.connectedDeviceName
             ) {
               if connectionViewModel.isConnecting {
-                isShwoingCurrentConnectionModal.toggle()
+                isShowingCurrentConnectionModal.toggle()
               } else {
                 router.push(.establishConnection)
               }
@@ -147,7 +147,7 @@ extension CameraView: View {
           .padding()
 
           ZStack {
-            if isPhotographerMode {  // 작가
+            if isPhotographerMode {  // 작가 + Default
               CameraPreview(session: camerViewModel.cameraManager.session)
                 .aspectRatio(3 / 4, contentMode: .fit)
                 .onTapGesture { location in
@@ -176,12 +176,6 @@ extension CameraView: View {
                       }
                   }
                 }
-              ReferenceView(referenceViewModel: referenceViewModel, isLarge: $isLarge, role: .photographer)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .padding(12)
-                .clipped()
-              PenDisplayView(penViewModel: penViewModel)
-              FrameDisplayView(frameViewModel: frameViewModel)
             } else {  // 모델
               #if DEBUG
               DebugPreviewPlayerView(previewModel: previewModel)
@@ -195,18 +189,14 @@ extension CameraView: View {
                     isLarge = false
                   }
               }
-
-              ReferenceView(referenceViewModel: referenceViewModel, isLarge: $isLarge, role: .model)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .padding(12)
-                .clipped()
-
+            }
+            if connectionViewModel.role != nil {
               ZStack(alignment: .topTrailing) {
                 Group {
                   if isPen || isMagicPen {
-                    PenWriteView(penViewModel: penViewModel, isPen: isPen, isMagicPen: isMagicPen)
+                    PenWriteView(penViewModel: penViewModel, isPen: isPen, isMagicPen: isMagicPen, role: connectionViewModel.role)
                   } else {
-                    PenDisplayView(penViewModel: penViewModel)
+                    PenDisplayView(penViewModel: penViewModel, role: connectionViewModel.role)
                   }
 
                   if isFrame {
@@ -259,6 +249,10 @@ extension CameraView: View {
               GridView()
                 .aspectRatio(3 / 4, contentMode: .fit)
             }
+            ReferenceView(referenceViewModel: referenceViewModel, isLarge: $isLarge)
+              .frame(maxWidth: .infinity, maxHeight: .infinity)
+              .padding(12)
+              .clipped()
 
           }
 
@@ -343,12 +337,12 @@ extension CameraView: View {
       }
 
       // MARK: 네트워크 상태 모달
-      if isShwoingCurrentConnectionModal {
+      if isShowingCurrentConnectionModal {
         NetworkStateModalView(
           myRole: connectionViewModel.role ?? .model,
           otherDeviceName: connectionViewModel.connectedDeviceName ?? "알 수 없는 기기",
           disconnectButtonDidTap: {
-            isShwoingCurrentConnectionModal = false
+            isShowingCurrentConnectionModal = false
             connectionViewModel.disconnectButtonDidTap()
           },
           changeRoleButtonDidTap: {

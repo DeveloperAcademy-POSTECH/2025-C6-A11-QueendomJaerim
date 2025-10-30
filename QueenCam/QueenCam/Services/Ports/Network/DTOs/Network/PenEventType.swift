@@ -15,9 +15,6 @@ enum PenEventType: Codable, Sendable {
   case replace(PenPayload)
   /// 이전에 추가된 가이딩 펜을 지운다
   case delete(id: UUID)
-  /// 모든 가이딩 펜을 지운다
-  case deleteAll
-  
 }
 
 struct PenPayload: Codable, Sendable {
@@ -25,5 +22,6 @@ struct PenPayload: Codable, Sendable {
   let id: UUID
   /// 가이딩 펜의 획(stroke) 점들의 배열
   let points: [PointPayload]
-  
+  /// 작성자 역할
+  let author: Role
 }

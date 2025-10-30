@@ -12,6 +12,8 @@ import SwiftUI
 final class PenViewModel {
   var strokes: [Stroke] = []  // 현재 그려진 모든 선들(Pen의 배열)
   var redoStrokes: [Stroke] = []  // 사용자가 Redo(복귀) 했을때 되돌릴 수 있는 선들
+  /// 현재 사용자의 역할(모델, 작가)
+  var currentRole: Role?
 
   // MARK: - 네트워크
   let networkService: NetworkServiceProtocol
@@ -26,8 +28,8 @@ final class PenViewModel {
   }
 
   // MARK: - 드로잉 시작/진행 업데이트
-  func add(initialPoints: [CGPoint]) -> UUID {
-    let stroke = Stroke(points: initialPoints)
+  func add(initialPoints: [CGPoint], author: Role) -> UUID {
+    let stroke = Stroke(points: initialPoints, author: author)
     strokes.append(stroke)
     redoStrokes.removeAll()
 
@@ -39,6 +41,7 @@ final class PenViewModel {
   /// 진행 중 스트로크의 포인트를 갱신하고 .replace 이벤트를 전송한다.
   func updateStroke(id: UUID, points: [CGPoint]) {
     guard let strokeIndex = strokes.firstIndex(where: { $0.id == id }) else { return }
+    if let myRole = currentRole, strokes[strokeIndex].author != myRole { return }
     strokes[strokeIndex].points = points
 
     // Send to network
@@ -46,24 +49,37 @@ final class PenViewModel {
   }
 
   // MARK: - 스트로크 삭제
-  func remove(_ id: UUID) {
+  func remove(_ id: UUID) { // 개별 스트로크 삭제(매직펜)
+    guard let myRole = currentRole,
+          let target = strokes.first(where: { $0.id == id }),
+          target.author == myRole else { return }
+
     strokes.removeAll { $0.id == id }
+    redoStrokes.removeAll { $0.id == id }
 
     // Send to network
     sendPenCommand(command: .remove(id: id))
   }
 
   func removeAll() {  // 전체 삭제
-    strokes.removeAll()
-    redoStrokes.removeAll()
+    guard let myRole = currentRole else { return }
 
-    // Send to network
-    sendPenCommand(command: .removeAll)
+    let myIds = strokes.filter { $0.author == myRole }.map(\.id)
+    strokes.removeAll { $0.author == myRole }
+    redoStrokes.removeAll { $0.author == myRole }
+
+  
+    for id in myIds {
+      sendPenCommand(command: .remove(id: id))
+    }
   }
 
   // MARK: - 스트로크 실행취소/재실행
   func undo() {
-    guard let last = strokes.popLast() else { return }
+    guard let myRole = currentRole else { return }
+    guard let index = strokes.lastIndex(where: { $0.author == myRole }) else { return }
+
+    let last = strokes.remove(at: index)
     redoStrokes.append(last)
 
     // Send to network
@@ -71,7 +87,10 @@ final class PenViewModel {
   }
 
   func redo() {
-    guard let redoStroke = redoStrokes.popLast() else { return }
+    guard let myRole = currentRole else { return }
+    guard let index = redoStrokes.lastIndex(where: { $0.author == myRole }) else { return }
+
+    let redoStroke = redoStrokes.remove(at: index)
     strokes.append(redoStroke)
 
     // Send to network
@@ -114,8 +133,7 @@ extension PenViewModel {
       }
     case .delete(let id):
       strokes.removeAll { $0.id == id }
-    case .deleteAll:
-      strokes.removeAll()
+      redoStrokes.removeAll { $0.id == id }
     }
   }
 }
@@ -125,7 +143,6 @@ private enum PenNetworkCommand {
   case add(stroke: Stroke)
   case replace(stroke: Stroke)
   case remove(id: UUID)
-  case removeAll
 }
 
 extension PenViewModel {
@@ -139,8 +156,6 @@ extension PenViewModel {
       sendingEventType = .replace(PenMapper.convert(stroke: stroke))
     case .remove(let id):
       sendingEventType = .delete(id: id)
-    case .removeAll:
-      sendingEventType = .deleteAll
     }
     Task.detached { [weak self] in
       guard let self else { return }
