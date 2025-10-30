@@ -13,8 +13,6 @@ enum FrameEventType: Codable, Sendable {
   case add(FramePayload)
   /// 이전에 추가된 가이딩 프레임을 바꾼다
   case replace(FramePayload)
-  /// 이전에 추가된 가이딩 프레임을 지운다
-  case delete(id: UUID)
   /// 모든 가이딩 프레임을 지운다
   case deleteAll
 }

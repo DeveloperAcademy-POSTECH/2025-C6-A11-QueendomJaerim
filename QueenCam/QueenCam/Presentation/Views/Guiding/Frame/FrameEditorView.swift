@@ -48,7 +48,7 @@ struct FrameEditorView: View {
           .disabled(frameViewModel.frames.count >= frameViewModel.maxFrames)
 
           Button {
-            frameViewModel.removeAll()
+            frameViewModel.deleteAll()
           } label: {
             Image(systemName: "xmark")
               .font(.system(size: 25, weight: .semibold))
