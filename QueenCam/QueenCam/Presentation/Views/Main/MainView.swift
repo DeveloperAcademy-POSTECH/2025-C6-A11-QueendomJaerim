@@ -11,7 +11,7 @@ import WiFiAware
 struct MainView: View {
   @State private var router = NavigationRouter()
 
-  @State private var wifiAwareViewModel = WifiAwareViewModel(
+  @State private var connectionViewModel = ConnectionViewModel(
     networkService: DependencyContainer.defaultContainer.networkService
   )
 
@@ -33,12 +33,12 @@ struct MainView: View {
           CameraView(
             camerViewModel: cameraViewModel,
             previewModel: previewModel,
-            wifiAwareViewModel: wifiAwareViewModel
+            connectionViewModel: connectionViewModel
           )
           .navigationDestination(for: Route.self) { route in
             NavigationRouteView(
               currentRoute: route,
-              wifiAwareViewModel: wifiAwareViewModel,
+              connectionViewModel: connectionViewModel,
               previewModel: previewModel
             )
           }
@@ -50,10 +50,10 @@ struct MainView: View {
       "Ping 메시지 도착",
       isPresented: .init(
         get: {
-          wifiAwareViewModel.lastPingAt != nil
+          connectionViewModel.lastPingAt != nil
         },
         set: { present in
-          wifiAwareViewModel.lastPingAt = present ? Date() : nil
+          connectionViewModel.lastPingAt = present ? Date() : nil
         }
       )
     ) {

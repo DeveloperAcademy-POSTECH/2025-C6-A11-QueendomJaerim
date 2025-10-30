@@ -6,12 +6,12 @@ struct CameraView {
   @Environment(\.router) private var router
   let camerViewModel: CameraViewModel
   let previewModel: PreviewModel
-  let wifiAwareViewModel: WifiAwareViewModel
+  let connectionViewModel: ConnectionViewModel
 
   /// 네트워크 상태 모달 노출 여부
   @State private var isShwoingCurrentConnectionModal: Bool = false
   private var isPhotographerMode: Bool {
-    wifiAwareViewModel.role == nil || wifiAwareViewModel.role == .photographer
+    connectionViewModel.role == nil || connectionViewModel.role == .photographer
   }
 
   @State private var selectedImage: UIImage?
@@ -134,10 +134,10 @@ extension CameraView: View {
             }
 
             NetworkToolbarView(
-              networkState: wifiAwareViewModel.networkState,
-              connectedDeviceName: wifiAwareViewModel.connectedDeviceName
+              networkState: connectionViewModel.networkState,
+              connectedDeviceName: connectionViewModel.connectedDeviceName
             ) {
-              if wifiAwareViewModel.isConnecting {
+              if connectionViewModel.isConnecting {
                 isShwoingCurrentConnectionModal.toggle()
               } else {
                 router.push(.establishConnection)
@@ -339,14 +339,23 @@ extension CameraView: View {
       // MARK: 네트워크 상태 모달
       if isShwoingCurrentConnectionModal {
         NetworkStateModalView(
-          myRole: wifiAwareViewModel.role ?? .model,
-          otherDeviceName: wifiAwareViewModel.connectedDeviceName ?? "알 수 없는 기기",
+          myRole: connectionViewModel.role ?? .model,
+          otherDeviceName: connectionViewModel.connectedDeviceName ?? "알 수 없는 기기",
           disconnectButtonDidTap: {
             isShwoingCurrentConnectionModal = false
-            wifiAwareViewModel.disconnectButtonDidTap()
+            connectionViewModel.disconnectButtonDidTap()
           },
           changeRoleButtonDidTap: {
-            // TODO: 역할 바꾸기 기능 구현
+            connectionViewModel.swapRole()
+
+            // 새 역할에 따라 캡쳐를 시작/중단한다
+            if let newRole = connectionViewModel.role {
+              if newRole == .model {
+                previewModel.stopCapture()
+              } else if newRole == .photographer {
+                previewModel.startCapture()
+              }
+            }
           }
         )
       }
@@ -379,14 +388,14 @@ extension CameraView: View {
       .presentationDetents([.medium, .large])
     }
     .overlay {
-      if wifiAwareViewModel.connectionLost {
+      if connectionViewModel.connectionLost {
         ReconnectingOverlayView {
-          wifiAwareViewModel.reconnectCancelButtonDidTap()
+          connectionViewModel.reconnectCancelButtonDidTap()
         }
       }
     }
-    .onChange(of: wifiAwareViewModel.connections) { _, newValue in
-      if !newValue.isEmpty && wifiAwareViewModel.role == .photographer {
+    .onChange(of: connectionViewModel.connections) { _, newValue in
+      if !newValue.isEmpty && connectionViewModel.role == .photographer {
         previewModel.startCapture()
       }
     }

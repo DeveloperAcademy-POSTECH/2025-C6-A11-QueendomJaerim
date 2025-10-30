@@ -1,5 +1,5 @@
 //
-//  WifiAwareViewModel.swift
+//  ConnectionViewModel.swift
 //  QueenCam
 //
 //  Created by 임영택 on 10/13/25.
@@ -12,13 +12,15 @@ import WiFiAware
 
 @Observable
 @MainActor
-final class WifiAwareViewModel {
+final class ConnectionViewModel {
   private(set) var role: Role? {
     didSet {
-      if role == .model {
-        networkService.mode = .viewer
-      } else if role == .photographer {
-        networkService.mode = .host
+      if let role {
+        NotificationCenter.default.post(
+          name: .QueenCamRoleChangedNotification,
+          object: nil,
+          userInfo: ["newRole": role as Any]
+        )
       }
     }
   }
@@ -38,6 +40,10 @@ final class WifiAwareViewModel {
 
   /// 연결 유실 여부를 표현하는 플래그. true이면 재연결을 시작하고 관련 UI를 표시
   var connectionLost: Bool = false
+
+  /// 최근 역할 스왑 LWW 기록
+  private var lastSwapRoleLWWRegister: LWWRegister?
+  private let myLWWActorId: String = UUID().uuidString
 
   private let networkService: NetworkServiceProtocol
   private var cancellables: Set<AnyCancellable> = []
@@ -88,6 +94,8 @@ final class WifiAwareViewModel {
         switch event {
         case .ping(let pingAt):
           self?.lastPingAt = pingAt
+        case .changeRole(let roles, let lwwValue):
+          self?.handleReceivedRequestChangeRole(receivedNewRoles: roles, receviedLwwRegister: lwwValue)
         default: break
         }
       }
@@ -107,12 +115,18 @@ final class WifiAwareViewModel {
   }
 }
 
-extension WifiAwareViewModel {
+extension ConnectionViewModel {
   func didEndpointSelect(endpoint: WASubscriberBrowser.Endpoint) {
     logger.info("endpoint selected. \(endpoint)")
   }
 
   func connectButtonDidTap(for device: WAPairedDevice) {
+    if role == .model {
+      networkService.mode = .viewer
+    } else if role == .photographer {
+      networkService.mode = .host
+    }
+
     if networkState == .host(.stopped) || networkState == .viewer(.stopped) {
       networkService.run(for: device)
     }
@@ -142,6 +156,23 @@ extension WifiAwareViewModel {
     self.role = role
   }
 
+  func swapRole() {
+    guard let role else {
+      logger.warning("The user requested to swap current role but it is nil. skipping.")
+      return
+    }
+
+    let lwwValue = LWWRegister(actorId: myLWWActorId, timestamp: Date())
+    lastSwapRoleLWWRegister = lwwValue
+
+    self.role = role.counterpart
+
+    Task.detached {
+      // 상대에게 지금 나의 현재 역할로 바꾸라고 요청한다
+      await self.networkService.send(for: .changeRole(.init(myRole: role.counterpart), lwwValue))
+    }
+  }
+
   func reconnectCancelButtonDidTap() {
     networkService.stop(byUser: true)
     lastConnectedDevice = nil
@@ -150,7 +181,7 @@ extension WifiAwareViewModel {
 }
 
 // MARK: - Connecting
-extension WifiAwareViewModel {
+extension ConnectionViewModel {
   private func didEstablishConnection(connections: [WAPairedDevice: ConnectionDetail]) {
     if let firstConnection = connections.first {
       lastConnectedDevice = firstConnection.key
@@ -165,5 +196,32 @@ extension WifiAwareViewModel {
     } else {
       logger.warning("최근 연결한 디바이스 정보가 없어 재연결에 실패했습니다.")
     }
+  }
+}
+
+// MARK: - Incomming NetworkEvent Handler
+extension ConnectionViewModel {
+  private func handleReceivedRequestChangeRole(receivedNewRoles: RolePayload, receviedLwwRegister: LWWRegister) {
+    let newMyRole = receivedNewRoles.counterpartRole
+    let newCounterpartRole = receivedNewRoles.myRole
+
+    if let lastSwapRoleLWWRegister {
+      if receviedLwwRegister.timestamp > lastSwapRoleLWWRegister.timestamp { // 타임스탬프가 최근이면 채택
+        updateRole(with: newMyRole, lwwRegister: receviedLwwRegister)
+      } else if receviedLwwRegister.timestamp == lastSwapRoleLWWRegister.timestamp,
+        receviedLwwRegister.actorId > lastSwapRoleLWWRegister.actorId { // 타임스탬프가 같으면 actorId가 앞에 있을 때 채택
+        updateRole(with: newMyRole, lwwRegister: receviedLwwRegister)
+      } else {
+        logger.warning("Received swapping role request but I already have the latest value, skipping.")
+      }
+    } else {
+      updateRole(with: newMyRole, lwwRegister: receviedLwwRegister)
+    }
+  }
+
+  private func updateRole(with newRole: Role, lwwRegister: LWWRegister) {
+    logger.debug("Role updated to \(newRole.displayName, privacy: .public) (lwwRegister: \(lwwRegister, privacy: .public)")
+    self.role = newRole
+    self.lastSwapRoleLWWRegister = lwwRegister
   }
 }
