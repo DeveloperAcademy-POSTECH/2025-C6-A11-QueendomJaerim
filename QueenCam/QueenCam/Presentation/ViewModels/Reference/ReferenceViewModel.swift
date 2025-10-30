@@ -14,6 +14,7 @@ import UIKit
 final class ReferenceViewModel {
   // MARK: - Properties
   private(set) var image: UIImage?  // 선택된 레퍼런스 사진
+  private(set) var selectedImageID: String? // 선택된 레퍼런스 아이디
   var state: ReferenceState = .open
   let foldThreshold: CGFloat = -50
   var dragOffset: CGSize = .zero  // 드래그 중 임시편차
@@ -76,14 +77,16 @@ final class ReferenceViewModel {
       state = .delete
       image = nil
       state = .open
+      selectedImageID = nil
     }
     self.sendReferenceImageCommand(command: .remove)
   }
 
-  func onRegister(uiImage: UIImage?) {
+  func onRegister(uiImage: UIImage?, imageID: String?) {
     guard let uiImage else { return }
+    guard let imageID else { return }
     self.image = uiImage
-    self.sendReferenceImageCommand(command: .register(image: uiImage))
+    self.sendReferenceImageCommand(command: .register(image: uiImage, imageID: imageID))
   }
 }
 
@@ -120,14 +123,14 @@ extension ReferenceViewModel {
   nonisolated var compressionQualityOfReferenceImage: CGFloat { 0.8 }
 
   private func sendReferenceImageCommand(command: ReferenceNetworkCommand) {
-    if case .register(let image) = command {
-      sendReferenceImageRegisteredEvent(referenceImage: image)
+    if case .register(let image, let imageID) = command {
+      sendReferenceImageRegisteredEvent(referenceImage: image, imageID: imageID)
     } else {
       sendReferenceImageRemovedEvent()
     }
   }
 
-  private func sendReferenceImageRegisteredEvent(referenceImage: UIImage) {
+  private func sendReferenceImageRegisteredEvent(referenceImage: UIImage, imageID: String) {
     Task.detached { [weak self] in
       guard let self,
         let imageData = referenceImage.jpegData(compressionQuality: self.compressionQualityOfReferenceImage)
@@ -149,5 +152,5 @@ extension ReferenceViewModel {
 
 private enum ReferenceNetworkCommand {
   case remove
-  case register(image: UIImage)
+  case register(image: UIImage, imageID: String)
 }

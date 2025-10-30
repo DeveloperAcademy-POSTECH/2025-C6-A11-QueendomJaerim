@@ -15,6 +15,10 @@ final class CameraViewModel {
   var isMicPermissionGranted = false
 
   var isShowSettingAlert = false
+  
+  // 레퍼런스와 연동된 데이터
+  var selectedReferenceImage: UIImage?
+  var selectedReferenceImageID: String?
 
   var lastImage: UIImage?
 
