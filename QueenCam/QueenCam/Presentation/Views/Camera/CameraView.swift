@@ -198,7 +198,7 @@ extension CameraView: View {
                   if isPen || isMagicPen {
                     PenWriteView(penViewModel: penViewModel, isPen: isPen, isMagicPen: isMagicPen, role: connectionViewModel.role)
                   } else {
-                    PenDisplayView(penViewModel: penViewModel, role: connectionViewModel.role, isRemoteGuide: isRemoteGuideHidden)
+                    PenDisplayView(penViewModel: penViewModel, role: connectionViewModel.role)
                   }
 
                   if isFrame {
@@ -207,6 +207,8 @@ extension CameraView: View {
                     FrameDisplayView(frameViewModel: frameViewModel)
                   }
                 }
+                .opacity(isRemoteGuideHidden ? .zero : 1)
+                
                 HStack(spacing: 0) {
                   CircleButton(
                     systemImage: "pencil",
@@ -267,6 +269,7 @@ extension CameraView: View {
                   Image(systemName: isRemoteGuideHidden ? "eye.slash" : "eye")
                     .foregroundStyle(isRemoteGuideHidden ? .white : .yellow)
                     .imageScale(.large)
+                    .padding()
                 }
               }
             }
