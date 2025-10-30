@@ -103,11 +103,5 @@ struct PenWriteView: View {
         }
       }
     }
-    .onAppear {
-      penViewModel.currentRole = role
-    }
-    .onChange(of: role) { _, newRole in
-      penViewModel.currentRole = newRole
-    }
   }
 }

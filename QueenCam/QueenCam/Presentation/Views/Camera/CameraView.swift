@@ -190,13 +190,13 @@ extension CameraView: View {
                   }
               }
             }
-            if wifiAwareViewModel.role != nil {
+            if connectionViewModel.role != nil {
               ZStack(alignment: .topTrailing) {
                 Group {
                   if isPen || isMagicPen {
-                    PenWriteView(penViewModel: penViewModel, isPen: isPen, isMagicPen: isMagicPen, role: wifiAwareViewModel.role)
+                    PenWriteView(penViewModel: penViewModel, isPen: isPen, isMagicPen: isMagicPen, role: connectionViewModel.role)
                   } else {
-                    PenDisplayView(penViewModel: penViewModel, role: wifiAwareViewModel.role)
+                    PenDisplayView(penViewModel: penViewModel, role: connectionViewModel.role)
                   }
 
                   if isFrame {
