@@ -348,6 +348,7 @@ extension CameraView: View {
             // 가이딩 초기화
             penViewModel.reset()
             frameViewModel.deleteAll()
+            referenceViewModel.onDelete()
             connectionViewModel.swapRole()
             // 새 역할에 따라 캡쳐를 시작/중단한다
             if let newRole = connectionViewModel.role {
@@ -412,6 +413,7 @@ extension CameraView: View {
         // 가이딩 초기화
         penViewModel.reset()
         frameViewModel.deleteAll()
+        referenceViewModel.onDelete()
       }
     }
     .task {
