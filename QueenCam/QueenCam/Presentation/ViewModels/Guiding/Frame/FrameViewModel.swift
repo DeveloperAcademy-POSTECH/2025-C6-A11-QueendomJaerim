@@ -126,19 +126,12 @@ final class FrameViewModel {
     sendFrameCommand(command: .modify(frame: frames[frameIndex]))
   }
   // MARK: - 프레임의 삭제
-  func remove(_ id: UUID) {
-    frames.removeAll { $0.id == id }
-
-    // Send to network
-    sendFrameCommand(command: .remove(id: id))
-  }
-
-  func removeAll() {
+  func deleteAll() {
     frames.removeAll()
     selectedFrameID = nil
 
     // Send to network
-    sendFrameCommand(command: .removeAll)
+    sendFrameCommand(command: .deleteAll)
   }
 }
 
@@ -177,8 +170,6 @@ extension FrameViewModel {
 
         return frame
       }
-    case .delete(let id):
-      frames.removeAll { $0.id == id }  // remove나 removeAll 함수를 재사용하지 말 것. 네트워크로 전파하며 무한 루프 시작됨.
     case .deleteAll:
       frames.removeAll()
     }
@@ -197,9 +188,7 @@ extension FrameViewModel {
       sendingEventType = .replace(FrameMapper.convert(frame: frame))
     case .modify(let frame):
       sendingEventType = .replace(FrameMapper.convert(frame: frame))
-    case .remove(let id):
-      sendingEventType = .delete(id: id)
-    case .removeAll:
+    case .deleteAll:
       sendingEventType = .deleteAll
     }
 
@@ -214,6 +203,5 @@ private enum FrameNetworkCommand {
   case add(frame: Frame)
   case move(frame: Frame)
   case modify(frame: Frame)
-  case remove(id: UUID)
-  case removeAll
+  case deleteAll
 }

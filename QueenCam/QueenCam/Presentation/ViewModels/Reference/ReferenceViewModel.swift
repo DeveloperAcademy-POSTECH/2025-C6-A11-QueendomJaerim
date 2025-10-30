@@ -28,6 +28,8 @@ final class ReferenceViewModel {
     networkService: NetworkServiceProtocol = DependencyContainer.defaultContainer.networkService
   ) {
     self.networkService = networkService
+    
+    bind()
   }
 
   // MARK: - DRAG(for fold/unfold)
@@ -85,7 +87,7 @@ final class ReferenceViewModel {
   }
 }
 
-// MARK: Receiving network event
+// MARK: - Receiving network event
 extension ReferenceViewModel {
   private func bind() {
     networkService.networkEventPublisher

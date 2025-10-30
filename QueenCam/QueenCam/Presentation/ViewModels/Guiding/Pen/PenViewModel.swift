@@ -49,7 +49,8 @@ final class PenViewModel {
   }
 
   // MARK: - 스트로크 삭제
-  func remove(_ id: UUID) { // 개별 스트로크 삭제(매직펜)
+  /// 펜 가이딩 개별 획(stroke)  삭제 - 매직펜
+  func remove(_ id: UUID) {
     guard let myRole = currentRole,
           let target = strokes.first(where: { $0.id == id }),
           target.author == myRole else { return }
@@ -60,18 +61,24 @@ final class PenViewModel {
     // Send to network
     sendPenCommand(command: .remove(id: id))
   }
-
-  func removeAll() {  // 전체 삭제
+  /// 본인이 생성한 펜 가이딩 전체 삭제
+  func deleteAll() {  // 전체 삭제
     guard let myRole = currentRole else { return }
 
     let myIds = strokes.filter { $0.author == myRole }.map(\.id)
-    strokes.removeAll { $0.author == myRole }
+    strokes.removeAll { $0 .author == myRole }
     redoStrokes.removeAll { $0.author == myRole }
-
-  
     for id in myIds {
       sendPenCommand(command: .remove(id: id))
     }
+  }
+  /// 펜 가이딩 초기화
+  func reset() {
+    strokes.removeAll()
+    redoStrokes.removeAll()
+    
+    // Send to network
+    sendPenCommand(command: .reset)
   }
 
   // MARK: - 스트로크 실행취소/재실행
@@ -134,6 +141,9 @@ extension PenViewModel {
     case .delete(let id):
       strokes.removeAll { $0.id == id }
       redoStrokes.removeAll { $0.id == id }
+    case .reset:
+      strokes.removeAll()
+      redoStrokes.removeAll()
     }
   }
 }
@@ -143,6 +153,7 @@ private enum PenNetworkCommand {
   case add(stroke: Stroke)
   case replace(stroke: Stroke)
   case remove(id: UUID)
+  case reset
 }
 
 extension PenViewModel {
@@ -156,6 +167,8 @@ extension PenViewModel {
       sendingEventType = .replace(PenMapper.convert(stroke: stroke))
     case .remove(let id):
       sendingEventType = .delete(id: id)
+    case .reset:
+      sendingEventType = .reset
     }
     Task.detached { [weak self] in
       guard let self else { return }

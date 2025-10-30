@@ -37,7 +37,7 @@ enum NetworkEvent: Sendable {
   /// 촬영 결과물. (작가 -> 모델)  라이브포토인 경우 영상을 포함한다.
   case photoResult(imageData: Data, videoData: Data?)
 
-  /// 등록된 레퍼런스 (모델 -> 작가)
+  /// 등록된 레퍼런스 
   case referenceImage(ReferenceImageEventType)
 
   /// 프레임 이벤트

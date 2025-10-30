@@ -4,7 +4,7 @@ import WiFiAware
 
 struct CameraView {
   @Environment(\.router) private var router
-  let camerViewModel: CameraViewModel
+  let cameraViewModel: CameraViewModel
   let previewModel: PreviewModel
   let connectionViewModel: ConnectionViewModel
 
@@ -49,11 +49,11 @@ extension CameraView {
   }
 
   private var isFront: Bool {
-    camerViewModel.cameraPostion == .front
+    cameraViewModel.cameraPostion == .front
   }
 
   private var flashImage: String {
-    switch camerViewModel.isFlashMode {
+    switch cameraViewModel.isFlashMode {
     case .off:
       return "bolt.slash"
     case .on:
@@ -66,7 +66,7 @@ extension CameraView {
   }
 
   private var isPermissionGranted: Bool {
-    camerViewModel.isCameraPermissionGranted && camerViewModel.isCameraPermissionGranted
+    cameraViewModel.isCameraPermissionGranted && cameraViewModel.isCameraPermissionGranted
   }
 
   private var activeZoom: CGFloat {
@@ -96,11 +96,11 @@ extension CameraView: View {
         let clampedZoom = max(0.5, min(newZoom, 2.0))
         currentZoomFactor = clampedZoom
 
-        camerViewModel.setZoom(factor: currentZoomFactor, ramp: false)
+        cameraViewModel.setZoom(factor: currentZoomFactor, ramp: false)
       }
       // 핀치를 마쳤을때 한 번 호출될 로직
       .onEnded { _ in
-        camerViewModel.setZoom(factor: currentZoomFactor, ramp: true)
+        cameraViewModel.setZoom(factor: currentZoomFactor, ramp: true)
         previousMagnificationValue = 1.0
 
       }
@@ -116,22 +116,22 @@ extension CameraView: View {
           ZStack {
             HStack {
               Button(action: {
-                camerViewModel.switchFlashMode()
+                cameraViewModel.switchFlashMode()
               }) {
                 Image(systemName: flashImage)
-                  .foregroundStyle(camerViewModel.isFlashMode == .on ? .yellow : .white)
+                  .foregroundStyle(cameraViewModel.isFlashMode == .on ? .yellow : .white)
               }
 
-              Button(action: { camerViewModel.switchLivePhoto() }) {
-                Image(systemName: camerViewModel.isLivePhotoOn ? "livephoto" : "livephoto.slash")
-                  .foregroundStyle(camerViewModel.isLivePhotoOn ? .yellow : .white)
+              Button(action: { cameraViewModel.switchLivePhoto() }) {
+                Image(systemName: cameraViewModel.isLivePhotoOn ? "livephoto" : "livephoto.slash")
+                  .foregroundStyle(cameraViewModel.isLivePhotoOn ? .yellow : .white)
               }
 
               Spacer()
 
-              Button(action: { camerViewModel.switchGrid() }) {
-                Text(camerViewModel.isShowGrid ? "그리드 활성화" : "그리드 비활성화")
-                  .foregroundStyle(camerViewModel.isShowGrid ? .yellow : .white)
+              Button(action: { cameraViewModel.switchGrid() }) {
+                Text(cameraViewModel.isShowGrid ? "그리드 활성화" : "그리드 비활성화")
+                  .foregroundStyle(cameraViewModel.isShowGrid ? .yellow : .white)
               }
             }
 
@@ -150,12 +150,12 @@ extension CameraView: View {
 
           ZStack {
             if isPhotographerMode {  // 작가 + Default
-              CameraPreview(session: camerViewModel.cameraManager.session)
+              CameraPreview(session: cameraViewModel.cameraManager.session)
                 .aspectRatio(3 / 4, contentMode: .fit)
                 .onTapGesture { location in
                   isFocused = true
                   focusLocation = location
-                  camerViewModel.setFocus(point: location)
+                  cameraViewModel.setFocus(point: location)
                 }
                 .gesture(magnificationGesture)
 
@@ -273,7 +273,7 @@ extension CameraView: View {
                 }
               }
             }
-            if camerViewModel.isShowGrid {
+            if cameraViewModel.isShowGrid {
               GridView()
                 .aspectRatio(3 / 4, contentMode: .fit)
             }
@@ -281,7 +281,6 @@ extension CameraView: View {
               .frame(maxWidth: .infinity, maxHeight: .infinity)
               .padding(12)
               .clipped()
-
           }
 
           if !isFront {
@@ -289,7 +288,7 @@ extension CameraView: View {
               if isPhotographerMode {
                 ForEach(zoomScaleItemList, id: \.self) { item in
                   Button(action: {
-                    camerViewModel.setZoom(factor: item, ramp: true)
+                    cameraViewModel.setZoom(factor: item, ramp: true)
                     currentZoomFactor = item
                   }) {
                     Text(
@@ -309,7 +308,7 @@ extension CameraView: View {
 
           HStack {
             Button(action: { isShowPhotoPicker.toggle() }) {
-              if let image = camerViewModel.lastImage {
+              if let image = cameraViewModel.lastImage {
                 Image(uiImage: image)
                   .resizable()
                   .aspectRatio(contentMode: .fit)
@@ -326,7 +325,7 @@ extension CameraView: View {
             Spacer()
 
             if isPhotographerMode {  // 작가 전용 뷰
-              Button(action: { camerViewModel.capturePhoto() }) {
+              Button(action: { cameraViewModel.capturePhoto() }) {
                 Circle()
                   .fill(.white)
                   .frame(width: 70, height: 70)
@@ -339,7 +338,7 @@ extension CameraView: View {
 
               Button(action: {
                 Task {
-                  await camerViewModel.switchCamera()
+                  await cameraViewModel.switchCamera()
                 }
               }) {
                 Image(systemName: "arrow.triangle.2.circlepath.camera")
@@ -374,8 +373,11 @@ extension CameraView: View {
             connectionViewModel.disconnectButtonDidTap()
           },
           changeRoleButtonDidTap: {
+            // 가이딩 초기화
+            penViewModel.reset()
+            frameViewModel.deleteAll()
+            referenceViewModel.onDelete()
             connectionViewModel.swapRole()
-
             // 새 역할에 따라 캡쳐를 시작/중단한다
             if let newRole = connectionViewModel.role {
               if newRole == .model {
@@ -391,8 +393,8 @@ extension CameraView: View {
     .alert(
       "카메라 접근 권한",
       isPresented: .init(
-        get: { camerViewModel.isShowSettingAlert },
-        set: { camerViewModel.isShowSettingAlert = $0 }
+        get: { cameraViewModel.isShowSettingAlert },
+        set: { cameraViewModel.isShowSettingAlert = $0 }
       ),
       actions: {
         Button(role: .cancel, action: {}) {
@@ -427,8 +429,23 @@ extension CameraView: View {
         previewModel.startCapture()
       }
     }
+    // 연결 종료 시 가이딩 초기화
+    .onChange(of: connectionViewModel.networkState) { _, newState in
+      guard let newState else { return }
+      if newState == .host(.cancelled)
+        || newState == .viewer(.cancelled)
+        || newState == .host(.lost)
+        || newState == .viewer(.lost)
+        || newState == .host(.stopped)
+        || newState == .viewer(.stopped) {
+        // 가이딩 초기화
+        penViewModel.reset()
+        frameViewModel.deleteAll()
+        referenceViewModel.onDelete()
+      }
+    }
     .task {
-      await camerViewModel.checkPermissions()
+      await cameraViewModel.checkPermissions()
     }
   }
 }
