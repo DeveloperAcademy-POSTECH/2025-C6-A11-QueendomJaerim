@@ -37,6 +37,8 @@ struct CameraView {
 
   @State private var frameViewModel = FrameViewModel()
   @State private var isFrame: Bool = false
+
+  @State private var isRemoteGuideHidden: Bool = false
 }
 
 extension CameraView {
@@ -205,6 +207,8 @@ extension CameraView: View {
                     FrameDisplayView(frameViewModel: frameViewModel)
                   }
                 }
+                .opacity(isRemoteGuideHidden ? .zero : 1)
+                
                 HStack(spacing: 0) {
                   CircleButton(
                     systemImage: "pencil",
@@ -213,6 +217,9 @@ extension CameraView: View {
                     isPen.toggle()
                     isFrame = false
                     isMagicPen = false
+                    if isPen {
+                      isRemoteGuideHidden = false
+                    }
                   }
                   CircleButton(
                     systemImage: "pointer.arrow.rays",
@@ -221,6 +228,9 @@ extension CameraView: View {
                     isMagicPen.toggle()
                     isPen = false
                     isFrame = false
+                    if isMagicPen {
+                      isRemoteGuideHidden = false
+                    }
                   }
                   CircleButton(
                     systemImage: "camera.metering.center.weighted.average",
@@ -229,7 +239,9 @@ extension CameraView: View {
                     isFrame.toggle()
                     isPen = false
                     isMagicPen = false
-
+                    if isFrame {
+                      isRemoteGuideHidden = false
+                    }
                   }
                 }
                 .background(
@@ -243,6 +255,22 @@ extension CameraView: View {
                 )
                 .frame(width: 120, height: 60)
                 .padding(20)
+              }
+              .overlay(alignment: .bottomTrailing) {
+                Button(action: {
+                  isRemoteGuideHidden.toggle()
+                  if isRemoteGuideHidden {
+                    isPen = false
+                    isMagicPen = false
+                    isFrame = false
+                  }
+
+                }) {
+                  Image(systemName: isRemoteGuideHidden ? "eye.slash" : "eye")
+                    .foregroundStyle(isRemoteGuideHidden ? .white : .yellow)
+                    .imageScale(.large)
+                    .padding()
+                }
               }
             }
             if camerViewModel.isShowGrid {

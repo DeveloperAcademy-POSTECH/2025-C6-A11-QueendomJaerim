@@ -23,6 +23,7 @@ struct PenDisplayView: View {
   var body: some View {
     GeometryReader { geo in
       Canvas { context, _ in
+
         for stroke in penViewModel.strokes where stroke.points.count > 1 {
           var path = Path()
           path.addLines(stroke.absolutePoints(in: geo.size))
