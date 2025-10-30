@@ -4,6 +4,11 @@
 <dict>
 	<key>CFBundleIconName</key>
 	<string>AppIcon</string>
+	<key>UIAppFonts</key>
+	<array>
+		<string>Pretendard-Medium.ttf</string>
+		<string>Pretendard-Regular.ttf</string>
+	</array>
 	<key>WiFiAwareServices</key>
 	<dict>
 		<key>_cam-preview._tcp</key>
