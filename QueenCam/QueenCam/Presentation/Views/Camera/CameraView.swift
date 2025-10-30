@@ -14,6 +14,9 @@ struct CameraView {
     connectionViewModel.role == nil || connectionViewModel.role == .photographer
   }
 
+  @State private var selectedImage: UIImage?
+  @State private var selectedImageID: String?
+
   @State private var zoomScaleItemList: [CGFloat] = [0.5, 1, 2]
 
   // 현재 적용된 줌 배율 (카메라와 UI 상태 동기화용)
@@ -246,12 +249,10 @@ extension CameraView: View {
               GridView()
                 .aspectRatio(3 / 4, contentMode: .fit)
             }
-//            Refe
-            
-//            ReferenceView(referenceViewModel: referenceViewModel, isLarge: $isLarge)
-//              .frame(maxWidth: .infinity, maxHeight: .infinity)
-//              .padding(12)
-//              .clipped()
+            ReferenceView(referenceViewModel: referenceViewModel, isLarge: $isLarge)
+              .frame(maxWidth: .infinity, maxHeight: .infinity)
+              .padding(12)
+              .clipped()
           }
 
           if !isFront {
@@ -381,14 +382,11 @@ extension CameraView: View {
       }
     )
     .sheet(isPresented: $isShowPhotoPicker) {
-      PhotosPickerView(
-        selectedImageID: .init(
-          get: { cameraViewModel.selectedReferenceImageID},
-          set: { cameraViewModel.selectedReferenceImageID = $0 })) { image in
-            cameraViewModel.selectedReferenceImage = image
-            referenceViewModel.onRegister(uiImage: image)
-            isShowPhotoPicker = false
-          }
+      PhotosPickerView(selectedImageID: $selectedImageID) { image in
+        selectedImage = image
+        referenceViewModel.onRegister(uiImage: image)
+        isShowPhotoPicker = false
+      }
       .presentationDetents([.medium, .large])
     }
     .overlay {
