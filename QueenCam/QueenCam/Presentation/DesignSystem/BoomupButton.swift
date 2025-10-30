@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct BoomupButton {
-  
+
 }
 
 extension BoomupButton: View {
@@ -15,4 +15,8 @@ extension BoomupButton: View {
           .foregroundStyle(.offWhite)
       }
   }
+}
+
+#Preview {
+  BoomupButton()
 }
