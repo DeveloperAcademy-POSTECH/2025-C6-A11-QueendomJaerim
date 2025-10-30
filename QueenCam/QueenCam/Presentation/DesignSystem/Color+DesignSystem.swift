@@ -1,5 +1,29 @@
 import SwiftUI
 
+struct ColorRow: View {
+  let color: Color
+  let name: String
+
+  var body: some View {
+    HStack(spacing: 16) {
+      Rectangle()
+        .fill(color)
+        .frame(width: 80, height: 80)
+        .cornerRadius(8)
+        .overlay(
+          RoundedRectangle(cornerRadius: 8)
+            .stroke(Color.black.opacity(0.1))
+        )
+
+      Text(name)
+        .font(.system(size: 16, weight: .medium))
+        .foregroundStyle(.primary)
+
+      Spacer()
+    }
+  }
+}
+
 #Preview {
   ScrollView {
     VStack(spacing: 12) {
@@ -26,28 +50,4 @@ import SwiftUI
     .padding()
   }
   .background(.gray.opacity(0.1))
-}
-
-struct ColorRow: View {
-  let color: Color
-  let name: String
-
-  var body: some View {
-    HStack(spacing: 16) {
-      Rectangle()
-        .fill(color)
-        .frame(width: 80, height: 80)
-        .cornerRadius(8)
-        .overlay(
-          RoundedRectangle(cornerRadius: 8)
-            .stroke(Color.black.opacity(0.1))
-        )
-
-      Text(name)
-        .font(.system(size: 16, weight: .medium))
-        .foregroundStyle(.primary)
-
-      Spacer()
-    }
-  }
 }
