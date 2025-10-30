@@ -9,7 +9,7 @@ struct CameraView {
   let connectionViewModel: ConnectionViewModel
 
   /// 네트워크 상태 모달 노출 여부
-  @State private var isShwoingCurrentConnectionModal: Bool = false
+  @State private var isShowingCurrentConnectionModal: Bool = false
   private var isPhotographerMode: Bool {
     connectionViewModel.role == nil || connectionViewModel.role == .photographer
   }
@@ -138,7 +138,7 @@ extension CameraView: View {
               connectedDeviceName: connectionViewModel.connectedDeviceName
             ) {
               if connectionViewModel.isConnecting {
-                isShwoingCurrentConnectionModal.toggle()
+                isShowingCurrentConnectionModal.toggle()
               } else {
                 router.push(.establishConnection)
               }
@@ -337,12 +337,12 @@ extension CameraView: View {
       }
 
       // MARK: 네트워크 상태 모달
-      if isShwoingCurrentConnectionModal {
+      if isShowingCurrentConnectionModal {
         NetworkStateModalView(
           myRole: connectionViewModel.role ?? .model,
           otherDeviceName: connectionViewModel.connectedDeviceName ?? "알 수 없는 기기",
           disconnectButtonDidTap: {
-            isShwoingCurrentConnectionModal = false
+            isShowingCurrentConnectionModal = false
             connectionViewModel.disconnectButtonDidTap()
           },
           changeRoleButtonDidTap: {
