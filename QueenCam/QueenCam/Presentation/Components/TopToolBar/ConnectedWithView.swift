@@ -8,13 +8,25 @@
 import SwiftUI
 
 struct ConnectedWithView: View {
+  let connectedDeviceName: String?
+  let buttonDidTap: () -> Void
+
+  var body: some View {
+    if let connectedDeviceName {
+      WhenCurrentlyConnected(connectedDeviceName: connectedDeviceName, buttonDidTap: buttonDidTap)
+    } else {
+      WhenNotConnected(buttonDidTap: buttonDidTap)
+    }
+  }
+}
+
+private struct WhenCurrentlyConnected: View {
   let connectedDeviceName: String
   let buttonDidTap: () -> Void
 
+  private let horizontalSpacer: some View = Spacer().frame(width: 28)
   private let minWidth: CGFloat = 48
   private let height: CGFloat = 48
-
-  let horizontalSpacer: some View = Spacer().frame(width: 28)
 
   var body: some View {
     Button(action: buttonDidTap) {
@@ -44,6 +56,28 @@ struct ConnectedWithView: View {
   }
 }
 
+private struct WhenNotConnected: View {
+  let buttonDidTap: () -> Void
+
+  private let buttonLabelFont = Font.pretendard(.medium, size: 17)
+  private let width: CGFloat = 162
+  private let height: CGFloat = 48
+
+  var body: some View {
+    Button(action: buttonDidTap) {
+      VStack {
+        HStack {
+          Text("기기 연결하기")
+            .foregroundStyle(.white)
+            .font(buttonLabelFont)
+        }
+      }
+      .frame(width: width, height: height)
+      .glassEffect()
+    }
+  }
+}
+
 #Preview {
   ZStack {
     Color.black
@@ -60,6 +94,11 @@ struct ConnectedWithView: View {
       }
 
       ConnectedWithView(connectedDeviceName: "임영폰 임영폰 임영폰 임영폰 임영폰 임영폰 임영폰 임영폰 임영폰 임영폰 임영폰 임영폰 임영폰 ") {
+        // swiftlint:disable:next no_print_in_production
+        print("Tapped!")
+      }
+      
+      ConnectedWithView(connectedDeviceName: nil) {
         // swiftlint:disable:next no_print_in_production
         print("Tapped!")
       }
