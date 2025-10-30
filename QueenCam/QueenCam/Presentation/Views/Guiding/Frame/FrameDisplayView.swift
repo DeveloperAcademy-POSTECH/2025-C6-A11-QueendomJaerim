@@ -17,7 +17,10 @@ struct FrameDisplayView: View {
         let rect = frame.rect
         Rectangle()
           .fill(frame.color)
-          .overlay(Rectangle().stroke(frame.color, lineWidth: 2))
+          .overlay(
+            Rectangle()
+              .stroke(frame.color, lineWidth: 2)
+          )
           .frame(width: rect.width * geo.size.width, height: rect.height * geo.size.height)
           .position(
             x: (rect.minX + rect.width / 2) * geo.size.width,

@@ -15,9 +15,9 @@ struct PenWriteView: View {
 
   @State private var tempPoints: [CGPoint] = []  // 현재 그리고 있는 선의 좌표(임시)
   @State private var currentStrokeID: UUID?  // 진행 중 스트로크 ID
-  private var outerColor = Color.white
-  private var photographerColor = Color.blue
-  private var modelColor = Color.orange
+  private var topColor = Color.offWhite
+  private var photographerColor = Color.photographerPrimary
+  private var modelColor = Color.modelPrimary
   private let magicAfter: TimeInterval = 0.7
 
   init(penViewModel: PenViewModel, isPen: Bool, isMagicPen: Bool, role: Role?) {
@@ -36,17 +36,22 @@ struct PenWriteView: View {
           for stroke in penViewModel.strokes where stroke.points.count > 1 {
             var path = Path()
             path.addLines(stroke.absolutePoints(in: geo.size))
-            context.stroke(path, with: .color(outerColor), style: StrokeStyle(lineWidth: 8, lineCap: .round, lineJoin: .round))
-            let innerColor = stroke.author == .model ? modelColor : photographerColor
-            context.stroke(path, with: .color(innerColor), style: StrokeStyle(lineWidth: 4, lineCap: .round, lineJoin: .round))
+            let outerColor = stroke.author == .model ? modelColor : photographerColor
+            context.stroke(path,
+                           with: .color(outerColor),
+                           style: StrokeStyle(lineWidth: 10, lineCap: .round, lineJoin: .round))
+            context.stroke(
+              path, with: .color(topColor),
+              style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round)
+            )
           }
           // 현재 드래그 중인 선
           if tempPoints.count > 1 {
             var path = Path()
             path.addLines(tempPoints.map { CGPoint(x: $0.x * geo.size.width, y: $0.y * geo.size.height) })
-            context.stroke(path, with: .color(outerColor), style: StrokeStyle(lineWidth: 8, lineCap: .round, lineJoin: .round))
-            let innerColor = (role == .model) ? modelColor : photographerColor
-            context.stroke(path, with: .color(innerColor), style: StrokeStyle(lineWidth: 4, lineCap: .round, lineJoin: .round))
+            let outerColor = (role == .model) ? modelColor : photographerColor
+            context.stroke(path, with: .color(outerColor.opacity(50)), style: StrokeStyle(lineWidth: 10, lineCap: .round, lineJoin: .round))
+            context.stroke(path, with: .color(topColor), style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
           }
         }
         .background(.clear)
