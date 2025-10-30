@@ -31,7 +31,7 @@ struct MainView: View {
       NavigationStack(path: $router.path) {
         ZStack {
           CameraView(
-            camerViewModel: cameraViewModel,
+            cameraViewModel: cameraViewModel,
             previewModel: previewModel,
             connectionViewModel: connectionViewModel
           )
