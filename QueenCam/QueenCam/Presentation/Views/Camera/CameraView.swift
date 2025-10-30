@@ -346,8 +346,9 @@ extension CameraView: View {
             connectionViewModel.disconnectButtonDidTap()
           },
           changeRoleButtonDidTap: {
+            // 가이딩 초기화
+            penViewModel.reset()
             connectionViewModel.swapRole()
-
             // 새 역할에 따라 캡쳐를 시작/중단한다
             if let newRole = connectionViewModel.role {
               if newRole == .model {
@@ -397,6 +398,19 @@ extension CameraView: View {
     .onChange(of: connectionViewModel.connections) { _, newValue in
       if !newValue.isEmpty && connectionViewModel.role == .photographer {
         previewModel.startCapture()
+      }
+    }
+    // 연결 종료 시 가이딩 초기화
+    .onChange(of: connectionViewModel.networkState) { _, newState in
+      guard let newState else { return }
+      if newState == .host(.cancelled)
+        || newState == .viewer(.cancelled)
+        || newState == .host(.lost)
+        || newState == .viewer(.lost)
+        || newState == .host(.stopped)
+        || newState == .viewer(.stopped) {
+        // 가이딩 초기화
+        penViewModel.reset()
       }
     }
     .task {

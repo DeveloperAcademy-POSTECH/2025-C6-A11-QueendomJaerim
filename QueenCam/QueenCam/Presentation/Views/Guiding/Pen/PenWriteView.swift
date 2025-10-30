@@ -94,7 +94,7 @@ struct PenWriteView: View {
         GuidingToolBarView { action in
           switch action {
           case .clearAll:
-            penViewModel.removeAll()
+            penViewModel.deleteAll()
           case .undo:
             penViewModel.undo()
           case .redo:

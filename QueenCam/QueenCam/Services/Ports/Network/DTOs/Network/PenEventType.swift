@@ -15,6 +15,8 @@ enum PenEventType: Codable, Sendable {
   case replace(PenPayload)
   /// 이전에 추가된 가이딩 펜을 지운다
   case delete(id: UUID)
+  /// 이전에 추가된 모든 가이딩 펜을 지운다
+  case reset
 }
 
 struct PenPayload: Codable, Sendable {
