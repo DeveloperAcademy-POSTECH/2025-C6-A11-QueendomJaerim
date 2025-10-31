@@ -13,11 +13,6 @@ struct OpenView: View {
   @State private var showDelete: Bool = false
   @Binding var isLarge: Bool
 
-  let regularWidth: CGFloat = 90
-  let regularHeight: CGFloat = 120
-  let largeWidth: CGFloat = 151
-  let largeHeight: CGFloat = 202
-
   var body: some View {
     ZStack(alignment: .topTrailing) {
       Group {
@@ -26,8 +21,9 @@ struct OpenView: View {
             .resizable()
             .scaledToFit()
             .frame(
-              width: isLarge ? largeWidth : regularWidth,
-              height: isLarge ? largeHeight : regularHeight
+              width: !isLarge
+              ? ReferenceSize.referenceRatio(width: image.size.width, height: image.size.height).width
+              : ReferenceSize.referenceRatio(width: image.size.width, height: image.size.height).width*2
             )
             .clipShape(.rect(cornerRadius: 20))
             .onTapGesture {
@@ -42,15 +38,23 @@ struct OpenView: View {
           showDelete = false
           isLarge = false
         } label: {
-          Image(systemName: "x.circle")
-            .imageScale(.large)
+          ZStack(alignment: .center){
+            Circle()
+              .background(.offWhite.opacity(0.6))
+              .frame(width: 24, height: 24)
+              .overlay(
+                Circle()
+                  .background(.offWhite.opacity(0.7))
+              )
+              .shadow(color: .black.opacity(0.25), radius: 2, x: 0, y: 0)
+              
+            Image(systemName: "xmark")
+              .foregroundStyle(.gray900)
+              .font(.system(size: 13, weight: .regular))
+          }
         }
         .padding(4)
       }
     }
   }
-}
-
-#Preview {
-  OpenView(referenceViewModel: ReferenceViewModel(), isLarge: .constant(false))
 }
