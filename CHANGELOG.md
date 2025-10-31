@@ -9,6 +9,25 @@
 
 ### Added
 
+
+### Changed
+
+
+### Deprecated
+
+
+### Removed
+
+
+### Fixed
+
+
+### Security
+
+## [0.2.0] 테스트 플라이트 마일스톤 (2025-11-01)
+
+### Added
+
 - 프레임의 크기와 비율 변경 기능
 - 스와이프를 이용한 사진 탐색 기능
 - 갤러리에 있는 사진 확대/축소 제스처들 추가
@@ -33,18 +52,9 @@
 - 이미지 비율에 따라 레퍼런스 크기 조절
 - 작가 모델 1차 하이파이
 
-### Deprecated
-
-
-### Removed
-
-
 ### Fixed
 
 - 카메라 전/후면 전환 후 라이브 포토 이슈 수정
-
-### Security
-
 
 ## [0.1.0]
 
@@ -105,6 +115,7 @@
 - Wi-Fi Aware 연결 후, 라이브 포토 촬영 시 앱이 크래시되는 문제
 - 레퍼런스 삭제 후 재등록에 관한 상태 초기화 문제
 
+[0.2.0]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v0.0.1...v0.1.0
 [0.0.1]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/releases/tag/v0.0.1
 [unreleased]: hhttps://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim
