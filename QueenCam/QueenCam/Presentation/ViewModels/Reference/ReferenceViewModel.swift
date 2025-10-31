@@ -28,7 +28,7 @@ final class ReferenceViewModel {
     networkService: NetworkServiceProtocol = DependencyContainer.defaultContainer.networkService
   ) {
     self.networkService = networkService
-    
+
     bind()
   }
 
@@ -72,11 +72,11 @@ final class ReferenceViewModel {
 
   // MARK: - Reference 삭제
   func onDelete() {  // 초기화
-    withAnimation(.snappy) {
-      state = .delete
-      image = nil
-      state = .open
-    }
+
+    state = .delete
+    image = nil
+    state = .open
+
     self.sendReferenceImageCommand(command: .remove)
   }
 

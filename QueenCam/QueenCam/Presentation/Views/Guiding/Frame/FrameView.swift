@@ -27,9 +27,30 @@ struct FrameView: View {
     //프레임 사격형 표시
     ZStack(alignment: .center) {
       Rectangle()
-        .fill(frame.color)
-        .overlay(Rectangle().stroke(isSelected ? .white : frame.color, lineWidth: 2))
+        .fill(Color.clear)
+        .overlay(
+          Rectangle()
+            .stroke(
+              isSelected ?
+                .photographerPrimary: .modelPrimary,
+              style: StrokeStyle(lineWidth: 2, dash: [10, 10])
+            )
+        )
         .frame(width: width, height: height)
+        .background {
+          if isSelected {
+            Color.photographerPrimary.opacity(0.15)
+          } else {
+            LinearGradient(
+              stops: [
+                Gradient.Stop(color: .modelPrimary, location: 0.00),
+                Gradient.Stop(color: .photographerPrimary, location: 1.00),
+              ],
+              startPoint: UnitPoint(x: 0.01, y: 0),
+              endPoint: UnitPoint(x: 0.99, y: 1)
+            ).opacity(0.15)
+          }
+        }
         .position(x: x, y: y)
         .onTapGesture { frameViewModel.selectFrame(frame.id) }
         .gesture(
@@ -59,9 +80,9 @@ struct FrameView: View {
       if isSelected {
         let cornerList: [Corner] = [Corner.topLeft, .topRight, .bottomLeft, .bottomRight]
         ForEach( cornerList, id: \.self) { corner in
-          Circle()
-            .fill(.white)
-            .frame(width: 14, height: 14)
+          Rectangle()
+            .fill(.photographerPrimary)
+            .frame(width: 11, height: 11)
             .position(cornerPosition(for: corner))
             .gesture(
               DragGesture(minimumDistance: 0)

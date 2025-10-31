@@ -38,8 +38,6 @@ struct ReferenceView: View {
                     referenceViewModel.updateLocation(end: value.predictedEndLocation, size: geo.size)
                   }
               )
-          //              .allowsHitTesting(!isLarge)
-
           case .close:  // 레퍼런스 Off
             Button {
               referenceViewModel.unFold()

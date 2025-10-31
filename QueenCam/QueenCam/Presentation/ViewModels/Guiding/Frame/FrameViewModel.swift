@@ -11,14 +11,14 @@ import Combine
 /// 프레임의 상태 관리(이동, 확대, 축소, 모서리 크기 조절)
 @Observable
 final class FrameViewModel {
-  static let frameWidth: CGFloat = 0.3
-  static let frameHeight: CGFloat = 0.4
+  static let frameWidth: CGFloat = 0.55
+  static let frameHeight: CGFloat = 0.69
 
   var frames: [Frame] = []
   var selectedFrameID: UUID? = nil
   let maxFrames = 1
   private let colors: [Color] = [
-    .green.opacity(0.5)
+    .clear, .modelPrimary, .photographerPrimary
   ]
 
   // MARK: - 네트워크
@@ -38,8 +38,8 @@ final class FrameViewModel {
     guard frames.count < maxFrames else { return }
     let newX = min(max(origin.x, 0), 1 - size.width)
     let newY = min(max(origin.y, 0), 1 - size.height)
-    let rect = CGRect(origin: .init(x: newX, y: newY), size: size)
-    let color = colors[frames.count % colors.count]
+    let rect = CGRect(origin: .init(x: 0.24 , y: 0.17), size: size)
+    let color = colors[0]
 
     let frame = Frame(rect: rect, color: color)
     frames.append(frame)
