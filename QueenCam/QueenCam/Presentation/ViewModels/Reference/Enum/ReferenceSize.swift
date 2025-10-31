@@ -8,11 +8,17 @@
 import CoreFoundation
 
 enum ReferenceSize {
+  /// 16:9 비율의 이미지
   case vertical1
+  /// 4:3 비율의 이미지
   case vertical2
+  /// 1:1 비율의 이미지
   case square
+  /// 3:4 비율의 이미지
   case horizontal1
+  /// 9:16 비율의 이미지
   case horizontal2
+  /// 타 비율의 이미지
   case none
   
   var width: CGFloat {
