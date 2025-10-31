@@ -29,7 +29,7 @@ struct PenWriteView: View {
   }
 
   var body: some View {
-    VStack {
+    
       GeometryReader { geo in
         // MARK: - 실제 드로잉 영역
         Canvas { context, _ in
@@ -94,19 +94,20 @@ struct PenWriteView: View {
             }
         )
       }
-      if isPen {
-        // MARK: - 버튼 툴바 Undo / Redo / clearAll
-        GuidingToolBarView { action in
-          switch action {
-          case .clearAll:
-            penViewModel.deleteAll()
-          case .undo:
-            penViewModel.undo()
-          case .redo:
-            penViewModel.redo()
+      .overlay(alignment: .bottomLeading) {
+        if isPen {
+          // MARK: - 버튼 툴바 Undo / Redo / clearAll
+          GuidingToolBarView { action in
+            switch action {
+            case .clearAll:
+              penViewModel.deleteAll()
+            case .undo:
+              penViewModel.undo()
+            case .redo:
+              penViewModel.redo()
+            }
           }
         }
-      }
-    }
+      } 
   }
 }
