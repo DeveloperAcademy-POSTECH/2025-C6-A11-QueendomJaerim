@@ -81,6 +81,16 @@ extension CameraView {
   }
 }
 
+/// Top Tool Bar
+extension CameraView {
+  /// 세션 활성화 여부. False면 툴바에 연결하기 버튼이 노출된다.
+  var isSessionActive: Bool {
+    !(connectionViewModel.networkState == nil
+      || connectionViewModel.networkState == .host(.stopped)
+      || connectionViewModel.networkState == .viewer(.stopped))
+  }
+}
+
 extension CameraView: View {
   var magnificationGesture: some Gesture {
     MagnifyGesture()
@@ -135,16 +145,26 @@ extension CameraView: View {
               }
             }
 
-            NetworkToolbarView(
-              networkState: connectionViewModel.networkState,
-              connectedDeviceName: connectionViewModel.connectedDeviceName
-            ) {
-              if connectionViewModel.isConnecting {
-                isShowingCurrentConnectionModal.toggle()
-              } else {
-                router.push(.establishConnection)
+            TopToolBarView(
+              isConnected: isSessionActive,
+              connectedDeviceName: connectionViewModel.connectedDeviceName,
+              menuContent: {
+                Button("기능 1") {}
+                Button("기능 2") {}
+                Button("기능 3") {}
+
+                Divider()
+
+                Button("신고하기", systemImage: "exclamationmark.triangle") {}
+              },
+              connectedWithButtonDidTap: {
+                if connectionViewModel.isConnecting {
+                  isShowingCurrentConnectionModal.toggle()
+                } else {
+                  router.push(.establishConnection)
+                }
               }
-            }
+            )
           }
           .padding()
 
