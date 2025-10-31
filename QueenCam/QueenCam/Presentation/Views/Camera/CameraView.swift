@@ -65,8 +65,16 @@ extension CameraView {
     }
   }
 
+  private var liveImage: String {
+    cameraViewModel.isLivePhotoOn ? "livephoto" : "livephoto.slash"
+  }
+
   private var isPermissionGranted: Bool {
     cameraViewModel.isCameraPermissionGranted && cameraViewModel.isCameraPermissionGranted
+  }
+
+  private var guideToggleImage: String {
+    isRemoteGuideHidden ? "eye.slash" : "eye"
   }
 
   private var activeZoom: CGFloat {
@@ -115,24 +123,29 @@ extension CameraView: View {
         VStack {
           ZStack {
             HStack {
-              Button(action: {
-                cameraViewModel.switchFlashMode()
-              }) {
-                Image(systemName: flashImage)
-                  .foregroundStyle(cameraViewModel.isFlashMode == .on ? .yellow : .white)
-              }
+              CameraSettingButton(
+                title: "플래시",
+                systemName: flashImage,
+                isActive: cameraViewModel.isFlashMode != .off,
+                tapAction: { cameraViewModel.switchFlashMode() }
+              )
 
-              Button(action: { cameraViewModel.switchLivePhoto() }) {
-                Image(systemName: cameraViewModel.isLivePhotoOn ? "livephoto" : "livephoto.slash")
-                  .foregroundStyle(cameraViewModel.isLivePhotoOn ? .yellow : .white)
-              }
+              CameraSettingButton(
+                title: "라이브",
+                systemName: liveImage,
+                isActive: cameraViewModel.isLivePhotoOn,
+                tapAction: { cameraViewModel.switchLivePhoto() }
+              )
 
               Spacer()
 
-              Button(action: { cameraViewModel.switchGrid() }) {
-                Text(cameraViewModel.isShowGrid ? "그리드 활성화" : "그리드 비활성화")
-                  .foregroundStyle(cameraViewModel.isShowGrid ? .yellow : .white)
-              }
+              CameraSettingButton(
+                title: "그리드",
+                systemName: "grid",
+                isActive: cameraViewModel.isShowGrid,
+                tapAction: { cameraViewModel.switchGrid() }
+              )
+
             }
 
             NetworkToolbarView(
@@ -208,69 +221,65 @@ extension CameraView: View {
                   }
                 }
                 .opacity(isRemoteGuideHidden ? .zero : 1)
-                
-                HStack(spacing: 0) {
-                  CircleButton(
-                    systemImage: "pencil",
-                    isActive: isPen
-                  ) {
-                    isPen.toggle()
-                    isFrame = false
-                    isMagicPen = false
-                    if isPen {
-                      isRemoteGuideHidden = false
-                    }
-                  }
-                  CircleButton(
-                    systemImage: "pointer.arrow.rays",
-                    isActive: isMagicPen
-                  ) {
-                    isMagicPen.toggle()
-                    isPen = false
-                    isFrame = false
-                    if isMagicPen {
-                      isRemoteGuideHidden = false
-                    }
-                  }
-                  CircleButton(
-                    systemImage: "camera.metering.center.weighted.average",
-                    isActive: isFrame
-                  ) {
-                    isFrame.toggle()
-                    isPen = false
-                    isMagicPen = false
-                    if isFrame {
-                      isRemoteGuideHidden = false
-                    }
-                  }
+
+                HStack(alignment: .center, spacing: 40) {
+                  GuidingButton(
+                    role: connectionViewModel.role,
+                    isActive: isFrame,
+                    tapAction: {
+                      isFrame.toggle()
+                      isPen = false
+                      isMagicPen = false
+                      if isFrame {
+                        isRemoteGuideHidden = false
+                      }
+                    },
+                    guidingButtonType: .frame
+                  )
+
+                  GuidingButton(
+                    role: connectionViewModel.role,
+                    isActive: isPen,
+                    tapAction: {
+                      isPen.toggle()
+                      isFrame = false
+                      isMagicPen = false
+                      if isPen {
+                        isRemoteGuideHidden = false
+                      }
+                    },
+                    guidingButtonType: .pen
+                  )
+
+                  GuidingButton(
+                    role: connectionViewModel.role,
+                    isActive: isMagicPen,
+                    tapAction: {
+                      isMagicPen.toggle()
+                      isPen = false
+                      isFrame = false
+                      if isMagicPen {
+                        isRemoteGuideHidden = false
+                      }
+                    },
+                    guidingButtonType: .magicPen
+                  )
                 }
-                .background(
-                  Capsule()
-                    .fill(.ultraThinMaterial)
-                    .shadow(color: .black.opacity(0.2), radius: 5, x: 0, y: 2)
-                )
-                .overlay(
-                  Capsule()
-                    .stroke(Color.white.opacity(0.15), lineWidth: 1)
-                )
-                .frame(width: 120, height: 60)
-                .padding(20)
               }
               .overlay(alignment: .bottomTrailing) {
-                Button(action: {
-                  isRemoteGuideHidden.toggle()
-                  if isRemoteGuideHidden {
-                    isPen = false
-                    isMagicPen = false
-                    isFrame = false
+                GuidingToggleButton(
+                  role: connectionViewModel.role,
+                  systemName: guideToggleImage,
+                  isActive: !isRemoteGuideHidden,
+                  tapAction: {
+                    isRemoteGuideHidden.toggle()
+                    if isRemoteGuideHidden {
+                      isPen = false
+                      isMagicPen = false
+                      isFrame = false
+                    }
                   }
-
-                }) {
-                  Image(systemName: isRemoteGuideHidden ? "eye.slash" : "eye")
-                    .foregroundStyle(isRemoteGuideHidden ? .white : .yellow)
-                    .imageScale(.large)
-                    .padding()
-                }
+                )
               }
             }
             if cameraViewModel.isShowGrid {
@@ -315,10 +324,7 @@ extension CameraView: View {
                   .frame(width: 60, height: 60)
                   .clipShape(.rect(cornerRadius: 8))
               } else {
-                Rectangle()
-                  .fill(.gray.opacity(0.2))
-                  .frame(width: 60, height: 60)
-                  .clipShape(.rect(cornerRadius: 8))
+                EmptyPhotoButton()
               }
             }
 
@@ -327,11 +333,9 @@ extension CameraView: View {
             if isPhotographerMode {  // 작가 전용 뷰
               Button(action: { cameraViewModel.capturePhoto() }) {
                 Circle()
-                  .fill(.white)
-                  .frame(width: 70, height: 70)
-                  .overlay(
-                    Circle().stroke(Color.black.opacity(0.8), lineWidth: 2)
-                  )
+                  .fill(.offWhite)
+                  .stroke(.gray900, lineWidth: 6)
+                  .frame(width: 80, height: 80)
               }
 
               Spacer()
@@ -341,10 +345,15 @@ extension CameraView: View {
                   await cameraViewModel.switchCamera()
                 }
               }) {
-                Image(systemName: "arrow.triangle.2.circlepath.camera")
-                  .resizable()
-                  .aspectRatio(contentMode: .fit)
-                  .frame(width: 60, height: 60)
+                
+                Circle()
+                  .fill(.gray900)
+                  .frame(width: 48, height: 48)
+                  .overlay {
+                    Image(systemName: "arrow.trianglehead.2.clockwise.rotate.90")
+                      .font(.system(size: 22))
+                      .foregroundStyle(.offWhite)
+                  }
               }
             }
           }
@@ -437,7 +446,8 @@ extension CameraView: View {
         || newState == .host(.lost)
         || newState == .viewer(.lost)
         || newState == .host(.stopped)
-        || newState == .viewer(.stopped) {
+        || newState == .viewer(.stopped)
+      {
         // 가이딩 초기화
         penViewModel.reset()
         frameViewModel.deleteAll()
