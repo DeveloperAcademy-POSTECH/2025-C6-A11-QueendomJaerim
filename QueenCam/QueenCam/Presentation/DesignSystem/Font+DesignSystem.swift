@@ -107,7 +107,8 @@ enum TypographyStyle {
 
   var letterSpacing: CGFloat {
     switch self {
-    case .sfSB15: return -0.2
+    case .sfRoundedR15: return -0.4 // Figma 상 0인데 차이가 나서 매뉴얼하게 조정
+    case .sfSB15: return -0.05 // Figma 상 -0.2인데 차이가 나서 매뉴얼하게 조정 (네 배 차이)
     default: return 0
     }
   }
@@ -136,7 +137,8 @@ extension View {
 #Preview {
   ScrollView {
     VStack(spacing: 12) {
-
+      
+      // === 여러 줄 ===
       // --- Pretendard ---
       Text("r12: Pretendard Regular 12\n여러 줄 테스트")
         .typo(.r12)
@@ -173,6 +175,48 @@ extension View {
         .border(.gray, width: 0.5)
 
       Text("sfSB15: SF Pro Semibold 15\n(자간 -0.2 적용됨)")
+        .typo(.sfSB15)
+        .border(.gray, width: 0.5)
+      
+      Divider()
+      
+      // === 한 줄 ===
+      // --- Pretendard ---
+      Text("r12: Pretendard Regular 12 한 줄 테스트")
+        .typo(.r12)
+        .border(.gray, width: 0.5)
+
+      Text("m10: Pretendard Medium 10 한 줄 테스트")
+        .typo(.m10)
+        .border(.gray, width: 0.5)
+
+      Text("m13: Pretendard Medium 13 한 줄 테스트")
+        .typo(.m13)
+        .border(.gray, width: 0.5)
+
+      // --- SF Pro Rounded ---
+      Text("sfRoundedR15: SF Rounded Regular 15 한 줄 테스트")
+        .typo(.sfRoundedR15)
+        .border(.gray, width: 0.5)
+
+      // --- SF Pro ---
+      Text("sfR11: SF Pro Regular 11 한 줄 테스트")
+        .typo(.sfR11)
+        .border(.gray, width: 0.5)
+
+      Text("sfR13: SF Pro Regular 13 한 줄 테스트")
+        .typo(.sfR13)
+        .border(.gray, width: 0.5)
+
+      Text("sfM11: SF Pro Medium 11 한 줄 테스트")
+        .typo(.sfM11)
+        .border(.gray, width: 0.5)
+
+      Text("sfM12: SF Pro Medium 12 한 줄 테스트")
+        .typo(.sfM12)
+        .border(.gray, width: 0.5)
+
+      Text("sfSB15: SF Pro Semibold 15 (자간 -0.2 적용됨)")
         .typo(.sfSB15)
         .border(.gray, width: 0.5)
     }
