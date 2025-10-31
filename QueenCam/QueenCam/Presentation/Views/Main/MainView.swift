@@ -24,7 +24,8 @@ struct MainView: View {
   @State private var cameraViewModel = CameraViewModel(
     previewCaptureService: DependencyContainer.defaultContainer.previewCaptureService,
     networkService: DependencyContainer.defaultContainer.networkService,
-    camerSettingsService: DependencyContainer.defaultContainer.cameraSettingServcice
+    camerSettingsService: DependencyContainer.defaultContainer.cameraSettingServcice,
+    notificationService: DependencyContainer.defaultContainer.notificationService
   )
 
   var body: some View {
