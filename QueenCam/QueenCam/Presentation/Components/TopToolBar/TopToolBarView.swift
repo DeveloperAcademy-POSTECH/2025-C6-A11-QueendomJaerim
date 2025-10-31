@@ -9,8 +9,11 @@ import SwiftUI
 
 /// Top Tool Bar
 struct TopToolBarView<MenuContent: View>: View {
+  /// 연결 여부
+  let isConnected: Bool
+  
   /// 연결된 디바이스 이름
-  let connectedDeviceName: String
+  let connectedDeviceName: String?
 
   /// 컨텍스트 메뉴 아이템
   @ViewBuilder let menuContent: () -> MenuContent
@@ -26,11 +29,13 @@ struct TopToolBarView<MenuContent: View>: View {
   private let contextMenuSymbolName: String = "ellipsis"
 
   init(
-    connectedDeviceName: String,
+    isConnected: Bool,
+    connectedDeviceName: String?,
     @ViewBuilder menuContent: @escaping () -> MenuContent,
     backButtonDidTap: (() -> Void)? = nil,
     connectedWithButtonDidTap: @escaping () -> Void
   ) {
+    self.isConnected = isConnected
     self.connectedDeviceName = connectedDeviceName
     self.backButtonDidTap = backButtonDidTap
     self.menuContent = menuContent
@@ -51,7 +56,10 @@ struct TopToolBarView<MenuContent: View>: View {
 
       Spacer(minLength: minimumSpacing)
 
-      ConnectedWithView(connectedDeviceName: connectedDeviceName) {
+      ConnectedWithView(
+        isConnected: isConnected,
+        connectedDeviceName: connectedDeviceName
+      ) {
         connectedWithButtonDidTap()
       }
 
@@ -64,7 +72,7 @@ struct TopToolBarView<MenuContent: View>: View {
 
 #Preview {
   VStack {
-    TopToolBarView(connectedDeviceName: "임영폰") {
+    TopToolBarView(isConnected: true, connectedDeviceName: "임영폰") {
       Button("기능 1") {}
       Button("기능 2") {}
       Button("기능 3") {}
@@ -76,7 +84,7 @@ struct TopToolBarView<MenuContent: View>: View {
       //
     }
 
-    TopToolBarView(connectedDeviceName: "임영택임영택임영택임영택의 iPhone") {
+    TopToolBarView(isConnected: true, connectedDeviceName: "임영택임영택임영택임영택의 iPhone") {
       Button("기능 1") {}
       Button("기능 2") {}
       Button("기능 3") {}
@@ -88,7 +96,15 @@ struct TopToolBarView<MenuContent: View>: View {
       //
     }
 
-    TopToolBarView(connectedDeviceName: "임영택임영택임영택임영택의 iPhone") {
+    TopToolBarView(isConnected: true, connectedDeviceName: "임영택임영택임영택임영택의 iPhone") {
+      //
+    } backButtonDidTap: {
+      //
+    } connectedWithButtonDidTap: {
+      //
+    }
+
+    TopToolBarView(isConnected: false, connectedDeviceName: nil) {
       //
     } backButtonDidTap: {
       //
@@ -96,5 +112,6 @@ struct TopToolBarView<MenuContent: View>: View {
       //
     }
   }
-  .padding(.horizontal, 20)
+  .padding(20)
+  .background(.black)
 }
