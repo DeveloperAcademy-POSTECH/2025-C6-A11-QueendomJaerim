@@ -136,10 +136,10 @@ final class PreviewModel {
       }
       .store(in: &cancellables)
   }
-  
+
   @objc private func roleChangeNotificationHandler(notification: Notification) {
     guard let userInfo = notification.userInfo,
-          let newRole = userInfo["newRole"] as? Role else { return }
+      let newRole = userInfo["newRole"] as? Role else { return }
     handleRoleChanged(newRole: newRole)
   }
 

@@ -84,7 +84,8 @@ struct RoleSelectButton: View {
 #Preview {
   struct ConnectionViewPeviewContainer: View {
     @State var viewModel: ConnectionViewModel = .init(
-      networkService: NetworkService()
+      networkService: NetworkService(),
+      notificationService: NotificationService()
     )
 
     @State var previewModel: PreviewModel = .init(
