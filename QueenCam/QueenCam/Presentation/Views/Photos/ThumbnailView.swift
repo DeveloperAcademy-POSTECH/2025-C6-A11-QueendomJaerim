@@ -8,9 +8,12 @@ struct ThumbnailView {
   let asset: PHAsset
   let manager: PHCachingImageManager
   var isSelected: Bool
+  let roleForTheme: Role?
 
   let onTapCheck: (UIImage) -> Void
   let onTapThumbnail: (PHAsset) -> Void
+  
+  private let loadingPlaceholderFillColor = Color.gray.opacity(0.12)
 }
 
 extension ThumbnailView {
@@ -25,7 +28,7 @@ extension ThumbnailView {
     manager.requestImage(
       for: asset,
       targetSize: targetSize,
-      contentMode: .aspectFit,
+      contentMode: .aspectFill,
       options: options
     ) { result, _ in
       if let result { self.image = result }
@@ -47,21 +50,16 @@ extension ThumbnailView: View {
           }
       } else {
         Rectangle()
-          .fill(Color.gray.opacity(0.12))
+          .fill(loadingPlaceholderFillColor)
           .overlay { ProgressView().controlSize(.mini) }
       }
 
-      Button(action: {
+      CheckCircleButton(isSelected: isSelected, role: roleForTheme, isLarge: false) {
         if let image = image {
           onTapCheck(image)
         }
-      }) {
-        Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-          .imageScale(.large)
-          .foregroundStyle(isSelected ? .blue : .gray.opacity(0.4))
-          .padding(12)
-          .background(.red.opacity(0.3))
       }
+      .padding(6)
     }
     .onAppear {
       requestThumbnail()

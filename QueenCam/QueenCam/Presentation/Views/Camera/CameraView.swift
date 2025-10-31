@@ -487,7 +487,7 @@ extension CameraView: View {
       }
     )
     .sheet(isPresented: $isShowPhotoPicker) {
-      PhotosPickerView(selectedImageID: $selectedImageID) { image in
+      PhotosPickerView(roleForTheme: connectionViewModel.role, selectedImageID: $selectedImageID) { image in
         selectedImage = image
         referenceViewModel.onRegister(uiImage: image)
         isShowPhotoPicker = false

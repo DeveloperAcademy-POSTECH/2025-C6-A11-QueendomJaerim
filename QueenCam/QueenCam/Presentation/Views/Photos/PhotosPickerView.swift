@@ -8,17 +8,22 @@ struct PhotosPickerView {
   @State private var sheetSelectedImage: UIImage?
   @State private var sheetSelectedImageID: String?
 
+  // 컬러 테마를 위해 Role을 알아야 함
+  let roleForTheme: Role?
+
   // 상위 뷰에서 넘어오는 아이디
   @Binding var selectedImageID: String?
 
   let viewModel = PhotosViewModel()
 
-  private let columnList = Array(repeating: GridItem(.flexible(), spacing: 4), count: 3)
-
   let onTapComplete: (UIImage?) -> Void
 
   @State private var selectedImageAsset: IdentifiableAsset?
 
+  private let gridSpacing: CGFloat = 3
+  private var columnList: [GridItem] {
+    Array(repeating: GridItem(.flexible(), spacing: gridSpacing), count: 3)
+  }
 }
 
 extension PhotosPickerView: View {
@@ -26,18 +31,28 @@ extension PhotosPickerView: View {
     VStack {
       switch viewModel.state {
       case .idle, .requestingPermission:
-        ProgressView("사진 권한 요청 확인 중")
+        ProgressView()
           .task {
             await viewModel.requestAccessAndLoad()
           }
 
       case .denied:
-        Text("사진 권한 거부")
+        // FIXME: 디자인 확정되면 수정 예정
+        VStack(spacing: 16) {
+          Text("사진 보관함에 접근할 수 없어요. \n설정에서 사진 보관함 접근을 허용해주세요.")
+            .typo(.m13)
+            .multilineTextAlignment(.center)
+
+          Button("설정으로 가기") {
+            UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
+          }
+          .buttonStyle(.glass)
+        }
 
       case .loaded:
         NavigationStack {
           ScrollView {
-            LazyVGrid(columns: columnList, spacing: 1) {
+            LazyVGrid(columns: columnList, spacing: gridSpacing) {
               ForEach(viewModel.assetList.indices, id: \.self) { index in
                 let asset = viewModel.assetList[index]
 
@@ -45,6 +60,7 @@ extension PhotosPickerView: View {
                   asset: asset,
                   manager: viewModel.cachingManager,
                   isSelected: sheetSelectedImageID == asset.localIdentifier,
+                  roleForTheme: roleForTheme,
                   onTapCheck: { image in
                     // 선택된 상태에서 체크박스 탭하면 선택 해제
                     if sheetSelectedImageID == asset.localIdentifier {
@@ -60,8 +76,10 @@ extension PhotosPickerView: View {
                     selectedImageAsset = IdentifiableAsset(asset: asset, selectedAssetIndex: index)
                   }
                 )
+                .aspectRatio(1.0, contentMode: .fill)
               }
             }
+            .backgroundStyle(.gray400)
           }
           .navigationTitle("Photos")
           .navigationBarTitleDisplayMode(.inline)
@@ -76,14 +94,13 @@ extension PhotosPickerView: View {
 
             ToolbarItem(placement: .topBarTrailing) {
               Button(action: {
-
                 if sheetSelectedImageID != selectedImageID {
                   onTapComplete(sheetSelectedImage)
                   selectedImageID = sheetSelectedImageID
                 }
                 dismiss()
               }) {
-                Text("완료")
+                Text("등록")
               }
               .disabled(sheetSelectedImageID == nil)
             }
