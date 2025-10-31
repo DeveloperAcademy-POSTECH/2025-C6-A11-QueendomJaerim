@@ -83,7 +83,7 @@ extension PhotosPickerView: View {
                 }
                 dismiss()
               }) {
-                Text("완료")
+                Text("등록")
               }
               .disabled(sheetSelectedImageID == nil)
             }
