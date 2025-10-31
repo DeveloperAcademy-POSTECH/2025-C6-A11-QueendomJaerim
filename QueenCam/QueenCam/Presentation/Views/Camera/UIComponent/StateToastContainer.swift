@@ -15,8 +15,9 @@ struct StateToastContainer: View {
       if let notification = stateToastViewModel.lastNotificationMessage {
         StateToast(message: notification.message, isImportant: notification.isImportant)
       }
-      
+
       Spacer()
     }
+    .animation(.easeInOut, value: stateToastViewModel.lastNotificationMessage)
   }
 }

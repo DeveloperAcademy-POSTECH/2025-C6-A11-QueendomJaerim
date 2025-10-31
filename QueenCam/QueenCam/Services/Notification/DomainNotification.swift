@@ -28,3 +28,5 @@ struct DomainNotification {
     self.showingTime = showingTime
   }
 }
+
+extension DomainNotification: Equatable { }
