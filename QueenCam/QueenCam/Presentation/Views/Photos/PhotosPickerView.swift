@@ -37,6 +37,7 @@ extension PhotosPickerView: View {
           }
 
       case .denied:
+        // FIXME: 디자인 확정되면 수정 예정
         VStack(spacing: 16) {
           Text("사진 보관함에 접근할 수 없어요. \n설정에서 사진 보관함 접근을 허용해주세요.")
             .typo(.m13)
