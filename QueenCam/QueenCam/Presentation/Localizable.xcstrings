@@ -264,6 +264,7 @@
       }
     },
     "연결하기" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
