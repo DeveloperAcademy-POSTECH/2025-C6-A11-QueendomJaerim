@@ -8,7 +8,7 @@
 import SwiftUI
 
 /// Top Tool Bar
-struct TopToolBarView<MenuContent: View>: View {
+struct TopToolBarView<MenuContent: View> {
   /// 연결 여부
   let isConnected: Bool
 
@@ -41,7 +41,9 @@ struct TopToolBarView<MenuContent: View>: View {
     self.menuContent = menuContent
     self.connectedWithButtonDidTap = connectedWithButtonDidTap
   }
+}
 
+extension TopToolBarView: View {
   var body: some View {
     HStack(spacing: 0) {
       if let backButtonDidTap {
