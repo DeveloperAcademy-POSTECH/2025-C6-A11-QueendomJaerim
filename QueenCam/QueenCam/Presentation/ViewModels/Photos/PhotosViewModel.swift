@@ -12,7 +12,7 @@ final class PhotosViewModel {
   }
 
   var state: State = .idle
-  var assets: [PHAsset] = []
+  var assetList: [PHAsset] = []
 
   let cachingManager = PHCachingImageManager()
   private var fetchResult: PHFetchResult<PHAsset>?
@@ -45,14 +45,14 @@ extension PhotosViewModel {
     }
 
     self.fetchResult = result
-    self.assets = tmp
+    self.assetList = tmp
   }
 
   func startImageCaching(scale: CGFloat) {
-    guard !assets.isEmpty else { return }
+    guard !assetList.isEmpty else { return }
 
     cachingManager.startCachingImages(
-      for: assets,
+      for: assetList,
       targetSize: .init(width: 120 * scale, height: 120 * scale),
       contentMode: .aspectFit,
       options: .none

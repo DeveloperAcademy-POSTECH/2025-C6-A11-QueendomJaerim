@@ -11,8 +11,9 @@ import WiFiAware
 struct MainView: View {
   @State private var router = NavigationRouter()
 
-  @State private var wifiAwareViewModel = WifiAwareViewModel(
-    networkService: DependencyContainer.defaultContainer.networkService
+  @State private var connectionViewModel = ConnectionViewModel(
+    networkService: DependencyContainer.defaultContainer.networkService,
+    notificationService: DependencyContainer.defaultContainer.notificationService
   )
 
   @State private var previewModel = PreviewModel(
@@ -23,7 +24,8 @@ struct MainView: View {
   @State private var cameraViewModel = CameraViewModel(
     previewCaptureService: DependencyContainer.defaultContainer.previewCaptureService,
     networkService: DependencyContainer.defaultContainer.networkService,
-    camerSettingsService: DependencyContainer.defaultContainer.cameraSettingServcice
+    camerSettingsService: DependencyContainer.defaultContainer.cameraSettingServcice,
+    notificationService: DependencyContainer.defaultContainer.notificationService
   )
 
   var body: some View {
@@ -31,14 +33,14 @@ struct MainView: View {
       NavigationStack(path: $router.path) {
         ZStack {
           CameraView(
-            camerViewModel: cameraViewModel,
+            cameraViewModel: cameraViewModel,
             previewModel: previewModel,
-            wifiAwareViewModel: wifiAwareViewModel
+            connectionViewModel: connectionViewModel
           )
           .navigationDestination(for: Route.self) { route in
             NavigationRouteView(
               currentRoute: route,
-              wifiAwareViewModel: wifiAwareViewModel,
+              connectionViewModel: connectionViewModel,
               previewModel: previewModel
             )
           }
@@ -50,10 +52,10 @@ struct MainView: View {
       "Ping 메시지 도착",
       isPresented: .init(
         get: {
-          wifiAwareViewModel.lastPingAt != nil
+          connectionViewModel.lastPingAt != nil
         },
         set: { present in
-          wifiAwareViewModel.lastPingAt = present ? Date() : nil
+          connectionViewModel.lastPingAt = present ? Date() : nil
         }
       )
     ) {

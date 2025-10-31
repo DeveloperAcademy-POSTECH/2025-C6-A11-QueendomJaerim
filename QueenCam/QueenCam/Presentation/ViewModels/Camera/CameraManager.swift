@@ -104,9 +104,12 @@ final class CameraManager: NSObject {
 
       photoSettings.isAutoRedEyeReductionEnabled = true
 
-      if self.isLivePhotoOn, self.photoOutput.isLivePhotoCaptureSupported {
+      if self.isLivePhotoOn, self.photoOutput.isLivePhotoCaptureEnabled {
         photoSettings.livePhotoMovieFileURL = URL.movieFileURL
       }
+
+      logger.info("Capture -> photoOutput.isLivePhotoCaptureSupported: \(photoOutput.isLivePhotoCaptureSupported)")
+      logger.info("Capture -> photoOutput.isLivePhotoCaptureEnabled: \(photoOutput.isLivePhotoCaptureEnabled)")
 
       self.cameraDelegate = CameraDelegate(isCameraPosition: self.position) { photoOutput in
         guard let photoOutput else { return }
@@ -199,7 +202,6 @@ extension CameraManager {
   private func setupPhotoOutput() {
     guard session.canAddOutput(photoOutput) else { return }
     session.addOutput(photoOutput)
-    photoOutput.maxPhotoDimensions = .init(width: 4032, height: 3024)
     photoOutput.maxPhotoQualityPrioritization = .balanced
     photoOutput.isLivePhotoCaptureEnabled = photoOutput.isLivePhotoCaptureSupported
   }
@@ -271,6 +273,11 @@ extension CameraManager {
           setupPhotoOutput()
 
           session.commitConfiguration()
+          
+          photoOutput.isLivePhotoCaptureEnabled = photoOutput.isLivePhotoCaptureSupported
+
+          logger.info("Switch -> photoOutput.isLivePhotoCaptureSupported: \(photoOutput.isLivePhotoCaptureSupported)")
+          logger.info("Switch -> photoOutput.isLivePhotoCaptureEnabled: \(photoOutput.isLivePhotoCaptureEnabled)")
 
           DispatchQueue.main.async {
             self.onTapCameraSwitch?(self.position)

@@ -35,8 +35,7 @@ struct MakeConnectionView: View {
       }
 
       if !pairedDevices.isEmpty
-        && (networkState == .host(.stopped) || networkState == .viewer(.stopped))
-      {
+        && (networkState == nil || networkState == .host(.stopped) || networkState == .viewer(.stopped)) {
         List(pairedDevices) { device in
           Text(device.pairingInfo?.pairingName ?? "알 수 없는 이름")
             .onTapGesture {

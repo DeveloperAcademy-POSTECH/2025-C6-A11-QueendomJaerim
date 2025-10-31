@@ -11,6 +11,16 @@
         }
       }
     },
+    "%lld / %lld" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld / %2$lld"
+          }
+        }
+      }
+    },
     "Photos" : {
       "localizations" : {
         "en" : {
@@ -52,6 +62,7 @@
       }
     },
     "그리드 비활성화" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -62,6 +73,7 @@
       }
     },
     "그리드 활성화" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -70,6 +82,21 @@
           }
         }
       }
+    },
+    "기기 연결하기" : {
+
+    },
+    "기능 1" : {
+
+    },
+    "기능 2" : {
+
+    },
+    "기능 3" : {
+
+    },
+    "기기를 연결해 촬영해보세요" : {
+
     },
     "내 기기" : {
       "localizations" : {
@@ -80,6 +107,9 @@
           }
         }
       }
+    },
+    "내가 그린 가이드를 공유합니다." : {
+
     },
     "다른 기기와 페어링하기" : {
       "localizations" : {
@@ -104,6 +134,9 @@
         }
       }
     },
+    "등록" : {
+
+    },
     "모델" : {
       "localizations" : {
         "en" : {
@@ -115,6 +148,7 @@
       }
     },
     "사진 권한 거부" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -125,6 +159,7 @@
       }
     },
     "사진 권한 요청 확인 중" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -133,6 +168,9 @@
           }
         }
       }
+    },
+    "사진 보관함에 접근할 수 없어요. \n설정에서 사진 보관함 접근을 허용해주세요." : {
+
     },
     "상대 기기" : {
       "localizations" : {
@@ -143,6 +181,9 @@
           }
         }
       }
+    },
+    "상대가 프레임을 수정중입니다." : {
+
     },
     "서로 다른 역할의 기기끼리만 연결할 수 있어요" : {
       "localizations" : {
@@ -164,6 +205,9 @@
         }
       }
     },
+    "설정으로 가기" : {
+
+    },
     "설정으로 이동" : {
       "localizations" : {
         "en" : {
@@ -183,6 +227,9 @@
           }
         }
       }
+    },
+    "신고하기" : {
+
     },
     "역할 바꾸기" : {
       "localizations" : {
@@ -214,6 +261,9 @@
         }
       }
     },
+    "연결된 기기" : {
+
+    },
     "연결이 완료되었어요" : {
       "localizations" : {
         "en" : {
@@ -236,6 +286,7 @@
       }
     },
     "연결하기" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -310,6 +361,15 @@
           }
         }
       }
+    },
+    "프레임 가이드를 공유합니다." : {
+
+    },
+    "플래시 자동" : {
+
+    },
+    "플래시 켬" : {
+
     },
     "확인" : {
       "localizations" : {

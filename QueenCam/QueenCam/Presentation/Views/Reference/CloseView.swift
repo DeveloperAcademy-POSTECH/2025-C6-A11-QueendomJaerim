@@ -10,43 +10,47 @@ import SwiftUI
 struct CloseView: View {
   @Bindable var referenceViewModel: ReferenceViewModel
 
-  var body: some View {
-    ZStack {
-      if referenceViewModel.alignment == .bottomLeading || referenceViewModel.alignment == .topLeading {
-        Rectangle()
-          .fill(.black.opacity(0.8))
-          .frame(width: 28, height: 120)
-          .clipShape(
-            UnevenRoundedRectangle(
-              cornerRadii: RectangleCornerRadii(
-                topLeading: 0,
-                bottomLeading: 0,
-                bottomTrailing: 10,
-                topTrailing: 10
-              ),
-            )
-          )
-        Image(systemName: "chevron.right")
-          .foregroundStyle(.white)
-      } else {
-        Rectangle()
-          .fill(.black.opacity(0.8))
-          .frame(width: 28, height: 120)
-          .clipShape(
-            UnevenRoundedRectangle(
-              cornerRadii: RectangleCornerRadii(
-                topLeading: 10,
-                bottomLeading: 10,
-                bottomTrailing: 0,
-                topTrailing: 0
-              ),
-            )
-          )
-        Image(systemName: "chevron.left")
-          .foregroundStyle(.white)
-      }
+  private var isLeading: Bool {
+    referenceViewModel.location == .topLeft || referenceViewModel.location == .bottomLeft
+  }
+
+  private var cornerRadii: RectangleCornerRadii {
+    if isLeading {
+      RectangleCornerRadii(
+        topLeading: 0,
+        bottomLeading: 0,
+        bottomTrailing: 24,
+        topTrailing: 24
+      )
+    } else {
+      RectangleCornerRadii(
+        topLeading: 24,
+        bottomLeading: 24,
+        bottomTrailing: 0,
+        topTrailing: 0
+      )
     }
   }
 
-}
+  private var chevronSystemName: String {
+    isLeading ? "chevron.compact.right" : "chevron.compact.left"
+  }
 
+  var body: some View {
+    ZStack {
+      Rectangle()
+        .fill(.offWhite.opacity(0.4))
+        .frame(width: 22, height: 101)
+        .glassEffect(
+          .clear,
+          in: .rect(cornerRadii: cornerRadii)
+        )
+        .clipShape(
+          UnevenRoundedRectangle(cornerRadii: cornerRadii)
+        )
+      Image(systemName: chevronSystemName)
+        .foregroundStyle(.offWhite)
+        .font(.system(size: 30, weight: .regular))
+    }
+  }
+}

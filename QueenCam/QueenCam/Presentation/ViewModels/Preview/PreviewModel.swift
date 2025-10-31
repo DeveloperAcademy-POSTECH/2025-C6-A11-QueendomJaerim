@@ -67,8 +67,6 @@ final class PreviewModel {
     }
   }
 
-  var observeFrameIncomingTimer: Timer?
-
   // MARK: - 네트워크 관련 프로퍼티
   /// 현재 네트워크가 연결되어 전송 가능함
   var transferEnabled: Bool = false {
@@ -85,7 +83,7 @@ final class PreviewModel {
   /// 연결 목록
   var connections: [WAPairedDevice: ConnectionDetail] = [:]
 
-  private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.queendom.QueenCam", category: "NetworkManager")
+  private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.queendom.QueenCam", category: "PreviewModel")
 
   init(previewCaptureService: PreviewCaptureService, networkService: NetworkServiceProtocol) {
     self.previewCaptureService = previewCaptureService
@@ -101,7 +99,12 @@ final class PreviewModel {
       }
     }
     
-    startFrameCheckObserver()
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(roleChangeNotificationHandler(notification:)),
+      name: .QueenCamRoleChangedNotification,
+      object: nil
+    )
   }
 
   private func bind() {
@@ -125,7 +128,6 @@ final class PreviewModel {
       .sink { [weak self] event in
         switch event {
         case .previewFrame(let framePayload):
-          let dateFromTimeInterval = Date(timeIntervalSince1970: framePayload.presetationTimeStamp)
           self?.handleReceivedFrame(framePayload)
         case .renderState(let state):
           self?.handleReceivedRenderStateReport(state)
@@ -133,6 +135,12 @@ final class PreviewModel {
         }
       }
       .store(in: &cancellables)
+  }
+
+  @objc private func roleChangeNotificationHandler(notification: Notification) {
+    guard let userInfo = notification.userInfo,
+      let newRole = userInfo["newRole"] as? Role else { return }
+    handleRoleChanged(newRole: newRole)
   }
 
   // MARK: Handlers
@@ -149,18 +157,14 @@ final class PreviewModel {
       previewFrameQuality = previewFrameQuality.getWorse()
     }
   }
-  
-  // MARK: - Observer
-  private func startFrameCheckObserver() {
-    observeFrameIncomingTimer = Timer.scheduledTimer(withTimeInterval: 2.5, repeats: true) { [weak self] _ in
-      guard let self,
-        let lastReceivedTime = self.lastReceivedTime else { return }
 
-      if Date().timeIntervalSince(lastReceivedTime) > 5.0 {
-        self.logger.error("마지막 프레임을 \(Date().timeIntervalSince(lastReceivedTime), privacy: .public) 초 전에 받았습니다. 네트워크나 기기 문제가 있을 수 있습니다.")
-      } else {
-        // self.logger.debug("마지막 프레임을 \(Date().timeIntervalSince(lastReceivedTime), privacy: .public)초 전에 받았습니다.")
-      }
+  private func handleRoleChanged(newRole: Role) {
+    if newRole == .photographer {
+      logger.info("started preview capture because the counterpart requested change role")
+      self.startCapture()
+    } else if newRole == .model {
+      logger.info("stopped preview capture because the counterpart requested change role")
+      self.stopCapture()
     }
   }
 }

@@ -13,12 +13,6 @@ struct OpenView: View {
   @State private var showDelete: Bool = false
   @Binding var isLarge: Bool
 
-  let regularWidth: CGFloat = 90
-  let regularHeight: CGFloat = 120
-  let largeWidth: CGFloat = 151
-  let largeHeight: CGFloat = 202
-  let role: Role?
-
   var body: some View {
     ZStack(alignment: .topTrailing) {
       Group {
@@ -27,14 +21,14 @@ struct OpenView: View {
             .resizable()
             .scaledToFit()
             .frame(
-              width: isLarge ? largeWidth : regularWidth,
-              height: isLarge ? largeHeight : regularHeight
+              width: !isLarge
+              ? ReferenceSize.referenceRatio(width: image.size.width, height: image.size.height).width
+              : ReferenceSize.referenceRatio(width: image.size.width, height: image.size.height).width*2
             )
             .clipShape(.rect(cornerRadius: 20))
             .onTapGesture {
               isLarge = true
-              guard role == .model else { return }  // 작가의 경우 레퍼런스 삭제 불가능
-              showDelete.toggle()  //모델의 경우 레퍼런스 삭제 가능
+              showDelete.toggle()
             }
         }
       }
@@ -44,15 +38,10 @@ struct OpenView: View {
           showDelete = false
           isLarge = false
         } label: {
-          Image(systemName: "x.circle")
-            .imageScale(.large)
+          ReferenceDeleteButton()
         }
-        .padding(4)
+        .padding(12)
       }
     }
   }
-}
-
-#Preview {
-  OpenView(referenceViewModel: ReferenceViewModel(), isLarge: .constant(false), role: .model)
 }

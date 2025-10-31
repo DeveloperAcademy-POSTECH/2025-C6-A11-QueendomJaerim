@@ -9,84 +9,105 @@ import SwiftUI
 /// 펜 가이드라인 작성 뷰 (only 모델)
 struct PenWriteView: View {
   @Bindable var penViewModel: PenViewModel
-  @Binding var isPen: Bool
-  @Binding var isDisappearPen: Bool
+  var isPen: Bool
+  var isMagicPen: Bool
+  let role: Role?
+
   @State private var tempPoints: [CGPoint] = []  // 현재 그리고 있는 선의 좌표(임시)
-  private var outerColor = Color.white
-  private var innerColor = Color.orange
-  private let disappearAfter: TimeInterval = 3.0
-  init(penViewModel: PenViewModel, isPen: Binding<Bool>, isDisappearPen: Binding<Bool>) {
+  @State private var currentStrokeID: UUID?  // 진행 중 스트로크 ID
+  private var topColor = Color.offWhite
+  private var photographerColor = Color.photographerPrimary
+  private var modelColor = Color.modelPrimary
+  private let magicAfter: TimeInterval = 0.7
+
+  init(penViewModel: PenViewModel, isPen: Bool, isMagicPen: Bool, role: Role?) {
     self.penViewModel = penViewModel
-    self._isPen = isPen
-    self._isDisappearPen = isDisappearPen
+    self.isPen = isPen
+    self.isMagicPen = isMagicPen
+    self.role = role
+    self.penViewModel.currentRole = role
   }
+
   var body: some View {
-    VStack {
-      GeometryReader { _ in
+    
+      GeometryReader { geo in
         // MARK: - 실제 드로잉 영역
         Canvas { context, _ in
-          // 이미 strokes에 저장된 모든 선들 그리기
-          if isPen {
-            for stroke in penViewModel.strokes {
-              guard stroke.points.count > 1 else { continue }
-              var path = Path()  // Line을 담는 객체
-              path.addLines(stroke.points)
-              context.stroke(path, with: .color(outerColor), style: StrokeStyle(lineWidth: 8, lineCap: .round, lineJoin: .round))
-              context.stroke(path, with: .color(innerColor), style: StrokeStyle(lineWidth: 4, lineCap: .round, lineJoin: .round))
-            }
-          } else {
-            for stroke in penViewModel.disappearStokes {
-              guard stroke.points.count > 1 else { continue }
-              var path = Path()
-              path.addLines(stroke.points)
-              context.stroke(path, with: .color(outerColor), style: StrokeStyle(lineWidth: 8, lineCap: .round, lineJoin: .round))
-              context.stroke(path, with: .color(innerColor), style: StrokeStyle(lineWidth: 4, lineCap: .round, lineJoin: .round))
-            }
+          for stroke in penViewModel.strokes where stroke.points.count > 1 {
+            var path = Path()
+            path.addLines(stroke.absolutePoints(in: geo.size))
+            let outerColor = stroke.author == .model ? modelColor : photographerColor
+            context.stroke(path,
+                           with: .color(outerColor),
+                           style: StrokeStyle(lineWidth: 10, lineCap: .round, lineJoin: .round))
+            context.stroke(
+              path, with: .color(topColor),
+              style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round)
+            )
           }
-
-          // 지금 드래그 중인 선들(tempPoints) 그리기: 아직 저장 안된 stroke
+          // 현재 드래그 중인 선
           if tempPoints.count > 1 {
             var path = Path()
-            path.addLines(tempPoints)
-            context.stroke(path, with: .color(outerColor), style: StrokeStyle(lineWidth: 8, lineCap: .round, lineJoin: .round))
-            context.stroke(path, with: .color(innerColor), style: StrokeStyle(lineWidth: 4, lineCap: .round, lineJoin: .round))
+            path.addLines(tempPoints.map { CGPoint(x: $0.x * geo.size.width, y: $0.y * geo.size.height) })
+            let outerColor = (role == .model) ? modelColor : photographerColor
+            context.stroke(path, with: .color(outerColor.opacity(50)), style: StrokeStyle(lineWidth: 10, lineCap: .round, lineJoin: .round))
+            context.stroke(path, with: .color(topColor), style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
           }
         }
         .background(.clear)
         .gesture(
           DragGesture(minimumDistance: 0)
             .onChanged { value in
-              tempPoints.append(value.location)
+              let relativePoint = CGPoint(
+                x: geo.size.width > 0 ? value.location.x / geo.size.width : 0,
+                y: geo.size.height > 0 ? value.location.y / geo.size.height : 0
+              )
+              tempPoints.append(relativePoint)
+
+              // 첫 onChanged에서 시작(.add), 이후에는 진행 업데이트(.replace)
+              if currentStrokeID == nil {
+                guard let role else { return }
+                currentStrokeID = penViewModel.add(initialPoints: tempPoints, author: role)
+              } else if let id = currentStrokeID {
+                penViewModel.updateStroke(id: id, points: tempPoints)
+              }
             }
             .onEnded { _ in
-              guard !tempPoints.isEmpty else { return }
-              if isPen {
-                penViewModel.strokes.append(Stroke(points: tempPoints))
-              } else {
-                let stroke = Stroke(points: tempPoints)
-                penViewModel.disappearStokes.append(stroke)
-                DispatchQueue.main.asyncAfter(deadline: .now() + disappearAfter) {
-                  penViewModel.disappearStokes.removeAll { $0.id == stroke.id }
+              guard let id = currentStrokeID, !tempPoints.isEmpty else {
+                tempPoints.removeAll()
+                currentStrokeID = nil
+                return
+              }
+
+              // 마지막 상태 반영(.replace)
+              penViewModel.updateStroke(id: id, points: tempPoints)
+
+              if isMagicPen {
+                DispatchQueue.main.asyncAfter(deadline: .now() + magicAfter) {
+                  penViewModel.remove(id)
                 }
               }
+
               tempPoints.removeAll()
+              currentStrokeID = nil
               penViewModel.redoStrokes.removeAll()
             }
         )
       }
-      if isPen {
-        // MARK: - 버튼 툴바 Undo / Redo / clearAll
-        GuidingToolBarView { action in
-          switch action {
-          case .clearAll:
-            penViewModel.clearAll()
-          case .undo:
-            penViewModel.undo()
-          case .redo:
-            penViewModel.redo()
+      .overlay(alignment: .bottomLeading) {
+        if isPen {
+          // MARK: - 버튼 툴바 Undo / Redo / clearAll
+          GuidingToolBarView { action in
+            switch action {
+            case .clearAll:
+              penViewModel.deleteAll()
+            case .undo:
+              penViewModel.undo()
+            case .redo:
+              penViewModel.redo()
+            }
           }
         }
-      }
-    }
+      } 
   }
 }

@@ -11,7 +11,7 @@ import WiFiAware
 
 struct ConnectionView: View {
   @Environment(\.router) private var router
-  var viewModel: WifiAwareViewModel
+  var viewModel: ConnectionViewModel
   var previewStreamingViewModel: PreviewModel
 }
 
@@ -83,8 +83,9 @@ struct RoleSelectButton: View {
 
 #Preview {
   struct ConnectionViewPeviewContainer: View {
-    @State var viewModel: WifiAwareViewModel = .init(
-      networkService: NetworkService()
+    @State var viewModel: ConnectionViewModel = .init(
+      networkService: NetworkService(),
+      notificationService: NotificationService()
     )
 
     @State var previewModel: PreviewModel = .init(

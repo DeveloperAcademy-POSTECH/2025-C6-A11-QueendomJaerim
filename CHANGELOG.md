@@ -24,6 +24,37 @@
 
 ### Security
 
+## [0.2.0] 테스트 플라이트 마일스톤 (2025-11-01)
+
+### Added
+
+- 프레임의 크기와 비율 변경 기능
+- 스와이프를 이용한 사진 탐색 기능
+- 갤러리에 있는 사진 확대/축소 제스처들 추가
+- 펜과 매직펜 관련 이벤트(등록,업데이트,삭제) 송수신
+- 역할 서로 바꾸기
+- 가이드 숨김 기능 
+- 커스텀 폰트 및 색상
+- 기본 컴포넌트
+- 상태 토스트
+
+### Changed
+
+- 펜 가이드라인 상대위치 반영 추가
+- 프레임 비율과 크기 변경 네트워크 이벤트 추가
+- 작가와 모델의 펜과 매직펜 구분 추가
+- 생상자에게만 펜과 매직펜 수정 권한 부여 추가
+- 연결 취소/유실 + 역할 바꾸기 시 가이딩(펜, 프레임, 레퍼런스) 초기화 추가
+- 상단 툴바 디자인 적용
+- 앱 아이콘 변경
+- 디스플레이 네임 "찍자"로 변경
+- 디스플레이 네임 "ZZikZZa"로 변경
+- 이미지 비율에 따라 레퍼런스 크기 조절
+- 작가 모델 1차 하이파이
+
+### Fixed
+
+- 카메라 전/후면 전환 후 라이브 포토 이슈 수정
 
 ## [0.1.0]
 
@@ -84,6 +115,7 @@
 - Wi-Fi Aware 연결 후, 라이브 포토 촬영 시 앱이 크래시되는 문제
 - 레퍼런스 삭제 후 재등록에 관한 상태 초기화 문제
 
+[0.2.0]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v0.0.1...v0.1.0
 [0.0.1]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/releases/tag/v0.0.1
 [unreleased]: hhttps://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim
