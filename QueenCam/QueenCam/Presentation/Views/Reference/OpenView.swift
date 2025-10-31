@@ -38,22 +38,9 @@ struct OpenView: View {
           showDelete = false
           isLarge = false
         } label: {
-          ZStack(alignment: .center){
-            Circle()
-              .background(.offWhite.opacity(0.6))
-              .frame(width: 24, height: 24)
-              .overlay(
-                Circle()
-                  .background(.offWhite.opacity(0.7))
-              )
-              .shadow(color: .black.opacity(0.25), radius: 2, x: 0, y: 0)
-              
-            Image(systemName: "xmark")
-              .foregroundStyle(.gray900)
-              .font(.system(size: 13, weight: .regular))
-          }
+          ReferenceDeleteButton()
         }
-        .padding(4)
+        .padding(12)
       }
     }
   }

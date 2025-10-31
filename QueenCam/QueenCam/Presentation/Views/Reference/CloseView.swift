@@ -33,7 +33,7 @@ struct CloseView: View {
   }
 
   private var chevronSystemName: String {
-    isLeading ? "chevron.right" : "chevron.left"
+    isLeading ? "chevron.compact.right" : "chevron.compact.left"
   }
 
   var body: some View {
@@ -50,6 +50,7 @@ struct CloseView: View {
         )
       Image(systemName: chevronSystemName)
         .foregroundStyle(.offWhite)
+        .font(.system(size: 30, weight: .regular))
     }
   }
 }
