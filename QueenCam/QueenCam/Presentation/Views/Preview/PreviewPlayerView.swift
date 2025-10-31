@@ -22,5 +22,6 @@ struct PreviewPlayerView: View {
       }
     )
     .aspectRatio(3 / 4, contentMode: .fit)
+    .padding(.horizontal, 16)
   }
 }
