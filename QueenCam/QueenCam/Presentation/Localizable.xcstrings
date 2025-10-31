@@ -134,6 +134,9 @@
         }
       }
     },
+    "등록" : {
+
+    },
     "모델" : {
       "localizations" : {
         "en" : {
@@ -145,6 +148,7 @@
       }
     },
     "사진 권한 거부" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -155,6 +159,7 @@
       }
     },
     "사진 권한 요청 확인 중" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -163,6 +168,9 @@
           }
         }
       }
+    },
+    "사진 보관함에 접근할 수 없어요. \n설정에서 사진 보관함 접근을 허용해주세요." : {
+
     },
     "상대 기기" : {
       "localizations" : {
@@ -196,6 +204,9 @@
           }
         }
       }
+    },
+    "설정으로 가기" : {
+
     },
     "설정으로 이동" : {
       "localizations" : {

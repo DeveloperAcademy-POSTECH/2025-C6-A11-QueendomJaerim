@@ -26,13 +26,22 @@ extension PhotosPickerView: View {
     VStack {
       switch viewModel.state {
       case .idle, .requestingPermission:
-        ProgressView("사진 권한 요청 확인 중")
+        ProgressView()
           .task {
             await viewModel.requestAccessAndLoad()
           }
 
       case .denied:
-        Text("사진 권한 거부")
+        VStack(spacing: 16) {
+          Text("사진 보관함에 접근할 수 없어요. \n설정에서 사진 보관함 접근을 허용해주세요.")
+            .typo(.m13)
+            .multilineTextAlignment(.center)
+
+          Button("설정으로 가기") {
+            UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
+          }
+          .buttonStyle(.glass)
+        }
 
       case .loaded:
         NavigationStack {
@@ -76,7 +85,6 @@ extension PhotosPickerView: View {
 
             ToolbarItem(placement: .topBarTrailing) {
               Button(action: {
-
                 if sheetSelectedImageID != selectedImageID {
                   onTapComplete(sheetSelectedImage)
                   selectedImageID = sheetSelectedImageID
