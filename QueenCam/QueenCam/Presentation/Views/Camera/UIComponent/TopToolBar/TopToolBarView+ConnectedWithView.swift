@@ -1,5 +1,5 @@
 //
-//  ConnectedWithView.swift
+//  TopToolBarView+ConnectedWithView.swift
 //  QueenCam
 //
 //  Created by 임영택 on 10/30/25.
@@ -7,28 +7,35 @@
 
 import SwiftUI
 
-struct ConnectedWithView: View {
-  let isConnected: Bool
-  let connectedDeviceName: String?
-  let buttonDidTap: () -> Void
+extension TopToolBarView {
+  struct ConnectedWithView: View {
+    let isConnected: Bool
+    let connectedDeviceName: String?
+    let buttonDidTap: () -> Void
 
-  var body: some View {
-    if isConnected {
-      WhenCurrentlyConnected(connectedDeviceName: connectedDeviceName ?? "알 수 없는 기긴", buttonDidTap: buttonDidTap)
-    } else {
-      WhenNotConnected(buttonDidTap: buttonDidTap)
+    var body: some View {
+      if isConnected {
+        WhenCurrentlyConnectedIndicatorView(connectedDeviceName: connectedDeviceName ?? "알 수 없는 기긴", buttonDidTap: buttonDidTap)
+      } else {
+        WhenNotConnectedIndicatorView(buttonDidTap: buttonDidTap)
+      }
     }
   }
 }
 
-private struct WhenCurrentlyConnected: View {
-  let connectedDeviceName: String
-  let buttonDidTap: () -> Void
+// MARK: - 연결 상태
+extension TopToolBarView {
+  struct WhenCurrentlyConnectedIndicatorView {
+    let connectedDeviceName: String
+    let buttonDidTap: () -> Void
 
-  private let horizontalSpacer: some View = Spacer().frame(width: 28)
-  private let minWidth: CGFloat = 48
-  private let height: CGFloat = 48
+    private let horizontalSpacer: some View = Spacer().frame(width: 28)
+    private let minWidth: CGFloat = 48
+    private let height: CGFloat = 48
+  }
+}
 
+extension TopToolBarView.WhenCurrentlyConnectedIndicatorView: View {
   var body: some View {
     Button(action: buttonDidTap) {
       HStack(spacing: 0) {
@@ -55,13 +62,18 @@ private struct WhenCurrentlyConnected: View {
   }
 }
 
-private struct WhenNotConnected: View {
-  let buttonDidTap: () -> Void
+// MARK: - 미연결 상태
+extension TopToolBarView {
+  struct WhenNotConnectedIndicatorView {
+    let buttonDidTap: () -> Void
 
-  private let buttonLabelFont = Font.pretendard(.medium, size: 17)
-  private let width: CGFloat = 162
-  private let height: CGFloat = 48
+    private let buttonLabelFont = Font.pretendard(.medium, size: 17)
+    private let width: CGFloat = 162
+    private let height: CGFloat = 48
+  }
+}
 
+extension TopToolBarView.WhenNotConnectedIndicatorView: View {
   var body: some View {
     Button(action: buttonDidTap) {
       VStack {
@@ -82,7 +94,7 @@ private struct WhenNotConnected: View {
     Color.black
 
     VStack {
-      ConnectedWithView(
+      TopToolBarView<AnyView>.ConnectedWithView(
         isConnected: true,
         connectedDeviceName: "임영폰"
       ) {
@@ -90,7 +102,7 @@ private struct WhenNotConnected: View {
         print("Tapped!")
       }
 
-      ConnectedWithView(
+      TopToolBarView<AnyView>.ConnectedWithView(
         isConnected: true,
         connectedDeviceName: "임영택의 iPhone"
       ) {
@@ -98,7 +110,7 @@ private struct WhenNotConnected: View {
         print("Tapped!")
       }
 
-      ConnectedWithView(
+      TopToolBarView<AnyView>.ConnectedWithView(
         isConnected: true,
         connectedDeviceName: "임영폰 임영폰 임영폰 임영폰 임영폰 임영폰 임영폰 임영폰 임영폰 임영폰 임영폰 임영폰 임영폰 "
       ) {
@@ -106,12 +118,12 @@ private struct WhenNotConnected: View {
         print("Tapped!")
       }
 
-      ConnectedWithView(isConnected: true, connectedDeviceName: nil) { // 재연결시 가끔 이럴 때가 있음
+      TopToolBarView<AnyView>.ConnectedWithView(isConnected: true, connectedDeviceName: nil) { // 재연결시 가끔 이럴 때가 있음
         // swiftlint:disable:next no_print_in_production
         print("Tapped!")
       }
 
-      ConnectedWithView(isConnected: false, connectedDeviceName: nil) {
+      TopToolBarView<AnyView>.ConnectedWithView(isConnected: false, connectedDeviceName: nil) {
         // swiftlint:disable:next no_print_in_production
         print("Tapped!")
       }
