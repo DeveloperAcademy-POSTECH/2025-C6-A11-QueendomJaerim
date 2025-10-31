@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct StateToast: View {
-  let message: String
+  let message: LocalizedStringKey
   let isImportant: Bool
 
   private let importantStateTintColor = Color(red: 254 / 255, green: 188 / 255, blue: 47 / 255)
@@ -26,7 +26,7 @@ struct StateToast: View {
   struct StateToastPreviewContainer: View {
     @State private var isImportant: Bool = true
     @State private var imageID: UUID = UUID()
-    
+
     var body: some View {
       ZStack {
         AsyncImage(url: URL(string: "https://picsum.photos/500"))
@@ -39,9 +39,9 @@ struct StateToast: View {
             .onTapGesture {
               isImportant.toggle()
             }
-          
+
           Spacer()
-          
+
           Button("이미지 새로 고침") {
             imageID = UUID()
           }
@@ -52,6 +52,6 @@ struct StateToast: View {
       .frame(maxWidth: 500, maxHeight: 500)
     }
   }
-  
+
   return StateToastPreviewContainer()
 }
