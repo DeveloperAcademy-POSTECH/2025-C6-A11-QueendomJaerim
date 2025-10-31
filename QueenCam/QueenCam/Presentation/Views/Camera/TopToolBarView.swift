@@ -11,7 +11,7 @@ import SwiftUI
 struct TopToolBarView<MenuContent: View>: View {
   /// 연결 여부
   let isConnected: Bool
-  
+
   /// 연결된 디바이스 이름
   let connectedDeviceName: String?
 
