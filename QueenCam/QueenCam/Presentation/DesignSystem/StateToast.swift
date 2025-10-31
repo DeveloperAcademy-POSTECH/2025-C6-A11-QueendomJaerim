@@ -18,7 +18,7 @@ struct StateToast: View {
       .typo(.r12)
       .padding(.vertical, 8)
       .padding(.horizontal, 16)
-      .glassEffect(isImportant ? .clear.tint(importantStateTintColor) : .clear)
+      .glassEffect(isImportant ? .regular.tint(importantStateTintColor) : .regular.tint(.offWhite.opacity(0.6)))
   }
 }
 
