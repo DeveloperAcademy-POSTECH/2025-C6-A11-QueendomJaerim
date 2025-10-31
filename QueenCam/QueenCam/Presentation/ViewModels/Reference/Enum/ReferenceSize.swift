@@ -5,7 +5,7 @@
 //  Created by Bora Yun on 10/31/25.
 //
 
-import CoreFoundation
+import Foundation
 
 enum ReferenceSize {
   /// 16:9 비율의 이미지
