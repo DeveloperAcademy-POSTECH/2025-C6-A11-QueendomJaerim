@@ -10,17 +10,31 @@ import SwiftUI
 struct GuidingToolBarView: View {
   var onAction: (ToolBarAction) -> Void
   var body: some View {
-    HStack(spacing: 20) {
-      // 전체 삭제
-      PenToolButton(penToolType: .eraser, isActive: true, tapAction: {
-        onAction(.clearAll)
-      })
-      
-      // 실행 취소
-      PenToolButton(penToolType: .undo, isActive: true, tapAction: {
-        onAction(.undo)
-      })
+
+    HStack {
+      VStack(alignment: .leading, spacing: 8) {
+        // 전체 삭제
+        PenToolButton(
+          penToolType: .eraser,
+          isActive: true,
+          tapAction: {
+            onAction(.clearAll)
+          }
+        )
+
+        // 실행 취소
+        PenToolButton(
+          penToolType: .undo,
+          isActive: true,
+          tapAction: {
+            onAction(.undo)
+          }
+        )
+      }
+
+      Spacer()
     }
+    .padding(12)
   }
 }
 

@@ -202,7 +202,6 @@ extension CameraManager {
   private func setupPhotoOutput() {
     guard session.canAddOutput(photoOutput) else { return }
     session.addOutput(photoOutput)
-    photoOutput.maxPhotoDimensions = .init(width: 4032, height: 3024)
     photoOutput.maxPhotoQualityPrioritization = .balanced
     photoOutput.isLivePhotoCaptureEnabled = photoOutput.isLivePhotoCaptureSupported
   }
