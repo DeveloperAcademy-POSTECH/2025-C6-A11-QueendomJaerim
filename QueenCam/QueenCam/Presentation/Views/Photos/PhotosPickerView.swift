@@ -13,12 +13,14 @@ struct PhotosPickerView {
 
   let viewModel = PhotosViewModel()
 
-  private let columnList = Array(repeating: GridItem(.flexible(), spacing: 4), count: 3)
-
   let onTapComplete: (UIImage?) -> Void
 
   @State private var selectedImageAsset: IdentifiableAsset?
 
+  private let gridSpacing: CGFloat = 3
+  private var columnList: [GridItem] {
+    Array(repeating: GridItem(.flexible(), spacing: gridSpacing), count: 3)
+  }
 }
 
 extension PhotosPickerView: View {
@@ -46,7 +48,7 @@ extension PhotosPickerView: View {
       case .loaded:
         NavigationStack {
           ScrollView {
-            LazyVGrid(columns: columnList, spacing: 1) {
+            LazyVGrid(columns: columnList, spacing: gridSpacing) {
               ForEach(viewModel.assetList.indices, id: \.self) { index in
                 let asset = viewModel.assetList[index]
 
@@ -69,8 +71,10 @@ extension PhotosPickerView: View {
                     selectedImageAsset = IdentifiableAsset(asset: asset, selectedAssetIndex: index)
                   }
                 )
+                .aspectRatio(1.0, contentMode: .fill)
               }
             }
+            .backgroundStyle(.gray400)
           }
           .navigationTitle("Photos")
           .navigationBarTitleDisplayMode(.inline)
