@@ -8,6 +8,9 @@ struct PhotosPickerView {
   @State private var sheetSelectedImage: UIImage?
   @State private var sheetSelectedImageID: String?
 
+  // 컬러 테마를 위해 Role을 알아야 함
+  let roleForTheme: Role?
+
   // 상위 뷰에서 넘어오는 아이디
   @Binding var selectedImageID: String?
 
@@ -56,6 +59,7 @@ extension PhotosPickerView: View {
                   asset: asset,
                   manager: viewModel.cachingManager,
                   isSelected: sheetSelectedImageID == asset.localIdentifier,
+                  roleForTheme: roleForTheme,
                   onTapCheck: { image in
                     // 선택된 상태에서 체크박스 탭하면 선택 해제
                     if sheetSelectedImageID == asset.localIdentifier {
