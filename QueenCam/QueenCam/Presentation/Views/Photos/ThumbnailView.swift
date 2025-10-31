@@ -25,7 +25,7 @@ extension ThumbnailView {
     manager.requestImage(
       for: asset,
       targetSize: targetSize,
-      contentMode: .aspectFit,
+      contentMode: .aspectFill,
       options: options
     ) { result, _ in
       if let result { self.image = result }
