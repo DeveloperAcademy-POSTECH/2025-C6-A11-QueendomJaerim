@@ -12,7 +12,8 @@ struct MainView: View {
   @State private var router = NavigationRouter()
 
   @State private var connectionViewModel = ConnectionViewModel(
-    networkService: DependencyContainer.defaultContainer.networkService
+    networkService: DependencyContainer.defaultContainer.networkService,
+    notificationService: DependencyContainer.defaultContainer.notificationService
   )
 
   @State private var previewModel = PreviewModel(

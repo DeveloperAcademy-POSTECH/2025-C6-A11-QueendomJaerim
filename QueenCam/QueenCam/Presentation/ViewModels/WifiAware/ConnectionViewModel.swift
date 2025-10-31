@@ -26,7 +26,18 @@ final class ConnectionViewModel {
   }
   var pairedDevices: [WAPairedDevice] = []
 
-  var networkState: NetworkState?
+  var networkState: NetworkState? {
+    didSet {
+      // 연결 상태 변화에 따른 State Toast 처리
+      // 그 외 사이드 이펙트가 따라오는 다른 작업은 최대한 피할 것
+      
+      if networkState != .host(.stopped) && networkState != .viewer(.stopped) {
+        notificationService.reset()
+      } else {
+        notificationService.registerNotification(DomainNotification.make(type: .ready))
+      }
+    }
+  }
   var connections: [WAPairedDevice: ConnectionDetail] = [:]
   var connectedDevice: WAPairedDevice? {
     connections.keys.first
@@ -51,12 +62,18 @@ final class ConnectionViewModel {
   var isConnecting: Bool {
     !(networkState == nil || networkState == .host(.stopped) || networkState == .viewer(.stopped))
   }
+  
+  /// State Toast
+  private let notificationService: NotificationServiceProtocol
 
   private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.queendom.QueenCam", category: "ConnectionView")
 
-  init(networkService: NetworkServiceProtocol) {
+  init(networkService: NetworkServiceProtocol, notificationService: NotificationServiceProtocol) {
     self.networkService = networkService
+    self.notificationService = notificationService
     bind()
+    
+    notificationService.registerNotification(DomainNotification.make(type: .ready))
   }
 
   private func bind() {
