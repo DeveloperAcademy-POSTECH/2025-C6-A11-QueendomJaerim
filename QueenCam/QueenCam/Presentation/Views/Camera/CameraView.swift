@@ -164,37 +164,26 @@ extension CameraView: View {
       case true:
         VStack(spacing: .zero) {
           /// 제일 위 툴바 부분
-          NetworkToolbarView(
-            networkState: connectionViewModel.networkState,
-            connectedDeviceName: connectionViewModel.connectedDeviceName
-          ) {
-            if connectionViewModel.isConnecting {
-              isShowingCurrentConnectionModal.toggle()
-            } else {
-              router.push(.establishConnection)
-            }
+          TopToolBarView(
+            isConnected: isSessionActive,
+            connectedDeviceName: connectionViewModel.connectedDeviceName,
+            menuContent: {
+              Button("기능 1") {}
+              Button("기능 2") {}
+              Button("기능 3") {}
 
-            TopToolBarView(
-              isConnected: isSessionActive,
-              connectedDeviceName: connectionViewModel.connectedDeviceName,
-              menuContent: {
-                Button("기능 1") {}
-                Button("기능 2") {}
-                Button("기능 3") {}
+              Divider()
 
-                Divider()
-
-                Button("신고하기", systemImage: "exclamationmark.triangle") {}
-              },
-              connectedWithButtonDidTap: {
-                if connectionViewModel.isConnecting {
-                  isShowingCurrentConnectionModal.toggle()
-                } else {
-                  router.push(.establishConnection)
-                }
+              Button("신고하기", systemImage: "exclamationmark.triangle") {}
+            },
+            connectedWithButtonDidTap: {
+              if connectionViewModel.isConnecting {
+                isShowingCurrentConnectionModal.toggle()
+              } else {
+                router.push(.establishConnection)
               }
-            )
-          }
+            }
+          )
           .padding()
 
           ZStack {
