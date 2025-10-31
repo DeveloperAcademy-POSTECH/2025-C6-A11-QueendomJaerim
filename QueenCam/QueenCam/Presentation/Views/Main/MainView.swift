@@ -12,7 +12,8 @@ struct MainView: View {
   @State private var router = NavigationRouter()
 
   @State private var connectionViewModel = ConnectionViewModel(
-    networkService: DependencyContainer.defaultContainer.networkService
+    networkService: DependencyContainer.defaultContainer.networkService,
+    notificationService: DependencyContainer.defaultContainer.notificationService
   )
 
   @State private var previewModel = PreviewModel(
@@ -23,7 +24,8 @@ struct MainView: View {
   @State private var cameraViewModel = CameraViewModel(
     previewCaptureService: DependencyContainer.defaultContainer.previewCaptureService,
     networkService: DependencyContainer.defaultContainer.networkService,
-    camerSettingsService: DependencyContainer.defaultContainer.cameraSettingServcice
+    camerSettingsService: DependencyContainer.defaultContainer.cameraSettingServcice,
+    notificationService: DependencyContainer.defaultContainer.notificationService
   )
 
   var body: some View {

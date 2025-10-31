@@ -28,10 +28,14 @@ final class CameraViewModel {
 
   var errorMessage = ""
 
+  // MARK: State Toast
+  private let notificationService: NotificationServiceProtocol
+
   init(
     previewCaptureService: PreviewCaptureService,
     networkService: NetworkServiceProtocol,
-    camerSettingsService: CamerSettingsServiceProtocol
+    camerSettingsService: CamerSettingsServiceProtocol,
+    notificationService: NotificationServiceProtocol
   ) {
     self.networkService = networkService
     self.camerSettingsService = camerSettingsService
@@ -43,6 +47,8 @@ final class CameraViewModel {
     self.isLivePhotoOn = camerSettingsService.livePhotoOn
     self.isShowGrid = camerSettingsService.gridOn
     self.isFlashMode = camerSettingsService.flashMode
+
+    self.notificationService = notificationService
 
     cameraManager.isLivePhotoOn = isLivePhotoOn
     cameraManager.flashMode = isFlashMode.convertAVCaptureDeviceFlashMode
@@ -57,7 +63,6 @@ final class CameraViewModel {
         self?.selectedZoom = 1.0
       }
     }
-
   }
 
   func checkPermissions() async {
@@ -135,6 +140,14 @@ final class CameraViewModel {
 
     camerSettingsService.flashMode = isFlashMode
     cameraManager.flashMode = isFlashMode.convertAVCaptureDeviceFlashMode
+    
+    // State Toast
+    if isFlashMode == .on {
+      notificationService.registerNotification(DomainNotification.make(type: .flashOn))
+    }
+    if isFlashMode == .auto {
+      notificationService.registerNotification(DomainNotification.make(type: .flashAuto))
+    }
   }
 
   func switchLivePhoto() {
