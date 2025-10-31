@@ -85,7 +85,7 @@ extension GuidingButton: View {
           Text(title)
             .typo(.sfR11)
         }
-        .foregroundStyle(isActive ? .modelPrimary : .offWhite)
+        .foregroundStyle(isActive ? .photographerPrimary : .offWhite)
       }
     }
   }

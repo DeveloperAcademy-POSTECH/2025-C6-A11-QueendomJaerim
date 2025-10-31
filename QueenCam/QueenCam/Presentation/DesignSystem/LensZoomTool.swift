@@ -31,7 +31,7 @@ extension LensZoomTool: View {
         Button(action: { onZoomChange(item) }) {
           Circle()
             .fill(item == activeZoom ? .black.opacity(0.6) : .clear)
-            .frame(width: 48, height: 48)
+            .frame(width: 38, height: 38)
             .overlay {
               Text(displayText(for: item))
                 .font(.system(size: 15))
@@ -42,7 +42,6 @@ extension LensZoomTool: View {
       }
     }
     .offset(x: getCenterOffset())
-    .frame(maxWidth: .infinity, alignment: .center)
     .animation(.spring(response: 0.4, dampingFraction: 0.8), value: activeZoom)
   }
 
