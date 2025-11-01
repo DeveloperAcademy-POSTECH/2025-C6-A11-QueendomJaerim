@@ -49,6 +49,12 @@ final actor PreviewCaptureService {
 
   init() {
     (self.framePayloadStream, self.framePayloadContinuation) = AsyncStream.makeStream(of: VideoFramePayload.self)
+
+    logger.debug("PreviewCaptureService init")
+  }
+
+  deinit {
+    logger.debug("PreviewCaptureService deinit")
   }
 }
 
@@ -113,7 +119,7 @@ extension PreviewCaptureService {
 // MARK: - 인코더 설정
 extension PreviewCaptureService {
   func setupEncoder() {
-    let videoEncoder = VideoEncoder(config: .ultraLowLatency)
+    let videoEncoder = VideoEncoder(config: .queenCamCustomConfig)
     self.videoEncoder = videoEncoder
     
     let videoEncoderAnnexBAdaptor = VideoEncoderAnnexBAdaptor(videoEncoder: videoEncoder)
