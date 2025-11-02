@@ -94,7 +94,10 @@ nonisolated public final class QueenLogger {
   public func debug(_ message: @autoclosure () -> String) {
     let message = message()
     osLogger.debug("\(message, privacy: .public)")
-    log(level: .debug, message: message)
+    
+    #if DEBUG
+    log(level: .debug, message: message) // 디버그 로그는 디버그 빌드에서만 파일 출력
+    #endif
   }
 
   /// Warning 레벨의 로그를 기록합니다.
