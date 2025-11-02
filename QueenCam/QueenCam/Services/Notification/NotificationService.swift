@@ -50,8 +50,8 @@ final class NotificationService: NotificationServiceProtocol {
   }
 
   private var destroyNotificationTimer: Timer?
-  
-  private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.queendom.QueenCam", category: "NotificationService")
+
+  private let logger = QueenLogger(category: "NotificationService")
 
   func registerNotification(_ notification: DomainNotification) {
     destroyNotificationTimer?.invalidate()
@@ -67,23 +67,23 @@ final class NotificationService: NotificationServiceProtocol {
       }
     }
 
-    logger.debug("a notification registered: \(String(describing: notification), privacy: .public)")
+    logger.debug("a notification registered: \(String(describing: notification))")
   }
 
   func reset() {
-    logger.debug("a notification will be removed: \(String(describing: self.lastNotification), privacy: .public)")
+    logger.debug("a notification will be removed: \(String(describing: self.lastNotification))")
     lastNotification = nil
   }
 
   /// 베이스 알림을 등록한다. showingTime이 nil이 아니어도 무조건 상시노출된다.
   func registerBaseNotification(_ notification: DomainNotification) {
     baseNotification = notification
-    
-    logger.debug("a base notification registered: \(String(describing: notification), privacy: .public)")
+
+    logger.debug("a base notification registered: \(String(describing: notification))")
   }
 
   func resetBaseNotification() {
-    logger.debug("a base notification will be removed: \(String(describing: self.baseNotification), privacy: .public)")
+    logger.debug("a base notification will be removed: \(String(describing: self.baseNotification))")
     baseNotification = nil
   }
 }

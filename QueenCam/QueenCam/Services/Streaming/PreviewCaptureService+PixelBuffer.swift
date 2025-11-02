@@ -11,13 +11,10 @@ import OSLog
 
 // MARK: - 픽셀 버퍼 처리 로직
 extension PreviewCaptureService {
-  private var logger: Logger {
-    Logger(
-      subsystem: Bundle.main.bundleIdentifier ?? "com.queendom.QueenCam",
-      category: "PreviewCaptureService+PixelBuffer"
-    )
+  private var logger: QueenLogger {
+    QueenLogger(category: "PreviewCaptureService+PixelBuffer")
   }
-  
+
   /**
    CoreImage를 사용해 CVPixelBuffer를 리사이징한다.
    */

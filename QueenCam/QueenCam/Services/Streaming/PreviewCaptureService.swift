@@ -42,10 +42,7 @@ final actor PreviewCaptureService {
   /// 프레임 처리를 위한 CIContext
   let ciContext = CIContext(options: nil)
 
-  private let logger = Logger(
-    subsystem: Bundle.main.bundleIdentifier ?? "com.queendom.QueenCam",
-    category: "PreviewCaptureService"
-  )
+  private let logger = QueenLogger(category: "PreviewCaptureService")
 
   init() {
     (self.framePayloadStream, self.framePayloadContinuation) = AsyncStream.makeStream(of: VideoFramePayload.self)

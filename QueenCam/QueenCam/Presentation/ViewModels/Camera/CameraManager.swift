@@ -29,7 +29,7 @@ final class CameraManager: NSObject {
   var flashMode: AVCaptureDevice.FlashMode = .off
   var isLivePhotoOn: Bool = false
 
-  private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.queendom.QueenCam", category: "CameraManager")
+  private let logger = QueenLogger(category: "CameraManager")
 
   private var cameraDelegate: CameraDelegate?
 
