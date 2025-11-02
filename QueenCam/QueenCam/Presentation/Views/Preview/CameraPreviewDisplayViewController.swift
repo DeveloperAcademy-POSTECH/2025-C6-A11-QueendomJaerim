@@ -70,10 +70,7 @@ final class SampleBufferDisplayView: UIView {
   var onFrameRenderUnstably: (() -> Void)?
   var onFrameRenderStably: (() -> Void)?
 
-  private let logger = Logger(
-    subsystem: Bundle.main.bundleIdentifier ?? "com.queendom.QueenCam",
-    category: "SampleBufferDisplayView"
-  )
+  private let logger = QueenLogger(category: "SampleBufferDisplayView")
 
   var videoLayer: AVSampleBufferDisplayLayer?
 
