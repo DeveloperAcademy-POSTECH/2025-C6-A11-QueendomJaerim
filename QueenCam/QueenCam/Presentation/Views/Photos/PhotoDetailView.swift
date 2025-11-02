@@ -23,7 +23,7 @@ struct PhotoDetailView {
   // 한번 탭 UI 변경용
   @State private var isSingleTapped: Bool = false
 
-  private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.queendom.QueenCam", category: "PhotoDetailView")
+  @State private var logger = QueenLogger(category: "PhotoDetailView")
 }
 
 extension PhotoDetailView {
