@@ -319,7 +319,11 @@ extension NetworkService {
   /// 헬스 체크 요청 메시지 핸들링 (호스트가 받음)
   private func handleHealthCheckRequestEvent(code: String) {
     Task {
-      await send(for: .healthCheckResponse(code))
+      if self.networkState == .host(.publishing) || self.networkState == .viewer(.connected) {
+        await send(for: .healthCheckResponse(code))
+      } else {
+        logger.warning("health check ignored because connection lost or stopped.")
+      }
     }
   }
 
