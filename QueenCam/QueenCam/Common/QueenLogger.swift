@@ -51,7 +51,7 @@ nonisolated public final class QueenLogger {
     formatter.timeZone = TimeZone.current
     return formatter
   }()
-  
+
   public static var defaultLogFileURL: URL {
     guard let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
       fatalError("Documents 디렉토리를 찾을 수 없습니다.")
@@ -94,7 +94,7 @@ nonisolated public final class QueenLogger {
   public func debug(_ message: @autoclosure () -> String) {
     let message = message()
     osLogger.debug("\(message, privacy: .public)")
-    
+
     #if DEBUG
     log(level: .debug, message: message) // 디버그 로그는 디버그 빌드에서만 파일 출력
     #endif

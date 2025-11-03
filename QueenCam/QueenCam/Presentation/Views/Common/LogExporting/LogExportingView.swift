@@ -28,7 +28,10 @@ struct LogExportingView: View {
       }
     }
     .onAppear {
-      sharingLogFile = SharingLogFile(url: QueenLogger.defaultLogFileURL)
+      sharingLogFile = SharingLogFile(
+        url: QueenLogger.defaultLogFileURL,
+        deviceInfo: .defaultValue
+      )
     }
   }
 }
