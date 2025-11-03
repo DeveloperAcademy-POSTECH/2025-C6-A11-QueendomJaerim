@@ -36,28 +36,33 @@ struct PenWriteView: View {
         for stroke in penViewModel.strokes where stroke.points.count > 1 {
           var path = Path()
           path.addLines(stroke.absolutePoints(in: geo.size))
-          let outerColor = (role == .model) ? modelColor : photographerColor
-          context.stroke(path, with: .color(topColor), style: StrokeStyle(lineWidth: 10, lineCap: .round, lineJoin: .round))
-          context.stroke(
-            path,
-            with: .color(outerColor),
-            style: StrokeStyle(lineWidth: 7, lineCap: .round, lineJoin: .round)
-          )
+          if stroke.isMagicPen { // 매직펜인 경우
+            context.stroke(path, with: .color(.red), style: StrokeStyle(lineWidth: 7, lineCap: .round, lineJoin: .round))
+          } else { // 일반펜인 경우
+            let outerColor = (role == .model) ? modelColor : photographerColor
+            context.stroke(path, with: .color(topColor), style: StrokeStyle(lineWidth: 10, lineCap: .round, lineJoin: .round))
+            context.stroke(path, with: .color(outerColor), style: StrokeStyle(lineWidth: 7, lineCap: .round, lineJoin: .round))
+          }
 
         }
         // 현재 드래그 중인 선
         if tempPoints.count > 1 {
           var path = Path()
           path.addLines(tempPoints.map { CGPoint(x: $0.x * geo.size.width, y: $0.y * geo.size.height) })
-          let outerColor = (role == .model) ? modelColor : photographerColor
-          context.stroke(path, with: .color(topColor), style: StrokeStyle(lineWidth: 10, lineCap: .round, lineJoin: .round))
-          context.stroke(path, with: .color(outerColor), style: StrokeStyle(lineWidth: 7, lineCap: .round, lineJoin: .round))
+          if isMagicPen { // 매직펜인 경우
+            context.stroke(path, with: .color(.red), style: StrokeStyle(lineWidth: 7, lineCap: .round, lineJoin: .round))
+          } else {
+            let outerColor = (role == .model) ? modelColor : photographerColor
+            context.stroke(path, with: .color(topColor), style: StrokeStyle(lineWidth: 10, lineCap: .round, lineJoin: .round))
+            context.stroke(path, with: .color(outerColor), style: StrokeStyle(lineWidth: 7, lineCap: .round, lineJoin: .round))
+          }
         }
       }
       .background(.clear)
       .gesture(
         DragGesture(minimumDistance: 0)
           .onChanged { value in
+            let author =  role ?? .photographer
             let relativePoint = CGPoint(
               x: geo.size.width > 0 ? value.location.x / geo.size.width : 0,
               y: geo.size.height > 0 ? value.location.y / geo.size.height : 0
@@ -66,8 +71,7 @@ struct PenWriteView: View {
 
             // 첫 onChanged에서 시작(.add), 이후에는 진행 업데이트(.replace)
             if currentStrokeID == nil {
-              let author: Role = role ?? .photographer
-              currentStrokeID = penViewModel.add(initialPoints: tempPoints, author: author)
+              currentStrokeID = penViewModel.add(initialPoints: tempPoints, isMagicPen: isMagicPen, author: author)
             } else if let id = currentStrokeID {
               penViewModel.updateStroke(id: id, points: tempPoints)
             }
