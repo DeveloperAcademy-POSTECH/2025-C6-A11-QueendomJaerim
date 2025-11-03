@@ -55,7 +55,6 @@ extension PhotoDetailView.TopToolBarComponent: View {
     .frame(maxWidth: .infinity)
     .frame(height: 120, alignment: .bottom)
     .blur(radius: 0)
-    .safeAreaPadding(.top, 16)
     .glassEffect(.clear.tint(.black), in: .rect)
   }
 }
@@ -66,7 +65,7 @@ extension PhotoDetailView.TopToolBarComponent: View {
   }
   .background(.black)
   .overlay(alignment: .top) {
-    VStack {
+    VStack(spacing: .zero) {
       PhotoDetailView.TopToolBarComponent(
         currentIndex: 3,
         totalItemListCount: 6,
