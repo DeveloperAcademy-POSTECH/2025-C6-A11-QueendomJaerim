@@ -29,36 +29,95 @@ struct PenWriteView: View {
   }
 
   var body: some View {
-
     GeometryReader { geo in
-      // MARK: - 실제 드로잉 영역
-      Canvas { context, _ in
-        for stroke in penViewModel.strokes where stroke.points.count > 1 {
-          var path = Path()
-          path.addLines(stroke.absolutePoints(in: geo.size))
-          if stroke.isMagicPen { // 매직펜인 경우
-            context.stroke(path, with: .color(.red), style: StrokeStyle(lineWidth: 7, lineCap: .round, lineJoin: .round))
-          } else { // 일반펜인 경우
-            let outerColor = (role == .model) ? modelColor : photographerColor
-            context.stroke(path, with: .color(topColor), style: StrokeStyle(lineWidth: 10, lineCap: .round, lineJoin: .round))
-            context.stroke(path, with: .color(outerColor), style: StrokeStyle(lineWidth: 7, lineCap: .round, lineJoin: .round))
-          }
+      ZStack {
 
+        // 1) 일반 펜 전용 Canvas
+        Canvas { context, _ in
+          let outerColor = (role == .model) ? modelColor : photographerColor
+
+          // 저장된 일반 펜 strokes
+          drawStrokes(
+            context: context,
+            size: geo.size,
+            strokes: penViewModel.strokes.filter { $0.points.count > 1 && !$0.isMagicPen },
+            layers: [
+              .stroke(color: topColor, width: 10),
+              .stroke(color: outerColor, width: 7)
+            ]
+          )
+
+          // 현재 드래그 중인 선(일반펜)
+          if tempPoints.count > 1, !isMagicPen {
+            drawTempPoints(
+              context: context,
+              size: geo.size,
+              points: tempPoints,
+              layers: [
+                .stroke(color: topColor, width: 10),
+                .stroke(color: outerColor, width: 7)
+              ]
+            )
+          }
         }
-        // 현재 드래그 중인 선
-        if tempPoints.count > 1 {
-          var path = Path()
-          path.addLines(tempPoints.map { CGPoint(x: $0.x * geo.size.width, y: $0.y * geo.size.height) })
-          if isMagicPen { // 매직펜인 경우
-            context.stroke(path, with: .color(.red), style: StrokeStyle(lineWidth: 7, lineCap: .round, lineJoin: .round))
-          } else {
-            let outerColor = (role == .model) ? modelColor : photographerColor
-            context.stroke(path, with: .color(topColor), style: StrokeStyle(lineWidth: 10, lineCap: .round, lineJoin: .round))
-            context.stroke(path, with: .color(outerColor), style: StrokeStyle(lineWidth: 7, lineCap: .round, lineJoin: .round))
+        .background(.clear)
+
+        // 2) 매직펜 전용 Canvas1: Blur
+        Canvas { context, _ in
+          let outerColor = (role == .model) ? modelColor : photographerColor
+
+          // 저장된 매직펜 strokes (블러용)
+          drawStrokes(
+            context: context,
+            size: geo.size,
+            strokes: penViewModel.strokes.filter { $0.points.count > 1 && $0.isMagicPen },
+            layers: [
+              .stroke(color: outerColor, width: 10),
+              .stroke(color: .offWhite, width: 5)
+            ]
+          )
+
+          // 현재 드래그 중인 선(매직펜, 블러용)
+          if tempPoints.count > 1, isMagicPen {
+            drawTempPoints(
+              context: context,
+              size: geo.size,
+              points: tempPoints,
+              layers: [
+                .stroke(color: outerColor, width: 10),
+                .stroke(color: .offWhite, width: 5)
+              ]
+            )
+          }
+        }
+        .drawingGroup()
+        .blur(radius: 4)
+
+        // 3) 매직펜 전용 Canvas2: topStroke는 !Blur
+        Canvas { context, _ in
+          // 저장된 매직펜 strokes (탑 하이라이트)
+          drawStrokes(
+            context: context,
+            size: geo.size,
+            strokes: penViewModel.strokes.filter { $0.points.count > 1 && $0.isMagicPen },
+            layers: [
+              .stroke(color: .offWhite, width: 3)
+            ]
+          )
+
+          // 현재 드래그 중인 선(매직펜, 탑 하이라이트)
+          if tempPoints.count > 1, isMagicPen {
+            drawTempPoints(
+              context: context,
+              size: geo.size,
+              points: tempPoints,
+              layers: [
+                .stroke(color: .offWhite, width: 3)
+              ]
+            )
           }
         }
       }
-      .background(.clear)
       .gesture(
         DragGesture(minimumDistance: 0)
           .onChanged { value in
@@ -69,7 +128,6 @@ struct PenWriteView: View {
             )
             tempPoints.append(relativePoint)
 
-            // 첫 onChanged에서 시작(.add), 이후에는 진행 업데이트(.replace)
             if currentStrokeID == nil {
               currentStrokeID = penViewModel.add(initialPoints: tempPoints, isMagicPen: isMagicPen, author: author)
             } else if let id = currentStrokeID {
@@ -82,8 +140,6 @@ struct PenWriteView: View {
               currentStrokeID = nil
               return
             }
-
-            // 마지막 상태 반영(.replace)
             penViewModel.updateStroke(id: id, points: tempPoints)
 
             if isMagicPen {
@@ -91,7 +147,6 @@ struct PenWriteView: View {
                 penViewModel.remove(id)
               }
             }
-
             tempPoints.removeAll()
             currentStrokeID = nil
             penViewModel.redoStrokes.removeAll()
@@ -111,6 +166,63 @@ struct PenWriteView: View {
             penViewModel.redo()
           }
         }
+      }
+    }
+  }
+}
+
+private extension PenWriteView {
+  enum StrokeLayer {
+    case stroke(color: Color, width: CGFloat)
+
+    var style: StrokeStyle {
+      StrokeStyle(lineWidth: lineWidth, lineCap: .round, lineJoin: .round)
+    }
+
+    private var lineWidth: CGFloat {
+      switch self {
+      case .stroke(_, let width): return width
+      }
+    }
+  }
+  func makePath(fromAbsolute points: [CGPoint]) -> Path {
+    var path = Path()
+    path.addLines(points)
+    return path
+  }
+  func makePath(fromRelative points: [CGPoint], in size: CGSize) -> Path {
+    let abs = points.map { CGPoint(x: $0.x * size.width, y: $0.y * size.height) }
+    return makePath(fromAbsolute: abs)
+  }
+  // 저장된 선을 그림
+  func drawStrokes(
+    context: GraphicsContext,
+    size: CGSize,
+    strokes: [Stroke],
+    layers: [StrokeLayer]
+  ) {
+    for stroke in strokes {
+      let path = makePath(fromAbsolute: stroke.absolutePoints(in: size))
+      for layer in layers {
+        switch layer {
+        case .stroke(let color, _):
+          context.stroke(path, with: .color(color), style: layer.style)
+        }
+      }
+    }
+  }
+  // 현재 드래그 중인 선을 그림
+  func drawTempPoints(
+    context: GraphicsContext,
+    size: CGSize,
+    points: [CGPoint],
+    layers: [StrokeLayer]
+  ) {
+    let path = makePath(fromRelative: points, in: size)
+    for layer in layers {
+      switch layer {
+      case .stroke(let color, _):
+        context.stroke(path, with: .color(color), style: layer.style)
       }
     }
   }
