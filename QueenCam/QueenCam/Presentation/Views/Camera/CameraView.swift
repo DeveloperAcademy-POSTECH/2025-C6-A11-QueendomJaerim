@@ -125,31 +125,62 @@ extension CameraView: View {
       }
   }
 
-  private var camerSettingTool: some View {
+  private var bottomCameraSettingTool: some View {
     HStack(spacing: 50) {
       CameraSettingButton(
         title: "플래시",
         systemName: flashImage,
         isActive: cameraViewModel.isFlashMode != .off,
-        tapAction: { cameraViewModel.switchFlashMode() }
+        tapAction: { cameraViewModel.switchFlashMode() },
+        isToolBar: false
       )
 
       CameraSettingButton(
         title: "LIVE",
         systemName: liveImage,
         isActive: cameraViewModel.isLivePhotoOn,
-        tapAction: { cameraViewModel.switchLivePhoto() }
+        tapAction: { cameraViewModel.switchLivePhoto() },
+        isToolBar: false
       )
 
       CameraSettingButton(
         title: "그리드",
         systemName: "grid",
         isActive: cameraViewModel.isShowGrid,
-        tapAction: { cameraViewModel.switchGrid() }
+        tapAction: { cameraViewModel.switchGrid() },
+        isToolBar: false
       )
     }
     .frame(width: 377, height: 192)
     .glassEffect(.clear.tint(Color.hex333333), in: .rect(cornerRadius: 59))
+  }
+  
+  private var toolBarCameraSettingTool: some View {
+    ControlGroup {
+      CameraSettingButton(
+        title: "플래시",
+        systemName: flashImage,
+        isActive: cameraViewModel.isFlashMode != .off,
+        tapAction: { cameraViewModel.switchFlashMode() },
+        isToolBar: true
+      )
+
+      CameraSettingButton(
+        title: "LIVE",
+        systemName: liveImage,
+        isActive: cameraViewModel.isLivePhotoOn,
+        tapAction: { cameraViewModel.switchLivePhoto() },
+        isToolBar: true
+      )
+
+      CameraSettingButton(
+        title: "그리드",
+        systemName: "grid",
+        isActive: cameraViewModel.isShowGrid,
+        tapAction: { cameraViewModel.switchGrid() },
+        isToolBar: true
+      )
+    }
   }
 
   var body: some View {
@@ -164,6 +195,8 @@ extension CameraView: View {
             isConnected: isSessionActive,
             connectedDeviceName: connectionViewModel.connectedDeviceName,
             menuContent: {
+              toolBarCameraSettingTool
+
               Button("기능 1") {}
               Button("기능 2") {}
               Button("기능 3") {}
@@ -461,7 +494,7 @@ extension CameraView: View {
 
         VStack {
           Spacer()
-          camerSettingTool
+          bottomCameraSettingTool
         }
         .padding(.bottom, 12)
         .transition(.move(edge: .bottom))
