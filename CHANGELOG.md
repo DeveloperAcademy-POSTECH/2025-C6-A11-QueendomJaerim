@@ -11,7 +11,7 @@
 
 
 ### Changed
-
+- 가이딩 선택 및 노출 조건 추가
 
 ### Deprecated
 
