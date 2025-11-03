@@ -37,21 +37,22 @@ struct PenWriteView: View {
             var path = Path()
             path.addLines(stroke.absolutePoints(in: geo.size))
             let outerColor = stroke.author == .model ? modelColor : photographerColor
-            context.stroke(path,
-                           with: .color(outerColor),
-                           style: StrokeStyle(lineWidth: 10, lineCap: .round, lineJoin: .round))
             context.stroke(
               path, with: .color(topColor),
-              style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round)
+              style: StrokeStyle(lineWidth: 10, lineCap: .round, lineJoin: .round)
             )
+            context.stroke(path,
+                           with: .color(outerColor),
+                           style: StrokeStyle(lineWidth: 7, lineCap: .round, lineJoin: .round))
+            
           }
           // 현재 드래그 중인 선
           if tempPoints.count > 1 {
             var path = Path()
             path.addLines(tempPoints.map { CGPoint(x: $0.x * geo.size.width, y: $0.y * geo.size.height) })
             let outerColor = (role == .model) ? modelColor : photographerColor
-            context.stroke(path, with: .color(outerColor.opacity(50)), style: StrokeStyle(lineWidth: 10, lineCap: .round, lineJoin: .round))
-            context.stroke(path, with: .color(topColor), style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
+            context.stroke(path, with: .color(topColor), style: StrokeStyle(lineWidth: 10, lineCap: .round, lineJoin: .round))
+            context.stroke(path, with: .color(outerColor.opacity(50)), style: StrokeStyle(lineWidth: 7, lineCap: .round, lineJoin: .round))
           }
         }
         .background(.clear)
@@ -95,9 +96,9 @@ struct PenWriteView: View {
         )
       }
       .overlay(alignment: .bottomLeading) {
-        if isPen {
+        if isPen && !(penViewModel.strokes.isEmpty) {
           // MARK: - 버튼 툴바 Undo / Redo / clearAll
-          GuidingToolBarView { action in
+          GuidingToolBarView(penViewModel: penViewModel) { action in
             switch action {
             case .clearAll:
               penViewModel.deleteAll()
