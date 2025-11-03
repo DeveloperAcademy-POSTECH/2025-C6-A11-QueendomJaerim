@@ -12,6 +12,7 @@
 
 ### Changed
 
+- 포토 디테일 뷰 하이 파이
 
 ### Deprecated
 
