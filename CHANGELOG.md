@@ -12,6 +12,8 @@
 
 ### Changed
 
+- 작가 2차 하이파이 구현
+
 
 ### Deprecated
 
