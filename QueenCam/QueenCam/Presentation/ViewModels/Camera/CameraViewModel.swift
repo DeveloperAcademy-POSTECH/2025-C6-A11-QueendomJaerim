@@ -133,25 +133,31 @@ final class CameraViewModel {
 
   func switchFlashMode() {
     switch isFlashMode {
-    case .off: isFlashMode = .on
-    case .on: isFlashMode = .auto
-    case .auto: isFlashMode = .off
+    case .off:
+      isFlashMode = .on
+      notificationService.registerNotification(DomainNotification.make(type: .flashOn))
+    case .on:
+      isFlashMode = .auto
+      notificationService.registerNotification(DomainNotification.make(type: .flashAuto))
+    case .auto:
+      isFlashMode = .off
+      notificationService.registerNotification(DomainNotification.make(type: .flashOff))
     }
 
     camerSettingsService.flashMode = isFlashMode
     cameraManager.flashMode = isFlashMode.convertAVCaptureDeviceFlashMode
-    
-    // State Toast
-    if isFlashMode == .on {
-      notificationService.registerNotification(DomainNotification.make(type: .flashOn))
-    }
-    if isFlashMode == .auto {
-      notificationService.registerNotification(DomainNotification.make(type: .flashAuto))
-    }
   }
 
   func switchLivePhoto() {
-    isLivePhotoOn.toggle()
+    switch isLivePhotoOn {
+    case true:
+      isLivePhotoOn = false
+      notificationService.registerNotification(DomainNotification.make(type: .liveOff))
+    case false:
+      isLivePhotoOn = true
+      notificationService.registerNotification(DomainNotification.make(type: .liveOn))
+    }
+
     camerSettingsService.livePhotoOn = isLivePhotoOn
     cameraManager.isLivePhotoOn = isLivePhotoOn
   }

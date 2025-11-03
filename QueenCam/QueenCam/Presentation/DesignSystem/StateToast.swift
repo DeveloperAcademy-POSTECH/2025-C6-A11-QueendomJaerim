@@ -16,9 +16,10 @@ struct StateToast: View {
   var body: some View {
     Text(message)
       .typo(.r12)
+      .foregroundStyle(.black)
       .padding(.vertical, 8)
       .padding(.horizontal, 16)
-      .glassEffect(isImportant ? .regular.tint(importantStateTintColor) : .regular.tint(.offWhite.opacity(0.6)))
+      .glassEffect(isImportant ? .clear.tint(importantStateTintColor) : .clear.tint(.offWhite.opacity(0.6)))
   }
 }
 
