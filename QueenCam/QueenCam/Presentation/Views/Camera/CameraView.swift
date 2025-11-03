@@ -126,34 +126,30 @@ extension CameraView: View {
   }
 
   private var camerSettingTool: some View {
-    ZStack {
-      HStack(spacing: 50) {
-        CameraSettingButton(
-          title: "플래시",
-          systemName: flashImage,
-          isActive: cameraViewModel.isFlashMode != .off,
-          tapAction: { cameraViewModel.switchFlashMode() }
-        )
+    HStack(spacing: 50) {
+      CameraSettingButton(
+        title: "플래시",
+        systemName: flashImage,
+        isActive: cameraViewModel.isFlashMode != .off,
+        tapAction: { cameraViewModel.switchFlashMode() }
+      )
 
-        CameraSettingButton(
-          title: "LIVE",
-          systemName: liveImage,
-          isActive: cameraViewModel.isLivePhotoOn,
-          tapAction: { cameraViewModel.switchLivePhoto() }
-        )
+      CameraSettingButton(
+        title: "LIVE",
+        systemName: liveImage,
+        isActive: cameraViewModel.isLivePhotoOn,
+        tapAction: { cameraViewModel.switchLivePhoto() }
+      )
 
-        CameraSettingButton(
-          title: "그리드",
-          systemName: "grid",
-          isActive: cameraViewModel.isShowGrid,
-          tapAction: { cameraViewModel.switchGrid() }
-        )
-      }
+      CameraSettingButton(
+        title: "그리드",
+        systemName: "grid",
+        isActive: cameraViewModel.isShowGrid,
+        tapAction: { cameraViewModel.switchGrid() }
+      )
     }
     .frame(width: 377, height: 192)
-    .background(Color.hex333333)
-    .glassEffect(.regular, in: .rect(cornerRadius: 59))
-    .clipShape(.rect(cornerRadius: 59))
+    .glassEffect(.clear.tint(Color.hex333333), in: .rect(cornerRadius: 59))
   }
 
   var body: some View {
@@ -303,6 +299,10 @@ extension CameraView: View {
               .stroke(.gray, lineWidth: 1)
           }
           .padding(.horizontal, 16)
+          .overlay(alignment: .center) {
+            StateToastContainer()
+              .padding(.top, 16)
+          }
 
           // 프리뷰 밖 => 이부분을 기준으로 바구니 표현
           VStack(spacing: 24) {
