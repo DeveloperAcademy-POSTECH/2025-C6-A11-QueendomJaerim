@@ -208,12 +208,6 @@ extension CameraView: View {
                         }
                       }
                   }
-                  if isLarge {
-                    Color.black.opacity(0.5)
-                      .onTapGesture {
-                        isLarge = false
-                      }
-                  }
                 }
             } else {  // 모델
               #if DEBUG
@@ -221,13 +215,13 @@ extension CameraView: View {
               #else
               PreviewPlayerView(previewModel: previewModel)
               #endif
+            }
 
-              if isLarge {
-                Color.black.opacity(0.5)
-                  .onTapGesture {
-                    isLarge = false
-                  }
-              }
+            if isLarge {
+              Color.black.opacity(0.5)
+                .onTapGesture {
+                  isLarge = false
+                }
             }
 
             if cameraViewModel.isShowGrid {
@@ -240,16 +234,13 @@ extension CameraView: View {
               .clipped()
 
             Group {
+              if isFrame {
+                FrameEditorView(frameViewModel: frameViewModel)
+              }
               if isPen || isMagicPen {
                 PenWriteView(penViewModel: penViewModel, isPen: isPen, isMagicPen: isMagicPen, role: connectionViewModel.role)
               } else {
                 PenDisplayView(penViewModel: penViewModel, role: connectionViewModel.role)
-              }
-
-              if isFrame {
-                FrameEditorView(frameViewModel: frameViewModel)
-              } else {
-                FrameDisplayView(frameViewModel: frameViewModel)
               }
             }
             .opacity(isRemoteGuideHidden ? .zero : 1)
@@ -307,26 +298,24 @@ extension CameraView: View {
           // 프리뷰 밖 => 이부분을 기준으로 바구니 표현
           VStack(spacing: 24) {
             HStack(alignment: .center, spacing: 40) {
+              //프레임
               GuidingButton(
                 role: connectionViewModel.role,
                 isActive: isFrame,
                 tapAction: {
                   isFrame.toggle()
-                  isPen = false
-                  isMagicPen = false
                   if isFrame {
                     isRemoteGuideHidden = false
                   }
                 },
                 guidingButtonType: .frame
               )
-
+              // 펜
               GuidingButton(
                 role: connectionViewModel.role,
                 isActive: isPen,
                 tapAction: {
                   isPen.toggle()
-                  isFrame = false
                   isMagicPen = false
                   if isPen {
                     isRemoteGuideHidden = false
@@ -334,14 +323,13 @@ extension CameraView: View {
                 },
                 guidingButtonType: .pen
               )
-
+              // 매직펜
               GuidingButton(
                 role: connectionViewModel.role,
                 isActive: isMagicPen,
                 tapAction: {
                   isMagicPen.toggle()
                   isPen = false
-                  isFrame = false
                   if isMagicPen {
                     isRemoteGuideHidden = false
                   }
