@@ -30,7 +30,7 @@ struct GuidingToolBarView: View {
           tapAction: {
             onAction(.undo)
           }
-        ).disabled( penViewModel.strokes.isEmpty)
+        ).disabled(penViewModel.strokes.isEmpty)
       }
       Spacer()
     }

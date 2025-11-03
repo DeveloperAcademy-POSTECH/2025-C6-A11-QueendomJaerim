@@ -63,7 +63,7 @@ final class PenViewModel {
   }
   /// 본인이 생성한 펜 가이딩 전체 삭제
   func deleteAll() {  // 전체 삭제
-    guard let myRole = currentRole else { return }
+    guard let myRole = currentRole else { return currentRole = .photographer }
 
     let myIds = strokes.filter { $0.author == myRole }.map(\.id)
     strokes.removeAll { $0 .author == myRole }
@@ -83,7 +83,7 @@ final class PenViewModel {
 
   // MARK: - 스트로크 실행취소/재실행
   func undo() {
-    guard let myRole = currentRole else { return }
+    guard let myRole = currentRole else { return currentRole = .photographer }
     guard let index = strokes.lastIndex(where: { $0.author == myRole }) else { return }
 
     let last = strokes.remove(at: index)
