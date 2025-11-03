@@ -39,7 +39,6 @@ nonisolated extension SharingLogFile: Transferable {
         Exported At: \(logFile.exportedAt.formatted())
 
         ==== Logs ====
-
         \(logFile.logContent)
         """
 

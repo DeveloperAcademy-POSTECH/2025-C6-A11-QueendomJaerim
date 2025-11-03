@@ -29,7 +29,7 @@ struct LogExportingView: View {
     }
     .onAppear {
       sharingLogFile = SharingLogFile(
-        url: QueenLogger.defaultLogFileURL,
+        url: LogFileAppender.defaultLogFileURL,
         deviceInfo: .defaultValue
       )
     }
