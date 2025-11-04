@@ -6,7 +6,7 @@
 import Foundation
 import SwiftUI
 
-/// 펜 가이드라인 작성 뷰 (only 모델)
+/// 펜 가이드라인 작성 뷰
 struct PenWriteView: View {
   @Bindable var penViewModel: PenViewModel
   var isPen: Bool
