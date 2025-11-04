@@ -26,9 +26,9 @@ struct PenDisplayView: View {
 
         // 1) 일반 펜 전용 Canvas
         Canvas { context, _ in
-          let outerColor = (role == .model) ? modelColor : photographerColor
-
           for stroke in penViewModel.strokes where stroke.points.count > 1 && !stroke.isMagicPen {
+            let outerColor = (stroke.author == .model) ? modelColor : photographerColor
+
             var path = Path()
             path.addLines(stroke.absolutePoints(in: geo.size))
 
@@ -48,13 +48,12 @@ struct PenDisplayView: View {
 
         // 2) 매직펜 전용 Canvas1: Blur 레이어
         Canvas { context, _ in
-          let outerColor = (role == .model) ? modelColor : photographerColor
-
           for stroke in penViewModel.strokes where stroke.points.count > 1 && stroke.isMagicPen {
+            let outerColor = (stroke.author == .model) ? modelColor : photographerColor
+
             var path = Path()
             path.addLines(stroke.absolutePoints(in: geo.size))
 
-            // 바깥쪽 컬러 굵게
             context.stroke(
               path,
               with: .color(outerColor),
