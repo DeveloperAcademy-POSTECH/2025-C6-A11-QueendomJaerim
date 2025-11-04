@@ -95,6 +95,7 @@ final class PenViewModel {
 
   // MARK: - 스트로크 실행취소/재실행
   func undo() {
+    // 전체 삭제(deleteAll) 이전의 Strokes 가져오기
     if strokes.isEmpty, let recentDeleteStrokes = deleteStrokes.popLast() {
       strokes.append(contentsOf: recentDeleteStrokes)
       for stroke in recentDeleteStrokes {
