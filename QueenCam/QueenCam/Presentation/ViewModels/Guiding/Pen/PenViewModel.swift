@@ -10,8 +10,12 @@ import SwiftUI
 
 @Observable
 final class PenViewModel {
-  var strokes: [Stroke] = []  // 현재 그려진 모든 선들(Pen의 배열)
-  var redoStrokes: [Stroke] = []  // 사용자가 Redo(복귀) 했을때 되돌릴 수 있는 선들
+  /// 현재 그려진 모든 선(stroke)들
+  var strokes: [Stroke] = []
+  /// 사용자가 Redo 했을때 되돌릴 수 있는 선(stroke)들
+  var redoStrokes: [Stroke] = []
+  /// 사용자가 전체삭제 했던 선(stroke)들
+  var deleteStrokes: [[Stroke]] = []
   /// 현재 사용자의 역할(모델, 작가)
   var currentRole: Role?
 
@@ -26,7 +30,6 @@ final class PenViewModel {
 
     bind()
   }
-
   // MARK: - 드로잉 시작/진행 업데이트
   func add(initialPoints: [CGPoint], isMagicPen: Bool, author: Role) -> UUID {
     let stroke = Stroke(points: initialPoints, isMagicPen: isMagicPen, author: author)
@@ -38,7 +41,7 @@ final class PenViewModel {
     return stroke.id
   }
 
-  /// 진행 중 스트로크의 포인트를 갱신하고 .replace 이벤트를 전송한다.
+  /// 진행 중 스트로크의 포인트를 갱신 +  .replace 이벤트를 전송
   func updateStroke(id: UUID, points: [CGPoint]) {
     guard let strokeIndex = strokes.firstIndex(where: { $0.id == id }) else { return }
     if let myRole = currentRole, strokes[strokeIndex].author != myRole { return }
@@ -52,8 +55,9 @@ final class PenViewModel {
   /// 펜 가이딩 개별 획(stroke)  삭제 - 매직펜
   func remove(_ id: UUID) {
     guard let myRole = currentRole,
-          let target = strokes.first(where: { $0.id == id }),
-          target.author == myRole else { return }
+      let target = strokes.first(where: { $0.id == id }),
+      target.author == myRole
+    else { return }
 
     strokes.removeAll { $0.id == id }
     redoStrokes.removeAll { $0.id == id }
@@ -63,10 +67,16 @@ final class PenViewModel {
   }
   /// 본인이 생성한 펜 가이딩 전체 삭제
   func deleteAll() {  // 전체 삭제
-    guard let myRole = currentRole else { return currentRole = .photographer }
-
+    guard let myRole = currentRole else {
+      currentRole = .photographer
+      return
+    }
+    /// 내가 생성한 stroke의 id 배열
     let myIds = strokes.filter { $0.author == myRole }.map(\.id)
-    strokes.removeAll { $0 .author == myRole }
+    /// 내가 생성한 stroke의 배열
+    let myStroke = strokes.filter { $0.author == myRole}
+    if !myStroke.isEmpty { deleteStrokes.append(myStroke)}
+    strokes.removeAll { $0.author == myRole }
     redoStrokes.removeAll { $0.author == myRole }
     for id in myIds {
       sendPenCommand(command: .remove(id: id))
@@ -76,14 +86,24 @@ final class PenViewModel {
   func reset() {
     strokes.removeAll()
     redoStrokes.removeAll()
-    
+
     // Send to network
     sendPenCommand(command: .reset)
   }
 
   // MARK: - 스트로크 실행취소/재실행
   func undo() {
-    guard let myRole = currentRole else { return currentRole = .photographer }
+    guard let myRole = currentRole else {
+      currentRole = .photographer
+      return
+    }
+    if strokes.isEmpty, let recentDeleteStrokes = deleteStrokes.popLast() {
+        strokes.append(contentsOf: recentDeleteStrokes)
+        for stroke in recentDeleteStrokes {
+        sendPenCommand(command: .add(stroke: stroke))
+      }
+      return
+    }
     guard let index = strokes.lastIndex(where: { $0.author == myRole }) else { return }
 
     let last = strokes.remove(at: index)
