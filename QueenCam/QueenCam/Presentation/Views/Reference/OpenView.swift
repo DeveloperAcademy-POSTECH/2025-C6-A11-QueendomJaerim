@@ -27,7 +27,7 @@ struct OpenView: View {
             )
             .clipShape(.rect(cornerRadius: 20))
             .onTapGesture {
-              isLarge = true
+              isLarge.toggle()
               showDelete.toggle()
             }
         }
