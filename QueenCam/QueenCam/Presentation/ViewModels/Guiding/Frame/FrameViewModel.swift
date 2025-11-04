@@ -121,7 +121,7 @@ final class FrameViewModel {
     new.origin.x = min(max(new.minX, 0), 1 - new.width)
     new.origin.y = min(max(new.minY, 0), 1 - new.height)
     frames[frameIndex].rect = new
-    
+
     // Send to network
     sendFrameCommand(command: .modify(frame: frames[frameIndex]))
   }

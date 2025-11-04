@@ -25,6 +25,7 @@
 
     },
     "LIVE 켬" : {
+    "LIVE" : {
 
     },
     "Photos" : {
@@ -90,6 +91,9 @@
       }
     },
     "기기 연결하기" : {
+
+    },
+    "기기를 연결해 촬영해보세요" : {
 
     },
     "기능 1" : {
@@ -300,6 +304,7 @@
       }
     },
     "완료" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
