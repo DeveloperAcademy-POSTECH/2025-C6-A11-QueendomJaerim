@@ -1,6 +1,6 @@
 import Foundation
 
-final class CamerSettingsService: CamerSettingsServiceProtocol {
+final class CameraSettingsService: CameraSettingsServiceProtocol {
   private let livePhotoKey = "livePhotoOn"
   private let gridKey = "gridOn"
   private let flashKey = "flashMode"

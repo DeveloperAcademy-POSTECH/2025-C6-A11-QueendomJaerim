@@ -39,7 +39,7 @@ struct CameraView {
   @State private var isFrame: Bool = false
 
   @State private var isRemoteGuideHidden: Bool = false
-  @State private var isShowCamerSettingTool: Bool = false
+  @State private var isShowCameraSettingTool: Bool = false
 }
 
 extension CameraView {
@@ -125,7 +125,7 @@ extension CameraView: View {
       }
   }
 
-  private var camerSettingTool: some View {
+  private var cameraSettingTool: some View {
     ZStack {
       HStack(spacing: 50) {
         CameraSettingButton(
@@ -392,7 +392,7 @@ extension CameraView: View {
               .onEnded { value in
                 guard isPhotographerMode else { return }
                 withAnimation {
-                  self.isShowCamerSettingTool = true
+                  self.isShowCameraSettingTool = true
                 }
               }
           )
@@ -438,18 +438,18 @@ extension CameraView: View {
     }
     // MARK: 카메라 세팅 툴
     .overlay {
-      if isShowCamerSettingTool {
+      if isShowCameraSettingTool {
         Color.black.opacity(0.1)
           .ignoresSafeArea()
           .onTapGesture {
             withAnimation {
-              isShowCamerSettingTool = false
+              isShowCameraSettingTool = false
             }
           }
 
         VStack {
           Spacer()
-          camerSettingTool
+          cameraSettingTool
         }
         .padding(.bottom, 12)
         .transition(.move(edge: .bottom))
