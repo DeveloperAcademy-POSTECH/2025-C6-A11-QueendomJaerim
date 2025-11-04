@@ -12,9 +12,12 @@ struct PenWriteView: View {
   var isPen: Bool
   var isMagicPen: Bool
   let role: Role?
-
-  @State private var tempPoints: [CGPoint] = []  // 현재 그리고 있는 선의 좌표(임시)
-  @State private var currentStrokeID: UUID?  // 진행 중 스트로크 ID
+  /// 현재 그리고 있는 Stroke의 좌표 (저장 전)
+  @State private var tempPoints: [CGPoint] = []
+  /// 작성 중인 스트로크 ID
+  @State private var currentStrokeID: UUID?
+  /// 첫 Stroke 작성 여부
+  @State private var hasEverDrawn: Bool = false
   private var topColor = Color.offWhite
   private var photographerColor = Color.photographerPrimary
   private var modelColor = Color.modelPrimary
@@ -121,7 +124,7 @@ struct PenWriteView: View {
       .gesture(
         DragGesture(minimumDistance: 0)
           .onChanged { value in
-            let author =  role ?? .photographer
+            let author = role ?? .photographer
             let relativePoint = CGPoint(
               x: geo.size.width > 0 ? value.location.x / geo.size.width : 0,
               y: geo.size.height > 0 ? value.location.y / geo.size.height : 0
@@ -135,6 +138,7 @@ struct PenWriteView: View {
             }
           }
           .onEnded { _ in
+            hasEverDrawn = true
             guard let id = currentStrokeID, !tempPoints.isEmpty else {
               tempPoints.removeAll()
               currentStrokeID = nil
@@ -154,11 +158,11 @@ struct PenWriteView: View {
       )
     }
     .overlay(alignment: .bottomLeading) {
-      if isPen && !(penViewModel.strokes.isEmpty) {
-        // MARK: - 버튼 툴바 Undo / Redo / clearAll
-        GuidingToolBarView(penViewModel: penViewModel) { action in
+      if isPen && hasEverDrawn {
+        // MARK: - 펜 툴바 Undo / Redo / clearAll
+        PenToolBar(penViewModel: penViewModel) { action in
           switch action {
-          case .clearAll:
+          case .deleteAll:
             penViewModel.deleteAll()
           case .undo:
             penViewModel.undo()

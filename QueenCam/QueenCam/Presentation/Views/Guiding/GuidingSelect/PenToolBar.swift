@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct GuidingToolBarView: View {
+struct PenToolBar: View {
   var penViewModel: PenViewModel
   var onAction: (ToolBarAction) -> Void
   var body: some View {
@@ -17,20 +17,20 @@ struct GuidingToolBarView: View {
         // 전체 삭제
         PenToolButton(
           penToolType: .eraser,
-          isActive: true,
+          isActive: !penViewModel.strokes.isEmpty,
           tapAction: {
-            onAction(.clearAll)
+            onAction(.deleteAll)
           }
-        ).disabled( penViewModel.strokes.isEmpty)
+        )
 
         // 실행 취소
         PenToolButton(
           penToolType: .undo,
-          isActive: true,
+          isActive: !(penViewModel.deleteStrokes.isEmpty && penViewModel.strokes.isEmpty),
           tapAction: {
             onAction(.undo)
           }
-        ).disabled(penViewModel.strokes.isEmpty)
+        )
       }
       Spacer()
     }
@@ -39,7 +39,7 @@ struct GuidingToolBarView: View {
 }
 
 #Preview {
-  GuidingToolBarView(penViewModel: PenViewModel()) { action in
+  PenToolBar(penViewModel: PenViewModel()) { action in
     print("Tapped: \(action)")
   }
 }
