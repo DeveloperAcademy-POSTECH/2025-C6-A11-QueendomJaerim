@@ -83,7 +83,7 @@ final class PreviewModel {
   /// 연결 목록
   var connections: [WAPairedDevice: ConnectionDetail] = [:]
 
-  private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.queendom.QueenCam", category: "PreviewModel")
+  private let logger = QueenLogger(category: "PreviewModel")
 
   init(previewCaptureService: PreviewCaptureService, networkService: NetworkServiceProtocol) {
     self.previewCaptureService = previewCaptureService

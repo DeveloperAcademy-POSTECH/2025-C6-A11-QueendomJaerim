@@ -40,10 +40,7 @@ extension PhotoDetailView {
 
     @State private var containerSize: CGSize = .zero
 
-    private let logger = Logger(
-      subsystem: Bundle.main.bundleIdentifier ?? "com.queendom.QueenCam",
-      category: "PhotoDetailView+ItemComponent"
-    )
+    private let logger = QueenLogger(category: "PhotoDetailView+ItemComponent")
   }
 }
 

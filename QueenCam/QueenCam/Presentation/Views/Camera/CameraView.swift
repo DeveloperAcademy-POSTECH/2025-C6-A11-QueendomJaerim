@@ -40,6 +40,9 @@ struct CameraView {
 
   @State private var isRemoteGuideHidden: Bool = false
   @State private var isShowCameraSettingTool: Bool = false
+  
+  // 로그 내보내기 시트 노출 여부
+  @State private var isShowLogExportingSheet: Bool = false
 }
 
 extension CameraView {
@@ -170,7 +173,9 @@ extension CameraView: View {
             menuContent: {
               Button("기능 1") {}
               Button("기능 2") {}
-              Button("기능 3") {}
+              Button("로그 내보내기") {
+                isShowLogExportingSheet = true
+              }
 
               Divider()
 
@@ -509,6 +514,9 @@ extension CameraView: View {
         frameViewModel.deleteAll()
         referenceViewModel.onDelete()
       }
+    }
+    .sheet(isPresented: $isShowLogExportingSheet) {
+      LogExportingView()
     }
     .task {
       await cameraViewModel.checkPermissions()

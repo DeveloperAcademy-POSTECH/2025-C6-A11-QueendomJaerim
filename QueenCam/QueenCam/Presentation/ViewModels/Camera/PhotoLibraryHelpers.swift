@@ -11,7 +11,7 @@ import OSLog
 import UIKit
 
 struct PhotoLibraryHelpers {
-  static let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.queendom.QueenCam", category: "PhotoLiberaryHelpers")
+  static let logger = QueenLogger(category: "PhotoLiberaryHelpers")
   
   static func saveToPhotoLibrary(_ image: UIImage) {
     PHPhotoLibrary.shared().performChanges {
