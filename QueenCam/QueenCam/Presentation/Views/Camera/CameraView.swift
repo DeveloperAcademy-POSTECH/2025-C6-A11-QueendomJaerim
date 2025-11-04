@@ -272,7 +272,7 @@ extension CameraView: View {
                 FrameEditorView(frameViewModel: frameViewModel)
               }
               if isPen || isMagicPen {
-                PenWriteView(penViewModel: penViewModel, isPen: isPen, isMagicPen: isMagicPen, role: connectionViewModel.role)
+                PenWriteView(penViewModel: penViewModel, isPen: isPen, isMagicPen: isMagicPen, role: connectionViewModel.role ?? .photographer)
               } else {
                 PenDisplayView(penViewModel: penViewModel, role: connectionViewModel.role)
               }

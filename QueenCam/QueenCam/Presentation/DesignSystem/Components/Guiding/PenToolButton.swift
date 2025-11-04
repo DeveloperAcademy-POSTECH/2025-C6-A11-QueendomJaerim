@@ -17,7 +17,7 @@ extension PenToolButton {
     case .undo:
       return "arrow.uturn.backward"
     case .eraser:
-      return "eraser.fill"
+      return "eraser"
     }
   }
 }
