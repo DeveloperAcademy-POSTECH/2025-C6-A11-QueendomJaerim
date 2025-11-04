@@ -262,11 +262,6 @@ extension CameraView: View {
               GridView()
             }
 
-            ReferenceView(referenceViewModel: referenceViewModel, isLarge: $isLarge)
-              .frame(maxWidth: .infinity, maxHeight: .infinity)
-              .padding(8)
-              .clipped()
-
             Group {
               if isFrame {
                 FrameEditorView(frameViewModel: frameViewModel)
@@ -320,6 +315,11 @@ extension CameraView: View {
               }
               .padding(12)
             }
+            
+            ReferenceView(referenceViewModel: referenceViewModel, isLarge: $isLarge)
+              .frame(maxWidth: .infinity, maxHeight: .infinity)
+              .padding(8)
+              .clipped()
           }
           .aspectRatio(3 / 4, contentMode: .fill)
           .clipShape(.rect(cornerRadius: 5))
