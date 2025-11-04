@@ -20,6 +20,8 @@ final class PenViewModel {
   var currentRole: Role?
   /// 미연결(nil)인 경우 작가로 역할 부여
   private var myRole: Role { currentRole ?? .photographer }
+  /// 세션 동안 내가 한 번이라도 그렸는지 여부
+  var hasEverDrawn: Bool = false
 
   // MARK: - 네트워크
   let networkService: NetworkServiceProtocol
@@ -37,6 +39,10 @@ final class PenViewModel {
     let stroke = Stroke(points: initialPoints, isMagicPen: isMagicPen, author: author)
     strokes.append(stroke)
     redoStrokes.removeAll()
+
+    if author == myRole && hasEverDrawn == false {
+      hasEverDrawn = true
+    }
 
     // Send to network
     sendPenCommand(command: .add(stroke: stroke))
@@ -88,6 +94,7 @@ final class PenViewModel {
   func reset() {
     strokes.removeAll()
     redoStrokes.removeAll()
+    hasEverDrawn = false
 
     // Send to network
     sendPenCommand(command: .reset)
@@ -95,7 +102,6 @@ final class PenViewModel {
 
   // MARK: - 스트로크 실행취소/재실행
   func undo() {
-    // 전체 삭제(deleteAll) 이전의 Strokes 가져오기
     if strokes.isEmpty, let recentDeleteStrokes = deleteStrokes.popLast() {
       strokes.append(contentsOf: recentDeleteStrokes)
       for stroke in recentDeleteStrokes {
@@ -163,6 +169,7 @@ extension PenViewModel {
     case .reset:
       strokes.removeAll()
       redoStrokes.removeAll()
+      hasEverDrawn = false
     }
   }
 }

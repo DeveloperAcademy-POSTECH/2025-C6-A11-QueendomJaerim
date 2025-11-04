@@ -16,8 +16,6 @@ struct PenWriteView: View {
   @State private var tempPoints: [CGPoint] = []
   /// 작성 중인 스트로크 ID
   @State private var currentStrokeID: UUID?
-  /// 첫 Stroke 작성 여부
-  @State private var hasEverDrawn: Bool = false
   private var topColor = Color.offWhite
   private var photographerColor = Color.photographerPrimary
   private var modelColor = Color.modelPrimary
@@ -44,7 +42,7 @@ struct PenWriteView: View {
             colorProvider: { stroke in
               stroke.author == .model ? modelColor : photographerColor
             },
-            layers: [ .stroke(color: topColor, width: 10) ]
+            layers: [.stroke(color: topColor, width: 10)]
           )
 
           // 현재 드래그 중인 선(일반펜)
@@ -57,7 +55,7 @@ struct PenWriteView: View {
               points: tempPoints,
               layers: [
                 .stroke(color: topColor, width: 10),
-                .stroke(color: outerColor, width: 7)
+                .stroke(color: outerColor, width: 7),
               ]
             )
           }
@@ -73,7 +71,7 @@ struct PenWriteView: View {
             colorProvider: { stroke in
               stroke.author == .model ? modelColor : photographerColor
             },
-            layers: [ ],
+            layers: [],
             magicBlur: true
           )
 
@@ -87,7 +85,7 @@ struct PenWriteView: View {
               points: tempPoints,
               layers: [
                 .stroke(color: outerColor, width: 10),
-                .stroke(color: .offWhite, width: 5)
+                .stroke(color: .offWhite, width: 5),
               ]
             )
           }
@@ -132,7 +130,6 @@ struct PenWriteView: View {
             }
           }
           .onEnded { _ in
-            hasEverDrawn = true
             guard let id = currentStrokeID, !tempPoints.isEmpty else {
               tempPoints.removeAll()
               currentStrokeID = nil
@@ -152,7 +149,8 @@ struct PenWriteView: View {
       )
     }
     .overlay(alignment: .bottomLeading) {
-      if (hasEverDrawn || !penViewModel.strokes.isEmpty) {
+      // 펜 모드일 때, 내가 한 번이라도 그린 적이 있으면 노출
+      if isPen && penViewModel.hasEverDrawn {
         // MARK: - 펜 툴바 Undo / Redo / clearAll
         PenToolBar(penViewModel: penViewModel) { action in
           switch action {
