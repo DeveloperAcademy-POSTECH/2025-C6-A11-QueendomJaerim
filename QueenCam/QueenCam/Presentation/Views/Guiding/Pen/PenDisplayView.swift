@@ -11,9 +11,9 @@ import SwiftUI
 struct PenDisplayView: View {
   var penViewModel: PenViewModel
   let role: Role?
-  private var outerColor = Color.white
-  private var modelColor = Color.orange
-  private var photographerColor = Color.blue
+  private var topColor = Color.offWhite
+  private var photographerColor = Color.photographerPrimary
+  private var modelColor = Color.modelPrimary
 
   init(penViewModel: PenViewModel, role: Role?) {
     self.penViewModel = penViewModel
@@ -27,9 +27,9 @@ struct PenDisplayView: View {
         for stroke in penViewModel.strokes where stroke.points.count > 1 {
           var path = Path()
           path.addLines(stroke.absolutePoints(in: geo.size))
-          context.stroke(path, with: .color(outerColor), style: .init(lineWidth: 8, lineCap: .round, lineJoin: .round))
-          let inner = stroke.author == .model ? modelColor : photographerColor
-          context.stroke(path, with: .color(inner), style: .init(lineWidth: 4, lineCap: .round, lineJoin: .round))
+          let outerColor = (role == .model) ? modelColor : photographerColor
+          context.stroke(path, with: .color(topColor), style: StrokeStyle(lineWidth: 10, lineCap: .round, lineJoin: .round))
+          context.stroke(path, with: .color(outerColor), style: StrokeStyle(lineWidth: 7, lineCap: .round, lineJoin: .round))
         }
       }
       .background(.clear)
