@@ -40,6 +40,7 @@ struct ReferenceView: View {
             } label: {
               CloseView(referenceViewModel: referenceViewModel)
             }
+            .padding(.horizontal, -8)
 
           case .delete:  // 레퍼런스 삭제
             EmptyView()
