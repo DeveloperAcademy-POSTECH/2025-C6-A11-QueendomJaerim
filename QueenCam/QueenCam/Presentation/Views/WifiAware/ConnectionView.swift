@@ -10,31 +10,35 @@ import SwiftUI
 import WiFiAware
 
 struct ConnectionView: View {
-  @Environment(\.router) private var router
+  @State private var router = NavigationRouter()
+  @Environment(\.dismiss) var dismiss
   var viewModel: ConnectionViewModel
   var previewStreamingViewModel: PreviewModel
 }
 
 extension ConnectionView {
   var body: some View {
-    Group {
-      if viewModel.role != nil {
-        MakeConnectionView(
-          role: viewModel.role,
-          pairedDevices: viewModel.pairedDevices,
-          networkState: viewModel.networkState,
-          connections: viewModel.connections,
-          changeRoleButtonDidTap: { viewModel.selectRole(for: nil) },
-          connectButtonDidTap: { device in
-            viewModel.connectButtonDidTap(for: device)
-          },
-          publisherDidSelectEndpoint: { endpoint in
-            viewModel.didEndpointSelect(endpoint: endpoint)
-          }
-        )
-      } else {
-        SelectRoleView { role in
-          viewModel.selectRole(for: role)
+    NavigationStack(path: $router.path) {
+      SelectRoleView { role in
+        viewModel.selectRole(for: role)
+        router.push(.makeConnection)
+      }
+      .navigationDestination(for: Route.self) { route in
+        switch route {
+        case .makeConnection:
+          MakeConnectionView(
+            role: viewModel.role,
+            pairedDevices: viewModel.pairedDevices,
+            networkState: viewModel.networkState,
+            connections: viewModel.connections,
+            changeRoleButtonDidTap: { viewModel.selectRole(for: nil) },
+            connectButtonDidTap: { device in
+              viewModel.connectButtonDidTap(for: device)
+            },
+            publisherDidSelectEndpoint: { endpoint in
+              viewModel.didEndpointSelect(endpoint: endpoint)
+            }
+          )
         }
       }
     }
@@ -44,10 +48,10 @@ extension ConnectionView {
     .onDisappear {
       viewModel.connectionViewDisappear()
     }
-    .onChange(of: viewModel.connections) { _, newValue in
+    .onChange(of: viewModel.connections) { _, newValue in // 연결 완료
       if !newValue.isEmpty {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-          router.reset()
+          dismiss()
         }
       }
     }

@@ -3,7 +3,6 @@ import SwiftUI
 import WiFiAware
 
 struct CameraView {
-  @Environment(\.router) private var router
   let cameraViewModel: CameraViewModel
   let previewModel: PreviewModel
   let connectionViewModel: ConnectionViewModel
@@ -40,11 +39,14 @@ struct CameraView {
 
   @State private var isRemoteGuideHidden: Bool = false
   @State private var isShowCameraSettingTool: Bool = false
-
-  // 로그 내보내기 시트 노출 여부
-  @State private var isShowLogExportingSheet: Bool = false
   
+  /// 로그 내보내기 시트 노출 여부
+  @State private var isShowLogExportingSheet: Bool = false
+
   @State private var isShowShutterFlash = false
+
+  /// 연결 플로우가 진행되는 ConnectionView를 띄울지 여부
+  @State private var isShowConnectionView: Bool = false
 }
 
 extension CameraView {
@@ -220,7 +222,7 @@ extension CameraView: View {
             if connectionViewModel.isConnecting {
               isShowingCurrentConnectionModal.toggle()
             } else {
-              router.push(.establishConnection)
+              isShowConnectionView = true
             }
           }
         )
@@ -540,6 +542,9 @@ extension CameraView: View {
       }
       .presentationDetents([.medium, .large])
     }
+    .fullScreenCover(isPresented: $isShowConnectionView) {
+      ConnectionView(viewModel: connectionViewModel, previewStreamingViewModel: previewModel)
+    }
     .onChange(of: connectionViewModel.connections) { _, newValue in
       if !newValue.isEmpty && connectionViewModel.role == .photographer {
         previewModel.startCapture()
@@ -553,8 +558,7 @@ extension CameraView: View {
         || newState == .host(.lost)
         || newState == .viewer(.lost)
         || newState == .host(.stopped)
-        || newState == .viewer(.stopped)
-      {
+        || newState == .viewer(.stopped) {
         // 가이딩 초기화
         penViewModel.reset()
         frameViewModel.deleteAll()
