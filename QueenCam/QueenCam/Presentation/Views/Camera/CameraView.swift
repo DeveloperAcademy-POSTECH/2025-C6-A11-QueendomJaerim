@@ -510,6 +510,13 @@ extension CameraView: View {
         referenceViewModel.onDelete()
       }
     }
+    // 레퍼런스 삭제 시 PhotoPicker 선택도 초기화
+    .onChange(of: referenceViewModel.image) { _, newImage in
+      if newImage == nil {
+        selectedImage = nil
+        selectedImageID = nil
+      }
+    }
     .task {
       await cameraViewModel.checkPermissions()
     }
