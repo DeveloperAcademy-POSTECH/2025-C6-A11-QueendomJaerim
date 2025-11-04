@@ -24,6 +24,8 @@ struct PenPayload: Codable, Sendable {
   let id: UUID
   /// 가이딩 펜의 획(stroke) 점들의 배열
   let points: [PointPayload]
+  /// 매직펜 여부
+  let isMagicPen: Bool
   /// 작성자 역할
   let author: Role
 }
