@@ -61,13 +61,13 @@ extension PhotosPickerView: View {
                   manager: viewModel.cachingManager,
                   isSelected: sheetSelectedImageID == asset.localIdentifier,
                   roleForTheme: roleForTheme,
-                  onTapCheck: { image in
+                  onTapCheck: { fullImage in
                     // 선택된 상태에서 체크박스 탭하면 선택 해제
                     if sheetSelectedImageID == asset.localIdentifier {
                       sheetSelectedImage = nil
                       sheetSelectedImageID = nil
                     } else {
-                      sheetSelectedImage = image
+                      sheetSelectedImage = fullImage
                       sheetSelectedImageID = asset.localIdentifier
                     }
                   },

@@ -29,18 +29,33 @@ extension DomainNotification {
     case ready
     case flashOn
     case flashAuto
+    case flashOff
+    case liveOn
+    case liveOff
     case sharingFrameGuideStarted
     case counterpartEditingFrameGuide
     case myEditingFrameGuide
     
     var preset: Preset {
       switch self {
-      case .ready: return .init(message: "기기를 연결해 촬영해보세요", isImportant: false, showingTime: nil)
-      case .flashOn: return .init(message: "플래시 켬", isImportant: true, showingTime: 1)
-      case .flashAuto: return .init(message: "플래시 자동", isImportant: true, showingTime: 1)
-      case .sharingFrameGuideStarted: return .init(message: "프레임 가이드를 공유합니다.", isImportant: false, showingTime: 2)
-      case .counterpartEditingFrameGuide: return .init(message: "상대가 프레임을 수정중입니다.", isImportant: false, showingTime: 2)
-      case .myEditingFrameGuide: return .init(message: "내가 그린 가이드를 공유합니다.", isImportant: false, showingTime: 2)
+      case .ready:
+        return .init(message: "친구와 연결해보세요.", isImportant: false, showingTime: nil)
+      case .flashOn:
+        return .init(message: "플래시 켬", isImportant: true, showingTime: 1)
+      case .flashAuto:
+        return .init(message: "플래시 자동", isImportant: true, showingTime: 1)
+      case .flashOff:
+        return .init(message: "플래시 끔", isImportant: false, showingTime: 1)
+      case .liveOn:
+        return .init(message: "LIVE 켬", isImportant: true, showingTime: 1)
+      case .liveOff:
+        return .init(message: "LIVE 끔", isImportant: false, showingTime: 1)
+      case .sharingFrameGuideStarted:
+        return .init(message: "프레임 가이드를 공유합니다.", isImportant: false, showingTime: 2)
+      case .counterpartEditingFrameGuide:
+        return .init(message: "상대가 프레임을 수정중입니다.", isImportant: false, showingTime: 2)
+      case .myEditingFrameGuide:
+        return .init(message: "내가 그린 가이드를 공유합니다.", isImportant: false, showingTime: 2)
       }
     }
   }

@@ -66,7 +66,7 @@ final class ConnectionViewModel {
   /// State Toast
   private let notificationService: NotificationServiceProtocol
 
-  private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.queendom.QueenCam", category: "ConnectionView")
+  private let logger = QueenLogger(category: "ConnectionViewModel")
 
   init(networkService: NetworkServiceProtocol, notificationService: NotificationServiceProtocol) {
     self.networkService = networkService
@@ -226,7 +226,6 @@ extension ConnectionViewModel {
 extension ConnectionViewModel {
   private func handleReceivedRequestChangeRole(receivedNewRoles: RolePayload, receviedLwwRegister: LWWRegister) {
     let newMyRole = receivedNewRoles.counterpartRole
-    let newCounterpartRole = receivedNewRoles.myRole
 
     if let lastSwapRoleLWWRegister {
       if receviedLwwRegister.timestamp > lastSwapRoleLWWRegister.timestamp { // 타임스탬프가 최근이면 채택
@@ -243,7 +242,7 @@ extension ConnectionViewModel {
   }
 
   private func updateRole(with newRole: Role, lwwRegister: LWWRegister) {
-    logger.debug("Role updated to \(newRole.displayName, privacy: .public) (lwwRegister: \(lwwRegister, privacy: .public)")
+    logger.debug("Role updated to \(newRole.displayName) (lwwRegister: \(lwwRegister)")
     self.role = newRole
     self.lastSwapRoleLWWRegister = lwwRegister
   }

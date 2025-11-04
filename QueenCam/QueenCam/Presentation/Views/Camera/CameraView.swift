@@ -40,6 +40,9 @@ struct CameraView {
 
   @State private var isRemoteGuideHidden: Bool = false
   @State private var isShowCameraSettingTool: Bool = false
+  
+  // 로그 내보내기 시트 노출 여부
+  @State private var isShowLogExportingSheet: Bool = false
 }
 
 extension CameraView {
@@ -125,35 +128,62 @@ extension CameraView: View {
       }
   }
 
-  private var cameraSettingTool: some View {
-    ZStack {
-      HStack(spacing: 50) {
-        CameraSettingButton(
-          title: "플래시",
-          systemName: flashImage,
-          isActive: cameraViewModel.isFlashMode != .off,
-          tapAction: { cameraViewModel.switchFlashMode() }
-        )
+  private var bottomCameraSettingTool: some View {
+    HStack(spacing: 50) {
+      CameraSettingButton(
+        title: "플래시",
+        systemName: flashImage,
+        isActive: cameraViewModel.isFlashMode != .off,
+        tapAction: { cameraViewModel.switchFlashMode() },
+        isToolBar: false
+      )
 
-        CameraSettingButton(
-          title: "LIVE",
-          systemName: liveImage,
-          isActive: cameraViewModel.isLivePhotoOn,
-          tapAction: { cameraViewModel.switchLivePhoto() }
-        )
+      CameraSettingButton(
+        title: "LIVE",
+        systemName: liveImage,
+        isActive: cameraViewModel.isLivePhotoOn,
+        tapAction: { cameraViewModel.switchLivePhoto() },
+        isToolBar: false
+      )
 
-        CameraSettingButton(
-          title: "그리드",
-          systemName: "grid",
-          isActive: cameraViewModel.isShowGrid,
-          tapAction: { cameraViewModel.switchGrid() }
-        )
-      }
+      CameraSettingButton(
+        title: "그리드",
+        systemName: "grid",
+        isActive: cameraViewModel.isShowGrid,
+        tapAction: { cameraViewModel.switchGrid() },
+        isToolBar: false
+      )
     }
     .frame(width: 377, height: 192)
-    .background(Color.hex333333)
-    .glassEffect(.regular, in: .rect(cornerRadius: 59))
-    .clipShape(.rect(cornerRadius: 59))
+    .glassEffect(.clear.tint(Color.hex333333), in: .rect(cornerRadius: 59))
+  }
+  
+  private var toolBarCameraSettingTool: some View {
+    ControlGroup {
+      CameraSettingButton(
+        title: "플래시",
+        systemName: flashImage,
+        isActive: cameraViewModel.isFlashMode != .off,
+        tapAction: { cameraViewModel.switchFlashMode() },
+        isToolBar: true
+      )
+
+      CameraSettingButton(
+        title: "LIVE",
+        systemName: liveImage,
+        isActive: cameraViewModel.isLivePhotoOn,
+        tapAction: { cameraViewModel.switchLivePhoto() },
+        isToolBar: true
+      )
+
+      CameraSettingButton(
+        title: "그리드",
+        systemName: "grid",
+        isActive: cameraViewModel.isShowGrid,
+        tapAction: { cameraViewModel.switchGrid() },
+        isToolBar: true
+      )
+    }
   }
 
   var body: some View {
@@ -168,9 +198,13 @@ extension CameraView: View {
             isConnected: isSessionActive,
             connectedDeviceName: connectionViewModel.connectedDeviceName,
             menuContent: {
+              toolBarCameraSettingTool
+
               Button("기능 1") {}
               Button("기능 2") {}
-              Button("기능 3") {}
+              Button("로그 내보내기") {
+                isShowLogExportingSheet = true
+              }
 
               Divider()
 
@@ -294,6 +328,10 @@ extension CameraView: View {
               .stroke(.gray, lineWidth: 1)
           }
           .padding(.horizontal, 16)
+          .overlay(alignment: .center) {
+            StateToastContainer()
+              .padding(.top, 16)
+          }
 
           // 프리뷰 밖 => 이부분을 기준으로 바구니 표현
           VStack(spacing: 24) {
@@ -449,7 +487,7 @@ extension CameraView: View {
 
         VStack {
           Spacer()
-          cameraSettingTool
+          bottomCameraSettingTool
         }
         .padding(.bottom, 12)
         .transition(.move(edge: .bottom))
@@ -517,6 +555,9 @@ extension CameraView: View {
         selectedImageID = nil
       }
     }
+    .sheet(isPresented: $isShowLogExportingSheet) {
+      LogExportingView()
+      }
     .task {
       await cameraViewModel.checkPermissions()
     }

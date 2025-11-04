@@ -15,7 +15,7 @@ final class NetworkService: NetworkServiceProtocol {
   /// Wi-Fi Aware mode
   var mode: NetworkType? {
     didSet {
-      logger.debug("network mode updated: \(self.mode.debugDescription, privacy: .public)")
+      logger.debug("network mode updated: \(self.mode.debugDescription)")
       self.networkState = mode == .host ? .host(.stopped) : .viewer(.stopped)
     }
   }
@@ -46,7 +46,7 @@ final class NetworkService: NetworkServiceProtocol {
   }
   private(set) var networkState: NetworkState? {
     didSet {
-      logger.debug("network state updated: \(self.networkState?.debugDescription ?? "", privacy: .public)")
+      logger.debug("network state updated: \(self.networkState?.debugDescription ?? "")")
 
       networkStateSubject.send(networkState)
 
@@ -96,7 +96,7 @@ final class NetworkService: NetworkServiceProtocol {
   private var healthCheckPending: Bool = false  // 현재 요청한 헬스 체크 응답이 도착하지 않으면 true, 도착했으면 false
   private var lastHealthCheckTime: Date?
 
-  private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.queendom.QueenCam", category: "NetworkService")
+  private let logger = QueenLogger(category: "NetworkService")
 
   init() {
     let connectionManager = ConnectionManager()
@@ -135,7 +135,7 @@ final class NetworkService: NetworkServiceProtocol {
   private func handleLocalEvent(_ event: LocalEvent?) async {
     guard let event else { return }
 
-    logger.debug("handleLocalEvent - \(String(describing: event), privacy: .public)")
+    logger.debug("handleLocalEvent - \(String(describing: event))")
 
     switch event {
     case .listenerRunning, .browserRunning:
@@ -148,7 +148,7 @@ final class NetworkService: NetworkServiceProtocol {
       networkState = mode == .host ? .host(.stopped) : .viewer(.stopped)
 
       if let waError = error {
-        logger.error("browserStopped 또는 listenerStopped 상태에서 에러가 발생했습니다. \(waError.localizedDescription, privacy: .public)")
+        logger.error("browserStopped 또는 listenerStopped 상태에서 에러가 발생했습니다. \(waError.localizedDescription)")
         lastErrorSubject.send(waError)
 
         if case .serviceAlreadyPublishing = waError {
@@ -192,12 +192,12 @@ final class NetworkService: NetworkServiceProtocol {
       deviceConnections[device] = connectionDetail
 
     case .stopped(let device, let connectionID, let error):
-      logger.info("handle stopped event \(error, privacy: .public)")
+      logger.info("handle stopped event \(error)")
       deviceConnections.removeValue(forKey: device)
       await connectionManager.invalidate(connectionID)
 
       if let waError = error {
-        logger.error("stopped 상태에서 에러가 발생했습니다. \(waError.localizedDescription, privacy: .public)")
+        logger.error("stopped 상태에서 에러가 발생했습니다. \(waError.localizedDescription)")
         lastErrorSubject.send(waError)
 
         if mode == .viewer {
@@ -215,7 +215,7 @@ final class NetworkService: NetworkServiceProtocol {
     if case .previewFrame = event {
       // Skip logging for preview frames
     } else {
-      logger.debug("handleNetworkEvent - \(String(describing: event), privacy: .public)")  // preview frame 이벤트가 아닐 때만 로깅
+      logger.debug("handleNetworkEvent - \(String(describing: event))")  // preview frame 이벤트가 아닐 때만 로깅
     }
 
     if case .healthCheckRequest(let randomCode) = event {
