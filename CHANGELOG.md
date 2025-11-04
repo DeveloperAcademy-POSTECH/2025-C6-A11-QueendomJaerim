@@ -12,6 +12,7 @@
 
 ### Changed
 
+- Encoder에서 2초마다 한 번 키프레임을 전송하도록 설정 수정
 
 ### Deprecated
 
