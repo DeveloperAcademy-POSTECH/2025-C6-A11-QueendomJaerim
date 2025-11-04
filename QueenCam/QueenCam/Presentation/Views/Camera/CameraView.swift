@@ -230,7 +230,7 @@ extension CameraView: View {
 
             ReferenceView(referenceViewModel: referenceViewModel, isLarge: $isLarge)
               .frame(maxWidth: .infinity, maxHeight: .infinity)
-              .padding(12)
+              .padding(8)
               .clipped()
 
             Group {
