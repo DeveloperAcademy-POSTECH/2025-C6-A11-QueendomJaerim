@@ -23,7 +23,7 @@ struct PhotoDetailView {
   // 한번 탭 UI 변경용
   @State private var isSingleTapped: Bool = false
 
-  @State private var logger = QueenLogger(category: "PhotoDetailView")
+  private let logger = QueenLogger(category: "PhotoDetailView")
 }
 
 extension PhotoDetailView {
