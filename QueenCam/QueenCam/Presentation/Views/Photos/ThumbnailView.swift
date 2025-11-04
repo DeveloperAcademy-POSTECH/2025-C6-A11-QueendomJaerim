@@ -3,6 +3,7 @@ import SwiftUI
 
 struct ThumbnailView {
   @State private var image: UIImage?
+  @State private var fullImage: UIImage?
   @Environment(\.displayScale) private var displayScale
 
   let asset: PHAsset
@@ -34,6 +35,22 @@ extension ThumbnailView {
       if let result { self.image = result }
     }
   }
+
+  private func requestFullResolutionImage() {
+    let options = PHImageRequestOptions()
+    options.deliveryMode = .highQualityFormat
+    options.resizeMode = .none
+    options.isNetworkAccessAllowed = true
+
+    manager.requestImage(
+      for: asset,
+      targetSize: PHImageManagerMaximumSize,
+      contentMode: .aspectFill,
+      options: options
+    ) { result, _ in
+      if let result { self.fullImage = result }
+    }
+  }
 }
 
 extension ThumbnailView: View {
@@ -55,14 +72,17 @@ extension ThumbnailView: View {
       }
 
       CheckCircleButton(isSelected: isSelected, role: roleForTheme, isLarge: false) {
-        if let image = image {
-          onTapCheck(image)
-        }
+        requestFullResolutionImage()
       }
       .padding(6)
     }
     .onAppear {
       requestThumbnail()
+    }
+    .onChange(of: fullImage) { _, newValue in
+      if let fullImage = newValue {
+        onTapCheck(fullImage)
+      }
     }
   }
 }
