@@ -40,7 +40,7 @@ struct OpenView: View {
             .resizable()
             .scaledToFill()
             .frame(width: width, height: height, alignment: .center)
-            .clipShape(.rect(cornerRadius: 20))
+            .clipShape(.rect(cornerRadius: 24))
             .onTapGesture {
               isLarge.toggle()
               showDelete.toggle()
