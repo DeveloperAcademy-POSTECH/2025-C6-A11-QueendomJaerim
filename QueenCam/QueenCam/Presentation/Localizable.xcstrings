@@ -21,6 +21,9 @@
         }
       }
     },
+    "LIVE" : {
+
+    },
     "Photos" : {
       "localizations" : {
         "en" : {
@@ -297,6 +300,7 @@
       }
     },
     "완료" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {

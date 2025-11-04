@@ -255,7 +255,7 @@ extension PhotoDetailView.ItemComponent: View {
           case true:
             if let livePhoto = livePhoto {
               LivePhotoView(livePhoto: livePhoto)
-                .background(.red.opacity(0.2))
+//                .background(.red.opacity(0.2))
             } else if let image = detailImage {
               Image(uiImage: image)
                 .resizable()

@@ -8,7 +8,7 @@ import UIKit
 final class CameraViewModel {
   let cameraManager: CameraManager
   let networkService: NetworkServiceProtocol
-  let camerSettingsService: CamerSettingsServiceProtocol
+  let cameraSettingsService: CameraSettingsServiceProtocol
 
   var isCameraPermissionGranted = false
   var isPhotosPermissionGranted = false
@@ -34,19 +34,19 @@ final class CameraViewModel {
   init(
     previewCaptureService: PreviewCaptureService,
     networkService: NetworkServiceProtocol,
-    camerSettingsService: CamerSettingsServiceProtocol,
+    cameraSettingsService: CameraSettingsServiceProtocol,
     notificationService: NotificationServiceProtocol
   ) {
     self.networkService = networkService
-    self.camerSettingsService = camerSettingsService
+    self.cameraSettingsService = cameraSettingsService
     self.cameraManager = CameraManager(
       previewCaptureService: previewCaptureService,
       networkService: networkService
     )
 
-    self.isLivePhotoOn = camerSettingsService.livePhotoOn
-    self.isShowGrid = camerSettingsService.gridOn
-    self.isFlashMode = camerSettingsService.flashMode
+    self.isLivePhotoOn = cameraSettingsService.livePhotoOn
+    self.isShowGrid = cameraSettingsService.gridOn
+    self.isFlashMode = cameraSettingsService.flashMode
 
     self.notificationService = notificationService
 
@@ -138,7 +138,7 @@ final class CameraViewModel {
     case .auto: isFlashMode = .off
     }
 
-    camerSettingsService.flashMode = isFlashMode
+    cameraSettingsService.flashMode = isFlashMode
     cameraManager.flashMode = isFlashMode.convertAVCaptureDeviceFlashMode
     
     // State Toast
@@ -152,7 +152,7 @@ final class CameraViewModel {
 
   func switchLivePhoto() {
     isLivePhotoOn.toggle()
-    camerSettingsService.livePhotoOn = isLivePhotoOn
+    cameraSettingsService.livePhotoOn = isLivePhotoOn
     cameraManager.isLivePhotoOn = isLivePhotoOn
   }
 
@@ -162,7 +162,7 @@ final class CameraViewModel {
 
   func switchGrid() {
     isShowGrid.toggle()
-    camerSettingsService.gridOn = isShowGrid
+    cameraSettingsService.gridOn = isShowGrid
   }
 }
 
