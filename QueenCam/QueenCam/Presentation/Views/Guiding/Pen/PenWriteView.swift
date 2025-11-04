@@ -152,7 +152,7 @@ struct PenWriteView: View {
       )
     }
     .overlay(alignment: .bottomLeading) {
-      if isPen && (hasEverDrawn || !penViewModel.strokes.isEmpty) {
+      if (hasEverDrawn || !penViewModel.strokes.isEmpty) {
         // MARK: - 펜 툴바 Undo / Redo / clearAll
         PenToolBar(penViewModel: penViewModel) { action in
           switch action {
