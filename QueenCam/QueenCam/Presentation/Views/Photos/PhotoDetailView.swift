@@ -10,6 +10,8 @@ struct PhotoDetailView {
   let manager: PHCachingImageManager
   let selectedImageID: String?  // 외부에서 주입 받은 이미지 아이디
 
+  let role: Role?
+
   let onTapConfirm: (UIImage, String) -> Void  // 완료시 상위로 전달
   let onTapClose: () -> Void
 
@@ -25,96 +27,91 @@ struct PhotoDetailView {
 }
 
 extension PhotoDetailView {
-  private var currentAssetID: String? {
-    if let index = currentIndex, assetList.indices.contains(index) {
-      return assetList[index].localIdentifier
+  // 현재 인덱스의 PHAsset을 가져오는 프로퍼티
+  private var currentAsset: PHAsset? {
+    if let index = currentIndex,
+      assetList.indices.contains(index)
+    {
+      return assetList[index]
     } else {
       return nil
     }
+  }
+
+  // 현재 Asset이 라이브 포토인지 확인하는 프로퍼티
+  private var isLivePhoto: Bool {
+    return currentAsset?.mediaSubtypes.contains(.photoLive) ?? false
+  }
+
+  private var currentAssetID: String? {
+    return currentAsset?.localIdentifier
   }
 }
 
 extension PhotoDetailView: View {
   var body: some View {
-    ZStack {
-      ScrollView(.horizontal) {
-        LazyHStack(spacing: .zero) {
-          ForEach(assetList.indices, id: \.self) { index in
-            let asset = assetList[index]
-            ItemComponent(
-              asset: asset,
-              manager: manager,
-              onSingleTapAction: { isSingleTapped.toggle() },
-              loadedImageList: $loadedImageList
-            )
-            .containerRelativeFrame(.horizontal)
-            .id(index)
-          }
+    ScrollView(.horizontal) {
+      LazyHStack(spacing: .zero) {
+        ForEach(assetList.indices, id: \.self) { index in
+          let asset = assetList[index]
+          ItemComponent(
+            asset: asset,
+            manager: manager,
+            onSingleTapAction: { isSingleTapped.toggle() },
+            loadedImageList: $loadedImageList
+          )
+          .containerRelativeFrame(.horizontal)
+          .id(index)
         }
-        .scrollTargetLayout()
       }
-      .scrollTargetBehavior(.paging)
-      .scrollPosition(id: $currentIndex)
-
+      .scrollTargetLayout()
+    }
+    .scrollTargetBehavior(.paging)
+    .scrollPosition(id: $currentIndex)
+    .overlay(alignment: .top) {
       if isSingleTapped {
-        VStack {
-          HStack {
-            Spacer()
-            Button(action: {
-              guard let assetID = currentAssetID else { return }
-
-              if detailSelectedImageID == assetID {
-                detailSelectedImageID = nil
-              } else {
-                detailSelectedImageID = assetID
-              }
-
-            }) {
-              Image(systemName: detailSelectedImageID == currentAssetID ? "checkmark.circle.fill" : "circle")
-                .imageScale(.large)
-                .padding()
-            }
-            .padding(.top, 128)
-          }
-
-          Spacer()
-        }
-
-        VStack {
-          HStack {
-            Button(action: { onTapClose() }) {
-              Image(systemName: "xmark.circle.fill")
-                .font(.title)
-                .foregroundStyle(.white.opacity(0.9))
-            }
-
-            Spacer()
-
-            Text("\((currentIndex ?? .zero) + 1) / \(assetList.count)")
-              .foregroundStyle(.white)
-              .font(.headline)
-
-            Spacer()
-
-            Button(action: {
+        VStack(spacing: .zero) {
+          TopToolBarComponent(
+            currentIndex: currentIndex ?? .zero,
+            totalItemListCount: assetList.count,
+            isActive: detailSelectedImageID != nil,
+            onTapBackAction: { onTapClose() },
+            onTapRegisterAction: {
               if let confirmAssetID = detailSelectedImageID,
                 let confirmImage = loadedImageList[confirmAssetID]
               {
                 onTapConfirm(confirmImage, confirmAssetID)
               }
-            }) {
-              Text("완료")
-                .foregroundStyle(.white)
-                .padding()
             }
+          )
+
+          HStack {
+            LiveIconComponent(isLivePhoto: isLivePhoto)
+
+            Spacer()
+
+            CheckCircleButton(
+              isSelected: detailSelectedImageID == currentAssetID,
+              role: role,
+              isLarge: true,
+              didTap: {
+                guard let assetID = currentAssetID else { return }
+
+                if detailSelectedImageID == assetID {
+                  detailSelectedImageID = nil
+                } else {
+                  detailSelectedImageID = assetID
+                }
+              }
+            )
           }
-          .padding()
-
-          Spacer()
-
+          .padding(.top, 16)
+          .padding(.trailing, 18)
         }
+        .ignoresSafeArea()
       }
     }
+
     .onAppear {
       self.currentIndex = selectedIndex
       self.detailSelectedImageID = selectedImageID

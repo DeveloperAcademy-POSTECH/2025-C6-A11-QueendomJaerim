@@ -128,14 +128,15 @@ extension SampleBufferDisplayView {
       let ptsDifferenceSeconds = CMTimeGetSeconds(ptsDifference)
 
       if ptsDifferenceSeconds > ptsGapThresholdSeconds {
-        logger.warning("Large PTS gap detected: \(ptsDifferenceSeconds)s. Frame loss.")
-        isStable = false
-        resetLatencyCheck()  // 기준점 리셋
+        logger.warning("Large PTS gap detected: \(ptsDifferenceSeconds)s. Frame loss. Resetting all checks.")
       } else if ptsDifferenceSeconds < 0 {
-        logger.warning("Out-of-order frame (PTS).")
-        isStable = false
-        resetLatencyCheck()  // 기준점 리셋
+        logger.warning("Out-of-order frame (PTS). Resetting all checks.")
       }
+
+      isStable = false
+      resetAllChecks()
+      renderer.flush()
+      return  // 이 프레임은 버리고 다음 프레임부터 새로 시작
     }
 
     // 다음 비교를 위해 현재 PTS를 저장
