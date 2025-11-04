@@ -18,9 +18,8 @@ enum ReferenceSize {
   case ratio3x4
   /// 9:16 비율의 이미지
   case ratio9x16
-  /// 타 비율의 이미지
-  case none
-  
+
+  /// 원본 이미지의 비율에 따른 레퍼런스의 가로 너비
   var width: CGFloat {
     switch self {
     case .ratio16x9: return 90
@@ -28,34 +27,23 @@ enum ReferenceSize {
     case .ratio1x1: return 120
     case .ratio3x4: return 140
     case .ratio9x16: return 160
-    case .none: return 105 //일반적인 4:3 비율에 맞춤
     }
   }
-  
-  var height: CGFloat {
-    switch self {
-    case .ratio16x9: return 160
-    case .ratio4x3: return 140
-    case .ratio1x1: return 120
-    case .ratio3x4: return 105
-    case .ratio9x16 : return 90
-    case .none: return 140 //일반적인 4:3 비율에 맞춤
-    }
-  }
+
   static func referenceRatio(width: CGFloat, height: CGFloat) -> ReferenceSize {
     let ratio: CGFloat = height / width
-    if ratio == 16/9 {
+    if ratio >= 16 / 9 {
       return .ratio16x9
-    } else if ratio == 4/3 {
+    } else if 16 / 9 > ratio && ratio >= 4 / 3 {
       return .ratio4x3
-    } else if ratio == 1 {
+    } else if 4 / 3 > ratio && ratio > 1 {
       return .ratio1x1
-    } else if ratio == 3/4 {
+    } else if 1 >= ratio && ratio > 3 / 4 {
+      return .ratio1x1
+    } else if 3 / 4 >= ratio && ratio > 9 / 16 {
       return .ratio3x4
-    } else if ratio == 9/16 {
-      return .ratio9x16
     } else {
-      return .none
+      return .ratio9x16
     }
   }
 }
