@@ -189,7 +189,6 @@ extension CameraView: View {
   var body: some View {
     ZStack {
       Color.black.ignoresSafeArea()
-
       VStack(spacing: .zero) {
         /// 제일 위 툴바 부분
         TopToolBarView(
@@ -260,15 +259,9 @@ extension CameraView: View {
             GridView()
           }
 
-            Group {
-              if isFrame {
-                FrameEditorView(frameViewModel: frameViewModel)
-              }
-              if isPen || isMagicPen {
-                PenWriteView(penViewModel: penViewModel, isPen: isPen, isMagicPen: isMagicPen, role: connectionViewModel.role ?? .photographer)
-              } else {
-                PenDisplayView(penViewModel: penViewModel, role: connectionViewModel.role)
-              }
+          Group {
+            if isFrame {
+              FrameEditorView(frameViewModel: frameViewModel)
             }
             if isPen || isMagicPen {
               PenWriteView(
@@ -301,11 +294,6 @@ extension CameraView: View {
               }
               .padding(.vertical, 12)
             }
-            
-            ReferenceView(referenceViewModel: referenceViewModel, isLarge: $isLarge)
-              .frame(maxWidth: .infinity, maxHeight: .infinity)
-              .padding(8)
-              .clipped()
           }
 
           VStack {
@@ -329,6 +317,11 @@ extension CameraView: View {
             }
             .padding(12)
           }
+
+          ReferenceView(referenceViewModel: referenceViewModel, isLarge: $isLarge)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .padding(8)
+            .clipped()
         }
         .aspectRatio(3 / 4, contentMode: .fill)
         .clipShape(.rect(cornerRadius: 5))
@@ -499,6 +492,13 @@ extension CameraView: View {
       }
     }
     .overlay {
+      if connectionViewModel.connectionLost {
+        ReconnectingOverlayView {
+          connectionViewModel.reconnectCancelButtonDidTap()
+        }
+      }
+    }
+    .overlay {
       if !isPermissionGranted {
         ZStack {
           Color.black.opacity(0.7)
@@ -530,13 +530,6 @@ extension CameraView: View {
       }
       .presentationDetents([.medium, .large])
     }
-    .overlay {
-      if connectionViewModel.connectionLost {
-        ReconnectingOverlayView {
-          connectionViewModel.reconnectCancelButtonDidTap()
-        }
-      }
-    }
     .onChange(of: connectionViewModel.connections) { _, newValue in
       if !newValue.isEmpty && connectionViewModel.role == .photographer {
         previewModel.startCapture()
@@ -567,7 +560,7 @@ extension CameraView: View {
     }
     .sheet(isPresented: $isShowLogExportingSheet) {
       LogExportingView()
-      }
+    }
     .task {
       await cameraViewModel.checkPermissions()
       await cameraViewModel.loadThumbnail()
