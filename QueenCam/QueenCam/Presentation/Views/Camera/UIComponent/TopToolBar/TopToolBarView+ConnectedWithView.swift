@@ -9,13 +9,12 @@ import SwiftUI
 
 extension TopToolBarView {
   struct ConnectedWithView: View {
-    let isConnected: Bool
     let connectedDeviceName: String?
     let buttonDidTap: () -> Void
 
     var body: some View {
-      if isConnected {
-        WhenCurrentlyConnectedIndicatorView(connectedDeviceName: connectedDeviceName ?? "알 수 없는 기긴", buttonDidTap: buttonDidTap)
+      if let connectedDeviceName {
+        WhenCurrentlyConnectedIndicatorView(connectedDeviceName: connectedDeviceName, buttonDidTap: buttonDidTap)
       } else {
         WhenNotConnectedIndicatorView(buttonDidTap: buttonDidTap)
       }
@@ -95,7 +94,6 @@ extension TopToolBarView.WhenNotConnectedIndicatorView: View {
 
     VStack {
       TopToolBarView<AnyView>.ConnectedWithView(
-        isConnected: true,
         connectedDeviceName: "임영폰"
       ) {
         // swiftlint:disable:next no_print_in_production
@@ -103,7 +101,6 @@ extension TopToolBarView.WhenNotConnectedIndicatorView: View {
       }
 
       TopToolBarView<AnyView>.ConnectedWithView(
-        isConnected: true,
         connectedDeviceName: "임영택의 iPhone"
       ) {
         // swiftlint:disable:next no_print_in_production
@@ -111,19 +108,13 @@ extension TopToolBarView.WhenNotConnectedIndicatorView: View {
       }
 
       TopToolBarView<AnyView>.ConnectedWithView(
-        isConnected: true,
         connectedDeviceName: "임영폰 임영폰 임영폰 임영폰 임영폰 임영폰 임영폰 임영폰 임영폰 임영폰 임영폰 임영폰 임영폰 "
       ) {
         // swiftlint:disable:next no_print_in_production
         print("Tapped!")
       }
 
-      TopToolBarView<AnyView>.ConnectedWithView(isConnected: true, connectedDeviceName: nil) { // 재연결시 가끔 이럴 때가 있음
-        // swiftlint:disable:next no_print_in_production
-        print("Tapped!")
-      }
-
-      TopToolBarView<AnyView>.ConnectedWithView(isConnected: false, connectedDeviceName: nil) {
+      TopToolBarView<AnyView>.ConnectedWithView(connectedDeviceName: nil) {
         // swiftlint:disable:next no_print_in_production
         print("Tapped!")
       }
