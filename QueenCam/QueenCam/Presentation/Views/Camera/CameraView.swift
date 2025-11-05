@@ -44,6 +44,9 @@ struct CameraView {
   @State private var isShowLogExportingSheet: Bool = false
 
   @State private var isShowShutterFlash = false
+  
+  // 연결 종료 여부 확인 시트 노출 여부
+  @State private var isShowDisconnectAlert = false
 }
 
 extension CameraView {
@@ -221,7 +224,7 @@ extension CameraView: View {
             }
 
             Button("연결 종료하기", role: .destructive) {
-              connectionViewModel.disconnectButtonDidTap()
+              isShowDisconnectAlert = true
             }
           },
           connectedWithButtonDidTap: {
@@ -229,6 +232,25 @@ extension CameraView: View {
           }
         )
         .padding()
+        .alert(
+          "연결을 종료합니다.",
+          isPresented: $isShowDisconnectAlert,
+          actions: {
+            Button(role: .destructive) {
+              connectionViewModel.disconnectButtonDidTap()
+            } label: {
+              Text("연결 종료하기")
+            }
+
+            Button(role: .cancel) {
+            } label: {
+              Text("취소하기")
+            }
+          },
+          message: {
+            Text("친구와 연결을 끊고 촬영을 마칩니다.")
+          }
+        )
 
         ZStack {
           if isPhotographerMode {  // 작가 + Default
