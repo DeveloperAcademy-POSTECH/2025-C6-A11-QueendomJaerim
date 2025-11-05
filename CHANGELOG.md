@@ -37,6 +37,7 @@
 - PhotosPickerView에서 썸네일 이미지를 레퍼런스 이미지로 선택하면 정방형 이미지가 로드되던 문제
 - PhotosPickerView와 PhotoDetailView 체크박스 상태 동기화 이슈 해결
 - 레퍼런스 삭제시 PhotoPicker 초기화가 안된 문제 해결
+- SampleBufferDisplayView에서 매번 화질 관련 지표를 리셋하여 적응형 화질 매커니즘이 동작하지 않았던 문제
 
 ### Security
 
