@@ -339,6 +339,7 @@
       }
     },
     "이 기기로 볼게요" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -349,6 +350,7 @@
       }
     },
     "이 기기로 찍을게요" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {

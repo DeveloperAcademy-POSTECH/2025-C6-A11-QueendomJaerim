@@ -11,14 +11,16 @@ struct SelectRoleView: View {
   let selectedRole: Role?
   let didRoleSelect: (Role) -> Void
   let didRoleSubmit: (Role) -> Void
+  
+  private let imageOffset: CGFloat = 5
 
   var body: some View {
     ZStack {
       Color.black.ignoresSafeArea()
-      
+
       VStack {
         Spacer()
-        
+
         VStack(spacing: 18) {
           Text("역할을 선택해주세요")
             .font(.pretendard(.medium, size: 20))
@@ -32,20 +34,24 @@ struct SelectRoleView: View {
         Spacer()
           .frame(height: 38)
 
-        HStack {
-          RoleSelectButton(guideText: "이 기기로 찍을게요", roleText: "촬영") {
+        HStack(spacing: 0) {
+          RoleSelectButton(roleText: "촬영") {
             didRoleSelect(.photographer)
           }
           .selected(selectedRole == .photographer)
+          .themeColor(Color(.photographerPrimary))
+          .offset(.init(width: imageOffset, height: 0))
 
-          RoleSelectButton(guideText: "이 기기로 볼게요", roleText: "모델") {
+          RoleSelectButton(roleText: "모델") {
             didRoleSelect(.model)
           }
           .selected(selectedRole == .model)
+          .themeColor(Color(.modelPrimary))
+          .offset(.init(width: -imageOffset, height: 0))
         }
 
         Spacer()
-        
+
         Button {
           if let selectedRole {
             didRoleSubmit(selectedRole)

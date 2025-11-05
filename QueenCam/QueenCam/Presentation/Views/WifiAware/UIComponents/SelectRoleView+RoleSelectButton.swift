@@ -10,30 +10,24 @@ import SwiftUI
 
 extension SelectRoleView {
   struct RoleSelectButton: View {
-    let guideText: LocalizedStringKey
     let roleText: LocalizedStringKey
     let action: () -> Void
 
     var isSelected = false
+    var themeColor = Color(.photographerPrimary)
 
     var body: some View {
-      Button {
-        action()
-      } label: {
-        RoundedRectangle(cornerRadius: 23)
-          .frame(width: 171, height: 247)
-          .foregroundStyle(.gray)
-          .overlay {
-            VStack {
-              Text(guideText)
+      Button(action: action) {
+        VStack(spacing: 38) {
+          Image(.zzikSymbol)
+            .renderingMode(.template)
+            .foregroundStyle(isSelected ? .offWhite : themeColor)
+            .frame(width: 147)
 
-              Spacer()
-
-              Text(roleText)
-            }
-            .foregroundStyle(isSelected ? .black : .white)
-            .padding()
-          }
+          Text(roleText)
+            .font(.pretendard(.medium, size: 20))
+            .foregroundStyle(.offWhite)
+        }
       }
     }
   }
@@ -45,5 +39,21 @@ extension SelectRoleView.RoleSelectButton {
     newButton.isSelected = selected
 
     return newButton
+  }
+
+  func themeColor(_ color: Color) -> Self {
+    var newButton = self
+    newButton.themeColor = color
+
+    return newButton
+  }
+}
+
+#Preview {
+  ZStack {
+    Color.black
+    SelectRoleView.RoleSelectButton(roleText: "작가") {
+      //
+    }
   }
 }
