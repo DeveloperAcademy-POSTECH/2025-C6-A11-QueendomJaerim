@@ -28,6 +28,12 @@ final class CameraViewModel {
 
   var errorMessage = ""
 
+  // MARK: Thumbnail
+  private let cachingManger = PHCachingImageManager()
+  var thumbnailImage: UIImage?
+
+  private let logger = QueenLogger(category: "CameraViewModel")
+
   // MARK: State Toast
   private let notificationService: NotificationServiceProtocol
 
@@ -169,6 +175,54 @@ final class CameraViewModel {
   func switchGrid() {
     isShowGrid.toggle()
     cameraSettingsService.gridOn = isShowGrid
+  }
+
+  func loadThumbnail() async {
+    let status = await PHPhotoLibrary.requestAuthorization(for: .readWrite)
+
+    guard status == .authorized || status == .limited else {
+      logger.debug("사진 접근 권한 거부")
+      return
+    }
+
+    await fetchThumbnail()
+  }
+}
+
+extension CameraViewModel {
+  private func fetchThumbnail() async {
+    let fetchOptions = PHFetchOptions()
+    fetchOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
+    fetchOptions.fetchLimit = 1  // 한개만 요청
+
+    let result = PHAsset.fetchAssets(with: .image, options: fetchOptions)
+
+    guard let asset = result.firstObject else {
+      logger.debug("가져올 사진 없음")
+      return
+    }
+
+    // 이미지 생성
+    await requestThumbnailImage(asset: asset)
+  }
+
+  private func requestThumbnailImage(asset: PHAsset) async {
+    let targetSize = CGSize(width: 48, height: 48)
+    let options = PHImageRequestOptions()
+    options.deliveryMode = .highQualityFormat
+    options.resizeMode = .exact
+    options.isNetworkAccessAllowed = true
+
+    cachingManger.requestImage(
+      for: asset,
+      targetSize: targetSize,
+      contentMode: .aspectFill,
+      options: options
+    ) { result, _ in
+      if let result {
+        self.thumbnailImage = result
+      }
+    }
   }
 }
 

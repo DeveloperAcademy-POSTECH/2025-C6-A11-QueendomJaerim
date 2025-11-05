@@ -40,7 +40,7 @@ struct CameraView {
 
   @State private var isRemoteGuideHidden: Bool = false
   @State private var isShowCameraSettingTool: Bool = false
-  
+
   // 로그 내보내기 시트 노출 여부
   @State private var isShowLogExportingSheet: Bool = false
 }
@@ -157,7 +157,7 @@ extension CameraView: View {
     .frame(width: 377, height: 192)
     .glassEffect(.clear.tint(Color.hex333333), in: .rect(cornerRadius: 59))
   }
-  
+
   private var toolBarCameraSettingTool: some View {
     ControlGroup {
       CameraSettingButton(
@@ -382,10 +382,17 @@ extension CameraView: View {
                 if let image = cameraViewModel.lastImage {
                   Image(uiImage: image)
                     .resizable()
-                    .clipShape(Circle())
                     .frame(width: 48, height: 48)
+                    .clipShape(Circle())
                 } else {
-                  EmptyPhotoButton()
+                  if let thumbnailImage = cameraViewModel.thumbnailImage {
+                    Image(uiImage: thumbnailImage)
+                      .resizable()
+                      .frame(width: 48, height: 48)
+                      .clipShape(Circle())
+                  } else {
+                    EmptyPhotoButton()
+                  }
                 }
               }
 
@@ -560,6 +567,7 @@ extension CameraView: View {
       }
     .task {
       await cameraViewModel.checkPermissions()
+      await cameraViewModel.loadThumbnail()
     }
   }
 }
