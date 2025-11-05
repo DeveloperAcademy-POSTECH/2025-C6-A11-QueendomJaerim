@@ -575,6 +575,13 @@ extension CameraView: View {
       await cameraViewModel.checkPermissions()
       await cameraViewModel.loadThumbnail()
     }
+    // Life Cycle of the view
+    .onAppear {
+      UIApplication.shared.isIdleTimerDisabled = true // 화면 꺼짐 방지
+    }
+    .onDisappear {
+      UIApplication.shared.isIdleTimerDisabled = false
+    }
   }
 }
 
