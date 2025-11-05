@@ -568,6 +568,14 @@ extension CameraView: View {
         previewModel.startCapture()
       }
     }
+    .overlay {
+      // 연결 종료 오버레이
+      if connectionViewModel.needReportSessionFinished {
+        SessionFinishedOverlayView {
+          connectionViewModel.sessionFinishedOverlayCloseButtonDidTap()
+        }
+      }
+    }
     // 연결 종료 시 가이딩 초기화
     .onChange(of: connectionViewModel.networkState) { _, newState in
       guard let newState else { return }

@@ -53,6 +53,8 @@ final class ConnectionViewModel {
   var connectionLost: Bool = false
   /// 재연결 중인 디바이스 이름
   var reconnectingDeviceName: String?
+  
+  var needReportSessionFinished: Bool = false
 
   /// 최근 역할 스왑 LWW 기록
   private var lastSwapRoleLWWRegister: LWWRegister?
@@ -64,7 +66,7 @@ final class ConnectionViewModel {
   var isConnecting: Bool {
     !(networkState == nil || networkState == .host(.stopped) || networkState == .viewer(.stopped))
   }
-  
+
   /// State Toast
   private let notificationService: NotificationServiceProtocol
 
@@ -74,7 +76,6 @@ final class ConnectionViewModel {
     self.networkService = networkService
     self.notificationService = notificationService
     bind()
-    
 
     // @Observable ViewModel은 두 번 초기화될 수 있음
     // https://stackoverflow.com/a/78222019
@@ -122,6 +123,9 @@ final class ConnectionViewModel {
           self?.lastPingAt = pingAt
         case .changeRole(let roles, let lwwValue):
           self?.handleReceivedRequestChangeRole(receivedNewRoles: roles, receviedLwwRegister: lwwValue)
+        case .willDisconnect:
+          // 상대로부터 연결 종료 예정 통보를 받으면 세션 종료 오버레이 노출
+          self?.needReportSessionFinished = true
         default: break
         }
       }
@@ -204,6 +208,10 @@ extension ConnectionViewModel {
     lastConnectedDevice = nil
     connectionLost = false
     reconnectingDeviceName = nil
+  }
+  
+  func sessionFinishedOverlayCloseButtonDidTap() {
+    needReportSessionFinished = false
   }
 }
 
