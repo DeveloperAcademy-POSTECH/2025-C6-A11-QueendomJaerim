@@ -555,6 +555,10 @@ extension CameraView: View {
         selectedImageID = nil
       }
     }
+    // 한쪽이 프레임 토글시 양쪽 모두 활성화
+    .onChange(of: frameViewModel.frames) { _, newFrames in
+      isFrame = !newFrames.isEmpty
+    }
     .sheet(isPresented: $isShowLogExportingSheet) {
       LogExportingView()
       }
