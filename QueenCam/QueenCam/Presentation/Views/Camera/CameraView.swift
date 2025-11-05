@@ -190,77 +190,75 @@ extension CameraView: View {
     ZStack {
       Color.black.ignoresSafeArea()
 
-      switch isPermissionGranted {
-      case true:
-        VStack(spacing: .zero) {
-          /// 제일 위 툴바 부분
-          TopToolBarView(
-            isConnected: isSessionActive,
-            connectedDeviceName: connectionViewModel.connectedDeviceName,
-            menuContent: {
-              toolBarCameraSettingTool
+      VStack(spacing: .zero) {
+        /// 제일 위 툴바 부분
+        TopToolBarView(
+          isConnected: isSessionActive,
+          connectedDeviceName: connectionViewModel.connectedDeviceName,
+          menuContent: {
+            toolBarCameraSettingTool
 
-              Button("기능 1") {}
-              Button("기능 2") {}
-              Button("로그 내보내기") {
-                isShowLogExportingSheet = true
-              }
-
-              Divider()
-
-              Button("신고하기", systemImage: "exclamationmark.triangle") {}
-            },
-            connectedWithButtonDidTap: {
-              if connectionViewModel.isConnecting {
-                isShowingCurrentConnectionModal.toggle()
-              } else {
-                router.push(.establishConnection)
-              }
+            Button("기능 1") {}
+            Button("기능 2") {}
+            Button("로그 내보내기") {
+              isShowLogExportingSheet = true
             }
-          )
-          .padding()
 
-          ZStack {
-            if isPhotographerMode {  // 작가 + Default
-              CameraPreview(session: cameraViewModel.cameraManager.session)
-                .onTapGesture { location in
-                  isFocused = true
-                  focusLocation = location
-                  cameraViewModel.setFocus(point: location)
-                }
-                .gesture(magnificationGesture)
+            Divider()
 
-                .overlay {
-                  if isFocused {
-                    FocusView(position: $focusLocation)
-                      .onAppear {
-                        withAnimation {
-                          DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-                            self.isFocused = false
+            Button("신고하기", systemImage: "exclamationmark.triangle") {}
+          },
+          connectedWithButtonDidTap: {
+            if connectionViewModel.isConnecting {
+              isShowingCurrentConnectionModal.toggle()
+            } else {
+              router.push(.establishConnection)
+            }
+          }
+        )
+        .padding()
 
-                          }
+        ZStack {
+          if isPhotographerMode {  // 작가 + Default
+            CameraPreview(session: cameraViewModel.cameraManager.session)
+              .onTapGesture { location in
+                isFocused = true
+                focusLocation = location
+                cameraViewModel.setFocus(point: location)
+              }
+              .gesture(magnificationGesture)
+
+              .overlay {
+                if isFocused {
+                  FocusView(position: $focusLocation)
+                    .onAppear {
+                      withAnimation {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                          self.isFocused = false
+
                         }
                       }
-                  }
+                    }
                 }
-            } else {  // 모델
-              #if DEBUG
-              DebugPreviewPlayerView(previewModel: previewModel)
-              #else
-              PreviewPlayerView(previewModel: previewModel)
-              #endif
-            }
+              }
+          } else {  // 모델
+            #if DEBUG
+            DebugPreviewPlayerView(previewModel: previewModel)
+            #else
+            PreviewPlayerView(previewModel: previewModel)
+            #endif
+          }
 
-            if isLarge {
-              Color.black.opacity(0.5)
-                .onTapGesture {
-                  isLarge = false
-                }
-            }
+          if isLarge {
+            Color.black.opacity(0.5)
+              .onTapGesture {
+                isLarge = false
+              }
+          }
 
-            if cameraViewModel.isShowGrid {
-              GridView()
-            }
+          if cameraViewModel.isShowGrid {
+            GridView()
+          }
 
             Group {
               if isFrame {
@@ -272,48 +270,36 @@ extension CameraView: View {
                 PenDisplayView(penViewModel: penViewModel, role: connectionViewModel.role)
               }
             }
-            .opacity(isRemoteGuideHidden ? .zero : 1)
-
-            VStack {
-              Spacer()
-              if !isFront {
-                VStack(spacing: .zero) {
-                  if isPhotographerMode {
-                    LensZoomTool(
-                      zoomScaleItemList: zoomScaleItemList,
-                      currentZoomFactor: currentZoomFactor,
-                      activeZoom: activeZoom,
-                      onZoomChange: { zoom in
-                        cameraViewModel.setZoom(factor: zoom, ramp: true)
-                        currentZoomFactor = zoom
-                      }
-                    )
-                  }
-                }
-                .padding(.vertical, 12)
-              }
+            if isPen || isMagicPen {
+              PenWriteView(
+                penViewModel: penViewModel,
+                isPen: isPen,
+                isMagicPen: isMagicPen,
+                role: connectionViewModel.role ?? .photographer
+              )
+            } else {
+              PenDisplayView(penViewModel: penViewModel, role: connectionViewModel.role)
             }
+          }
+          .opacity(isRemoteGuideHidden ? .zero : 1)
 
-            VStack {
-              Spacer()
-              HStack {
-                Spacer()
-                GuidingToggleButton(
-                  role: connectionViewModel.role,
-                  systemName: guideToggleImage,
-                  isActive: !isRemoteGuideHidden,
-                  tapAction: {
-                    print("dd")
-                    isRemoteGuideHidden.toggle()
-                    if isRemoteGuideHidden {
-                      isPen = false
-                      isMagicPen = false
-                      isFrame = false
+          VStack {
+            Spacer()
+            if !isFront {
+              VStack(spacing: .zero) {
+                if isPhotographerMode {
+                  LensZoomTool(
+                    zoomScaleItemList: zoomScaleItemList,
+                    currentZoomFactor: currentZoomFactor,
+                    activeZoom: activeZoom,
+                    onZoomChange: { zoom in
+                      cameraViewModel.setZoom(factor: zoom, ramp: true)
+                      currentZoomFactor = zoom
                     }
-                  }
-                )
+                  )
+                }
               }
-              .padding(12)
+              .padding(.vertical, 12)
             }
             
             ReferenceView(referenceViewModel: referenceViewModel, isLarge: $isLarge)
@@ -321,61 +307,84 @@ extension CameraView: View {
               .padding(8)
               .clipped()
           }
-          .aspectRatio(3 / 4, contentMode: .fill)
-          .clipShape(.rect(cornerRadius: 5))
-          .overlay {
-            RoundedRectangle(cornerRadius: 5)
-              .stroke(.gray, lineWidth: 1)
-          }
-          .padding(.horizontal, 16)
-          .overlay(alignment: .center) {
-            StateToastContainer()
-              .padding(.top, 16)
-          }
 
-          // 프리뷰 밖 => 이부분을 기준으로 바구니 표현
-          VStack(spacing: 24) {
-            HStack(alignment: .center, spacing: 40) {
-              //프레임
-              GuidingButton(
+          VStack {
+            Spacer()
+            HStack {
+              Spacer()
+              GuidingToggleButton(
                 role: connectionViewModel.role,
-                isActive: isFrame,
+                systemName: guideToggleImage,
+                isActive: !isRemoteGuideHidden,
                 tapAction: {
-                  isFrame.toggle()
-                  if isFrame {
-                    isRemoteGuideHidden = false
+                  print("dd")
+                  isRemoteGuideHidden.toggle()
+                  if isRemoteGuideHidden {
+                    isPen = false
+                    isMagicPen = false
+                    isFrame = false
                   }
-                },
-                guidingButtonType: .frame
-              )
-              // 펜
-              GuidingButton(
-                role: connectionViewModel.role,
-                isActive: isPen,
-                tapAction: {
-                  isPen.toggle()
-                  isMagicPen = false
-                  if isPen {
-                    isRemoteGuideHidden = false
-                  }
-                },
-                guidingButtonType: .pen
-              )
-              // 매직펜
-              GuidingButton(
-                role: connectionViewModel.role,
-                isActive: isMagicPen,
-                tapAction: {
-                  isMagicPen.toggle()
-                  isPen = false
-                  if isMagicPen {
-                    isRemoteGuideHidden = false
-                  }
-                },
-                guidingButtonType: .magicPen
+                }
               )
             }
-            .padding(.top, 32)
+            .padding(12)
+          }
+        }
+        .aspectRatio(3 / 4, contentMode: .fill)
+        .clipShape(.rect(cornerRadius: 5))
+        .overlay {
+          RoundedRectangle(cornerRadius: 5)
+            .stroke(.gray, lineWidth: 1)
+        }
+        .padding(.horizontal, 16)
+        .overlay(alignment: .center) {
+          StateToastContainer()
+            .padding(.top, 16)
+        }
+
+        // 프리뷰 밖 => 이부분을 기준으로 바구니 표현
+        VStack(spacing: 24) {
+          HStack(alignment: .center, spacing: 40) {
+            //프레임
+            GuidingButton(
+              role: connectionViewModel.role,
+              isActive: isFrame,
+              tapAction: {
+                isFrame.toggle()
+                if isFrame {
+                  isRemoteGuideHidden = false
+                }
+              },
+              guidingButtonType: .frame
+            )
+            // 펜
+            GuidingButton(
+              role: connectionViewModel.role,
+              isActive: isPen,
+              tapAction: {
+                isPen.toggle()
+                isMagicPen = false
+                if isPen {
+                  isRemoteGuideHidden = false
+                }
+              },
+              guidingButtonType: .pen
+            )
+            // 매직펜
+            GuidingButton(
+              role: connectionViewModel.role,
+              isActive: isMagicPen,
+              tapAction: {
+                isMagicPen.toggle()
+                isPen = false
+                if isMagicPen {
+                  isRemoteGuideHidden = false
+                }
+              },
+              guidingButtonType: .magicPen
+            )
+          }
+          .padding(.top, 32)
 
             HStack {
               Button(action: { isShowPhotoPicker.toggle() }) {
@@ -396,62 +405,51 @@ extension CameraView: View {
                 }
               }
 
+            Spacer()
+
+            if isPhotographerMode {  // 작가 전용 뷰
+              Button(action: { cameraViewModel.capturePhoto() }) {
+                Circle()
+                  .fill(.offWhite)
+                  .stroke(.gray900, lineWidth: 6)
+                  .frame(width: 80, height: 80)
+              }
+
               Spacer()
 
-              if isPhotographerMode {  // 작가 전용 뷰
-                Button(action: { cameraViewModel.capturePhoto() }) {
-                  Circle()
-                    .fill(.offWhite)
-                    .stroke(.gray900, lineWidth: 6)
-                    .frame(width: 80, height: 80)
+              Button(action: {
+                Task {
+                  await cameraViewModel.switchCamera()
                 }
+              }) {
 
-                Spacer()
-
-                Button(action: {
-                  Task {
-                    await cameraViewModel.switchCamera()
+                Circle()
+                  .fill(.gray900)
+                  .frame(width: 48, height: 48)
+                  .overlay {
+                    Image(systemName: "arrow.trianglehead.2.clockwise.rotate.90")
+                      .font(.system(size: 22))
+                      .foregroundStyle(.offWhite)
                   }
-                }) {
-
-                  Circle()
-                    .fill(.gray900)
-                    .frame(width: 48, height: 48)
-                    .overlay {
-                      Image(systemName: "arrow.trianglehead.2.clockwise.rotate.90")
-                        .font(.system(size: 22))
-                        .foregroundStyle(.offWhite)
-                    }
-                }
-              } else {
-                BoomupButton(tapAction: {})
+              }
+            } else {
+              BoomupButton(tapAction: {})
+            }
+          }
+          .padding(.bottom, 51)
+          .padding(.horizontal, 36)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(.black)
+        .gesture(
+          DragGesture(minimumDistance: 30)
+            .onEnded { value in
+              guard isPhotographerMode else { return }
+              withAnimation {
+                self.isShowCameraSettingTool = true
               }
             }
-            .padding(.bottom, 51)
-            .padding(.horizontal, 36)
-          }
-          .frame(maxWidth: .infinity, maxHeight: .infinity)
-          .background(.black)
-          .gesture(
-            DragGesture(minimumDistance: 30)
-              .onEnded { value in
-                guard isPhotographerMode else { return }
-                withAnimation {
-                  self.isShowCameraSettingTool = true
-                }
-              }
-          )
-        }
-
-      case false:
-        VStack {
-          Text("권한이 거부되었습니다.")
-            .foregroundStyle(.white)
-
-          Button(action: { openSetting() }) {
-            Text("설정으로 이동하기")
-          }
-        }
+        )
       }
 
       // MARK: 네트워크 상태 모달
@@ -500,25 +498,30 @@ extension CameraView: View {
         .transition(.move(edge: .bottom))
       }
     }
-    .alert(
-      "카메라 접근 권한",
-      isPresented: .init(
-        get: { cameraViewModel.isShowSettingAlert },
-        set: { cameraViewModel.isShowSettingAlert = $0 }
-      ),
-      actions: {
-        Button(role: .cancel, action: {}) {
-          Text("취소")
-        }
+    .overlay {
+      if !isPermissionGranted {
+        ZStack {
+          Color.black.opacity(0.7)
+            .ignoresSafeArea()
 
-        Button(action: { openSetting() }) {
-          Text("설정으로 이동")
+          VStack(spacing: 24) {
+            Text("찍자 서비스 이용을 위해\n카메라와 음성 권한을 허용해주세요.")
+              .typo(.m15)
+              .foregroundStyle(.systemWhite)
+              .multilineTextAlignment(.center)
+
+            Button(action: { openSetting() }) {
+              Text("설정으로 이동")
+                .typo(.m15)
+                .foregroundStyle(.systemWhite)
+                .frame(width: 147, height: 55)
+                .glassEffect(.clear, in: .rect(cornerRadius: 99))
+            }
+          }
+          .padding(.bottom, 80)
         }
-      },
-      message: {
-        Text("설정에서 카메라 접근 권한을 허용해주세요.")
       }
-    )
+    }
     .sheet(isPresented: $isShowPhotoPicker) {
       PhotosPickerView(roleForTheme: connectionViewModel.role, selectedImageID: $selectedImageID) { image in
         selectedImage = image

@@ -61,6 +61,7 @@
       }
     },
     "권한이 거부되었습니다." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -205,6 +206,7 @@
       }
     },
     "설정에서 카메라 접근 권한을 허용해주세요." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -225,6 +227,7 @@
       }
     },
     "설정으로 이동하기" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -333,6 +336,9 @@
         }
       }
     },
+    "찍자 서비스 이용을 위해\n카메라와 음성 권한을 허용해주세요." : {
+
+    },
     "촬영" : {
       "localizations" : {
         "en" : {
@@ -353,9 +359,6 @@
         }
       }
     },
-    "취소" : {
-
-    },
     "취소하기" : {
 
     },
@@ -363,6 +366,7 @@
 
     },
     "카메라 접근 권한" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
