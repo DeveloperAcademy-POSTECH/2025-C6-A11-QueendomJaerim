@@ -525,13 +525,6 @@ extension CameraView: View {
       }
     }
     .overlay {
-      if connectionViewModel.connectionLost {
-        ReconnectingOverlayView {
-          connectionViewModel.reconnectCancelButtonDidTap()
-        }
-      }
-    }
-    .overlay {
       if !isPermissionGranted {
         ZStack {
           Color.black.opacity(0.7)
