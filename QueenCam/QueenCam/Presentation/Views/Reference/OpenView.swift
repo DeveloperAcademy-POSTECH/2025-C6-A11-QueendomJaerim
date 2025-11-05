@@ -17,17 +17,32 @@ struct OpenView: View {
     ZStack(alignment: .topTrailing) {
       Group {
         if let image = referenceViewModel.image {
+          let ratio = ReferenceSize.referenceRatio(width: image.size.width, height: image.size.height)
+          /// 원본 이미지의 비율(높이/너비)
+          let aspect = image.size.height / image.size.width
+          let baseWidth = ratio.width
+          /// 레퍼런스의 최종 너비
+          let width = isLarge ? baseWidth * 2 : baseWidth
+          let baseHeight = baseWidth * aspect
+          /// 레퍼런스의 최종 높이
+          let height: CGFloat = {
+            switch ratio {
+            case .ratio16x9:
+              return isLarge ? 160 * 2 : 160
+            case .ratio9x16:
+              return isLarge ? 90 * 2 : 90
+            default:
+              return isLarge ? baseHeight * 2 : baseHeight
+            }
+          }()
+
           Image(uiImage: image)
             .resizable()
-            .scaledToFit()
-            .frame(
-              width: !isLarge
-              ? ReferenceSize.referenceRatio(width: image.size.width, height: image.size.height).width
-              : ReferenceSize.referenceRatio(width: image.size.width, height: image.size.height).width*2
-            )
-            .clipShape(.rect(cornerRadius: 20))
+            .scaledToFill()
+            .frame(width: width, height: height, alignment: .center)
+            .clipShape(.rect(cornerRadius: 24))
             .onTapGesture {
-              isLarge = true
+              isLarge.toggle()
               showDelete.toggle()
             }
         }
