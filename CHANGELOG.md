@@ -14,6 +14,8 @@
 - 펜 수정 툴바(전체삭제, 실행 취소) 노출 및 활성화 조건 추가
 - 매직펜 하이파이 디자인 추가(블러효과)
 - 권한 거부에 따른 UI 추가
+- 프레임 비율 조정 시, 프레임 내 그리드와 디밍 효과 추가
+- 양방향 프레임의 수정 점유권에 따른 하이파이 구현
 
 ### Changed
 
@@ -30,6 +32,8 @@
 
 ### Removed
 
+- FrameDisplayView
+- Frame의 Color 프로퍼티
 
 ### Fixed
 
@@ -37,6 +41,7 @@
 - PhotosPickerView에서 썸네일 이미지를 레퍼런스 이미지로 선택하면 정방형 이미지가 로드되던 문제
 - PhotosPickerView와 PhotoDetailView 체크박스 상태 동기화 이슈 해결
 - 레퍼런스 삭제시 PhotoPicker 초기화가 안된 문제 해결
+-  프레임의 동시 수정 관련된 문제 해결
 
 ### Security
 
