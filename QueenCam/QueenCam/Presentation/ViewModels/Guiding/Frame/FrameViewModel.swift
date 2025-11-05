@@ -17,9 +17,15 @@ final class FrameViewModel {
   var frames: [Frame] = []
   var currentRole: Role?
 
-  /// 프레임 수정 가능 여부
+  /// 프레임 토글 여부
   var isFrameEnabled: Bool = false
-  var selectedFrameID: UUID? = nil
+  /// 프레임 현재 수정 중 여부
+  var isInteracting: Bool = false
+  /// 프레임을 현재 수정 중인 역할(작가, 모델)
+  var interactingRole: Role?
+  /// 수정 및 선택한 프레임의 식별자
+  var selectedFrameID: UUID?
+  /// 최대 허용 프레임 갯수
   let maxFrames = 1
   private let colors: [Color] = [
     .clear, .modelPrimary, .photographerPrimary
@@ -160,9 +166,21 @@ extension FrameViewModel {
         switch event {
         case .frameUpdated(let eventType):
           self.handleFrameEvent(eventType: eventType)
+        
         case .frameEnabled(let enabled):
           self.isFrameEnabled = enabled
-        default: break
+
+        case .frameInteracting(let role, let interacting):
+          if interacting {
+            self.isInteracting = true
+            self.interactingRole = role
+          } else {
+            self.isInteracting = false
+            self.interactingRole = nil
+          }
+
+        default:
+          break
         }
       }
       .store(in: &cancellables)
@@ -213,11 +231,21 @@ extension FrameViewModel {
       await self.networkService.send(for: .frameUpdated(sendingEventType))
     }
   }
+
   /// 프레임 토글 상태 전송
   private func sendFrameEnabled(_ enabled: Bool) {
     Task.detached { [weak self] in
       guard let self else { return }
       await self.networkService.send(for: .frameEnabled(enabled))
+    }
+  }
+
+  /// 프레임 상호작용(제스처) 시작/종료 전송
+  func sendFrameInteracting(_ interacting: Bool) {
+    let myRole = currentRole ?? .photographer
+    Task.detached { [weak self] in
+      guard let self else { return }
+      await self.networkService.send(for: .frameInteracting(role: myRole, isInteracting: interacting))
     }
   }
 }
