@@ -48,8 +48,14 @@ struct FrameView: View {
         )
         .frame(width: width, height: height)
         .background {
-          if isSelected {
-            Color.photographerPrimary.opacity(0.15)
+          Rectangle()
+            .fill(frameColor)
+            .opacity(0.15)
+        }
+        .position(x: x, y: y)
+        .onTapGesture {
+          if frameViewModel.isSelected(frame.id) {
+            frameViewModel.selectFrame(nil)
           } else {
             LinearGradient(
               stops: [
