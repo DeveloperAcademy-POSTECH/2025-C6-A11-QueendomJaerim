@@ -317,7 +317,6 @@ extension CameraView: View {
                 systemName: guideToggleImage,
                 isActive: !isRemoteGuideHidden,
                 tapAction: {
-                  print("dd")
                   isRemoteGuideHidden.toggle()
                   if isRemoteGuideHidden {
                     isPen = false
