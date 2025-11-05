@@ -14,8 +14,6 @@ final class CameraViewModel {
   var isPhotosPermissionGranted = false
   var isMicPermissionGranted = false
 
-  var isShowSettingAlert = false
-
   var lastImage: UIImage?
 
   var selectedZoom: CGFloat = 1.0
@@ -108,8 +106,6 @@ final class CameraViewModel {
       isMicPermissionGranted = true
       isPhotosPermissionGranted = photoGranted
       try? await cameraManager.configureSession()
-    } else {
-      isShowSettingAlert = true
     }
   }
 
