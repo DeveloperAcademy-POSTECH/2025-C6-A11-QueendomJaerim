@@ -56,9 +56,11 @@ enum TypographyStyle {
   case r12
   case m10
   case m13
+  case m15
   case sfRoundedR15
   case sfR11
   case sfR13
+  case sfR15
   case sfM11
   case sfM12
   case sfSB15
@@ -68,9 +70,11 @@ enum TypographyStyle {
     case .r12: return .pretendard(.regular, size: 12)
     case .m10: return .pretendard(.medium, size: 10)
     case .m13: return .pretendard(.medium, size: 13)
+    case .m15: return .pretendard(.medium, size: 15)
     case .sfRoundedR15: return .system(size: 15, weight: .regular, design: .rounded)
     case .sfR11: return .system(size: 11, weight: .regular)
     case .sfR13: return .system(size: 13, weight: .regular)
+    case .sfR15: return .system(size: 15, weight: .regular)
     case .sfM11: return .system(size: 11, weight: .medium)
     case .sfM12: return .system(size: 12, weight: .medium)
     case .sfSB15: return .system(size: 15, weight: .semibold)
@@ -82,9 +86,11 @@ enum TypographyStyle {
     case .r12: return .pretendard(.regular, size: 12)
     case .m10: return .pretendard(.medium, size: 10)
     case .m13: return .pretendard(.medium, size: 13)
+    case .m15: return .pretendard(.medium, size: 15)
     case .sfRoundedR15: return .rounded(ofSize: 15, weight: .regular)
     case .sfR11: return .systemFont(ofSize: 11, weight: .regular)
     case .sfR13: return .systemFont(ofSize: 13, weight: .regular)
+    case .sfR15: return .systemFont(ofSize: 15, weight: .regular)
     case .sfM11: return .systemFont(ofSize: 11, weight: .medium)
     case .sfM12: return .systemFont(ofSize: 12, weight: .medium)
     case .sfSB15: return .systemFont(ofSize: 15, weight: .semibold)
@@ -96,9 +102,11 @@ enum TypographyStyle {
     case .r12: return 16
     case .m10: return 12
     case .m13: return 16
+    case .m15: return 23
     case .sfRoundedR15: return 18
     case .sfR11: return 13
     case .sfR13: return 16
+    case .sfR15: return 23
     case .sfM11: return 13
     case .sfM12: return 14
     case .sfSB15: return 18
@@ -151,6 +159,10 @@ extension View {
       Text("m13: Pretendard Medium 13\n여러 줄 테스트")
         .typo(.m13)
         .border(.gray, width: 0.5)
+      
+      Text("m15: Pretendard Medium 15\n여러 줄 테스트")
+        .typo(.m15)
+        .border(.gray, width: 0.5)
 
       // --- SF Pro Rounded ---
       Text("sfRoundedR15: SF Rounded Regular 15\n여러 줄 테스트")
@@ -164,6 +176,10 @@ extension View {
 
       Text("sfR13: SF Pro Regular 13\n여러 줄 테스트")
         .typo(.sfR13)
+        .border(.gray, width: 0.5)
+      
+      Text("sfR15: SF Pro Regular 15\n여러 줄 테스트")
+        .typo(.sfR15)
         .border(.gray, width: 0.5)
 
       Text("sfM11: SF Pro Medium 11\n여러 줄 테스트")
@@ -193,6 +209,10 @@ extension View {
       Text("m13: Pretendard Medium 13 한 줄 테스트")
         .typo(.m13)
         .border(.gray, width: 0.5)
+      
+      Text("m15: Pretendard Medium 15 한 줄 테스트")
+        .typo(.m15)
+        .border(.gray, width: 0.5)
 
       // --- SF Pro Rounded ---
       Text("sfRoundedR15: SF Rounded Regular 15 한 줄 테스트")
@@ -206,6 +226,10 @@ extension View {
 
       Text("sfR13: SF Pro Regular 13 한 줄 테스트")
         .typo(.sfR13)
+        .border(.gray, width: 0.5)
+      
+      Text("sfR15: SF Pro Regular 15 한 줄 테스트")
+        .typo(.sfR15)
         .border(.gray, width: 0.5)
 
       Text("sfM11: SF Pro Medium 11 한 줄 테스트")
