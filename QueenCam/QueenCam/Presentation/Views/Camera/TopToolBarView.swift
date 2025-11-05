@@ -8,7 +8,7 @@
 import SwiftUI
 
 /// Top Tool Bar
-struct TopToolBarView<MenuContent: View> {
+struct TopToolBarView<ContextMenuContent: View, IndicatorMenuContent: View> {
   /// 연결된 디바이스 이름 (연결이 끊어졌으면 nil)
   let connectedDeviceName: String?
 
@@ -16,7 +16,10 @@ struct TopToolBarView<MenuContent: View> {
   let reconnectingDeviceName: String?
 
   /// 컨텍스트 메뉴 아이템
-  @ViewBuilder let menuContent: () -> MenuContent
+  @ViewBuilder let contextMenuContent: () -> ContextMenuContent
+  
+  /// 가운데 연결 메뉴 아이템
+  @ViewBuilder let indicatorMenuContent: () -> IndicatorMenuContent
 
   /// 뒤로 가기 버튼 액션. nil이면 뒤로가기 버튼 숨김
   let backButtonDidTap: (() -> Void)?
@@ -31,14 +34,16 @@ struct TopToolBarView<MenuContent: View> {
   init(
     connectedDeviceName: String?,
     reconnectingDeviceName: String?,
-    @ViewBuilder menuContent: @escaping () -> MenuContent,
+    @ViewBuilder contextMenuContent: @escaping () -> ContextMenuContent,
+    @ViewBuilder indicatorMenuContent: @escaping () -> IndicatorMenuContent,
     backButtonDidTap: (() -> Void)? = nil,
     connectedWithButtonDidTap: @escaping () -> Void
   ) {
     self.connectedDeviceName = connectedDeviceName
     self.reconnectingDeviceName = reconnectingDeviceName
+    self.contextMenuContent = contextMenuContent
+    self.indicatorMenuContent = indicatorMenuContent
     self.backButtonDidTap = backButtonDidTap
-    self.menuContent = menuContent
     self.connectedWithButtonDidTap = connectedWithButtonDidTap
   }
 }
@@ -60,6 +65,7 @@ extension TopToolBarView: View {
 
       ConnectedWithView(
         connectedDeviceName: connectedDeviceName ?? reconnectingDeviceName
+        menuContent: indicatorMenuContent
       ) {
         connectedWithButtonDidTap()
       }
@@ -71,6 +77,7 @@ extension TopToolBarView: View {
   }
 }
 
+// TODO: - Rebase 잘 되었는지 체크 필요
 #Preview {
   VStack {
     TopToolBarView(connectedDeviceName: "임영폰", reconnectingDeviceName: nil) {
@@ -81,10 +88,24 @@ extension TopToolBarView: View {
       Divider()
 
       Button("신고하기", systemImage: "exclamationmark.triangle") {}
+    TopToolBarView(
+      isConnected: true,
+      connectedDeviceName: "임영폰"
+    ) {
+      Button("기능") { }
+    } indicatorMenuContent: {
+      Button("기능") { }
     } connectedWithButtonDidTap: {
       //
     }
 
+    TopToolBarView(
+      isConnected: true,
+      connectedDeviceName: "임영택임영택임영택임영택의 iPhone"
+    ) {
+      Button("기능") { }
+    } indicatorMenuContent: {
+      Button("기능") { }
     TopToolBarView(connectedDeviceName: "임영택임영택임영택임영택의 iPhone", reconnectingDeviceName: nil) {
       Button("기능 1") {}
       Button("기능 2") {}
@@ -109,6 +130,13 @@ extension TopToolBarView: View {
       //
     } backButtonDidTap: {
       //
+    TopToolBarView(
+      isConnected: false,
+      connectedDeviceName: nil
+    ) {
+      Button("기능") { }
+    } indicatorMenuContent: {
+      Button("기능") { }
     } connectedWithButtonDidTap: {
       //
     }

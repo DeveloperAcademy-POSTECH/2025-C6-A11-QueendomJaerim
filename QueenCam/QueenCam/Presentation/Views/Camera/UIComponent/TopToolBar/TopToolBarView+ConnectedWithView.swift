@@ -10,13 +10,18 @@ import SwiftUI
 extension TopToolBarView {
   struct ConnectedWithView: View {
     let connectedDeviceName: String?
-    let buttonDidTap: () -> Void
+    @ViewBuilder let menuContent: () -> IndicatorMenuContent
+    let notConnectedButtonDidTap: () -> Void
 
     var body: some View {
       if let connectedDeviceName {
-        WhenCurrentlyConnectedIndicatorView(connectedDeviceName: connectedDeviceName, buttonDidTap: buttonDidTap)
+        WhenCurrentlyConnectedIndicatorView(
+          connectedDeviceName: connectedDeviceName ?? "알 수 없는 기기",
+          menuContent: menuContent,
+          buttonDidTap: notConnectedButtonDidTap
+        )
       } else {
-        WhenNotConnectedIndicatorView(buttonDidTap: buttonDidTap)
+        WhenNotConnectedIndicatorView(buttonDidTap: notConnectedButtonDidTap)
       }
     }
   }
@@ -26,6 +31,7 @@ extension TopToolBarView {
 extension TopToolBarView {
   struct WhenCurrentlyConnectedIndicatorView {
     let connectedDeviceName: String
+    @ViewBuilder let menuContent: () -> IndicatorMenuContent
     let buttonDidTap: () -> Void
 
     private let horizontalSpacer: some View = Spacer().frame(width: 28)
@@ -35,29 +41,40 @@ extension TopToolBarView {
 }
 
 extension TopToolBarView.WhenCurrentlyConnectedIndicatorView: View {
-  var body: some View {
-    Button(action: buttonDidTap) {
-      HStack(spacing: 0) {
-        horizontalSpacer
+  var menuLabel: some View {
+    HStack(spacing: 0) {
+      horizontalSpacer
 
-        VStack(spacing: 4) {
-          // Subtitle
-          Text("연결된 기기")
-            .foregroundStyle(.gray400)
-            .typo(.m10)
+      VStack(spacing: 4) {
+        // Subtitle
+        Text("연결된 기기")
+          .foregroundStyle(.gray400)
+          .typo(.m10)
 
-          // 상대 기기 이름
-          Text(connectedDeviceName)
-            .lineLimit(1)
-            .foregroundStyle(.white)
-            .typo(.m13)
-        }
-
-        horizontalSpacer
+        // 상대 기기 이름
+        Text(connectedDeviceName)
+          .lineLimit(1)
+          .foregroundStyle(.white)
+          .typo(.m13)
       }
-      .frame(minWidth: minWidth, minHeight: height)
-      .glassEffect()
+
+      horizontalSpacer
     }
+    .frame(minWidth: minWidth, minHeight: height)
+    .glassEffect()
+  }
+
+  var body: some View {
+    Menu {
+      Section("연결된 기기") {
+        Button(connectedDeviceName) {}
+      }
+
+      menuContent()
+    } label: {
+      menuLabel
+    }
+    .menuOrder(.fixed)
   }
 }
 
@@ -88,6 +105,7 @@ extension TopToolBarView.WhenNotConnectedIndicatorView: View {
   }
 }
 
+// FIXME: - 리베이스 잘 되었는지 체크 필요
 #Preview {
   ZStack {
     Color.black
