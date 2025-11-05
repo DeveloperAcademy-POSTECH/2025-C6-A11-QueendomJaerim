@@ -26,7 +26,8 @@ struct FrameEditorView: View {
             frameViewModel: frameViewModel,
             frame: frame,
             containerSize: geo.size,
-            isSelected: frameViewModel.isSelected(frame.id)
+            isSelected: frameViewModel.isSelected(frame.id),
+            currentRole: currentRole
           )
         }
         .contentShape(Rectangle())
