@@ -27,9 +27,6 @@ final class FrameViewModel {
   var selectedFrameID: UUID?
   /// 최대 허용 프레임 갯수
   let maxFrames = 1
-  private let colors: [Color] = [
-    .clear, .modelPrimary, .photographerPrimary
-  ]
 
   // MARK: - 네트워크
   let networkService: NetworkServiceProtocol
@@ -47,6 +44,7 @@ final class FrameViewModel {
   func setFrame(_ enabled: Bool) {
     // 로컬 상태 갱신
     isFrameEnabled = enabled
+
     // Send to network
     sendFrameEnabled(enabled)
   }
@@ -57,8 +55,7 @@ final class FrameViewModel {
     let newX = min(max(origin.x, 0), 1 - size.width)
     let newY = min(max(origin.y, 0), 1 - size.height)
     let rect = CGRect(origin: .init(x: newX, y: newY), size: size)
-    let color = colors[0]
-    let frame = Frame(rect: rect, color: color)
+    let frame = Frame(rect: rect)
     frames.append(frame)
 
     // Send to network
@@ -101,7 +98,7 @@ final class FrameViewModel {
     new.origin.x = min(max(new.origin.x, 0), 1 - new.size.width)
     new.origin.y = min(max(new.origin.y, 0), 1 - new.size.height)
     frames[frameIndex].rect = new
-    
+
     // Send to network
     sendFrameCommand(command: .modify(frame: frames[frameIndex]))
   }
@@ -166,7 +163,7 @@ extension FrameViewModel {
         switch event {
         case .frameUpdated(let eventType):
           self.handleFrameEvent(eventType: eventType)
-        
+
         case .frameEnabled(let enabled):
           self.isFrameEnabled = enabled
 

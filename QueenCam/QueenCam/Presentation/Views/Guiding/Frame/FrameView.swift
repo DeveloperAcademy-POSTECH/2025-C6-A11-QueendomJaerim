@@ -16,11 +16,11 @@ struct FrameView: View {
   /// 현재 사용자 역할(모델, 작가)
   var currentRole: Role?
 
-  /// 이동 drag 제스쳐 시작할때의 프레임
+  /// 이동 drag 제스쳐 시작할때의 초기 프레임
   @State private var frameMove: CGRect?
-  /// 배율 magnify 제스쳐 시작할때의 프레임
+  /// 배율 magnify 제스쳐 시작할때의 초기 프레임
   @State private var frameScale: CGRect?
-  /// 비율 조정 drag 제스쳐 시작할때의 프레임
+  /// 비율 조정 drag 제스쳐 시작할때의 초기 프레임
   @State private var cornerScale: CGRect?
 
   /// 현재 제스처 소유 여부
@@ -38,28 +38,30 @@ struct FrameView: View {
     let x = (rect.origin.x + rect.width / 2) * containerSize.width
     let y = (rect.origin.y + rect.height / 2) * containerSize.height
 
+    /// 프레임 내부 및 스트로크(테두리) 색상
     let frameColor: AnyShapeStyle = {
       switch (isSelected, canInteract, currentRole) {
-      /// 모델이 현재 프레임의 비율을 수정하고 있는 경우
+      // 모델이 현재 프레임의 비율을 수정하고 있는 경우
       case (true, true, .some(.model)):
         return AnyShapeStyle(.modelPrimary)
-      /// 작가가 현재 프레임의 비율을 수정하고 있는 경우
+      // 작가가 현재 프레임의 비율을 수정하고 있는 경우
       case (true, true, .some(.photographer)):
         return AnyShapeStyle(.photographerPrimary)
-      /// 현재 내가 프레임을 수정하고 있지 않는 경우
+      // 현재 내가 프레임을 수정하고 있지 않는 경우
       case (_, false, _):
         return AnyShapeStyle(.offWhite)
-      /// 현재 내가 드래그 중인 경우
+      // 현재 내가 드래그 중인 경우
       case (false, true, _):
         return AnyShapeStyle(
           LinearGradient(
-          stops: [
-            Gradient.Stop(color: .modelPrimary, location: 0.00),
-            Gradient.Stop(color: .photographerPrimary, location: 1.00),
-          ],
-          startPoint: UnitPoint(x: 0.01, y: 0),
-          endPoint: UnitPoint(x: 0.99, y: 1)
-        ))
+            stops: [
+              Gradient.Stop(color: .modelPrimary, location: 0.00),
+              Gradient.Stop(color: .photographerPrimary, location: 1.00),
+            ],
+            startPoint: UnitPoint(x: 0.01, y: 0),
+            endPoint: UnitPoint(x: 0.99, y: 1)
+          )
+        )
       default:
         return AnyShapeStyle(.modelPrimary)
       }
@@ -137,6 +139,7 @@ struct FrameView: View {
         )
 
       // Corner 핸들 표시
+      // 현재 상대방이 수정 중 아님 + 비율 조정 상태임
       if canInteract && isSelected {
         let cornerList: [Corner] = [.topLeft, .topRight, .bottomLeft, .bottomRight]
         ForEach(cornerList, id: \.self) { corner in
@@ -145,6 +148,7 @@ struct FrameView: View {
             .frame(width: 11, height: 11)
             .position(cornerPosition(for: corner))
             .gesture(
+              // 현재 상대방이 수정 중 아님
               canInteract
                 ? DragGesture(minimumDistance: 0)
                   .onChanged { value in
