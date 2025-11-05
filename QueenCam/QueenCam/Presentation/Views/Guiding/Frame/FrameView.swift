@@ -138,9 +138,37 @@ struct FrameView: View {
             : nil
         )
 
-      // Corner 핸들 표시
+      // Corner 핸들 + 3x3 그리드 표시
       // 현재 상대방이 수정 중 아님 + 비율 조정 상태임
       if canInteract && isSelected {
+        // 3x3 그리드: 프레임 내부를 세로/가로 각각 삼분할
+        let minX = rect.minX * containerSize.width
+        let minY = rect.minY * containerSize.height
+        let gridWidth = width
+        let gridHeight = height
+
+        // 세로선 x좌표
+        let vertical1 = minX + gridWidth / 3
+        let vertical2 = minX + gridWidth * 2 / 3
+        // 가로선 y좌표
+        let horizontal1 = minY + gridHeight / 3
+        let horizontal2 = minY + gridHeight * 2 / 3
+
+        // 그리드 경로
+        Path { path in
+          // 세로 2줄
+          path.move(to: CGPoint(x: vertical1, y: minY))
+          path.addLine(to: CGPoint(x: vertical1, y: minY + gridHeight))
+          path.move(to: CGPoint(x: vertical2, y: minY))
+          path.addLine(to: CGPoint(x: vertical2, y: minY + gridHeight))
+          // 가로 2줄
+          path.move(to: CGPoint(x: minX, y: horizontal1))
+          path.addLine(to: CGPoint(x: minX + gridWidth, y: horizontal1))
+          path.move(to: CGPoint(x: minX, y: horizontal2))
+          path.addLine(to: CGPoint(x: minX + gridWidth, y: horizontal2))
+        }
+        .stroke(frameColor, style: StrokeStyle(lineWidth: 2))
+
         let cornerList: [Corner] = [.topLeft, .topRight, .bottomLeft, .bottomRight]
         ForEach(cornerList, id: \.self) { corner in
           Rectangle()
