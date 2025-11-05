@@ -15,6 +15,10 @@ final class FrameViewModel {
   static let frameHeight: CGFloat = 0.69
 
   var frames: [Frame] = []
+  var currentRole: Role?
+
+  /// 프레임 수정 가능 여부
+  var isFrameEnabled: Bool = false
   var selectedFrameID: UUID? = nil
   let maxFrames = 1
   private let colors: [Color] = [
@@ -33,14 +37,21 @@ final class FrameViewModel {
     bind()
   }
 
+  // MARK: - 프레임 활성화 토글 + 네트워크
+  func setFrame(_ enabled: Bool) {
+    // 로컬 상태 갱신
+    isFrameEnabled = enabled
+    // Send to network
+    sendFrameEnabled(enabled)
+  }
+
   // MARK: - 프레임 추가
   func addFrame(at origin: CGPoint, size: CGSize = .init(width: frameWidth, height: frameHeight)) {
     guard frames.count < maxFrames else { return }
     let newX = min(max(origin.x, 0), 1 - size.width)
     let newY = min(max(origin.y, 0), 1 - size.height)
-    let rect = CGRect(origin: .init(x: 0.24 , y: 0.17), size: size)
+    let rect = CGRect(origin: .init(x: newX, y: newY), size: size)
     let color = colors[0]
-
     let frame = Frame(rect: rect, color: color)
     frames.append(frame)
 
@@ -69,6 +80,7 @@ final class FrameViewModel {
     // Send to network
     sendFrameCommand(command: .move(frame: frames[frameIndex]))
   }
+
   // MARK: - 프레임 크기 조절 (Pinch/Magnify)
   func resizeFrame(id: UUID, start: CGRect, scale: CGFloat) {
     guard let frameIndex = frames.firstIndex(where: { $0.id == id }) else { return }
@@ -87,6 +99,7 @@ final class FrameViewModel {
     // Send to network
     sendFrameCommand(command: .modify(frame: frames[frameIndex]))
   }
+
   // MARK: - 모서리 핸들로 비율 조절
   func resizeCorner(id: UUID, corner: Corner, start: CGRect, translation: CGSize, container: CGSize) {
     guard let frameIndex = frames.firstIndex(where: { $0.id == id }) else { return }
@@ -125,6 +138,7 @@ final class FrameViewModel {
     // Send to network
     sendFrameCommand(command: .modify(frame: frames[frameIndex]))
   }
+
   // MARK: - 프레임의 삭제
   func deleteAll() {
     frames.removeAll()
@@ -142,9 +156,12 @@ extension FrameViewModel {
       .receive(on: RunLoop.main)
       .compactMap { $0 }
       .sink { [weak self] event in
+        guard let self else { return }
         switch event {
         case .frameUpdated(let eventType):
-          self?.handleFrameEvent(eventType: eventType)
+          self.handleFrameEvent(eventType: eventType)
+        case .frameEnabled(let enabled):
+          self.isFrameEnabled = enabled
         default: break
         }
       }
@@ -167,7 +184,6 @@ extension FrameViewModel {
         if frame.id == targetId {
           return replaceTo
         }
-
         return frame
       }
     case .deleteAll:
@@ -195,6 +211,13 @@ extension FrameViewModel {
     Task.detached { [weak self] in
       guard let self else { return }
       await self.networkService.send(for: .frameUpdated(sendingEventType))
+    }
+  }
+  /// 프레임 토글 상태 전송
+  private func sendFrameEnabled(_ enabled: Bool) {
+    Task.detached { [weak self] in
+      guard let self else { return }
+      await self.networkService.send(for: .frameEnabled(enabled))
     }
   }
 }

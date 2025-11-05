@@ -35,8 +35,8 @@ struct CameraView {
   @State private var isMagicPen: Bool = false
   @State private var penViewModel = PenViewModel()
 
-  @State private var frameViewModel = FrameViewModel()
   @State private var isFrame: Bool = false
+  @State private var frameViewModel = FrameViewModel()
 
   @State private var isRemoteGuideHidden: Bool = false
   @State private var isShowCameraSettingTool: Bool = false
@@ -263,13 +263,15 @@ extension CameraView: View {
             }
 
             Group {
+              let currentRole = connectionViewModel.role ?? .photographer
+
               if isFrame {
-                FrameEditorView(frameViewModel: frameViewModel)
+                FrameEditorView(frameViewModel: frameViewModel, currentRole: currentRole)
               }
               if isPen || isMagicPen {
-                PenWriteView(penViewModel: penViewModel, isPen: isPen, isMagicPen: isMagicPen, role: connectionViewModel.role ?? .photographer)
+                PenWriteView(penViewModel: penViewModel, isPen: isPen, isMagicPen: isMagicPen, role: currentRole)
               } else {
-                PenDisplayView(penViewModel: penViewModel, role: connectionViewModel.role)
+                PenDisplayView(penViewModel: penViewModel, role: currentRole)
               }
             }
             .opacity(isRemoteGuideHidden ? .zero : 1)
@@ -308,6 +310,7 @@ extension CameraView: View {
                     if isRemoteGuideHidden {
                       isPen = false
                       isMagicPen = false
+                      frameViewModel.setFrame(false)
                       isFrame = false
                     }
                   }
@@ -342,7 +345,11 @@ extension CameraView: View {
                 isActive: isFrame,
                 tapAction: {
                   isFrame.toggle()
-                  if isFrame {
+                  frameViewModel.setFrame(isFrame)
+                  if (isFrame && frameViewModel.frames.isEmpty) {
+                    frameViewModel.addFrame(at: CGPoint(x: 0.24, y: 0.15))
+                  }
+                  if frameViewModel.isFrameEnabled {
                     isRemoteGuideHidden = false
                   }
                 },
@@ -503,7 +510,6 @@ extension CameraView: View {
         Button(role: .cancel, action: {}) {
           Text("취소")
         }
-
         Button(action: { openSetting() }) {
           Text("설정으로 이동")
         }
@@ -555,9 +561,9 @@ extension CameraView: View {
         selectedImageID = nil
       }
     }
-    // 한쪽이 프레임 토글시 양쪽 모두 활성화
-    .onChange(of: frameViewModel.frames) { _, newFrames in
-      isFrame = !newFrames.isEmpty
+    // 프레임 토글 시 양쪽 모두 (비)활성화
+    .onChange(of: frameViewModel.isFrameEnabled) { _, enabled in
+      isFrame = enabled
     }
     .sheet(isPresented: $isShowLogExportingSheet) {
       LogExportingView()
