@@ -43,6 +43,8 @@ struct CameraView {
 
   // 로그 내보내기 시트 노출 여부
   @State private var isShowLogExportingSheet: Bool = false
+  
+  @State private var isShowShutterFlash = false
 }
 
 extension CameraView {
@@ -90,6 +92,13 @@ extension CameraView {
     default:
       return 2
     }
+  }
+  
+  private func flashScreen() {
+      isShowShutterFlash = true
+      withAnimation(.linear(duration: 0.01)) {
+          isShowShutterFlash = false
+      }
   }
 }
 
@@ -220,6 +229,7 @@ extension CameraView: View {
         ZStack {
           if isPhotographerMode {  // 작가 + Default
             CameraPreview(session: cameraViewModel.cameraManager.session)
+              .opacity(isShowShutterFlash ? 0 : 1)
               .onTapGesture { location in
                 isFocused = true
                 focusLocation = location
