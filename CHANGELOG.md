@@ -40,6 +40,7 @@
 
 - FrameDisplayView
 - Frame의 Color 프로퍼티
+- NetworkStateModalView 제거하고, 시스템 기본 UI인 Menu로 대체
 
 ### Fixed
 
