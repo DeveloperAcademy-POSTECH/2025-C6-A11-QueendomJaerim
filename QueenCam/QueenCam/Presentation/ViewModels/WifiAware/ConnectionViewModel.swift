@@ -24,7 +24,8 @@ final class ConnectionViewModel {
       }
     }
   }
-  var pairedDevices: [WAPairedDevice] = []
+  private(set) var pairedDevices: [WAPairedDevice] = []
+  private(set) var selectedPairedDevice: WAPairedDevice?
 
   var networkState: NetworkState? {
     didSet {
@@ -62,7 +63,7 @@ final class ConnectionViewModel {
   var isConnecting: Bool {
     !(networkState == nil || networkState == .host(.stopped) || networkState == .viewer(.stopped))
   }
-  
+
   /// State Toast
   private let notificationService: NotificationServiceProtocol
 
@@ -72,7 +73,6 @@ final class ConnectionViewModel {
     self.networkService = networkService
     self.notificationService = notificationService
     bind()
-    
 
     // @Observable ViewModel은 두 번 초기화될 수 있음
     // https://stackoverflow.com/a/78222019
@@ -90,9 +90,6 @@ final class ConnectionViewModel {
         self.networkState = state
 
         // 이벤트 전파 후 핸들링
-        if state == .host(.cancelled) || state == .viewer(.cancelled) {
-          role = nil
-        }
         if state == .host(.lost) || state == .viewer(.lost) {
           connectionLost = true
           tryReconnect()
@@ -144,6 +141,8 @@ extension ConnectionViewModel {
   }
 
   func connectButtonDidTap(for device: WAPairedDevice) {
+    selectedPairedDevice = device
+
     if role == .model {
       networkService.mode = .viewer
     } else if role == .photographer {
@@ -176,6 +175,7 @@ extension ConnectionViewModel {
   }
 
   func selectRole(for role: Role?) {
+    networkService.stop(byUser: true)
     self.role = role
   }
 
