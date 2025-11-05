@@ -37,22 +37,16 @@ extension PhotosPickerView: View {
           }
 
       case .denied:
-        VStack(spacing: 24) {
+        // FIXME: 디자인 확정되면 수정 예정
+        VStack(spacing: 16) {
           Text("사진 보관함에 접근할 수 없어요. \n설정에서 사진 보관함 접근을 허용해주세요.")
-            .typo(.m15)
-            .foregroundStyle(.systemBlack)
+            .typo(.m13)
             .multilineTextAlignment(.center)
 
-          Button(action: {
+          Button("설정으로 가기") {
             UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
-          }) {
-            Text("설정으로 이동")
-              .typo(.m15)
-              .foregroundStyle(.gray900)
-              .frame(width: 114, height: 39)
-              .background(.gray200)
-              .clipShape(.rect(cornerRadius: 22))
           }
+          .buttonStyle(.glass)
         }
 
       case .loaded:
@@ -123,7 +117,7 @@ extension PhotosPickerView: View {
             assetList: viewModel.assetList,
             selectedIndex: item.selectedAssetIndex,
             manager: viewModel.cachingManager,
-            selectedImageID: $sheetSelectedImageID,
+            selectedImageID: sheetSelectedImageID,
             role: roleForTheme,
             onTapConfirm: { image, assetID in
               sheetSelectedImage = image

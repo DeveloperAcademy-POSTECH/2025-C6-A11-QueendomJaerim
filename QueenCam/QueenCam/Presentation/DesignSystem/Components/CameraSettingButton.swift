@@ -14,12 +14,10 @@ extension CameraSettingButton: View {
       Button(action: { tapAction() }) {
         VStack {
           Image(systemName: systemName)
-            .typo(.sfR13)
           
           Text(title)
-            .typo(.sfM12)
         }
-        .tint(isActive ? Color.MiscellaneousWindowControlsMinimize : .black)
+        .tint(isActive ? .photographerPrimary : .black)
       }
     } else {
       VStack(alignment: .center, spacing: 8) {

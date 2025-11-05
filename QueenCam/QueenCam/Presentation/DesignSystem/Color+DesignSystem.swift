@@ -28,7 +28,7 @@ struct ColorRow: View {
   ScrollView {
     VStack(spacing: 12) {
 
-      ColorRow(color: .systemBlack, name: "black")
+      ColorRow(color: .black, name: "black")
       ColorRow(color: .disabled, name: "disabled")
 
       Divider()
@@ -44,7 +44,7 @@ struct ColorRow: View {
 
       Divider()
 
-      ColorRow(color: .systemWhite, name: "white")
+      ColorRow(color: .white, name: "white")
       ColorRow(color: .offWhite, name: "offWhite")
     }
     .padding()

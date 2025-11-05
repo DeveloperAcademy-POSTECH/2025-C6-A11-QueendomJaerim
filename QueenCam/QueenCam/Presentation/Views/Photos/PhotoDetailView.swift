@@ -8,7 +8,7 @@ struct PhotoDetailView {
   let assetList: [PHAsset]  // 스와이프할 전체 사진
   let selectedIndex: Int  // 선택한 사진의 인덱스 (순서)
   let manager: PHCachingImageManager
-  @Binding var selectedImageID: String?  // 외부에서 주입 받은 이미지 아이디
+  let selectedImageID: String?  // 외부에서 주입 받은 이미지 아이디
 
   let role: Role?
 
@@ -17,6 +17,7 @@ struct PhotoDetailView {
 
   // 이 뷰에서만 사용할 상태
   @State private var currentIndex: Int?  // 현재 스와이프해서 보고 있는 사진 인덱스 (순서)
+  @State private var detailSelectedImageID: String?  // 체크박스 상태 관리
   @State private var loadedImageList: [String: UIImage] = [:]  // 캐시된 이미지 리스트들 원본 (사진 ID: 고화질 원본)
 
   // 한번 탭 UI 변경용
@@ -73,10 +74,10 @@ extension PhotoDetailView: View {
           TopToolBarComponent(
             currentIndex: currentIndex ?? .zero,
             totalItemListCount: assetList.count,
-            isActive: selectedImageID != nil,
+            isActive: detailSelectedImageID != nil,
             onTapBackAction: { onTapClose() },
             onTapRegisterAction: {
-              if let confirmAssetID = selectedImageID,
+              if let confirmAssetID = detailSelectedImageID,
                 let confirmImage = loadedImageList[confirmAssetID]
               {
                 onTapConfirm(confirmImage, confirmAssetID)
@@ -90,16 +91,16 @@ extension PhotoDetailView: View {
             Spacer()
 
             CheckCircleButton(
-              isSelected: selectedImageID == currentAssetID,
+              isSelected: detailSelectedImageID == currentAssetID,
               role: role,
               isLarge: true,
               didTap: {
                 guard let assetID = currentAssetID else { return }
 
-                if selectedImageID == assetID {
-                  selectedImageID = nil
+                if detailSelectedImageID == assetID {
+                  detailSelectedImageID = nil
                 } else {
-                  selectedImageID = assetID
+                  detailSelectedImageID = assetID
                 }
               }
             )
@@ -113,6 +114,7 @@ extension PhotoDetailView: View {
 
     .onAppear {
       self.currentIndex = selectedIndex
+      self.detailSelectedImageID = selectedImageID
     }
   }
 }
