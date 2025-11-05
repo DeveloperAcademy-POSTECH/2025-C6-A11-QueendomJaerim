@@ -312,6 +312,8 @@ extension CameraView: View {
                       isMagicPen = false
                       frameViewModel.setFrame(false)
                       isFrame = false
+                    } else if (!isRemoteGuideHidden && !frameViewModel.frames.isEmpty) {
+                      frameViewModel.setFrame(true)
                     }
                   }
                 )
