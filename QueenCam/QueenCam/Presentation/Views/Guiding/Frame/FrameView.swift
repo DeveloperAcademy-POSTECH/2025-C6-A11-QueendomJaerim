@@ -68,6 +68,26 @@ struct FrameView: View {
     }()
 
     ZStack(alignment: .center) {
+      if canInteract && isSelected {
+        GeometryReader { geo in
+          ZStack {
+            // 전체 컨테이너를 덮는 어두운 레이어
+            Rectangle()
+              .fill(Color.black.opacity(0.5))
+
+            // 프레임 영역을 빼기
+            Rectangle()
+              .frame(width: width, height: height)
+              .position(x: x, y: y)
+              .blendMode(.destinationOut)
+          }
+          .compositingGroup()
+          .allowsHitTesting(false)
+          .frame(width: geo.size.width, height: geo.size.height)
+        }
+      }
+
+      // 2) 실제 프레임 본체
       Rectangle()
         .fill(Color.clear)
         .overlay(
