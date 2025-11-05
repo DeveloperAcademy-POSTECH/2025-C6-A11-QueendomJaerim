@@ -11,10 +11,6 @@ import SwiftUI
 struct ReferenceView: View {
   @Bindable var referenceViewModel: ReferenceViewModel
   @Binding var isLarge: Bool
-  // FIXME: 레퍼런스 임시 배치 위치 => 스프린트2,3에 수정 예정
-  var top: CGFloat = 8
-  var leading: CGFloat = 0
-
   private let containerName = "ReferenceViewContainer"
 
   var body: some View {
@@ -44,12 +40,15 @@ struct ReferenceView: View {
             } label: {
               CloseView(referenceViewModel: referenceViewModel)
             }
+            .padding(.horizontal, -8)
+            .padding(.vertical, 30)
 
           case .delete:  // 레퍼런스 삭제
             EmptyView()
           }
         }
       }
-    }.coordinateSpace(name: containerName)
+    }
+    .coordinateSpace(name: containerName)
   }
 }

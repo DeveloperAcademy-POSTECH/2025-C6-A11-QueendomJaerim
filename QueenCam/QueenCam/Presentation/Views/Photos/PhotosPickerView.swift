@@ -107,6 +107,9 @@ extension PhotosPickerView: View {
           }
           .onAppear {
             sheetSelectedImageID = selectedImageID
+            if selectedImageID == nil {
+              sheetSelectedImage = nil
+            }
           }
         }
         .fullScreenCover(item: $selectedImageAsset) { item in
@@ -129,6 +132,14 @@ extension PhotosPickerView: View {
             }
           )
         }
+      }
+    }
+    .onChange(of: selectedImageID) { _, newValue in
+      if newValue == nil {
+        sheetSelectedImage = nil
+        sheetSelectedImageID = nil
+      } else {
+        sheetSelectedImageID = newValue
       }
     }
   }

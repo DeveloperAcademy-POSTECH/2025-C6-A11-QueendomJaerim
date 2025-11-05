@@ -262,17 +262,12 @@ extension CameraView: View {
               GridView()
             }
 
-            ReferenceView(referenceViewModel: referenceViewModel, isLarge: $isLarge)
-              .frame(maxWidth: .infinity, maxHeight: .infinity)
-              .padding(12)
-              .clipped()
-
             Group {
               if isFrame {
                 FrameEditorView(frameViewModel: frameViewModel)
               }
               if isPen || isMagicPen {
-                PenWriteView(penViewModel: penViewModel, isPen: isPen, isMagicPen: isMagicPen, role: connectionViewModel.role)
+                PenWriteView(penViewModel: penViewModel, isPen: isPen, isMagicPen: isMagicPen, role: connectionViewModel.role ?? .photographer)
               } else {
                 PenDisplayView(penViewModel: penViewModel, role: connectionViewModel.role)
               }
@@ -320,6 +315,11 @@ extension CameraView: View {
               }
               .padding(12)
             }
+            
+            ReferenceView(referenceViewModel: referenceViewModel, isLarge: $isLarge)
+              .frame(maxWidth: .infinity, maxHeight: .infinity)
+              .padding(8)
+              .clipped()
           }
           .aspectRatio(3 / 4, contentMode: .fill)
           .clipShape(.rect(cornerRadius: 5))
@@ -555,9 +555,16 @@ extension CameraView: View {
         referenceViewModel.onDelete()
       }
     }
+    // 레퍼런스 삭제 시 PhotoPicker 선택도 초기화
+    .onChange(of: referenceViewModel.image) { _, newImage in
+      if newImage == nil {
+        selectedImage = nil
+        selectedImageID = nil
+      }
+    }
     .sheet(isPresented: $isShowLogExportingSheet) {
       LogExportingView()
-    }
+      }
     .task {
       await cameraViewModel.checkPermissions()
       await cameraViewModel.loadThumbnail()
