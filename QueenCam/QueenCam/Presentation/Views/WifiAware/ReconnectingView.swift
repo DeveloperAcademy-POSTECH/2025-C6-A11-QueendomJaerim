@@ -24,14 +24,14 @@ extension ReconnectingView: View {
       
       Text("연결 상태가 좋지 않아,\n다시 연결하고 있어요")
         .foregroundStyle(.offWhite)
-        .typo(.m13) // FIXME: -> m15
+        .typo(.m15)
         .multilineTextAlignment(.center)
         .padding(.bottom, 32)
 
       Button(action: didCancelButtonTap) {
         Text("처음부터 다시 연결하기")
           .underline()
-          .foregroundStyle(.gray400) // FIXME: -> gray200
+          .foregroundStyle(.gray200)
           .typo(.m13)
       }
       .buttonStyle(.plain)

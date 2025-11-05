@@ -19,7 +19,7 @@ extension SessionFinishedOverlayView: View {
       Text("친구가 연결을 종료했어요.\n다시 시작하려면 재연결해주세요.")
         .foregroundStyle(.offWhite)
         .multilineTextAlignment(.center)
-        .typo(.m13) // FIXME: -> m15
+        .typo(.m15)
 
       Spacer()
         .frame(height: 32)
@@ -27,7 +27,7 @@ extension SessionFinishedOverlayView: View {
       Button(action: didCancelButtonTap) {
         Text("닫기")
           .foregroundStyle(.offWhite)
-          .typo(.m13) // FIXME: -> m15
+          .typo(.m15)
           .padding(.vertical, 16)
           .padding(.horizontal, 60)
           .background(
