@@ -1,3 +1,4 @@
+import AVKit
 import PhotosUI
 import SwiftUI
 import WiFiAware
@@ -43,7 +44,7 @@ struct CameraView {
 
   // 로그 내보내기 시트 노출 여부
   @State private var isShowLogExportingSheet: Bool = false
-  
+
   @State private var isShowShutterFlash = false
 }
 
@@ -93,12 +94,12 @@ extension CameraView {
       return 2
     }
   }
-  
+
   private func flashScreen() {
-      isShowShutterFlash = true
-      withAnimation(.linear(duration: 0.01)) {
-          isShowShutterFlash = false
-      }
+    isShowShutterFlash = true
+    withAnimation(.linear(duration: 0.01)) {
+      isShowShutterFlash = false
+    }
   }
 }
 
@@ -229,6 +230,12 @@ extension CameraView: View {
         ZStack {
           if isPhotographerMode {  // 작가 + Default
             CameraPreview(session: cameraViewModel.cameraManager.session)
+              .onCameraCaptureEvent { event in
+                if event.phase == .ended {
+                  flashScreen()
+                  cameraViewModel.capturePhoto()
+                }
+              }
               .opacity(isShowShutterFlash ? 0 : 1)
               .onTapGesture { location in
                 isFocused = true
@@ -389,29 +396,32 @@ extension CameraView: View {
           }
           .padding(.top, 32)
 
-            HStack {
-              Button(action: { isShowPhotoPicker.toggle() }) {
-                if let image = cameraViewModel.lastImage {
-                  Image(uiImage: image)
+          HStack {
+            Button(action: { isShowPhotoPicker.toggle() }) {
+              if let image = cameraViewModel.lastImage {
+                Image(uiImage: image)
+                  .resizable()
+                  .frame(width: 48, height: 48)
+                  .clipShape(Circle())
+              } else {
+                if let thumbnailImage = cameraViewModel.thumbnailImage {
+                  Image(uiImage: thumbnailImage)
                     .resizable()
                     .frame(width: 48, height: 48)
                     .clipShape(Circle())
                 } else {
-                  if let thumbnailImage = cameraViewModel.thumbnailImage {
-                    Image(uiImage: thumbnailImage)
-                      .resizable()
-                      .frame(width: 48, height: 48)
-                      .clipShape(Circle())
-                  } else {
-                    EmptyPhotoButton()
-                  }
+                  EmptyPhotoButton()
                 }
               }
+            }
 
             Spacer()
 
             if isPhotographerMode {  // 작가 전용 뷰
-              Button(action: { cameraViewModel.capturePhoto() }) {
+              Button(action: {
+                flashScreen()
+                cameraViewModel.capturePhoto()
+              }) {
                 Circle()
                   .fill(.offWhite)
                   .stroke(.gray900, lineWidth: 6)
