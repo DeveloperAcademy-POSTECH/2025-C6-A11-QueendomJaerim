@@ -14,32 +14,25 @@ struct ConnectionView: View {
   @Environment(\.dismiss) var dismiss
   var viewModel: ConnectionViewModel
   var previewStreamingViewModel: PreviewModel
+
+  @State private var activeRole: Role?
 }
 
 extension ConnectionView {
   var body: some View {
     NavigationStack(path: $router.path) {
-      SelectRoleView { role in
-        viewModel.selectRole(for: role)
-        router.push(.makeConnection)
-      }
-      .navigationDestination(for: Route.self) { route in
-        switch route {
-        case .makeConnection:
-          MakeConnectionView(
-            role: viewModel.role,
-            pairedDevices: viewModel.pairedDevices,
-            networkState: viewModel.networkState,
-            connections: viewModel.connections,
-            changeRoleButtonDidTap: { viewModel.selectRole(for: nil) },
-            connectButtonDidTap: { device in
-              viewModel.connectButtonDidTap(for: device)
-            },
-            publisherDidSelectEndpoint: { endpoint in
-              viewModel.didEndpointSelect(endpoint: endpoint)
-            }
-          )
+      SelectRoleView(
+        selectedRole: activeRole,
+        didRoleSelect: { role in
+          activeRole = role
+        },
+        didRoleSubmit: { role in
+          viewModel.selectRole(for: role)
+          router.push(.makeConnection)
         }
+      )
+      .navigationDestination(for: Route.self) { route in
+        ConnectionNavigatedView(route: route, connectionViewModel: viewModel)
       }
     }
     .task {
@@ -48,39 +41,13 @@ extension ConnectionView {
     .onDisappear {
       viewModel.connectionViewDisappear()
     }
-    .onChange(of: viewModel.connections) { _, newValue in // 연결 완료
+    .onChange(of: viewModel.connections) { _, newValue in  // 연결 완료
+      
       if !newValue.isEmpty {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
           dismiss()
         }
       }
-    }
-  }
-}
-
-struct RoleSelectButton: View {
-  let guideText: LocalizedStringKey
-  let roleText: LocalizedStringKey
-  let action: () -> Void
-
-  var body: some View {
-    Button {
-      action()
-    } label: {
-      RoundedRectangle(cornerRadius: 23)
-        .frame(width: 171, height: 247)
-        .foregroundStyle(.gray)
-        .overlay {
-          VStack {
-            Text(guideText)
-
-            Spacer()
-
-            Text(roleText)
-          }
-          .foregroundStyle(.black)
-          .padding()
-        }
     }
   }
 }
