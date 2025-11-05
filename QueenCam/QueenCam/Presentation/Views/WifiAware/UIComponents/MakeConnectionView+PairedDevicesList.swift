@@ -41,33 +41,35 @@ extension MakeConnectionView.PairedDevicesList: View {
         .padding(.bottom, 16)
 
       // 리스트
-      VStack(spacing: 8) {
-        ForEach(pairedDevices) { device in
-          HStack(alignment: .center) {
-            Text(device.pairingInfo?.pairingName ?? "알 수 없는 이름")
-              .font(.pretendard(.medium, size: 18))
-              .foregroundStyle(.offWhite)
-
-            Spacer()
-
-            // 프로그레스 뷰 + 연결 버튼
-            if isPairing(device) {
-              ProgressView()
-                .tint(.offWhite)
-                .frame(width: 42, height: 42)
-            } else {
-              Button {
-                connectButtonDidTap(device)
-              } label: {
-                HStack(alignment: .center, spacing: 4) {
-                  Text("연결")
-                    .font(.pretendard(.medium, size: 14))
-                }
+      ScrollView {
+        VStack(spacing: 8) {
+          ForEach(pairedDevices) { device in
+            HStack(alignment: .center) {
+              Text(device.pairingInfo?.pairingName ?? "알 수 없는 이름")
+                .font(.pretendard(.medium, size: 18))
                 .foregroundStyle(.offWhite)
-                .padding(.vertical, 12)
-                .padding(.horizontal, 20)
+
+              Spacer()
+
+              // 프로그레스 뷰 + 연결 버튼
+              if isPairing(device) {
+                ProgressView()
+                  .tint(.offWhite)
+                  .frame(width: 42, height: 42)
+              } else {
+                Button {
+                  connectButtonDidTap(device)
+                } label: {
+                  HStack(alignment: .center, spacing: 4) {
+                    Text("연결")
+                      .font(.pretendard(.medium, size: 14))
+                  }
+                  .foregroundStyle(.offWhite)
+                  .padding(.vertical, 12)
+                  .padding(.horizontal, 20)
+                }
+                .glassEffect(.regular)
               }
-              .glassEffect(.regular)
             }
           }
         }
