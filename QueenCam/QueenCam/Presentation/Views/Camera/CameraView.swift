@@ -9,8 +9,6 @@ struct CameraView {
   let previewModel: PreviewModel
   let connectionViewModel: ConnectionViewModel
 
-  /// 네트워크 상태 모달 노출 여부
-  @State private var isShowingCurrentConnectionModal: Bool = false
   private var isPhotographerMode: Bool {
     connectionViewModel.role == nil || connectionViewModel.role == .photographer
   }
@@ -46,6 +44,9 @@ struct CameraView {
   @State private var isShowLogExportingSheet: Bool = false
 
   @State private var isShowShutterFlash = false
+  
+  // 연결 종료 여부 확인 시트 노출 여부
+  @State private var isShowDisconnectAlert = false
 }
 
 extension CameraView {
@@ -204,7 +205,7 @@ extension CameraView: View {
         TopToolBarView(
           connectedDeviceName: connectionViewModel.connectedDeviceName,
           reconnectingDeviceName: connectionViewModel.reconnectingDeviceName,
-          menuContent: {
+          contextMenuContent: {
             toolBarCameraSettingTool
 
             Button("기능 1") {}
@@ -217,15 +218,39 @@ extension CameraView: View {
 
             Button("신고하기", systemImage: "exclamationmark.triangle") {}
           },
-          connectedWithButtonDidTap: {
-            if connectionViewModel.isConnecting {
-              isShowingCurrentConnectionModal.toggle()
-            } else {
-              router.push(.establishConnection)
+          indicatorMenuContent: {
+            Button("역할 바꾸기") {
+              changeRoleButtonDidTap()
             }
+
+            Button("연결 종료하기", role: .destructive) {
+              isShowDisconnectAlert = true
+            }
+          },
+          connectedWithButtonDidTap: {
+            router.push(.establishConnection)
           }
         )
         .padding()
+        .alert(
+          "연결을 종료합니다.",
+          isPresented: $isShowDisconnectAlert,
+          actions: {
+            Button(role: .destructive) {
+              connectionViewModel.disconnectButtonDidTap()
+            } label: {
+              Text("연결 종료하기")
+            }
+
+            Button(role: .cancel) {
+            } label: {
+              Text("취소하기")
+            }
+          },
+          message: {
+            Text("친구와 연결을 끊고 촬영을 마칩니다.")
+          }
+        )
 
         ZStack {
           if isPhotographerMode {  // 작가 + Default
@@ -477,33 +502,6 @@ extension CameraView: View {
             }
         )
       }
-
-      // MARK: 네트워크 상태 모달
-      if isShowingCurrentConnectionModal {
-        NetworkStateModalView(
-          myRole: connectionViewModel.role ?? .model,
-          otherDeviceName: connectionViewModel.connectedDeviceName ?? "알 수 없는 기기",
-          disconnectButtonDidTap: {
-            isShowingCurrentConnectionModal = false
-            connectionViewModel.disconnectButtonDidTap()
-          },
-          changeRoleButtonDidTap: {
-            // 가이딩 초기화
-            penViewModel.reset()
-            frameViewModel.deleteAll()
-            referenceViewModel.onDelete()
-            connectionViewModel.swapRole()
-            // 새 역할에 따라 캡쳐를 시작/중단한다
-            if let newRole = connectionViewModel.role {
-              if newRole == .model {
-                previewModel.stopCapture()
-              } else if newRole == .photographer {
-                previewModel.startCapture()
-              }
-            }
-          }
-        )
-      }
     }
     // MARK: 카메라 세팅 툴
     .overlay {
@@ -603,12 +601,24 @@ extension CameraView: View {
       await cameraViewModel.checkPermissions()
       await cameraViewModel.loadThumbnail()
     }
-    // Life Cycle of the view
-    .onAppear {
-      UIApplication.shared.isIdleTimerDisabled = true // 화면 꺼짐 방지
-    }
-    .onDisappear {
-      UIApplication.shared.isIdleTimerDisabled = false
+  }
+}
+
+// TopToolbar Intent Handlers
+extension CameraView {
+  private func changeRoleButtonDidTap() {
+    // 가이딩 초기화
+    penViewModel.reset()
+    frameViewModel.deleteAll()
+    referenceViewModel.onDelete()
+    connectionViewModel.swapRole()
+    // 새 역할에 따라 캡쳐를 시작/중단한다
+    if let newRole = connectionViewModel.role {
+      if newRole == .model {
+        previewModel.stopCapture()
+      } else if newRole == .photographer {
+        previewModel.startCapture()
+      }
     }
   }
 }
