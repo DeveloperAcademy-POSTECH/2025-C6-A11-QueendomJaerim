@@ -26,6 +26,8 @@
 - 화면 내 레퍼런스 위치 및 배치 수정
 - 원본 이미지의 비율을 고려하여 레퍼런스 크기 조절
 - 손가락 위치를 기준으로 핀치 제스처 작동
+- Target에서 iPad, Mac 제외
+- Orientation을 Portrait로 고정
 
 ### Deprecated
 
@@ -39,6 +41,7 @@
 - PhotosPickerView에서 썸네일 이미지를 레퍼런스 이미지로 선택하면 정방형 이미지가 로드되던 문제
 - PhotosPickerView와 PhotoDetailView 체크박스 상태 동기화 이슈 해결
 - 레퍼런스 삭제시 PhotoPicker 초기화가 안된 문제 해결
+- SampleBufferDisplayView에서 매번 화질 관련 지표를 리셋하여 적응형 화질 매커니즘이 동작하지 않았던 문제
 
 ### Security
 
