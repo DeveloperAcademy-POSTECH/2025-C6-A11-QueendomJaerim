@@ -21,7 +21,7 @@ struct PreviewPlayerView: View {
         previewModel.frameDidRenderStablely()
       }
     )
-    .aspectRatio(3 / 4, contentMode: .fit)
+    .aspectRatio(3 / 4, contentMode: .fill)
     .padding(.horizontal, 16)
   }
 }
