@@ -24,6 +24,8 @@
 - 펜과 매직펜 구분 프로퍼티 추가
 - 화면 내 레퍼런스 위치 및 배치 수정
 - 원본 이미지의 비율을 고려하여 레퍼런스 크기 조절
+- Target에서 iPad, Mac 제외
+- Orientation을 Portrait로 고정
 
 ### Deprecated
 
