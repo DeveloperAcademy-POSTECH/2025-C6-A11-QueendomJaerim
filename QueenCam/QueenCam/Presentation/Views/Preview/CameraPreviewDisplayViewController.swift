@@ -126,14 +126,17 @@ extension SampleBufferDisplayView {
 
       if ptsDifferenceSeconds > ptsGapThresholdSeconds {
         logger.warning("Large PTS gap detected: \(ptsDifferenceSeconds)s. Frame loss. Resetting all checks.")
+        isStable = false
+        resetAllChecks()
+        renderer.flush()
+        return  // 이 프레임은 버리고 다음 프레임부터 새로 시작
       } else if ptsDifferenceSeconds < 0 {
         logger.warning("Out-of-order frame (PTS). Resetting all checks.")
+        isStable = false
+        resetAllChecks()
+        renderer.flush()
+        return  // 이 프레임은 버리고 다음 프레임부터 새로 시작
       }
-
-      isStable = false
-      resetAllChecks()
-      renderer.flush()
-      return  // 이 프레임은 버리고 다음 프레임부터 새로 시작
     }
 
     // 다음 비교를 위해 현재 PTS를 저장

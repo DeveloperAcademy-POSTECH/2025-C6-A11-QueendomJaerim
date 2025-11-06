@@ -1,3 +1,4 @@
+import AVKit
 import PhotosUI
 import SwiftUI
 import WiFiAware
@@ -229,6 +230,12 @@ extension CameraView: View {
         ZStack {
           if isPhotographerMode {  // 작가 + Default
             CameraPreview(session: cameraViewModel.cameraManager.session)
+              .onCameraCaptureEvent { event in
+                if event.phase == .ended {
+                  flashScreen()
+                  cameraViewModel.capturePhoto()
+                }
+              }
               .opacity(isShowShutterFlash ? 0 : 1)
               .onTapGesture { location in
                 isFocused = true
@@ -415,7 +422,10 @@ extension CameraView: View {
             Spacer()
 
             if isPhotographerMode {  // 작가 전용 뷰
-              Button(action: { cameraViewModel.capturePhoto() }) {
+              Button(action: {
+                flashScreen()
+                cameraViewModel.capturePhoto()
+              }) {
                 Circle()
                   .fill(.offWhite)
                   .stroke(.gray900, lineWidth: 6)
@@ -582,6 +592,13 @@ extension CameraView: View {
     .task {
       await cameraViewModel.checkPermissions()
       await cameraViewModel.loadThumbnail()
+    }
+    // Life Cycle of the view
+    .onAppear {
+      UIApplication.shared.isIdleTimerDisabled = true // 화면 꺼짐 방지
+    }
+    .onDisappear {
+      UIApplication.shared.isIdleTimerDisabled = false
     }
   }
 }
