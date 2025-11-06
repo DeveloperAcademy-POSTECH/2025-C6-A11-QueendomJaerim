@@ -21,6 +21,7 @@
 
 ### Fixed
 
+- PreviewPlayerView 주변 패딩 제거
 
 ### Security
 
