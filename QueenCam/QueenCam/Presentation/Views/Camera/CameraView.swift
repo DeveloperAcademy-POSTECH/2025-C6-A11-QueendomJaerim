@@ -277,18 +277,15 @@ extension CameraView: View {
           }
 
           Group {
+            let currentRole = connectionViewModel.role ?? .photographer
+
             if isFrame {
-              FrameEditorView(frameViewModel: frameViewModel)
+              FrameEditorView(frameViewModel: frameViewModel, currentRole: currentRole)
             }
             if isPen || isMagicPen {
-              PenWriteView(
-                penViewModel: penViewModel,
-                isPen: isPen,
-                isMagicPen: isMagicPen,
-                role: connectionViewModel.role ?? .photographer
-              )
+              PenWriteView(penViewModel: penViewModel, isPen: isPen, isMagicPen: isMagicPen, role: currentRole)
             } else {
-              PenDisplayView(penViewModel: penViewModel, role: connectionViewModel.role)
+              PenDisplayView(penViewModel: penViewModel, role: currentRole)
             }
           }
           .opacity(isRemoteGuideHidden ? .zero : 1)
@@ -328,6 +325,9 @@ extension CameraView: View {
                     isPen = false
                     isMagicPen = false
                     isFrame = false
+                    frameViewModel.setFrame(false)
+                  } else if !isRemoteGuideHidden && !frameViewModel.frames.isEmpty {
+                    frameViewModel.setFrame(true)
                   }
                 }
               )
@@ -361,7 +361,11 @@ extension CameraView: View {
               isActive: isFrame,
               tapAction: {
                 isFrame.toggle()
-                if isFrame {
+                frameViewModel.setFrame(isFrame)
+                if isFrame && frameViewModel.frames.isEmpty {
+                  frameViewModel.addFrame(at: CGPoint(x: 0.24, y: 0.15))
+                }
+                if frameViewModel.isFrameEnabled {
                   isRemoteGuideHidden = false
                 }
               },
@@ -577,6 +581,10 @@ extension CameraView: View {
         selectedImage = nil
         selectedImageID = nil
       }
+    }
+    // 프레임 토글 시 양쪽 모두 (비)활성화
+    .onChange(of: frameViewModel.isFrameEnabled) { _, enabled in
+      isFrame = enabled
     }
     .sheet(isPresented: $isShowLogExportingSheet) {
       LogExportingView()
