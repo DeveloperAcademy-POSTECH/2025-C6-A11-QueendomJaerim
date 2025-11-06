@@ -64,7 +64,7 @@ extension TopToolBarView: View {
       Spacer(minLength: minimumSpacing)
 
       ConnectedWithView(
-        connectedDeviceName: connectedDeviceName ?? reconnectingDeviceName
+        connectedDeviceName: connectedDeviceName ?? reconnectingDeviceName,
         menuContent: indicatorMenuContent
       ) {
         connectedWithButtonDidTap()
@@ -72,75 +72,7 @@ extension TopToolBarView: View {
 
       Spacer(minLength: minimumSpacing)
 
-      ToolBarMenu(symbolName: contextMenuSymbolName, menuContent: menuContent)
+      ToolBarMenu(symbolName: contextMenuSymbolName, menuContent: contextMenuContent)
     }
   }
-}
-
-// TODO: - Rebase 잘 되었는지 체크 필요
-#Preview {
-  VStack {
-    TopToolBarView(connectedDeviceName: "임영폰", reconnectingDeviceName: nil) {
-      Button("기능 1") {}
-      Button("기능 2") {}
-      Button("기능 3") {}
-
-      Divider()
-
-      Button("신고하기", systemImage: "exclamationmark.triangle") {}
-    TopToolBarView(
-      isConnected: true,
-      connectedDeviceName: "임영폰"
-    ) {
-      Button("기능") { }
-    } indicatorMenuContent: {
-      Button("기능") { }
-    } connectedWithButtonDidTap: {
-      //
-    }
-
-    TopToolBarView(
-      isConnected: true,
-      connectedDeviceName: "임영택임영택임영택임영택의 iPhone"
-    ) {
-      Button("기능") { }
-    } indicatorMenuContent: {
-      Button("기능") { }
-    TopToolBarView(connectedDeviceName: "임영택임영택임영택임영택의 iPhone", reconnectingDeviceName: nil) {
-      Button("기능 1") {}
-      Button("기능 2") {}
-      Button("기능 3") {}
-
-      Divider()
-
-      Button("신고하기", systemImage: "exclamationmark.triangle") {}
-    } connectedWithButtonDidTap: {
-      //
-    }
-
-    TopToolBarView(connectedDeviceName: nil, reconnectingDeviceName: "임영택임영택임영택임영택의 iPhone") {
-      //
-    } backButtonDidTap: {
-      //
-    } connectedWithButtonDidTap: {
-      //
-    }
-
-    TopToolBarView(connectedDeviceName: nil, reconnectingDeviceName: nil) {
-      //
-    } backButtonDidTap: {
-      //
-    TopToolBarView(
-      isConnected: false,
-      connectedDeviceName: nil
-    ) {
-      Button("기능") { }
-    } indicatorMenuContent: {
-      Button("기능") { }
-    } connectedWithButtonDidTap: {
-      //
-    }
-  }
-  .padding(20)
-  .background(.black)
 }

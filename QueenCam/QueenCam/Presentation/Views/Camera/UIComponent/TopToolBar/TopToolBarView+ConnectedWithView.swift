@@ -104,38 +104,3 @@ extension TopToolBarView.WhenNotConnectedIndicatorView: View {
     }
   }
 }
-
-// FIXME: - 리베이스 잘 되었는지 체크 필요
-#Preview {
-  ZStack {
-    Color.black
-
-    VStack {
-      TopToolBarView<AnyView>.ConnectedWithView(
-        connectedDeviceName: "임영폰"
-      ) {
-        // swiftlint:disable:next no_print_in_production
-        print("Tapped!")
-      }
-
-      TopToolBarView<AnyView>.ConnectedWithView(
-        connectedDeviceName: "임영택의 iPhone"
-      ) {
-        // swiftlint:disable:next no_print_in_production
-        print("Tapped!")
-      }
-
-      TopToolBarView<AnyView>.ConnectedWithView(
-        connectedDeviceName: "임영폰 임영폰 임영폰 임영폰 임영폰 임영폰 임영폰 임영폰 임영폰 임영폰 임영폰 임영폰 임영폰 "
-      ) {
-        // swiftlint:disable:next no_print_in_production
-        print("Tapped!")
-      }
-
-      TopToolBarView<AnyView>.ConnectedWithView(connectedDeviceName: nil) {
-        // swiftlint:disable:next no_print_in_production
-        print("Tapped!")
-      }
-    }
-  }
-}
