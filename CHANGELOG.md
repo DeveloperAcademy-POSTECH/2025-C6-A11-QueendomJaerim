@@ -21,10 +21,14 @@
 
 ### Fixed
 
-- PreviewPlayerView 주변 패딩 제거
 
 ### Security
 
+## [0.3.1] (2025-11-06)
+
+### Fixed
+
+- PreviewPlayerView 주변 패딩 제거
 
 ## [0.3.0] (2025-11-06)
 
@@ -160,6 +164,7 @@
 - Wi-Fi Aware 연결 후, 라이브 포토 촬영 시 앱이 크래시되는 문제
 - 레퍼런스 삭제 후 재등록에 관한 상태 초기화 문제
 
+[0.3.1]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v0.0.1...v0.1.0
