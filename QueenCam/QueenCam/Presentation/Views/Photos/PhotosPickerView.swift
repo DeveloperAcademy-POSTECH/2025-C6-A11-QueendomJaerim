@@ -37,16 +37,22 @@ extension PhotosPickerView: View {
           }
 
       case .denied:
-        // FIXME: 디자인 확정되면 수정 예정
-        VStack(spacing: 16) {
+        VStack(spacing: 24) {
           Text("사진 보관함에 접근할 수 없어요. \n설정에서 사진 보관함 접근을 허용해주세요.")
-            .typo(.m13)
+            .typo(.m15)
+            .foregroundStyle(.systemBlack)
             .multilineTextAlignment(.center)
 
-          Button("설정으로 가기") {
+          Button(action: {
             UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
+          }) {
+            Text("설정으로 이동")
+              .typo(.m15)
+              .foregroundStyle(.gray900)
+              .frame(width: 114, height: 39)
+              .background(.gray200)
+              .clipShape(.rect(cornerRadius: 22))
           }
-          .buttonStyle(.glass)
         }
 
       case .loaded:
@@ -61,13 +67,13 @@ extension PhotosPickerView: View {
                   manager: viewModel.cachingManager,
                   isSelected: sheetSelectedImageID == asset.localIdentifier,
                   roleForTheme: roleForTheme,
-                  onTapCheck: { image in
+                  onTapCheck: { fullImage in
                     // 선택된 상태에서 체크박스 탭하면 선택 해제
                     if sheetSelectedImageID == asset.localIdentifier {
                       sheetSelectedImage = nil
                       sheetSelectedImageID = nil
                     } else {
-                      sheetSelectedImage = image
+                      sheetSelectedImage = fullImage
                       sheetSelectedImageID = asset.localIdentifier
                     }
                   },
@@ -107,6 +113,9 @@ extension PhotosPickerView: View {
           }
           .onAppear {
             sheetSelectedImageID = selectedImageID
+            if selectedImageID == nil {
+              sheetSelectedImage = nil
+            }
           }
         }
         .fullScreenCover(item: $selectedImageAsset) { item in
@@ -114,7 +123,8 @@ extension PhotosPickerView: View {
             assetList: viewModel.assetList,
             selectedIndex: item.selectedAssetIndex,
             manager: viewModel.cachingManager,
-            selectedImageID: sheetSelectedImageID,
+            selectedImageID: $sheetSelectedImageID,
+            role: roleForTheme,
             onTapConfirm: { image, assetID in
               sheetSelectedImage = image
               sheetSelectedImageID = assetID
@@ -128,6 +138,14 @@ extension PhotosPickerView: View {
             }
           )
         }
+      }
+    }
+    .onChange(of: selectedImageID) { _, newValue in
+      if newValue == nil {
+        sheetSelectedImage = nil
+        sheetSelectedImageID = nil
+      } else {
+        sheetSelectedImageID = newValue
       }
     }
   }

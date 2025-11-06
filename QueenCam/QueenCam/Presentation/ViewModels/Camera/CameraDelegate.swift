@@ -4,7 +4,7 @@ import Photos
 import UIKit
 
 final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
-  private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.queendom.QueenCam", category: "CameraDelegate")
+  private let logger = QueenLogger(category: "CameraDelegate")
   private let isCameraPosition: AVCaptureDevice.Position
 
   private let completion: ((PhotoOuput?) -> Void)

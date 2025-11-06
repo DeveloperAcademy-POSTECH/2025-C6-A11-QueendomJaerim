@@ -9,8 +9,6 @@ import SwiftUI
 import WiFiAware
 
 struct MainView: View {
-  @State private var router = NavigationRouter()
-
   @State private var connectionViewModel = ConnectionViewModel(
     networkService: DependencyContainer.defaultContainer.networkService,
     notificationService: DependencyContainer.defaultContainer.notificationService
@@ -24,29 +22,16 @@ struct MainView: View {
   @State private var cameraViewModel = CameraViewModel(
     previewCaptureService: DependencyContainer.defaultContainer.previewCaptureService,
     networkService: DependencyContainer.defaultContainer.networkService,
-    camerSettingsService: DependencyContainer.defaultContainer.cameraSettingServcice,
+    cameraSettingsService: DependencyContainer.defaultContainer.cameraSettingServcice,
     notificationService: DependencyContainer.defaultContainer.notificationService
   )
 
   var body: some View {
-    Group {
-      NavigationStack(path: $router.path) {
-        ZStack {
-          CameraView(
-            cameraViewModel: cameraViewModel,
-            previewModel: previewModel,
-            connectionViewModel: connectionViewModel
-          )
-          .navigationDestination(for: Route.self) { route in
-            NavigationRouteView(
-              currentRoute: route,
-              connectionViewModel: connectionViewModel,
-              previewModel: previewModel
-            )
-          }
-        }
-      }
-    }
+    CameraView(
+      cameraViewModel: cameraViewModel,
+      previewModel: previewModel,
+      connectionViewModel: connectionViewModel
+    )
     #if DEBUG
     .alert(
       "Ping 메시지 도착",
@@ -64,6 +49,5 @@ struct MainView: View {
       }
     }
     #endif
-    .environment(\.router, router)
   }
 }

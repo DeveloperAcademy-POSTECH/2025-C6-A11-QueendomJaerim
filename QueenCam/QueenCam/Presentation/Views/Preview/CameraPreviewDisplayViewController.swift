@@ -70,10 +70,7 @@ final class SampleBufferDisplayView: UIView {
   var onFrameRenderUnstably: (() -> Void)?
   var onFrameRenderStably: (() -> Void)?
 
-  private let logger = Logger(
-    subsystem: Bundle.main.bundleIdentifier ?? "com.queendom.QueenCam",
-    category: "SampleBufferDisplayView"
-  )
+  private let logger = QueenLogger(category: "SampleBufferDisplayView")
 
   var videoLayer: AVSampleBufferDisplayLayer?
 
@@ -128,13 +125,17 @@ extension SampleBufferDisplayView {
       let ptsDifferenceSeconds = CMTimeGetSeconds(ptsDifference)
 
       if ptsDifferenceSeconds > ptsGapThresholdSeconds {
-        logger.warning("Large PTS gap detected: \(ptsDifferenceSeconds)s. Frame loss.")
+        logger.warning("Large PTS gap detected: \(ptsDifferenceSeconds)s. Frame loss. Resetting all checks.")
         isStable = false
-        resetLatencyCheck()  // 기준점 리셋
+        resetAllChecks()
+        renderer.flush()
+        return  // 이 프레임은 버리고 다음 프레임부터 새로 시작
       } else if ptsDifferenceSeconds < 0 {
-        logger.warning("Out-of-order frame (PTS).")
+        logger.warning("Out-of-order frame (PTS). Resetting all checks.")
         isStable = false
-        resetLatencyCheck()  // 기준점 리셋
+        resetAllChecks()
+        renderer.flush()
+        return  // 이 프레임은 버리고 다음 프레임부터 새로 시작
       }
     }
 

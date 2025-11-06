@@ -42,13 +42,16 @@ final actor PreviewCaptureService {
   /// 프레임 처리를 위한 CIContext
   let ciContext = CIContext(options: nil)
 
-  private let logger = Logger(
-    subsystem: Bundle.main.bundleIdentifier ?? "com.queendom.QueenCam",
-    category: "PreviewCaptureService"
-  )
+  private let logger = QueenLogger(category: "PreviewCaptureService")
 
   init() {
     (self.framePayloadStream, self.framePayloadContinuation) = AsyncStream.makeStream(of: VideoFramePayload.self)
+
+    logger.debug("PreviewCaptureService init")
+  }
+
+  deinit {
+    logger.debug("PreviewCaptureService deinit")
   }
 }
 
@@ -113,7 +116,7 @@ extension PreviewCaptureService {
 // MARK: - 인코더 설정
 extension PreviewCaptureService {
   func setupEncoder() {
-    let videoEncoder = VideoEncoder(config: .ultraLowLatency)
+    let videoEncoder = VideoEncoder(config: .queenCamCustomConfig)
     self.videoEncoder = videoEncoder
     
     let videoEncoderAnnexBAdaptor = VideoEncoderAnnexBAdaptor(videoEncoder: videoEncoder)

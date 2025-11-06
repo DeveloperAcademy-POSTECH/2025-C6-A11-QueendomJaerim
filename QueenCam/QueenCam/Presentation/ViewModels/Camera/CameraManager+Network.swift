@@ -18,8 +18,8 @@ extension CameraManager {
     "receivedLivePhotoMovies"
   }
 
-  private var logger: Logger {
-    Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.queendom.QueenCam", category: "CameraManager+Network")
+  private var logger: QueenLogger {
+    QueenLogger(category: "CameraManager+Network")
   }
 }
 

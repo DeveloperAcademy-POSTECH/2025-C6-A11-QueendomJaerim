@@ -15,8 +15,8 @@ extension LensZoomTool {
       return 0
     }
 
-    let itemWidth: CGFloat = 52
-    let spacing: CGFloat = 20
+    let itemWidth: CGFloat = 38
+    let spacing: CGFloat = 14
     let totalWidth = itemWidth + spacing
     let centerIndex = CGFloat(zoomScaleItemList.count - 1) / 2.0
     return (centerIndex - CGFloat(activeIndex)) * totalWidth

@@ -11,14 +11,14 @@ extension TopToolBarView {
   struct ToolBarMenu {
     let symbolName: String
     let buttonSize: CGFloat
-    @ViewBuilder let menuContent: () -> MenuContent
+    @ViewBuilder let menuContent: () -> ContextMenuContent
 
     private let symbolColor: Color = .white
     private let symbolSize: CGFloat = 17
     private let symbolWeight: Font.Weight = .medium
     private let backgroundColor: Color = .black
 
-    init(symbolName: String, buttonSize: CGFloat = 44, @ViewBuilder menuContent: @escaping () -> MenuContent) {
+    init(symbolName: String, buttonSize: CGFloat = 44, @ViewBuilder menuContent: @escaping () -> ContextMenuContent) {
       self.symbolName = symbolName
       self.buttonSize = buttonSize
       self.menuContent = menuContent
@@ -35,11 +35,5 @@ extension TopToolBarView.ToolBarMenu: View {
         .frame(width: buttonSize, height: buttonSize)
         .glassEffect(.regular.tint(backgroundColor), in: .circle)
     }
-  }
-}
-
-#Preview {
-  TopToolBarView<Button<Text>>.ToolBarMenu(symbolName: "ellipsis") {
-    Button("기능 1") { }
   }
 }

@@ -11,9 +11,9 @@ import SwiftUI
 struct PenDisplayView: View {
   var penViewModel: PenViewModel
   let role: Role?
-  private var outerColor = Color.white
-  private var modelColor = Color.orange
-  private var photographerColor = Color.blue
+  private var topColor = Color.offWhite
+  private var photographerColor = Color.photographerPrimary
+  private var modelColor = Color.modelPrimary
 
   init(penViewModel: PenViewModel, role: Role?) {
     self.penViewModel = penViewModel
@@ -22,14 +22,66 @@ struct PenDisplayView: View {
 
   var body: some View {
     GeometryReader { geo in
-      Canvas { context, _ in
+      ZStack {
 
-        for stroke in penViewModel.strokes where stroke.points.count > 1 {
-          var path = Path()
-          path.addLines(stroke.absolutePoints(in: geo.size))
-          context.stroke(path, with: .color(outerColor), style: .init(lineWidth: 8, lineCap: .round, lineJoin: .round))
-          let inner = stroke.author == .model ? modelColor : photographerColor
-          context.stroke(path, with: .color(inner), style: .init(lineWidth: 4, lineCap: .round, lineJoin: .round))
+        // 1) 일반 펜 전용 Canvas
+        Canvas { context, _ in
+          for stroke in penViewModel.strokes where stroke.points.count > 1 && !stroke.isMagicPen {
+            let outerColor = (stroke.author == .model) ? modelColor : photographerColor
+
+            var path = Path()
+            path.addLines(stroke.absolutePoints(in: geo.size))
+
+            context.stroke(
+              path,
+              with: .color(topColor),
+              style: StrokeStyle(lineWidth: 10, lineCap: .round, lineJoin: .round)
+            )
+            context.stroke(
+              path,
+              with: .color(outerColor),
+              style: StrokeStyle(lineWidth: 7, lineCap: .round, lineJoin: .round)
+            )
+          }
+        }
+        .background(.clear)
+
+        // 2) 매직펜 전용 Canvas1: Blur 레이어
+        Canvas { context, _ in
+          for stroke in penViewModel.strokes where stroke.points.count > 1 && stroke.isMagicPen {
+            let outerColor = (stroke.author == .model) ? modelColor : photographerColor
+
+            var path = Path()
+            path.addLines(stroke.absolutePoints(in: geo.size))
+
+            context.stroke(
+              path,
+              with: .color(outerColor),
+              style: StrokeStyle(lineWidth: 10, lineCap: .round, lineJoin: .round)
+            )
+            // 안쪽 offWhite 얇게
+            context.stroke(
+              path,
+              with: .color(.offWhite),
+              style: StrokeStyle(lineWidth: 5, lineCap: .round, lineJoin: .round)
+            )
+          }
+        }
+        .drawingGroup()
+        .blur(radius: 4)
+
+        // 3) 매직펜 전용 Canvas2: Top 하이라이트 (Blur 없음)
+        Canvas { context, _ in
+          for stroke in penViewModel.strokes where stroke.points.count > 1 && stroke.isMagicPen {
+            var path = Path()
+            path.addLines(stroke.absolutePoints(in: geo.size))
+
+            context.stroke(
+              path,
+              with: .color(.offWhite),
+              style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round)
+            )
+          }
         }
       }
       .background(.clear)

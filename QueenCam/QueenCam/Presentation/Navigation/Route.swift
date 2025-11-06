@@ -8,5 +8,5 @@
 import Foundation
 
 enum Route: Hashable {
-  case establishConnection
+  case makeConnection
 }

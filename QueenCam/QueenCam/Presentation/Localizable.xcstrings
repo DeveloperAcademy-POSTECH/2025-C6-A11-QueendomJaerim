@@ -21,6 +21,18 @@
         }
       }
     },
+    "Infomation" : {
+
+    },
+    "LIVE" : {
+
+    },
+    "LIVE 끔" : {
+
+    },
+    "LIVE 켬" : {
+
+    },
     "Photos" : {
       "localizations" : {
         "en" : {
@@ -52,6 +64,7 @@
       }
     },
     "권한이 거부되었습니다." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -83,6 +96,9 @@
         }
       }
     },
+    "기기 연결 시작" : {
+
+    },
     "기기 연결하기" : {
 
     },
@@ -92,13 +108,8 @@
     "기능 2" : {
 
     },
-    "기능 3" : {
-
-    },
-    "기기를 연결해 촬영해보세요" : {
-
-    },
     "내 기기" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -112,6 +123,7 @@
 
     },
     "다른 기기와 페어링하기" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -121,10 +133,14 @@
         }
       }
     },
-    "다시 연결하고 있어요" : {
+    "다음 이름으로 보여집니다" : {
+
+    },
+    "닫기" : {
 
     },
     "두 기기를 연결하고 있어요" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -135,6 +151,12 @@
       }
     },
     "등록" : {
+
+    },
+    "로그 내보내기" : {
+
+    },
+    "로그 파일을 불러오고 있습니다." : {
 
     },
     "모델" : {
@@ -173,6 +195,7 @@
 
     },
     "상대 기기" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -185,7 +208,11 @@
     "상대가 프레임을 수정중입니다." : {
 
     },
+    "서로 다른 역할의 기기끼리만\n연결할 수 있어요" : {
+
+    },
     "서로 다른 역할의 기기끼리만 연결할 수 있어요" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -196,6 +223,7 @@
       }
     },
     "설정에서 카메라 접근 권한을 허용해주세요." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -204,9 +232,6 @@
           }
         }
       }
-    },
-    "설정으로 가기" : {
-
     },
     "설정으로 이동" : {
       "localizations" : {
@@ -219,6 +244,7 @@
       }
     },
     "설정으로 이동하기" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -251,7 +277,14 @@
         }
       }
     },
+    "역할이 지정되지 않았습니다." : {
+
+    },
+    "연결" : {
+
+    },
     "연결 끊기" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -261,10 +294,20 @@
         }
       }
     },
+    "연결 상태가 좋지 않아,\n다시 연결하고 있어요" : {
+
+    },
+    "연결 종료하기" : {
+
+    },
     "연결된 기기" : {
 
     },
+    "연결을 종료합니다." : {
+
+    },
     "연결이 완료되었어요" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -297,6 +340,7 @@
       }
     },
     "완료" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -307,6 +351,7 @@
       }
     },
     "이 기기로 볼게요" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -317,6 +362,7 @@
       }
     },
     "이 기기로 찍을게요" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -325,6 +371,18 @@
           }
         }
       }
+    },
+    "주변 기기 찾기" : {
+
+    },
+    "찍자 서비스 이용을 위해\n카메라와 음성 권한을 허용해주세요." : {
+
+    },
+    "찾아낸 기기" : {
+
+    },
+    "처음부터 다시 연결하기" : {
+
     },
     "촬영" : {
       "localizations" : {
@@ -337,6 +395,7 @@
       }
     },
     "촬영 모드 바꾸기" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -346,13 +405,20 @@
         }
       }
     },
-    "취소" : {
-
-    },
     "취소하기" : {
 
     },
+    "친구가 연결을 종료했어요.\n다시 시작하려면 재연결해주세요." : {
+
+    },
+    "친구와 연결을 끊고 촬영을 마칩니다." : {
+
+    },
+    "친구와 연결해보세요." : {
+
+    },
     "카메라 접근 권한" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -363,6 +429,9 @@
       }
     },
     "프레임 가이드를 공유합니다." : {
+
+    },
+    "플래시 끔" : {
 
     },
     "플래시 자동" : {

@@ -1,32 +1,41 @@
 //
-//  ReconnectingOverlayView.swift
+//  SessionFinishedOverlayView.swift
 //  QueenCam
 //
-//  Created by 임영택 on 10/25/25.
+//  Created by 임영택 on 11/05/25.
 //
 
 import SwiftUI
 
-struct ReconnectingOverlayView {
+struct SessionFinishedOverlayView {
   let didCancelButtonTap: () -> Void
 
   private let backgroundColor = Color.black.opacity(0.7)
-  private let fontColor = Color.white
 }
 
-extension ReconnectingOverlayView: View {
+extension SessionFinishedOverlayView: View {
   var body: some View {
     VStack {
-      Text("다시 연결하고 있어요")
-        .foregroundStyle(fontColor)
+      Text("친구가 연결을 종료했어요.\n다시 시작하려면 재연결해주세요.")
+        .foregroundStyle(.offWhite)
+        .multilineTextAlignment(.center)
+        .typo(.m15)
 
       Spacer()
         .frame(height: 32)
 
       Button(action: didCancelButtonTap) {
-        Text("취소하기")
+        Text("닫기")
+          .foregroundStyle(.offWhite)
+          .typo(.m15)
+          .padding(.vertical, 16)
+          .padding(.horizontal, 60)
+          .background(
+            Capsule()
+              .foregroundStyle(.clear)
+          )
       }
-      .buttonStyle(.glassProminent)
+      .glassEffect(.regular)
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity)
     .background(
@@ -53,6 +62,6 @@ extension ReconnectingOverlayView: View {
       }
     }
 
-    ReconnectingOverlayView { }
+    SessionFinishedOverlayView { }
   }
 }

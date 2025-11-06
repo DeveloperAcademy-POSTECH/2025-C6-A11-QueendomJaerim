@@ -8,13 +8,11 @@ import UIKit
 final class CameraViewModel {
   let cameraManager: CameraManager
   let networkService: NetworkServiceProtocol
-  let camerSettingsService: CamerSettingsServiceProtocol
+  let cameraSettingsService: CameraSettingsServiceProtocol
 
   var isCameraPermissionGranted = false
   var isPhotosPermissionGranted = false
   var isMicPermissionGranted = false
-
-  var isShowSettingAlert = false
 
   var lastImage: UIImage?
 
@@ -28,25 +26,31 @@ final class CameraViewModel {
 
   var errorMessage = ""
 
+  // MARK: Thumbnail
+  private let cachingManger = PHCachingImageManager()
+  var thumbnailImage: UIImage?
+
+  private let logger = QueenLogger(category: "CameraViewModel")
+
   // MARK: State Toast
   private let notificationService: NotificationServiceProtocol
 
   init(
     previewCaptureService: PreviewCaptureService,
     networkService: NetworkServiceProtocol,
-    camerSettingsService: CamerSettingsServiceProtocol,
+    cameraSettingsService: CameraSettingsServiceProtocol,
     notificationService: NotificationServiceProtocol
   ) {
     self.networkService = networkService
-    self.camerSettingsService = camerSettingsService
+    self.cameraSettingsService = cameraSettingsService
     self.cameraManager = CameraManager(
       previewCaptureService: previewCaptureService,
       networkService: networkService
     )
 
-    self.isLivePhotoOn = camerSettingsService.livePhotoOn
-    self.isShowGrid = camerSettingsService.gridOn
-    self.isFlashMode = camerSettingsService.flashMode
+    self.isLivePhotoOn = cameraSettingsService.livePhotoOn
+    self.isShowGrid = cameraSettingsService.gridOn
+    self.isFlashMode = cameraSettingsService.flashMode
 
     self.notificationService = notificationService
 
@@ -102,8 +106,6 @@ final class CameraViewModel {
       isMicPermissionGranted = true
       isPhotosPermissionGranted = photoGranted
       try? await cameraManager.configureSession()
-    } else {
-      isShowSettingAlert = true
     }
   }
 
@@ -133,26 +135,32 @@ final class CameraViewModel {
 
   func switchFlashMode() {
     switch isFlashMode {
-    case .off: isFlashMode = .on
-    case .on: isFlashMode = .auto
-    case .auto: isFlashMode = .off
+    case .off:
+      isFlashMode = .on
+      notificationService.registerNotification(DomainNotification.make(type: .flashOn))
+    case .on:
+      isFlashMode = .auto
+      notificationService.registerNotification(DomainNotification.make(type: .flashAuto))
+    case .auto:
+      isFlashMode = .off
+      notificationService.registerNotification(DomainNotification.make(type: .flashOff))
     }
 
-    camerSettingsService.flashMode = isFlashMode
+    cameraSettingsService.flashMode = isFlashMode
     cameraManager.flashMode = isFlashMode.convertAVCaptureDeviceFlashMode
-    
-    // State Toast
-    if isFlashMode == .on {
-      notificationService.registerNotification(DomainNotification.make(type: .flashOn))
-    }
-    if isFlashMode == .auto {
-      notificationService.registerNotification(DomainNotification.make(type: .flashAuto))
-    }
   }
 
   func switchLivePhoto() {
-    isLivePhotoOn.toggle()
-    camerSettingsService.livePhotoOn = isLivePhotoOn
+    switch isLivePhotoOn {
+    case true:
+      isLivePhotoOn = false
+      notificationService.registerNotification(DomainNotification.make(type: .liveOff))
+    case false:
+      isLivePhotoOn = true
+      notificationService.registerNotification(DomainNotification.make(type: .liveOn))
+    }
+
+    cameraSettingsService.livePhotoOn = isLivePhotoOn
     cameraManager.isLivePhotoOn = isLivePhotoOn
   }
 
@@ -162,7 +170,55 @@ final class CameraViewModel {
 
   func switchGrid() {
     isShowGrid.toggle()
-    camerSettingsService.gridOn = isShowGrid
+    cameraSettingsService.gridOn = isShowGrid
+  }
+
+  func loadThumbnail() async {
+    let status = await PHPhotoLibrary.requestAuthorization(for: .readWrite)
+
+    guard status == .authorized || status == .limited else {
+      logger.debug("사진 접근 권한 거부")
+      return
+    }
+
+    await fetchThumbnail()
+  }
+}
+
+extension CameraViewModel {
+  private func fetchThumbnail() async {
+    let fetchOptions = PHFetchOptions()
+    fetchOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
+    fetchOptions.fetchLimit = 1  // 한개만 요청
+
+    let result = PHAsset.fetchAssets(with: .image, options: fetchOptions)
+
+    guard let asset = result.firstObject else {
+      logger.debug("가져올 사진 없음")
+      return
+    }
+
+    // 이미지 생성
+    await requestThumbnailImage(asset: asset)
+  }
+
+  private func requestThumbnailImage(asset: PHAsset) async {
+    let targetSize = CGSize(width: 48, height: 48)
+    let options = PHImageRequestOptions()
+    options.deliveryMode = .highQualityFormat
+    options.resizeMode = .exact
+    options.isNetworkAccessAllowed = true
+
+    cachingManger.requestImage(
+      for: asset,
+      targetSize: targetSize,
+      contentMode: .aspectFill,
+      options: options
+    ) { result, _ in
+      if let result {
+        self.thumbnailImage = result
+      }
+    }
   }
 }
 
