@@ -29,7 +29,7 @@ struct DebugPreviewPlayerView: View {
         DebugInfoOverlay(qualityLabel: previewModel.lastReceivedQuality?.displayLabel)
       }
     }
-    .aspectRatio(3 / 4, contentMode: .fit)
+    .aspectRatio(3 / 4, contentMode: .fill)
     .onReceive(NotificationCenter.default.publisher(for: .QueenCamDeviceDidShakeNotification)) { _ in
       showingDebugInfo.toggle()
     }
