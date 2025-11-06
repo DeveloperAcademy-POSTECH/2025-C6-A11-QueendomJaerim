@@ -9,11 +9,11 @@ import SwiftUI
 
 /// Top Tool Bar
 struct TopToolBarView<MenuContent: View> {
-  /// 연결 여부
-  let isConnected: Bool
-
-  /// 연결된 디바이스 이름
+  /// 연결된 디바이스 이름 (연결이 끊어졌으면 nil)
   let connectedDeviceName: String?
+
+  /// 재연결 중인 디바이스 이름 (연결이 끊어졌지만 재연결 중이면 nil이 아님)
+  let reconnectingDeviceName: String?
 
   /// 컨텍스트 메뉴 아이템
   @ViewBuilder let menuContent: () -> MenuContent
@@ -29,14 +29,14 @@ struct TopToolBarView<MenuContent: View> {
   private let contextMenuSymbolName: String = "ellipsis"
 
   init(
-    isConnected: Bool,
     connectedDeviceName: String?,
+    reconnectingDeviceName: String?,
     @ViewBuilder menuContent: @escaping () -> MenuContent,
     backButtonDidTap: (() -> Void)? = nil,
     connectedWithButtonDidTap: @escaping () -> Void
   ) {
-    self.isConnected = isConnected
     self.connectedDeviceName = connectedDeviceName
+    self.reconnectingDeviceName = reconnectingDeviceName
     self.backButtonDidTap = backButtonDidTap
     self.menuContent = menuContent
     self.connectedWithButtonDidTap = connectedWithButtonDidTap
@@ -59,8 +59,7 @@ extension TopToolBarView: View {
       Spacer(minLength: minimumSpacing)
 
       ConnectedWithView(
-        isConnected: isConnected,
-        connectedDeviceName: connectedDeviceName
+        connectedDeviceName: connectedDeviceName ?? reconnectingDeviceName
       ) {
         connectedWithButtonDidTap()
       }
@@ -74,7 +73,7 @@ extension TopToolBarView: View {
 
 #Preview {
   VStack {
-    TopToolBarView(isConnected: true, connectedDeviceName: "임영폰") {
+    TopToolBarView(connectedDeviceName: "임영폰", reconnectingDeviceName: nil) {
       Button("기능 1") {}
       Button("기능 2") {}
       Button("기능 3") {}
@@ -86,7 +85,7 @@ extension TopToolBarView: View {
       //
     }
 
-    TopToolBarView(isConnected: true, connectedDeviceName: "임영택임영택임영택임영택의 iPhone") {
+    TopToolBarView(connectedDeviceName: "임영택임영택임영택임영택의 iPhone", reconnectingDeviceName: nil) {
       Button("기능 1") {}
       Button("기능 2") {}
       Button("기능 3") {}
@@ -98,7 +97,7 @@ extension TopToolBarView: View {
       //
     }
 
-    TopToolBarView(isConnected: true, connectedDeviceName: "임영택임영택임영택임영택의 iPhone") {
+    TopToolBarView(connectedDeviceName: nil, reconnectingDeviceName: "임영택임영택임영택임영택의 iPhone") {
       //
     } backButtonDidTap: {
       //
@@ -106,7 +105,7 @@ extension TopToolBarView: View {
       //
     }
 
-    TopToolBarView(isConnected: false, connectedDeviceName: nil) {
+    TopToolBarView(connectedDeviceName: nil, reconnectingDeviceName: nil) {
       //
     } backButtonDidTap: {
       //

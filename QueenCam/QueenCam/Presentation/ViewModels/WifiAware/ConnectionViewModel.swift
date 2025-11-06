@@ -30,7 +30,7 @@ final class ConnectionViewModel {
     didSet {
       // 연결 상태 변화에 따른 State Toast 처리
       // 그 외 사이드 이펙트가 따라오는 다른 작업은 최대한 피할 것
-      
+
       if networkState == .host(.stopped) || networkState == .viewer(.stopped) {
         notificationService.registerBaseNotification(DomainNotification.make(type: .ready))
       } else {
@@ -51,6 +51,10 @@ final class ConnectionViewModel {
 
   /// 연결 유실 여부를 표현하는 플래그. true이면 재연결을 시작하고 관련 UI를 표시
   var connectionLost: Bool = false
+  /// 재연결 중인 디바이스 이름
+  var reconnectingDeviceName: String?
+  
+  var needReportSessionFinished: Bool = false
 
   /// 최근 역할 스왑 LWW 기록
   private var lastSwapRoleLWWRegister: LWWRegister?
@@ -62,7 +66,7 @@ final class ConnectionViewModel {
   var isConnecting: Bool {
     !(networkState == nil || networkState == .host(.stopped) || networkState == .viewer(.stopped))
   }
-  
+
   /// State Toast
   private let notificationService: NotificationServiceProtocol
 
@@ -72,7 +76,6 @@ final class ConnectionViewModel {
     self.networkService = networkService
     self.notificationService = notificationService
     bind()
-    
 
     // @Observable ViewModel은 두 번 초기화될 수 있음
     // https://stackoverflow.com/a/78222019
@@ -95,6 +98,7 @@ final class ConnectionViewModel {
         }
         if state == .host(.lost) || state == .viewer(.lost) {
           connectionLost = true
+          reconnectingDeviceName = lastConnectedDevice?.name
           tryReconnect()
         }
       }
@@ -119,6 +123,9 @@ final class ConnectionViewModel {
           self?.lastPingAt = pingAt
         case .changeRole(let roles, let lwwValue):
           self?.handleReceivedRequestChangeRole(receivedNewRoles: roles, receviedLwwRegister: lwwValue)
+        case .willDisconnect:
+          // 상대로부터 연결 종료 예정 통보를 받으면 세션 종료 오버레이 노출
+          self?.needReportSessionFinished = true
         default: break
         }
       }
@@ -200,6 +207,11 @@ extension ConnectionViewModel {
     networkService.stop(byUser: true)
     lastConnectedDevice = nil
     connectionLost = false
+    reconnectingDeviceName = nil
+  }
+  
+  func sessionFinishedOverlayCloseButtonDidTap() {
+    needReportSessionFinished = false
   }
 }
 
@@ -209,6 +221,7 @@ extension ConnectionViewModel {
     if let firstConnection = connections.first {
       lastConnectedDevice = firstConnection.key
       connectionLost = false  // 재연결인 경우 connectionLost 플래그를 초기화
+      reconnectingDeviceName = nil
     }
   }
 

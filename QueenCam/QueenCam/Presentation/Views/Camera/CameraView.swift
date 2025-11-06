@@ -202,8 +202,8 @@ extension CameraView: View {
       VStack(spacing: .zero) {
         /// 제일 위 툴바 부분
         TopToolBarView(
-          isConnected: isSessionActive,
           connectedDeviceName: connectionViewModel.connectedDeviceName,
+          reconnectingDeviceName: connectionViewModel.reconnectingDeviceName,
           menuContent: {
             toolBarCameraSettingTool
 
@@ -339,6 +339,13 @@ extension CameraView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .padding(8)
             .clipped()
+
+          // 연결 유실시 재연결 뷰
+          if connectionViewModel.connectionLost {
+            ReconnectingView {
+              connectionViewModel.reconnectCancelButtonDidTap()
+            }
+          }
         }
         .aspectRatio(3 / 4, contentMode: .fill)
         .clipShape(.rect(cornerRadius: 5))
@@ -348,8 +355,10 @@ extension CameraView: View {
         }
         .padding(.horizontal, 16)
         .overlay(alignment: .center) {
-          StateToastContainer()
-            .padding(.top, 16)
+          if !connectionViewModel.connectionLost {
+            StateToastContainer()
+              .padding(.top, 16)
+          }
         }
 
         // 프리뷰 밖 => 이부분을 기준으로 바구니 표현
@@ -516,13 +525,6 @@ extension CameraView: View {
       }
     }
     .overlay {
-      if connectionViewModel.connectionLost {
-        ReconnectingOverlayView {
-          connectionViewModel.reconnectCancelButtonDidTap()
-        }
-      }
-    }
-    .overlay {
       if !isPermissionGranted {
         ZStack {
           Color.black.opacity(0.7)
@@ -557,6 +559,14 @@ extension CameraView: View {
     .onChange(of: connectionViewModel.connections) { _, newValue in
       if !newValue.isEmpty && connectionViewModel.role == .photographer {
         previewModel.startCapture()
+      }
+    }
+    .overlay {
+      // 연결 종료 오버레이
+      if connectionViewModel.needReportSessionFinished {
+        SessionFinishedOverlayView {
+          connectionViewModel.sessionFinishedOverlayCloseButtonDidTap()
+        }
       }
     }
     // 연결 종료 시 가이딩 초기화
