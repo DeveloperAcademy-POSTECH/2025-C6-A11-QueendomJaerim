@@ -9,6 +9,26 @@
 
 ### Added
 
+
+### Changed
+
+
+### Deprecated
+
+
+### Removed
+
+
+### Fixed
+
+
+### Security
+
+
+## [0.3.0] (2025-11-06)
+
+### Added
+
 - 커스텀 로거 구현
 - 앱 실행시 본인의 최근 이미지 썸네일로 설정
 - 펜 수정 툴바(전체삭제, 실행 취소) 노출 및 활성화 조건 추가
@@ -33,9 +53,6 @@
 - Target에서 iPad, Mac 제외
 - Orientation을 Portrait로 고정
 
-### Deprecated
-
-
 ### Removed
 
 - FrameDisplayView
@@ -50,8 +67,6 @@
 - 레퍼런스 삭제시 PhotoPicker 초기화가 안된 문제 해결
 -  프레임의 동시 수정 관련된 문제 해결
 - SampleBufferDisplayView에서 매번 화질 관련 지표를 리셋하여 적응형 화질 매커니즘이 동작하지 않았던 문제
-
-### Security
 
 ## [0.2.0] 테스트 플라이트 마일스톤 (2025-11-01)
 
@@ -144,6 +159,7 @@
 - Wi-Fi Aware 연결 후, 라이브 포토 촬영 시 앱이 크래시되는 문제
 - 레퍼런스 삭제 후 재등록에 관한 상태 초기화 문제
 
+[0.3.0]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v0.0.1...v0.1.0
 [0.0.1]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/releases/tag/v0.0.1
