@@ -21,6 +21,9 @@
         }
       }
     },
+    "Infomation" : {
+
+    },
     "LIVE" : {
 
     },
@@ -93,6 +96,9 @@
         }
       }
     },
+    "기기 연결 시작" : {
+
+    },
     "기기 연결하기" : {
 
     },
@@ -117,6 +123,7 @@
 
     },
     "다른 기기와 페어링하기" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -126,10 +133,14 @@
         }
       }
     },
+    "다음 이름으로 보여집니다" : {
+
+    },
     "닫기" : {
 
     },
     "두 기기를 연결하고 있어요" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -197,7 +208,11 @@
     "상대가 프레임을 수정중입니다." : {
 
     },
+    "서로 다른 역할의 기기끼리만\n연결할 수 있어요" : {
+
+    },
     "서로 다른 역할의 기기끼리만 연결할 수 있어요" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -262,6 +277,12 @@
         }
       }
     },
+    "역할이 지정되지 않았습니다." : {
+
+    },
+    "연결" : {
+
+    },
     "연결 끊기" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -286,6 +307,7 @@
 
     },
     "연결이 완료되었어요" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -329,6 +351,7 @@
       }
     },
     "이 기기로 볼게요" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -339,6 +362,7 @@
       }
     },
     "이 기기로 찍을게요" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -348,7 +372,13 @@
         }
       }
     },
+    "주변 기기 찾기" : {
+
+    },
     "찍자 서비스 이용을 위해\n카메라와 음성 권한을 허용해주세요." : {
+
+    },
+    "찾아낸 기기" : {
 
     },
     "처음부터 다시 연결하기" : {
@@ -365,6 +395,7 @@
       }
     },
     "촬영 모드 바꾸기" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {

@@ -6,86 +6,119 @@
 //
 
 import DeviceDiscoveryUI
+import OSLog
 import SwiftUI
 import WiFiAware
 
-struct MakeConnectionView: View {
-  let role: Role?
-
-  let pairedDevices: [WAPairedDevice]
+struct MakeConnectionView {
+  let role: Role
   let networkState: NetworkState?
-  let connections: [WAPairedDevice: ConnectionDetail]
-
+  let selectedPairedDevice: WAPairedDevice?
+  let pairedDevices: [WAPairedDevice]
   let changeRoleButtonDidTap: () -> Void
   let connectButtonDidTap: (WAPairedDevice) -> Void
-  let publisherDidSelectEndpoint: (WAEndpoint) -> Void
 
+  private var myDeviceName: String {
+    UIDevice.current.name
+  }
+
+  // MARK: Colors
+  let photographerTheme = Color(red: 0x14 / 255, green: 0xB1 / 255, blue: 0xBB / 255)
+  let modelTheme = Color(red: 0xD8 / 255, green: 0xEB / 255, blue: 0x05 / 255)
+}
+
+extension MakeConnectionView: View {
   var body: some View {
-    VStack {
-      Button {
-        changeRoleButtonDidTap()
-      } label: {
-        Text("촬영 모드 바꾸기")
-          .foregroundStyle(.black)
-          .padding(10)
-          .background {
-            RoundedRectangle(cornerRadius: 8)
-              .foregroundStyle(.gray)
-          }
-      }
+    ZStack {
+      Color.black.ignoresSafeArea()
 
-      if !pairedDevices.isEmpty
-        && (networkState == nil || networkState == .host(.stopped) || networkState == .viewer(.stopped)) {
-        List(pairedDevices) { device in
-          Text(device.pairingInfo?.pairingName ?? "알 수 없는 이름")
-            .onTapGesture {
-              connectButtonDidTap(device)
-            }
-        }
-        .listStyle(.grouped)
-      } else {
+      VStack(spacing: 0) {
+        ToolBar(role: role, changeRoleButtonDidTap: changeRoleButtonDidTap)
+
+        Spacer()
+          .frame(height: 20)
+
+        // MARK: - 주변 기기 찾기 버튼
+        DeviceDiscoveryButton(role: role, photographerTheme: photographerTheme, modelTheme: modelTheme)
+
+        Spacer()
+          .frame(height: 40)
+
+        // MARK: - 찾아낸 기기 리스트
+        PairedDevicesList(
+          pairedDevices: pairedDevices,
+          isPairing: { device in
+            selectedPairedDevice == device
+              && (networkState == .host(.publishing)
+                || networkState == .viewer(.browsing)
+                || networkState == .viewer(.connecting)
+                || networkState == .viewer(.connected))
+          },
+          connectButtonDidTap: connectButtonDidTap
+        )
+
         Spacer()
       }
-
-      if (networkState == .host(.publishing)
-        || networkState == .viewer(.browsing)
-        || networkState == .viewer(.connecting))
-        && connections.isEmpty
-      {
-        Text("두 기기를 연결하고 있어요")
+      .padding(16)
+    }
+    .toolbar {
+      ToolbarItem(placement: .principal) {
+        Text("기기 연결하기")
+          .foregroundStyle(.offWhite)
       }
 
-      if !connections.isEmpty {
-        Text("연결이 완료되었어요")
+      ToolbarItem(placement: .topBarTrailing) {
+        Button("Infomation", systemImage: "questionmark.circle") {
+          //
+        }
       }
+    }
+  }
+}
 
+extension MakeConnectionView {
+  struct DeviceDiscoveryButton: View {
+    let role: Role
+
+    // MARK: Colors
+    let photographerTheme: Color
+    let modelTheme: Color
+
+    // MARK: Logger
+    private let logger = Logger(
+      subsystem: Bundle.main.bundleIdentifier ?? "com.queendom.QueenCam",
+      category: "MakeConnectionView+DevicePicker"
+    )
+
+    var body: some View {
       if role == .photographer {
         DevicePairingView(.wifiAware(.connecting(to: .previewService, from: .userSpecifiedDevices))) {
-          HStack {
-            Image(systemName: "video.bubble.fill")
-
-            Text("다른 기기와 페어링하기")
-          }
+          DeviceDiscoveryButtonLabelView(themeColor: photographerTheme)
         } fallback: {
           Image(systemName: "xmark.circle")
           Text("Unavailable")
         }
       } else {
         DevicePicker(.wifiAware(.connecting(to: .userSpecifiedDevices, from: .previewService))) { endpoint in
-          publisherDidSelectEndpoint(endpoint)
+          logger.info("publisher did select endpoint - \(endpoint)")
         } label: {
-          HStack {
-            Image(systemName: "eye")
-
-            Text("다른 기기와 페어링하기")
-          }
+          DeviceDiscoveryButtonLabelView(themeColor: modelTheme)
         } fallback: {
           Image(systemName: "xmark.circle")
           Text("Unavailable")
         }
       }
-
-      Spacer()
     }
   }
+}
+
+#Preview {
+  MakeConnectionView(
+    role: .photographer,
+    networkState: .host(.stopped),
+    selectedPairedDevice: nil,
+    pairedDevices: [],
+    changeRoleButtonDidTap: {},
+    connectButtonDidTap: { _ in }
+  )
 }

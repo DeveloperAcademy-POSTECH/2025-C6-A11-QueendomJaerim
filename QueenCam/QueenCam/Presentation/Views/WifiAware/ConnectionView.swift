@@ -10,32 +10,29 @@ import SwiftUI
 import WiFiAware
 
 struct ConnectionView: View {
-  @Environment(\.router) private var router
+  @State private var router = NavigationRouter()
+  @Environment(\.dismiss) var dismiss
   var viewModel: ConnectionViewModel
   var previewStreamingViewModel: PreviewModel
+
+  @State private var activeRole: Role?
 }
 
 extension ConnectionView {
   var body: some View {
-    Group {
-      if viewModel.role != nil {
-        MakeConnectionView(
-          role: viewModel.role,
-          pairedDevices: viewModel.pairedDevices,
-          networkState: viewModel.networkState,
-          connections: viewModel.connections,
-          changeRoleButtonDidTap: { viewModel.selectRole(for: nil) },
-          connectButtonDidTap: { device in
-            viewModel.connectButtonDidTap(for: device)
-          },
-          publisherDidSelectEndpoint: { endpoint in
-            viewModel.didEndpointSelect(endpoint: endpoint)
-          }
-        )
-      } else {
-        SelectRoleView { role in
+    NavigationStack(path: $router.path) {
+      SelectRoleView(
+        selectedRole: activeRole,
+        didRoleSelect: { role in
+          activeRole = role
+        },
+        didRoleSubmit: { role in
           viewModel.selectRole(for: role)
+          router.push(.makeConnection)
         }
+      )
+      .navigationDestination(for: Route.self) { route in
+        ConnectionNavigatedView(route: route, connectionViewModel: viewModel)
       }
     }
     .task {
@@ -44,39 +41,13 @@ extension ConnectionView {
     .onDisappear {
       viewModel.connectionViewDisappear()
     }
-    .onChange(of: viewModel.connections) { _, newValue in
+    .onChange(of: viewModel.connections) { _, newValue in  // 연결 완료
+      
       if !newValue.isEmpty {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-          router.reset()
+          dismiss()
         }
       }
-    }
-  }
-}
-
-struct RoleSelectButton: View {
-  let guideText: LocalizedStringKey
-  let roleText: LocalizedStringKey
-  let action: () -> Void
-
-  var body: some View {
-    Button {
-      action()
-    } label: {
-      RoundedRectangle(cornerRadius: 23)
-        .frame(width: 171, height: 247)
-        .foregroundStyle(.gray)
-        .overlay {
-          VStack {
-            Text(guideText)
-
-            Spacer()
-
-            Text(roleText)
-          }
-          .foregroundStyle(.black)
-          .padding()
-        }
     }
   }
 }
