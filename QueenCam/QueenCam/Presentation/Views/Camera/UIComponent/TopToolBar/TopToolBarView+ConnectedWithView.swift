@@ -9,15 +9,19 @@ import SwiftUI
 
 extension TopToolBarView {
   struct ConnectedWithView: View {
-    let isConnected: Bool
     let connectedDeviceName: String?
-    let buttonDidTap: () -> Void
+    @ViewBuilder let menuContent: () -> IndicatorMenuContent
+    let notConnectedButtonDidTap: () -> Void
 
     var body: some View {
-      if isConnected {
-        WhenCurrentlyConnectedIndicatorView(connectedDeviceName: connectedDeviceName ?? "알 수 없는 기긴", buttonDidTap: buttonDidTap)
+      if let connectedDeviceName {
+        WhenCurrentlyConnectedIndicatorView(
+          connectedDeviceName: connectedDeviceName ?? "알 수 없는 기기",
+          menuContent: menuContent,
+          buttonDidTap: notConnectedButtonDidTap
+        )
       } else {
-        WhenNotConnectedIndicatorView(buttonDidTap: buttonDidTap)
+        WhenNotConnectedIndicatorView(buttonDidTap: notConnectedButtonDidTap)
       }
     }
   }
@@ -27,6 +31,7 @@ extension TopToolBarView {
 extension TopToolBarView {
   struct WhenCurrentlyConnectedIndicatorView {
     let connectedDeviceName: String
+    @ViewBuilder let menuContent: () -> IndicatorMenuContent
     let buttonDidTap: () -> Void
 
     private let horizontalSpacer: some View = Spacer().frame(width: 28)
@@ -36,29 +41,40 @@ extension TopToolBarView {
 }
 
 extension TopToolBarView.WhenCurrentlyConnectedIndicatorView: View {
-  var body: some View {
-    Button(action: buttonDidTap) {
-      HStack(spacing: 0) {
-        horizontalSpacer
+  var menuLabel: some View {
+    HStack(spacing: 0) {
+      horizontalSpacer
 
-        VStack(spacing: 4) {
-          // Subtitle
-          Text("연결된 기기")
-            .foregroundStyle(.gray400)
-            .typo(.m10)
+      VStack(spacing: 4) {
+        // Subtitle
+        Text("연결된 기기")
+          .foregroundStyle(.gray400)
+          .typo(.m10)
 
-          // 상대 기기 이름
-          Text(connectedDeviceName)
-            .lineLimit(1)
-            .foregroundStyle(.white)
-            .typo(.m13)
-        }
-
-        horizontalSpacer
+        // 상대 기기 이름
+        Text(connectedDeviceName)
+          .lineLimit(1)
+          .foregroundStyle(.white)
+          .typo(.m13)
       }
-      .frame(minWidth: minWidth, minHeight: height)
-      .glassEffect()
+
+      horizontalSpacer
     }
+    .frame(minWidth: minWidth, minHeight: height)
+    .glassEffect()
+  }
+
+  var body: some View {
+    Menu {
+      Section("연결된 기기") {
+        Button(connectedDeviceName) {}
+      }
+
+      menuContent()
+    } label: {
+      menuLabel
+    }
+    .menuOrder(.fixed)
   }
 }
 
@@ -85,48 +101,6 @@ extension TopToolBarView.WhenNotConnectedIndicatorView: View {
       }
       .frame(width: width, height: height)
       .glassEffect()
-    }
-  }
-}
-
-#Preview {
-  ZStack {
-    Color.black
-
-    VStack {
-      TopToolBarView<AnyView>.ConnectedWithView(
-        isConnected: true,
-        connectedDeviceName: "임영폰"
-      ) {
-        // swiftlint:disable:next no_print_in_production
-        print("Tapped!")
-      }
-
-      TopToolBarView<AnyView>.ConnectedWithView(
-        isConnected: true,
-        connectedDeviceName: "임영택의 iPhone"
-      ) {
-        // swiftlint:disable:next no_print_in_production
-        print("Tapped!")
-      }
-
-      TopToolBarView<AnyView>.ConnectedWithView(
-        isConnected: true,
-        connectedDeviceName: "임영폰 임영폰 임영폰 임영폰 임영폰 임영폰 임영폰 임영폰 임영폰 임영폰 임영폰 임영폰 임영폰 "
-      ) {
-        // swiftlint:disable:next no_print_in_production
-        print("Tapped!")
-      }
-
-      TopToolBarView<AnyView>.ConnectedWithView(isConnected: true, connectedDeviceName: nil) { // 재연결시 가끔 이럴 때가 있음
-        // swiftlint:disable:next no_print_in_production
-        print("Tapped!")
-      }
-
-      TopToolBarView<AnyView>.ConnectedWithView(isConnected: false, connectedDeviceName: nil) {
-        // swiftlint:disable:next no_print_in_production
-        print("Tapped!")
-      }
     }
   }
 }

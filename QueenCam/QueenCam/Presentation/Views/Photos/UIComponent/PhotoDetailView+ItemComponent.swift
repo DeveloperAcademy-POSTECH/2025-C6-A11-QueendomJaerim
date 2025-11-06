@@ -35,10 +35,17 @@ extension PhotoDetailView {
 
     // 최종 확정된 위치 (손가락을 뗐을때)
     @State private var currentOffset: CGSize = .zero
-    // 현재 드래그 중인 이동 위치 (임시)
+
+    // 줌(앵커) 전용 임시 보관함
     @State private var gestureOffset: CGSize = .zero
 
+    // 이동(패닝) 전용 임시 보관함
+    @State private var panOffset: CGSize = .zero
+
     @State private var containerSize: CGSize = .zero
+
+    // 핀치(줌) 동작 중인지 확인하는 플래그
+    @State private var isPinching: Bool = false
 
     private let logger = QueenLogger(category: "PhotoDetailView+ItemComponent")
   }
@@ -140,6 +147,7 @@ extension PhotoDetailView.ItemComponent {
     }
   }
 
+  // 확대된 상태에서 드래그 하면서 사진이 움직일 수 있는 범위 계산 로직
   private func applyOffsetBounds() {
     guard currentScale > 1.0 else {
       if currentScale == 1.0 {
@@ -166,12 +174,60 @@ extension PhotoDetailView.ItemComponent: View {
   var magnificationGesture: some Gesture {
     MagnifyGesture()
       .onChanged { value in
-        gestureScale = value.magnification
+        isPinching = true
 
+        /// 배율 계산 및 제한 (최대 배율을 도달하면 그 이상 줌인이 안됌)
+        // 손가락을 움직인 만큼 줌을 적용했을 때의 예상 배율
+        // (최종 확정된 현재 배율 * 이번 동작으로 변경된 배율)
+        let newVisualScale = currentScale * value.magnification
+
+        // 허용할 제한된 줌 배율을 저장할 변수
+        var newGestureScale: CGFloat
+
+        if newVisualScale > 4.0 {
+          newGestureScale = 4.0 / currentScale
+        } else if newVisualScale < 1.0 {
+          newGestureScale = 1.0 / currentScale
+        } else {
+          newGestureScale = value.magnification
+        }
+
+        gestureScale = newGestureScale
+
+        /// 위치 계산
+        let containerCenter = CGPoint(
+          x: containerSize.width / 2,
+          y: containerSize.height / 2
+        )
+
+        // 핀치를 시작한 지점이 정중앙에서 얼나마 떨어져 있는지(줌의 기준점)
+        let anchor = CGPoint(
+          x: value.startLocation.x - containerCenter.x,
+          y: value.startLocation.y - containerCenter.y
+        )
+
+        // 이미지가 anchor를 기준으로 얼마나 당겨져야 하는지
+        let pinchAnchorOffsetX = (anchor.x - currentOffset.width) * (1 - newGestureScale)
+        let pinchAnchorOffsetY = (anchor.y - currentOffset.height) * (1 - newGestureScale)
+
+        gestureOffset = CGSize(
+          width: pinchAnchorOffsetX,
+          height: pinchAnchorOffsetY
+        )
       }
       .onEnded { _ in
+        isPinching = false
+
+        // 임시 배율을 최종 배율에 곱해서 확정
         currentScale *= gestureScale
+
+        // 줌과 이동 임시 값을 모두 합쳐서 최종 위치에 확정
+        currentOffset.width += gestureOffset.width + panOffset.width
+        currentOffset.height += gestureOffset.height + panOffset.height
+
         gestureScale = 1.0
+        gestureOffset = .zero
+        panOffset = .zero
 
         if currentScale < 1.0 {
           currentScale = 1.0
@@ -190,16 +246,18 @@ extension PhotoDetailView.ItemComponent: View {
   var dragGesture: some Gesture {
     DragGesture()
       .onChanged { value in
-        if currentScale > 1.0 {
-          gestureOffset = value.translation
+        if currentScale > 1.0 || isPinching {
+          panOffset = value.translation
         }
       }
       .onEnded { _ in
-        currentOffset.width += gestureOffset.width
-        currentOffset.height += gestureOffset.height
+        if !isPinching {
+          currentOffset.width += panOffset.width
+          currentOffset.height += panOffset.height
 
-        gestureOffset = .zero
-        applyOffsetBounds()
+          panOffset = .zero
+          applyOffsetBounds()
+        }
       }
   }
 
@@ -210,6 +268,7 @@ extension PhotoDetailView.ItemComponent: View {
       }
   }
 
+  // 더블탭을 이용한 확대 축소
   var doubleTapGesture: some Gesture {
     SpatialTapGesture(count: 2)
       .onEnded { value in
@@ -229,8 +288,8 @@ extension PhotoDetailView.ItemComponent: View {
           let location = value.location
 
           // 수정 위치 계산
-          let offSetX = (containerCenter.x - location.x) * targetScale
-          let offSetY = (containerCenter.y - location.y) * targetScale
+          let offSetX = (containerCenter.x - location.x)
+          let offSetY = (containerCenter.y - location.y)
 
           currentScale = targetScale
           currentOffset = CGSize(width: offSetX, height: offSetY)
@@ -252,7 +311,6 @@ extension PhotoDetailView.ItemComponent: View {
           case true:
             if let livePhoto = livePhoto {
               LivePhotoView(livePhoto: livePhoto)
-//                .background(.red.opacity(0.2))
             } else if let image = detailImage {
               Image(uiImage: image)
                 .resizable()
@@ -275,8 +333,8 @@ extension PhotoDetailView.ItemComponent: View {
         }
         .scaleEffect(currentScale * gestureScale)
         .offset(
-          x: currentOffset.width + gestureOffset.width,
-          y: currentOffset.height + gestureOffset.height
+          x: currentOffset.width + gestureOffset.width + panOffset.width,
+          y: currentOffset.height + gestureOffset.height + panOffset.height
         )
       }
       .frame(width: proxy.size.width, height: proxy.size.height)

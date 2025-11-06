@@ -37,8 +37,3 @@ extension TopToolBarView.ToolBarButton: View {
     }
   }
 }
-
-#Preview {
-  TopToolBarView<AnyView>.ToolBarButton(symbolName: "chevron.left") { }
-  TopToolBarView<AnyView>.ToolBarButton(symbolName: "ellipsis") { }
-}

@@ -24,6 +24,4 @@ struct FramePayload: Codable, Sendable {
   let origin: PointPayload
   /// 가이딩 프레임 사각형의 크기
   let size: SizePayload
-  /// 가이딩 프레임의 컬러 코드
-  let color: ColorPayload
 }

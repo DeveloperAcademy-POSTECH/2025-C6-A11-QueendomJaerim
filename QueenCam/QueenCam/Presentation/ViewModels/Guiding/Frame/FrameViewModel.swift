@@ -15,11 +15,18 @@ final class FrameViewModel {
   static let frameHeight: CGFloat = 0.69
 
   var frames: [Frame] = []
-  var selectedFrameID: UUID? = nil
+  var currentRole: Role?
+
+  /// 프레임 토글 여부
+  var isFrameEnabled: Bool = false
+  /// 프레임 현재 수정 중 여부
+  var isInteracting: Bool = false
+  /// 프레임을 현재 수정 중인 역할(작가, 모델)
+  var interactingRole: Role?
+  /// 수정 및 선택한 프레임의 식별자
+  var selectedFrameID: UUID?
+  /// 최대 허용 프레임 갯수
   let maxFrames = 1
-  private let colors: [Color] = [
-    .clear, .modelPrimary, .photographerPrimary
-  ]
 
   // MARK: - 네트워크
   let networkService: NetworkServiceProtocol
@@ -33,15 +40,22 @@ final class FrameViewModel {
     bind()
   }
 
+  // MARK: - 프레임 활성화 토글 + 네트워크
+  func setFrame(_ enabled: Bool) {
+    // 로컬 상태 갱신
+    isFrameEnabled = enabled
+
+    // Send to network
+    sendFrameEnabled(enabled)
+  }
+
   // MARK: - 프레임 추가
   func addFrame(at origin: CGPoint, size: CGSize = .init(width: frameWidth, height: frameHeight)) {
     guard frames.count < maxFrames else { return }
     let newX = min(max(origin.x, 0), 1 - size.width)
     let newY = min(max(origin.y, 0), 1 - size.height)
-    let rect = CGRect(origin: .init(x: 0.24 , y: 0.17), size: size)
-    let color = colors[0]
-
-    let frame = Frame(rect: rect, color: color)
+    let rect = CGRect(origin: .init(x: newX, y: newY), size: size)
+    let frame = Frame(rect: rect)
     frames.append(frame)
 
     // Send to network
@@ -69,6 +83,7 @@ final class FrameViewModel {
     // Send to network
     sendFrameCommand(command: .move(frame: frames[frameIndex]))
   }
+
   // MARK: - 프레임 크기 조절 (Pinch/Magnify)
   func resizeFrame(id: UUID, start: CGRect, scale: CGFloat) {
     guard let frameIndex = frames.firstIndex(where: { $0.id == id }) else { return }
@@ -83,10 +98,11 @@ final class FrameViewModel {
     new.origin.x = min(max(new.origin.x, 0), 1 - new.size.width)
     new.origin.y = min(max(new.origin.y, 0), 1 - new.size.height)
     frames[frameIndex].rect = new
-    
+
     // Send to network
     sendFrameCommand(command: .modify(frame: frames[frameIndex]))
   }
+
   // MARK: - 모서리 핸들로 비율 조절
   func resizeCorner(id: UUID, corner: Corner, start: CGRect, translation: CGSize, container: CGSize) {
     guard let frameIndex = frames.firstIndex(where: { $0.id == id }) else { return }
@@ -125,6 +141,7 @@ final class FrameViewModel {
     // Send to network
     sendFrameCommand(command: .modify(frame: frames[frameIndex]))
   }
+
   // MARK: - 프레임의 삭제
   func deleteAll() {
     frames.removeAll()
@@ -142,10 +159,25 @@ extension FrameViewModel {
       .receive(on: RunLoop.main)
       .compactMap { $0 }
       .sink { [weak self] event in
+        guard let self else { return }
         switch event {
         case .frameUpdated(let eventType):
-          self?.handleFrameEvent(eventType: eventType)
-        default: break
+          self.handleFrameEvent(eventType: eventType)
+
+        case .frameEnabled(let enabled):
+          self.isFrameEnabled = enabled
+
+        case .frameInteracting(let role, let interacting):
+          if interacting {
+            self.isInteracting = true
+            self.interactingRole = role
+          } else {
+            self.isInteracting = false
+            self.interactingRole = nil
+          }
+
+        default:
+          break
         }
       }
       .store(in: &cancellables)
@@ -167,7 +199,6 @@ extension FrameViewModel {
         if frame.id == targetId {
           return replaceTo
         }
-
         return frame
       }
     case .deleteAll:
@@ -195,6 +226,23 @@ extension FrameViewModel {
     Task.detached { [weak self] in
       guard let self else { return }
       await self.networkService.send(for: .frameUpdated(sendingEventType))
+    }
+  }
+
+  /// 프레임 토글 상태 전송
+  private func sendFrameEnabled(_ enabled: Bool) {
+    Task.detached { [weak self] in
+      guard let self else { return }
+      await self.networkService.send(for: .frameEnabled(enabled))
+    }
+  }
+
+  /// 프레임 상호작용(제스처) 시작/종료 전송
+  func sendFrameInteracting(_ interacting: Bool) {
+    let myRole = currentRole ?? .photographer
+    Task.detached { [weak self] in
+      guard let self else { return }
+      await self.networkService.send(for: .frameInteracting(role: myRole, isInteracting: interacting))
     }
   }
 }

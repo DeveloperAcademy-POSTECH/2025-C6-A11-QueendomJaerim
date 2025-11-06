@@ -1,3 +1,4 @@
+import AVKit
 import PhotosUI
 import SwiftUI
 import WiFiAware
@@ -7,8 +8,6 @@ struct CameraView {
   let previewModel: PreviewModel
   let connectionViewModel: ConnectionViewModel
 
-  /// 네트워크 상태 모달 노출 여부
-  @State private var isShowingCurrentConnectionModal: Bool = false
   private var isPhotographerMode: Bool {
     connectionViewModel.role == nil || connectionViewModel.role == .photographer
   }
@@ -44,6 +43,9 @@ struct CameraView {
   @State private var isShowLogExportingSheet: Bool = false
 
   @State private var isShowShutterFlash = false
+  
+  // 연결 종료 여부 확인 시트 노출 여부
+  @State private var isShowDisconnectAlert = false
 
   /// 연결 플로우가 진행되는 ConnectionView를 띄울지 여부
   @State private var isShowConnectionView: Bool = false
@@ -95,12 +97,12 @@ extension CameraView {
       return 2
     }
   }
-  
+
   private func flashScreen() {
-      isShowShutterFlash = true
-      withAnimation(.linear(duration: 0.01)) {
-          isShowShutterFlash = false
-      }
+    isShowShutterFlash = true
+    withAnimation(.linear(duration: 0.01)) {
+      isShowShutterFlash = false
+    }
   }
 }
 
@@ -201,11 +203,11 @@ extension CameraView: View {
     ZStack {
       Color.black.ignoresSafeArea()
       VStack(spacing: .zero) {
-        /// 제일 위 툴바 부분
+        // 제일 위 툴바 부분
         TopToolBarView(
-          isConnected: isSessionActive,
           connectedDeviceName: connectionViewModel.connectedDeviceName,
-          menuContent: {
+          reconnectingDeviceName: connectionViewModel.reconnectingDeviceName,
+          contextMenuContent: {
             toolBarCameraSettingTool
 
             Button("기능 1") {}
@@ -218,19 +220,49 @@ extension CameraView: View {
 
             Button("신고하기", systemImage: "exclamationmark.triangle") {}
           },
-          connectedWithButtonDidTap: {
-            if connectionViewModel.isConnecting {
-              isShowingCurrentConnectionModal.toggle()
-            } else {
-              isShowConnectionView = true
+          indicatorMenuContent: {
+            Button("역할 바꾸기") {
+              changeRoleButtonDidTap()
             }
+
+            Button("연결 종료하기", role: .destructive) {
+              isShowDisconnectAlert = true
+            }
+          },
+          connectedWithButtonDidTap: {
+            isShowConnectionView = true
           }
         )
         .padding()
+        .alert(
+          "연결을 종료합니다.",
+          isPresented: $isShowDisconnectAlert,
+          actions: {
+            Button(role: .destructive) {
+              connectionViewModel.disconnectButtonDidTap()
+            } label: {
+              Text("연결 종료하기")
+            }
+
+            Button(role: .cancel) {
+            } label: {
+              Text("취소하기")
+            }
+          },
+          message: {
+            Text("친구와 연결을 끊고 촬영을 마칩니다.")
+          }
+        )
 
         ZStack {
           if isPhotographerMode {  // 작가 + Default
             CameraPreview(session: cameraViewModel.cameraManager.session)
+              .onCameraCaptureEvent { event in
+                if event.phase == .ended {
+                  flashScreen()
+                  cameraViewModel.capturePhoto()
+                }
+              }
               .opacity(isShowShutterFlash ? 0 : 1)
               .onTapGesture { location in
                 isFocused = true
@@ -272,18 +304,15 @@ extension CameraView: View {
           }
 
           Group {
+            let currentRole = connectionViewModel.role ?? .photographer
+
             if isFrame {
-              FrameEditorView(frameViewModel: frameViewModel)
+              FrameEditorView(frameViewModel: frameViewModel, currentRole: currentRole)
             }
             if isPen || isMagicPen {
-              PenWriteView(
-                penViewModel: penViewModel,
-                isPen: isPen,
-                isMagicPen: isMagicPen,
-                role: connectionViewModel.role ?? .photographer
-              )
+              PenWriteView(penViewModel: penViewModel, isPen: isPen, isMagicPen: isMagicPen, role: currentRole)
             } else {
-              PenDisplayView(penViewModel: penViewModel, role: connectionViewModel.role)
+              PenDisplayView(penViewModel: penViewModel, role: currentRole)
             }
           }
           .opacity(isRemoteGuideHidden ? .zero : 1)
@@ -322,6 +351,9 @@ extension CameraView: View {
                     isPen = false
                     isMagicPen = false
                     isFrame = false
+                    frameViewModel.setFrame(false)
+                  } else if !isRemoteGuideHidden && !frameViewModel.frames.isEmpty {
+                    frameViewModel.setFrame(true)
                   }
                 }
               )
@@ -333,6 +365,13 @@ extension CameraView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .padding(8)
             .clipped()
+
+          // 연결 유실시 재연결 뷰
+          if connectionViewModel.connectionLost {
+            ReconnectingView {
+              connectionViewModel.reconnectCancelButtonDidTap()
+            }
+          }
         }
         .aspectRatio(3 / 4, contentMode: .fill)
         .clipShape(.rect(cornerRadius: 5))
@@ -342,8 +381,10 @@ extension CameraView: View {
         }
         .padding(.horizontal, 16)
         .overlay(alignment: .center) {
-          StateToastContainer()
-            .padding(.top, 16)
+          if !connectionViewModel.connectionLost {
+            StateToastContainer()
+              .padding(.top, 16)
+          }
         }
 
         // 프리뷰 밖 => 이부분을 기준으로 바구니 표현
@@ -355,7 +396,11 @@ extension CameraView: View {
               isActive: isFrame,
               tapAction: {
                 isFrame.toggle()
-                if isFrame {
+                frameViewModel.setFrame(isFrame)
+                if isFrame && frameViewModel.frames.isEmpty {
+                  frameViewModel.addFrame(at: CGPoint(x: 0.24, y: 0.15))
+                }
+                if frameViewModel.isFrameEnabled {
                   isRemoteGuideHidden = false
                 }
               },
@@ -390,29 +435,32 @@ extension CameraView: View {
           }
           .padding(.top, 32)
 
-            HStack {
-              Button(action: { isShowPhotoPicker.toggle() }) {
-                if let image = cameraViewModel.lastImage {
-                  Image(uiImage: image)
+          HStack {
+            Button(action: { isShowPhotoPicker.toggle() }) {
+              if let image = cameraViewModel.lastImage {
+                Image(uiImage: image)
+                  .resizable()
+                  .frame(width: 48, height: 48)
+                  .clipShape(Circle())
+              } else {
+                if let thumbnailImage = cameraViewModel.thumbnailImage {
+                  Image(uiImage: thumbnailImage)
                     .resizable()
                     .frame(width: 48, height: 48)
                     .clipShape(Circle())
                 } else {
-                  if let thumbnailImage = cameraViewModel.thumbnailImage {
-                    Image(uiImage: thumbnailImage)
-                      .resizable()
-                      .frame(width: 48, height: 48)
-                      .clipShape(Circle())
-                  } else {
-                    EmptyPhotoButton()
-                  }
+                  EmptyPhotoButton()
                 }
               }
+            }
 
             Spacer()
 
             if isPhotographerMode {  // 작가 전용 뷰
-              Button(action: { cameraViewModel.capturePhoto() }) {
+              Button(action: {
+                flashScreen()
+                cameraViewModel.capturePhoto()
+              }) {
                 Circle()
                   .fill(.offWhite)
                   .stroke(.gray900, lineWidth: 6)
@@ -455,33 +503,6 @@ extension CameraView: View {
             }
         )
       }
-
-      // MARK: 네트워크 상태 모달
-      if isShowingCurrentConnectionModal {
-        NetworkStateModalView(
-          myRole: connectionViewModel.role ?? .model,
-          otherDeviceName: connectionViewModel.connectedDeviceName ?? "알 수 없는 기기",
-          disconnectButtonDidTap: {
-            isShowingCurrentConnectionModal = false
-            connectionViewModel.disconnectButtonDidTap()
-          },
-          changeRoleButtonDidTap: {
-            // 가이딩 초기화
-            penViewModel.reset()
-            frameViewModel.deleteAll()
-            referenceViewModel.onDelete()
-            connectionViewModel.swapRole()
-            // 새 역할에 따라 캡쳐를 시작/중단한다
-            if let newRole = connectionViewModel.role {
-              if newRole == .model {
-                previewModel.stopCapture()
-              } else if newRole == .photographer {
-                previewModel.startCapture()
-              }
-            }
-          }
-        )
-      }
     }
     // MARK: 카메라 세팅 툴
     .overlay {
@@ -500,13 +521,6 @@ extension CameraView: View {
         }
         .padding(.bottom, 12)
         .transition(.move(edge: .bottom))
-      }
-    }
-    .overlay {
-      if connectionViewModel.connectionLost {
-        ReconnectingOverlayView {
-          connectionViewModel.reconnectCancelButtonDidTap()
-        }
       }
     }
     .overlay {
@@ -549,6 +563,14 @@ extension CameraView: View {
         previewModel.startCapture()
       }
     }
+    .overlay {
+      // 연결 종료 오버레이
+      if connectionViewModel.needReportSessionFinished {
+        SessionFinishedOverlayView {
+          connectionViewModel.sessionFinishedOverlayCloseButtonDidTap()
+        }
+      }
+    }
     // 연결 종료 시 가이딩 초기화
     .onChange(of: connectionViewModel.networkState) { _, newState in
       guard let newState else { return }
@@ -571,12 +593,35 @@ extension CameraView: View {
         selectedImageID = nil
       }
     }
+    // 프레임 토글 시 양쪽 모두 (비)활성화
+    .onChange(of: frameViewModel.isFrameEnabled) { _, enabled in
+      isFrame = enabled
+    }
     .sheet(isPresented: $isShowLogExportingSheet) {
       LogExportingView()
     }
     .task {
       await cameraViewModel.checkPermissions()
       await cameraViewModel.loadThumbnail()
+    }
+  }
+}
+
+// TopToolbar Intent Handlers
+extension CameraView {
+  private func changeRoleButtonDidTap() {
+    // 가이딩 초기화
+    penViewModel.reset()
+    frameViewModel.deleteAll()
+    referenceViewModel.onDelete()
+    connectionViewModel.swapRole()
+    // 새 역할에 따라 캡쳐를 시작/중단한다
+    if let newRole = connectionViewModel.role {
+      if newRole == .model {
+        previewModel.stopCapture()
+      } else if newRole == .photographer {
+        previewModel.startCapture()
+      }
     }
   }
 }

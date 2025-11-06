@@ -8,15 +8,18 @@
 import SwiftUI
 
 /// Top Tool Bar
-struct TopToolBarView<MenuContent: View> {
-  /// 연결 여부
-  let isConnected: Bool
-
-  /// 연결된 디바이스 이름
+struct TopToolBarView<ContextMenuContent: View, IndicatorMenuContent: View> {
+  /// 연결된 디바이스 이름 (연결이 끊어졌으면 nil)
   let connectedDeviceName: String?
 
+  /// 재연결 중인 디바이스 이름 (연결이 끊어졌지만 재연결 중이면 nil이 아님)
+  let reconnectingDeviceName: String?
+
   /// 컨텍스트 메뉴 아이템
-  @ViewBuilder let menuContent: () -> MenuContent
+  @ViewBuilder let contextMenuContent: () -> ContextMenuContent
+  
+  /// 가운데 연결 메뉴 아이템
+  @ViewBuilder let indicatorMenuContent: () -> IndicatorMenuContent
 
   /// 뒤로 가기 버튼 액션. nil이면 뒤로가기 버튼 숨김
   let backButtonDidTap: (() -> Void)?
@@ -29,16 +32,18 @@ struct TopToolBarView<MenuContent: View> {
   private let contextMenuSymbolName: String = "ellipsis"
 
   init(
-    isConnected: Bool,
     connectedDeviceName: String?,
-    @ViewBuilder menuContent: @escaping () -> MenuContent,
+    reconnectingDeviceName: String?,
+    @ViewBuilder contextMenuContent: @escaping () -> ContextMenuContent,
+    @ViewBuilder indicatorMenuContent: @escaping () -> IndicatorMenuContent,
     backButtonDidTap: (() -> Void)? = nil,
     connectedWithButtonDidTap: @escaping () -> Void
   ) {
-    self.isConnected = isConnected
     self.connectedDeviceName = connectedDeviceName
+    self.reconnectingDeviceName = reconnectingDeviceName
+    self.contextMenuContent = contextMenuContent
+    self.indicatorMenuContent = indicatorMenuContent
     self.backButtonDidTap = backButtonDidTap
-    self.menuContent = menuContent
     self.connectedWithButtonDidTap = connectedWithButtonDidTap
   }
 }
@@ -59,61 +64,15 @@ extension TopToolBarView: View {
       Spacer(minLength: minimumSpacing)
 
       ConnectedWithView(
-        isConnected: isConnected,
-        connectedDeviceName: connectedDeviceName
+        connectedDeviceName: connectedDeviceName ?? reconnectingDeviceName,
+        menuContent: indicatorMenuContent
       ) {
         connectedWithButtonDidTap()
       }
 
       Spacer(minLength: minimumSpacing)
 
-      ToolBarMenu(symbolName: contextMenuSymbolName, menuContent: menuContent)
+      ToolBarMenu(symbolName: contextMenuSymbolName, menuContent: contextMenuContent)
     }
   }
-}
-
-#Preview {
-  VStack {
-    TopToolBarView(isConnected: true, connectedDeviceName: "임영폰") {
-      Button("기능 1") {}
-      Button("기능 2") {}
-      Button("기능 3") {}
-
-      Divider()
-
-      Button("신고하기", systemImage: "exclamationmark.triangle") {}
-    } connectedWithButtonDidTap: {
-      //
-    }
-
-    TopToolBarView(isConnected: true, connectedDeviceName: "임영택임영택임영택임영택의 iPhone") {
-      Button("기능 1") {}
-      Button("기능 2") {}
-      Button("기능 3") {}
-
-      Divider()
-
-      Button("신고하기", systemImage: "exclamationmark.triangle") {}
-    } connectedWithButtonDidTap: {
-      //
-    }
-
-    TopToolBarView(isConnected: true, connectedDeviceName: "임영택임영택임영택임영택의 iPhone") {
-      //
-    } backButtonDidTap: {
-      //
-    } connectedWithButtonDidTap: {
-      //
-    }
-
-    TopToolBarView(isConnected: false, connectedDeviceName: nil) {
-      //
-    } backButtonDidTap: {
-      //
-    } connectedWithButtonDidTap: {
-      //
-    }
-  }
-  .padding(20)
-  .background(.black)
 }
