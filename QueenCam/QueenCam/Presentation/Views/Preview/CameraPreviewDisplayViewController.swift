@@ -62,12 +62,12 @@ final class SampleBufferDisplayView: UIView {
 
   // MARK: 프레임 갭 감지
   private var lastPTS: CMTime?  // 마지막 프레임의 PTS 저장
-  private let ptsGapThresholdSeconds: TimeInterval = 0.15  // 유실로 판단할 갭 기준 (초)
+  private let ptsGapThresholdSeconds: TimeInterval = 0.30  // 유실로 판단할 갭 기준 (초)
 
   // MARK: 네트워크 지연 감지
   private var firstPTS: CMTime?  // 동기화 기준점 (미디어 시간)
   private var firstHostTime: CMTime?  // 동기화 기준점 (현재 시간)
-  private let maxAllowedDelaySeconds: TimeInterval = 0.30  // 혼잡으로 판단할 지연시간 기준 (초)
+  private let maxAllowedDelaySeconds: TimeInterval = 0.60  // 혼잡으로 판단할 지연시간 기준 (초)
 
   // MARK: - Handlers
   var onFrameRenderUnstably: (() -> Void)?
