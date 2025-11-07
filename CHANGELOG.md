@@ -24,6 +24,18 @@
 
 ### Security
 
+
+## [0.3.3] (2025-11-07)
+
+### Added
+
+- CameraView에서 화면이 꺼지지 않도록 수정
+
+### Changed
+
+- 화질 조정 관련 패러미터 수정
+- 스프리밍 Unstable 판정이 조금 더 어렵게 수정
+
 ## [0.3.2] (2025-11-06)
 
 ### Fixed
@@ -170,6 +182,7 @@
 - Wi-Fi Aware 연결 후, 라이브 포토 촬영 시 앱이 크래시되는 문제
 - 레퍼런스 삭제 후 재등록에 관한 상태 초기화 문제
 
+[0.3.3]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v0.3.2...v0.3.3
 [0.3.2]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v0.2.0...v0.3.0

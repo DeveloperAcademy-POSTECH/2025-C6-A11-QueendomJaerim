@@ -55,16 +55,19 @@ final class SampleBufferDisplayView: UIView {
   private var adapterCounter = 0  // 너무 많은 프레임이 들어오는 경우를 조절하는 카운터
 
   private var stableRenderingCounter = 0  // 안정적으로 렌더링된 프레임 카운터
-  private var reportStableRenderingThreshold: Int = 300
+  private var reportStableRenderingThreshold: Int = 90  // 약 3초 (30fps)
+
+  private var unstableRenderingCounter = 0  // 불안정하게 렌더링된 프레임 카운터
+  private let reportUnstableRenderingThreshold: Int = 15  // 약 0.5초 (30fps 기준)
 
   // MARK: 프레임 갭 감지
   private var lastPTS: CMTime?  // 마지막 프레임의 PTS 저장
-  private let ptsGapThresholdSeconds: TimeInterval = 0.15  // 유실로 판단할 갭 기준 (초)
+  private let ptsGapThresholdSeconds: TimeInterval = 0.30  // 유실로 판단할 갭 기준 (초)
 
   // MARK: 네트워크 지연 감지
   private var firstPTS: CMTime?  // 동기화 기준점 (미디어 시간)
   private var firstHostTime: CMTime?  // 동기화 기준점 (현재 시간)
-  private let maxAllowedDelaySeconds: TimeInterval = 0.30  // 혼잡으로 판단할 지연시간 기준 (초)
+  private let maxAllowedDelaySeconds: TimeInterval = 0.60  // 혼잡으로 판단할 지연시간 기준 (초)
 
   // MARK: - Handlers
   var onFrameRenderUnstably: (() -> Void)?
@@ -166,11 +169,11 @@ extension SampleBufferDisplayView {
       }
     }
 
-    // 불안정 상태 보고 (이 프레임을 버리진 않고 일단 렌더링 시도)
-    if !isStable {
-      onFrameRenderUnstably?()
-      stableRenderingCounter = 0
-    }
+    // MARK: - 불안정 상태 플래그 (지연 감지 결과 반영)
+
+    // isStable은 지연 감지(Latency)에서만 false가 될 수 있음
+    var isCurrentlyUnstable = !isStable
+    var frameRenderedSuccessfully = false
 
     // MARK: - Enqueue new sample buffer to renderer
 
@@ -179,28 +182,53 @@ extension SampleBufferDisplayView {
 
       // PTS가 안정적이었고, 렌더러도 잘 받음
       if isStable {
-        stableRenderingCounter += 1
+        frameRenderedSuccessfully = true
+      } else {
+        // isStable == false (지연 발생)이지만 렌더러는 받았음
+        // 이것도 불안정 이벤트로 간주
+        isCurrentlyUnstable = true
       }
     } else if let error = renderer.error {
       logger.error("video layer error \(error)")
-      onFrameRenderUnstably?()
-      resetAllChecks()
+      isCurrentlyUnstable = true
+      resetAllChecks()  // 에러는 심각하므로 모든 기준점 리셋
     } else {
       // 백프레셔: 렌더러가 준비 안된 경우
       logger.warning("video layer has no error but not enqueued. Backpressure.")
-      onFrameRenderUnstably?()
-      stableRenderingCounter = 0
+      isCurrentlyUnstable = true
       // lastPTS는 리셋하지 않음. 다음 프레임이 이 프레임과 비교되어야 함.
 
       renderer.flush()  // 이 경우 플러시 한 후 다음 프레임을 기다림
     }
 
-    // 안정적으로 렌더링되는 경우 보고
-    if stableRenderingCounter >= reportStableRenderingThreshold {
-      onFrameRenderStably?()
-      stableRenderingCounter = 0
-      logger.debug("Reported currently rendering stable...")
+    // MARK: - 카운터 업데이트 및 상태 보고
+
+    if isCurrentlyUnstable {
+      // 불안정 이벤트 발생
+      stableRenderingCounter = 0  // 안정 카운터 리셋
+      unstableRenderingCounter += 1
+
+      // 불안정 임계값을 넘으면 보고
+      if unstableRenderingCounter >= reportUnstableRenderingThreshold {
+        logger.debug("Reported: Rendering UNSTABLE.")
+        onFrameRenderUnstably?()
+        unstableRenderingCounter = 0  // 보고 후 리셋
+      }
+    } else if frameRenderedSuccessfully {
+      // 안정 이벤트 발생 (성공적으로 렌더링 + 지연/갭 없음)
+      unstableRenderingCounter = 0  // 불안정 카운터 리셋
+      stableRenderingCounter += 1
+
+      // 안정 임계값을 넘으면 보고
+      if stableRenderingCounter >= reportStableRenderingThreshold {
+        logger.debug("Reported: Rendering STABLE.")
+        onFrameRenderStably?()
+        stableRenderingCounter = 0  // 보고 후 리셋
+      }
     }
+    // else: 갭 감지 등으로 프레임이 일찍 return된 경우.
+    // 이 경우 resetAllChecks()가 이미 카운터를 0으로 만들었으므로
+    // 여기서 아무것도 하지 않아도 됩니다.
   }
 
   /// 지연 감지 기준점을 리셋한다. (프레임 갭이 크거나 순서가 꼬였을 때 호출)
@@ -218,6 +246,7 @@ extension SampleBufferDisplayView {
     firstHostTime = nil
     adapterCounter = 0
     stableRenderingCounter = 0
+    unstableRenderingCounter = 0
   }
 }
 

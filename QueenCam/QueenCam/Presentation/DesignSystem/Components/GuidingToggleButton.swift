@@ -18,7 +18,9 @@ extension GuidingToggleButton: View {
             .frame(width: 38, height: 38)
             .overlay {
               Image(systemName: systemName)
-                .font(.system(size: 12))
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .frame(width: 22.5, height: 13.5)
                 .foregroundStyle(isActive ? .modelPrimary : .offWhite)
             }
         }
@@ -30,7 +32,9 @@ extension GuidingToggleButton: View {
             .frame(width: 38, height: 38)
             .overlay {
               Image(systemName: systemName)
-                .font(.system(size: 12))
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .frame(width: 22.5, height: 13.5)
                 .foregroundStyle(isActive ? .photographerPrimary : .offWhite)
             }
         }
@@ -42,7 +46,9 @@ extension GuidingToggleButton: View {
             .frame(width: 38, height: 38)
             .overlay {
               Image(systemName: systemName)
-                .font(.system(size: 12))
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .frame(width: 22.5, height: 13.5)
                 .foregroundStyle(isActive ? .photographerPrimary : .offWhite)
             }
         }
