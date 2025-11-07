@@ -16,17 +16,15 @@ extension LensZoomTool {
     }
 
     let itemWidth: CGFloat = 38
-    let spacing: CGFloat = 14
-    let totalWidth = itemWidth + spacing
     let centerIndex = CGFloat(zoomScaleItemList.count - 1) / 2.0
-    return (centerIndex - CGFloat(activeIndex)) * totalWidth
+    return (centerIndex - CGFloat(activeIndex)) * itemWidth
   }
 }
 
 extension LensZoomTool: View {
 
   var body: some View {
-    HStack(alignment: .center, spacing: 14) {
+    HStack(alignment: .center, spacing: .zero) {
       ForEach(zoomScaleItemList, id: \.self) { item in
         Button(action: { onZoomChange(item) }) {
           Circle()
@@ -34,7 +32,7 @@ extension LensZoomTool: View {
             .frame(width: 38, height: 38)
             .overlay {
               Text(displayText(for: item))
-                .font(.system(size: 15))
+                .font(Font.custom("SF Compact Rounded", size: 15))
                 .foregroundStyle(item == activeZoom ? Color.MiscellaneousWindowControlsMinimize : .offWhite)
             }
             .animation(nil, value: currentZoomFactor)

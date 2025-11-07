@@ -12,7 +12,9 @@ extension BoomupButton: View {
         .frame(width: 48, height: 48)
         .overlay {
           Image(systemName: "hand.thumbsup")
-            .font(.system(size: 22))
+            .resizable()
+            .aspectRatio(contentMode: .fit)
+            .frame(width: 29, height: 29)
             .foregroundStyle(.offWhite)
         }
     }
