@@ -9,6 +9,7 @@
 
 ### Added
 
+- CameraView에서 화면이 꺼지지 않도록 수정
 
 ### Changed
 
