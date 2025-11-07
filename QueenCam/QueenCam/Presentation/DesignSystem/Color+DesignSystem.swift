@@ -40,7 +40,14 @@ struct ColorRow: View {
       Divider()
 
       ColorRow(color: .modelPrimary, name: "modelPrimary")
+      ColorRow(color: .modelS100, name: "modelS100")
+      ColorRow(color: .modelDisabled, name: "modelDisabled")
+      
+      Divider()
+      
       ColorRow(color: .photographerPrimary, name: "photographerPrimary")
+      ColorRow(color: .photographerS100, name: "photographerS100")
+      ColorRow(color: .photographerDisabled, name: "photographerDisabled")
 
       Divider()
 
