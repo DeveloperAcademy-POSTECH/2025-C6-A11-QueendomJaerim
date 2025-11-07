@@ -38,12 +38,12 @@ struct CameraView {
 
   @State private var isRemoteGuideHidden: Bool = false
   @State private var isShowCameraSettingTool: Bool = false
-  
+
   /// 로그 내보내기 시트 노출 여부
   @State private var isShowLogExportingSheet: Bool = false
 
   @State private var isShowShutterFlash = false
-  
+
   // 연결 종료 여부 확인 시트 노출 여부
   @State private var isShowDisconnectAlert = false
 
@@ -348,13 +348,12 @@ extension CameraView: View {
                 tapAction: {
                   isRemoteGuideHidden.toggle()
                   if isRemoteGuideHidden {
-                    isPen = false
-                    isMagicPen = false
-                    isFrame = false
                     frameViewModel.setFrame(false)
                   } else if !isRemoteGuideHidden && !frameViewModel.frames.isEmpty {
                     frameViewModel.setFrame(true)
                   }
+                  
+                  cameraViewModel.showGuidingToast(isRemoteGuideHidden: isRemoteGuideHidden)
                 }
               )
             }
@@ -394,9 +393,16 @@ extension CameraView: View {
             GuidingButton(
               role: connectionViewModel.role,
               isActive: isFrame,
+              isDisabeld: isRemoteGuideHidden,
               tapAction: {
+                guard !isRemoteGuideHidden else {
+                  frameViewModel.showGuidingDisabledToast()
+                  return
+                }
+
                 isFrame.toggle()
                 frameViewModel.setFrame(isFrame)
+
                 if isFrame && frameViewModel.frames.isEmpty {
                   frameViewModel.addFrame(at: CGPoint(x: 0.24, y: 0.15))
                 }
@@ -410,7 +416,13 @@ extension CameraView: View {
             GuidingButton(
               role: connectionViewModel.role,
               isActive: isPen,
+              isDisabeld: isRemoteGuideHidden,
               tapAction: {
+                guard !isRemoteGuideHidden else {
+                  penViewModel.showGuidingDisabledToast(type: .pen)
+                  return
+                }
+
                 isPen.toggle()
                 isMagicPen = false
                 if isPen {
@@ -423,7 +435,13 @@ extension CameraView: View {
             GuidingButton(
               role: connectionViewModel.role,
               isActive: isMagicPen,
+              isDisabeld: isRemoteGuideHidden,
               tapAction: {
+                guard !isRemoteGuideHidden else {
+                  penViewModel.showGuidingDisabledToast(type: .magicPen)
+                  return
+                }
+
                 isMagicPen.toggle()
                 isPen = false
                 if isMagicPen {
@@ -581,7 +599,8 @@ extension CameraView: View {
         || newState == .host(.lost)
         || newState == .viewer(.lost)
         || newState == .host(.stopped)
-        || newState == .viewer(.stopped) {
+        || newState == .viewer(.stopped)
+      {
         // 가이딩 초기화
         penViewModel.reset()
         frameViewModel.deleteAll()
@@ -597,6 +616,7 @@ extension CameraView: View {
     }
     // 프레임 토글 시 양쪽 모두 (비)활성화
     .onChange(of: frameViewModel.isFrameEnabled) { _, enabled in
+      guard !isRemoteGuideHidden else { return }
       isFrame = enabled
     }
     .sheet(isPresented: $isShowLogExportingSheet) {
@@ -608,7 +628,7 @@ extension CameraView: View {
     }
     // Life Cycle of the view
     .onAppear {
-      UIApplication.shared.isIdleTimerDisabled = true // 화면 꺼짐 방지
+      UIApplication.shared.isIdleTimerDisabled = true  // 화면 꺼짐 방지
     }
     .onDisappear {
       UIApplication.shared.isIdleTimerDisabled = false

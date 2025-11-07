@@ -183,6 +183,14 @@ final class CameraViewModel {
 
     await fetchThumbnail()
   }
+  
+  func showGuidingToast(isRemoteGuideHidden: Bool) {
+    if isRemoteGuideHidden {
+      notificationService.registerNotification(.make(type: .turnOffGuiding))
+    } else {
+      notificationService.registerNotification(.make(type: .turnOnGuiding))
+    }
+  }
 }
 
 extension CameraViewModel {

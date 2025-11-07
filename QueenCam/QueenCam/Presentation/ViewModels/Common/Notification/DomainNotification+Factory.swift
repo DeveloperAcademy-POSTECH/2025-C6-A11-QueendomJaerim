@@ -35,6 +35,11 @@ extension DomainNotification {
     case sharingFrameGuideStarted
     case counterpartEditingFrameGuide
     case myEditingFrameGuide
+    case turnOnGuidingFirstWithFrame
+    case turnOnGuidingFirstWithPen
+    case turnOnGuidingFirstWithMagicPen
+    case turnOffGuiding
+    case turnOnGuiding
     
     var preset: Preset {
       switch self {
@@ -56,6 +61,18 @@ extension DomainNotification {
         return .init(message: "상대가 프레임을 수정중입니다.", isImportant: false, showingTime: 2)
       case .myEditingFrameGuide:
         return .init(message: "내가 그린 가이드를 공유합니다.", isImportant: false, showingTime: 2)
+      case .turnOnGuidingFirstWithFrame:
+        return .init(message: "프레임을 사용하려면 먼저 눈을 켜주세요.", isImportant: false, showingTime: 2)
+        
+      case .turnOnGuidingFirstWithPen:
+        return .init(message: "펜을 사용하려면 먼저 눈을 켜주세요.", isImportant: false, showingTime: 2)
+        
+      case .turnOnGuidingFirstWithMagicPen:
+        return .init(message: "매직펜을 사용하려면 먼저 눈을 켜주세요.", isImportant: false, showingTime: 2)
+      case .turnOffGuiding:
+        return .init(message: "모든 가이드를 숨깁니다.", isImportant: false, showingTime: 2)
+      case .turnOnGuiding:
+        return .init(message: "가이드가 보여집니다.", isImportant: false, showingTime: 2)
       }
     }
   }
