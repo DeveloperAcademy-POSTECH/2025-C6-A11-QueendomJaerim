@@ -9,6 +9,7 @@ enum GuidingButtonType {
 struct GuidingButton {
   let role: Role?
   let isActive: Bool
+  let isDisabeld: Bool
   let tapAction: () -> Void
   let guidingButtonType: GuidingButtonType
 }
@@ -55,7 +56,11 @@ extension GuidingButton: View {
             .typo(.sfR11)
 
         }
-        .foregroundStyle(isActive ? .modelPrimary : .offWhite)
+        .foregroundStyle(
+          isDisabeld
+            ? (isActive ? .modelDisabled : .disabled)
+            : (isActive ? .modelPrimary : .systemWhite)
+        )
 
       case .photographer:
         VStack(alignment: .center, spacing: 8) {
@@ -70,7 +75,11 @@ extension GuidingButton: View {
           Text(title)
             .typo(.sfR11)
         }
-        .foregroundStyle(isActive ? .photographerPrimary : .offWhite)
+        .foregroundStyle(
+          isDisabeld
+            ? (isActive ? .photographerDisabled : .disabled)
+            : (isActive ? .photographerPrimary : .systemWhite)
+        )
 
       case .none:
         VStack(alignment: .center, spacing: 8) {
@@ -85,38 +94,72 @@ extension GuidingButton: View {
           Text(title)
             .typo(.sfR11)
         }
-        .foregroundStyle(isActive ? .photographerPrimary : .offWhite)
+        .foregroundStyle(
+          isDisabeld
+            ? (isActive ? .photographerDisabled : .disabled)
+            : (isActive ? .photographerPrimary : .systemWhite)
+        )
       }
     }
   }
 }
 
 #Preview {
-  VStack(spacing: 32) {
-    HStack(alignment: .center, spacing: 40) {
-      GuidingButton(role: .none, isActive: false, tapAction: {}, guidingButtonType: .frame)
-
-      GuidingButton(role: .none, isActive: false, tapAction: {}, guidingButtonType: .pen)
-      GuidingButton(role: .none, isActive: false, tapAction: {}, guidingButtonType: .magicPen)
+  ScrollView {
+    VStack(spacing: 32) {
+      HStack(alignment: .center, spacing: 40) {
+        GuidingButton(role: .none, isActive: false, isDisabeld: false, tapAction: {}, guidingButtonType: .frame)
+        
+        GuidingButton(role: .none, isActive: false, isDisabeld: false, tapAction: {}, guidingButtonType: .pen)
+        GuidingButton(role: .none, isActive: false, isDisabeld: false, tapAction: {}, guidingButtonType: .magicPen)
+      }
+      
+      HStack(alignment: .center, spacing: 40) {
+        GuidingButton(role: .model, isActive: true, isDisabeld: false, tapAction: {}, guidingButtonType: .frame)
+        
+        GuidingButton(role: .model, isActive: true, isDisabeld: false, tapAction: {}, guidingButtonType: .pen)
+        
+        GuidingButton(role: .model, isActive: true, isDisabeld: false, tapAction: {}, guidingButtonType: .magicPen)
+      }
+      
+      HStack(alignment: .center, spacing: 40) {
+        GuidingButton(role: .photographer, isActive: true, isDisabeld: false, tapAction: {}, guidingButtonType: .frame)
+        
+        GuidingButton(role: .photographer, isActive: true, isDisabeld: false, tapAction: {}, guidingButtonType: .pen)
+        
+        GuidingButton(role: .photographer, isActive: true, isDisabeld: false, tapAction: {}, guidingButtonType: .magicPen)
+        
+      }
+      
+      HStack(alignment: .center, spacing: 40) {
+        GuidingButton(role: .model, isActive: true, isDisabeld: true, tapAction: {}, guidingButtonType: .frame)
+        
+        GuidingButton(role: .model, isActive: true, isDisabeld: true, tapAction: {}, guidingButtonType: .pen)
+        
+        GuidingButton(role: .model, isActive: true, isDisabeld: true, tapAction: {}, guidingButtonType: .magicPen)
+        
+      }
+      
+      HStack(alignment: .center, spacing: 40) {
+        GuidingButton(role: .photographer, isActive: true, isDisabeld: true, tapAction: {}, guidingButtonType: .frame)
+        
+        GuidingButton(role: .photographer, isActive: true, isDisabeld: true, tapAction: {}, guidingButtonType: .pen)
+        
+        GuidingButton(role: .photographer, isActive: true, isDisabeld: true, tapAction: {}, guidingButtonType: .magicPen)
+        
+      }
+      
+      HStack(alignment: .center, spacing: 40) {
+        GuidingButton(role: .photographer, isActive: false, isDisabeld: true, tapAction: {}, guidingButtonType: .frame)
+        
+        GuidingButton(role: .photographer, isActive: false, isDisabeld: true, tapAction: {}, guidingButtonType: .pen)
+        
+        GuidingButton(role: .photographer, isActive: false, isDisabeld: true, tapAction: {}, guidingButtonType: .magicPen)
+        
+      }
     }
-
-    HStack(alignment: .center, spacing: 40) {
-      GuidingButton(role: .model, isActive: true, tapAction: {}, guidingButtonType: .frame)
-
-      GuidingButton(role: .model, isActive: true, tapAction: {}, guidingButtonType: .pen)
-
-      GuidingButton(role: .model, isActive: true, tapAction: {}, guidingButtonType: .magicPen)
-    }
-
-    HStack(alignment: .center, spacing: 40) {
-      GuidingButton(role: .photographer, isActive: true, tapAction: {}, guidingButtonType: .frame)
-
-      GuidingButton(role: .photographer, isActive: true, tapAction: {}, guidingButtonType: .pen)
-
-      GuidingButton(role: .photographer, isActive: true, tapAction: {}, guidingButtonType: .magicPen)
-
-    }
+    .padding(.top, 120)
   }
-  .frame(width: 300, height: 300)
-  .background(.gray.opacity(0.5))
+  .frame(maxWidth: .infinity, maxHeight: .infinity)
+  .background(.black.opacity(0.9))
 }
