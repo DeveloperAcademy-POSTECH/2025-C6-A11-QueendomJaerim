@@ -54,9 +54,8 @@ extension PhotoDetailView.TopToolBarComponent: View {
     }
     .frame(maxWidth: .infinity)
     .frame(height: 120, alignment: .bottom)
+    .background(.black.opacity(0.5))
     .blur(radius: 0)
-    .glassEffect(.clear.tint(.systemBlack), in: .rect)
-    .border(.systemBlack, width: 1)
   }
 }
 

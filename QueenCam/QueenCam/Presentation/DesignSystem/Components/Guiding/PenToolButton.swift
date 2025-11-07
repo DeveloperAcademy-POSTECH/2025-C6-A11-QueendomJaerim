@@ -30,7 +30,9 @@ extension PenToolButton: View {
         .frame(width: 38, height: 38)
         .overlay {
           Image(systemName: iconName)
-            .font(.system(size: 13))
+            .resizable()
+            .aspectRatio(contentMode: .fill)
+            .frame(width: 20, height: 16)
             .foregroundStyle(isActive ? .offWhite : .disabled)
         }
     }

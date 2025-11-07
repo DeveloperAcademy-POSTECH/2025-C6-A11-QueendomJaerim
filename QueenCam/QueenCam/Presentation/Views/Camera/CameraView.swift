@@ -480,7 +480,9 @@ extension CameraView: View {
                   .frame(width: 48, height: 48)
                   .overlay {
                     Image(systemName: "arrow.trianglehead.2.clockwise.rotate.90")
-                      .font(.system(size: 22))
+                      .resizable()
+                      .aspectRatio(contentMode: .fit)
+                      .frame(width: 26, height: 26)
                       .foregroundStyle(.offWhite)
                   }
               }
