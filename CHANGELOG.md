@@ -13,6 +13,8 @@
 
 ### Changed
 
+- 화질 조정 관련 패러미터 수정
+- 스프리밍 Unstable 판정이 조금 더 어렵게 수정
 
 ### Deprecated
 
