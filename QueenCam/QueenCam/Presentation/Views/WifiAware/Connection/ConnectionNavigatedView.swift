@@ -31,6 +31,13 @@ struct ConnectionNavigatedView: View {
         Text("역할이 지정되지 않았습니다.")
           .typo(.r12)
       }
+    case .connectionGuide:
+      if let role = connectionViewModel.role {
+        ConnectionGuideView(role: role)
+      } else {
+        Text("역할이 지정되지 않았습니다.")
+          .typo(.r12)
+      }
     }
   }
 }

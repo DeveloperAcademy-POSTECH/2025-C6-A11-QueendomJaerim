@@ -19,7 +19,7 @@ extension SelectRoleView {
     var body: some View {
       Button(action: action) {
         VStack(spacing: 38) {
-          Image(.zzikSymbol)
+          Image(systemName: "person.and.background.striped.horizontal")
             .renderingMode(.template)
             .foregroundStyle(isSelected ? .offWhite : themeColor)
             .frame(width: 147)

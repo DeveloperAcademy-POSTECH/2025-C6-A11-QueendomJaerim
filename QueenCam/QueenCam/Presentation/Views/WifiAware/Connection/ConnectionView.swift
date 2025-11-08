@@ -28,7 +28,8 @@ extension ConnectionView {
         },
         didRoleSubmit: { role in
           viewModel.selectRole(for: role)
-          router.push(.makeConnection)
+//          router.push(.makeConnection)
+          router.push(.connectionGuide)
         }
       )
       .navigationDestination(for: Route.self) { route in
