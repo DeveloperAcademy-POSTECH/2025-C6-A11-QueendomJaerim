@@ -27,13 +27,19 @@ final class PenViewModel {
   let networkService: NetworkServiceProtocol
   var cancellables: Set<AnyCancellable> = []
 
+  // MARK: - Toast
+  let notificationService: NotificationServiceProtocol
+
   init(
-    networkService: NetworkServiceProtocol = DependencyContainer.defaultContainer.networkService
+    networkService: NetworkServiceProtocol = DependencyContainer.defaultContainer.networkService,
+    notificationService: NotificationServiceProtocol = DependencyContainer.defaultContainer.notificationService
   ) {
     self.networkService = networkService
+    self.notificationService = notificationService
 
     bind()
   }
+
   // MARK: - 드로잉 시작/진행 업데이트
   func add(initialPoints: [CGPoint], isMagicPen: Bool, author: Role) -> UUID {
     let stroke = Stroke(points: initialPoints, isMagicPen: isMagicPen, author: author)
@@ -126,6 +132,21 @@ final class PenViewModel {
 
     // Send to network
     sendPenCommand(command: .add(stroke: redoStroke))
+  }
+
+  // MARK: - 토스트
+  enum GuidingType {
+    case pen
+    case magicPen
+  }
+
+  func showGuidingDisabledToast(type: GuidingType) {
+    switch type {
+    case .pen:
+      notificationService.registerNotification(DomainNotification.make(type: .turnOnGuidingFirstWithPen))
+    case .magicPen:
+      notificationService.registerNotification(DomainNotification.make(type: .turnOnGuidingFirstWithMagicPen))
+    }
   }
 }
 

@@ -1,3 +1,4 @@
+import Combine
 //
 //  FrameViewModel.swift
 //  QueenCam
@@ -6,7 +7,6 @@
 //
 import Foundation
 import SwiftUI
-import Combine
 
 /// 프레임의 상태 관리(이동, 확대, 축소, 모서리 크기 조절)
 @Observable
@@ -32,10 +32,15 @@ final class FrameViewModel {
   let networkService: NetworkServiceProtocol
   var cancellables: Set<AnyCancellable> = []
 
+  // MARK: - Toast
+  let notificationService: NotificationServiceProtocol
+  
   init(
-    networkService: NetworkServiceProtocol = DependencyContainer.defaultContainer.networkService
+    networkService: NetworkServiceProtocol = DependencyContainer.defaultContainer.networkService,
+    notificationService: NotificationServiceProtocol = DependencyContainer.defaultContainer.notificationService
   ) {
     self.networkService = networkService
+    self.notificationService = notificationService
 
     bind()
   }
@@ -149,6 +154,11 @@ final class FrameViewModel {
 
     // Send to network
     sendFrameCommand(command: .deleteAll)
+  }
+
+  // MARK: - Toast
+  func showGuidingDisabledToast() {
+    notificationService.registerNotification(DomainNotification.make(type: .turnOnGuidingFirstWithFrame))
   }
 }
 
