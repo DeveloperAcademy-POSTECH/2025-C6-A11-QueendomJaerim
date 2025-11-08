@@ -60,7 +60,7 @@ extension UIFont {
   }
 }
 
-enum TypographyStyle {
+enum TypographyStyle: CaseIterable {
   case r12
   case m10
   case m13
@@ -81,6 +81,31 @@ enum TypographyStyle {
   case sfM11
   case sfM12
   case sfSB15
+  
+  var displayName: String {
+    switch self {
+    case .r12: return "R_12"
+    case .m10: return "M_10"
+    case .m13: return "M_13"
+    case .m14: return "M_14"
+    case .m15: return "M_15"
+    case .m18: return "M_18"
+    case .m22: return "M_22"
+    case .sb12: return "SB_12"
+    case .sb15: return "SB_15"
+    case .sb16: return "SB_16"
+    case .sb17: return "SB_17"
+    case .sb20: return "SB_20"
+    case .b22: return "B_22"
+    case .sfRoundedR15: return "SF_Rounded_R_15"
+    case .sfR11: return "SF R_11"
+    case .sfR13: return "SF R_13"
+    case .sfR15: return "SF R_15"
+    case .sfM11: return "SF M_11"
+    case .sfM12: return "SF M_12"
+    case .sfSB15: return "SF SB_15"
+    }
+  }
 
   var font: Font {
     switch self {
@@ -187,107 +212,34 @@ extension View {
 
 // --- 사용 예시 ---
 #Preview {
-  ScrollView {
-    VStack(spacing: 12) {
-      
-      // === 여러 줄 ===
-      // --- Pretendard ---
-      Text("r12: Pretendard Regular 12\n여러 줄 테스트")
-        .typo(.r12)
-        .border(.gray, width: 0.5)
-
-      Text("m10: Pretendard Medium 10\n여러 줄 테스트")
-        .typo(.m10)
-        .border(.gray, width: 0.5)
-
-      Text("m13: Pretendard Medium 13\n여러 줄 테스트")
-        .typo(.m13)
+  struct TypographyDemoPreviewContainer: View {
+    @ViewBuilder func demoTypoView(style: TypographyStyle) -> some View {
+      Text("타이포그라피 - \(style.displayName)")
+        .typo(style)
         .border(.gray, width: 0.5)
       
-      Text("m15: Pretendard Medium 15\n여러 줄 테스트")
-        .typo(.m15)
-        .border(.gray, width: 0.5)
-
-      // --- SF Pro Rounded ---
-      Text("sfRoundedR15: SF Rounded Regular 15\n여러 줄 테스트")
-        .typo(.sfRoundedR15)
-        .border(.gray, width: 0.5)
-
-      // --- SF Pro ---
-      Text("sfR11: SF Pro Regular 11\n여러 줄 테스트")
-        .typo(.sfR11)
-        .border(.gray, width: 0.5)
-
-      Text("sfR13: SF Pro Regular 13\n여러 줄 테스트")
-        .typo(.sfR13)
+      Text("여왕처럼 생각하세요. 여왕은 실패를 두려워하지 않습니다. 실패는 위대함을 향한 또 하나의 디딤돌이니까요. - 오프라 윈프리")
+        .typo(style)
         .border(.gray, width: 0.5)
       
-      Text("sfR15: SF Pro Regular 15\n여러 줄 테스트")
-        .typo(.sfR15)
-        .border(.gray, width: 0.5)
-
-      Text("sfM11: SF Pro Medium 11\n여러 줄 테스트")
-        .typo(.sfM11)
-        .border(.gray, width: 0.5)
-
-      Text("sfM12: SF Pro Medium 12\n여러 줄 테스트")
-        .typo(.sfM12)
-        .border(.gray, width: 0.5)
-
-      Text("sfSB15: SF Pro Semibold 15\n(자간 -0.2 적용됨)")
-        .typo(.sfSB15)
+      Text("Think like a queen. A queen is not afraid to fail. Failure is another steppingstone to greatness. - Oprah Winfrey")
+        .typo(style)
         .border(.gray, width: 0.5)
       
       Divider()
-      
-      // === 한 줄 ===
-      // --- Pretendard ---
-      Text("r12: Pretendard Regular 12 한 줄 테스트")
-        .typo(.r12)
-        .border(.gray, width: 0.5)
-
-      Text("m10: Pretendard Medium 10 한 줄 테스트")
-        .typo(.m10)
-        .border(.gray, width: 0.5)
-
-      Text("m13: Pretendard Medium 13 한 줄 테스트")
-        .typo(.m13)
-        .border(.gray, width: 0.5)
-      
-      Text("m15: Pretendard Medium 15 한 줄 테스트")
-        .typo(.m15)
-        .border(.gray, width: 0.5)
-
-      // --- SF Pro Rounded ---
-      Text("sfRoundedR15: SF Rounded Regular 15 한 줄 테스트")
-        .typo(.sfRoundedR15)
-        .border(.gray, width: 0.5)
-
-      // --- SF Pro ---
-      Text("sfR11: SF Pro Regular 11 한 줄 테스트")
-        .typo(.sfR11)
-        .border(.gray, width: 0.5)
-
-      Text("sfR13: SF Pro Regular 13 한 줄 테스트")
-        .typo(.sfR13)
-        .border(.gray, width: 0.5)
-      
-      Text("sfR15: SF Pro Regular 15 한 줄 테스트")
-        .typo(.sfR15)
-        .border(.gray, width: 0.5)
-
-      Text("sfM11: SF Pro Medium 11 한 줄 테스트")
-        .typo(.sfM11)
-        .border(.gray, width: 0.5)
-
-      Text("sfM12: SF Pro Medium 12 한 줄 테스트")
-        .typo(.sfM12)
-        .border(.gray, width: 0.5)
-
-      Text("sfSB15: SF Pro Semibold 15 (자간 -0.2 적용됨)")
-        .typo(.sfSB15)
-        .border(.gray, width: 0.5)
     }
-    .padding()
+    
+    var body: some View {
+      ScrollView {
+        VStack(spacing: 12) {
+          ForEach(TypographyStyle.allCases, id: \.self) { style in
+            demoTypoView(style: style)
+          }
+        }
+        .padding()
+      }
+    }
   }
+  
+  return TypographyDemoPreviewContainer()
 }
