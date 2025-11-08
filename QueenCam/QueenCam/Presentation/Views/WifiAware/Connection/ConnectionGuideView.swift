@@ -5,33 +5,135 @@
 //  Created by 임영택 on 11/8/25.
 //
 
-import AVFoundation
 import SwiftUI
 
-struct ConnectionGuideView: View {
-  // MARK: States
+struct ConnectionGuideView {
+  @Environment(\.router) private var router
+
   @State var role: Role
-  @State private var index: Int = 0 {
-    willSet {
-      if newValue > maxIndex {
-        self.index = newValue
+  @State private var activeIndex: Int? = 0
+  private var currentGuides: [WifiAwareGuide] {
+    if role == .photographer {
+      return WifiAwareGuide.photographerGuides
+    } else if role == .model {
+      return WifiAwareGuide.modelGuides
+    }
+    return []  // should not reach
+  }
+
+  @State private var lastPageVisited: Bool = false
+
+  private let mainButtonHeight: CGFloat = 52
+}
+
+extension ConnectionGuideView: View {
+  var body: some View {
+    ZStack {
+      Color.black.ignoresSafeArea()
+
+      guidePages
+
+      footer
+    }
+    .onChange(of: activeIndex) { _, newValue in
+      if newValue == currentGuides.count - 1 {
+        lastPageVisited = true
+      }
+    }
+    .ignoresSafeArea()
+    .toolbar {
+      if activeIndex != currentGuides.count - 1 {
+        Text("건너뛰기")
+          .typo(.m15)
+          .foregroundStyle(.gray400)
+          .onTapGesture {
+            skipButtonDidTap()
+          }
       }
     }
   }
-  private let maxIndex = 2 // 마지막 페이지 인덱스
-  private var guideVideo: GuideVideo? {
-    GuideVideo.getByRoleAndIndex(role: role, index: index)
-  }
 
-  var body: some View {
-    VStack(spacing: 0) {
-      GuideViewPlayerView(guideVideo: guideVideo)
-
-      VStack(spacing: 0) {
-        Text("페어링이 왜 필요해요?")
-
-        Text("'주변 기기 찾기'를 시작해\n친구에게 페어링을 요청해주세요.")
+  var guidePages: some View {
+    GeometryReader { geometry in
+      ScrollView(.horizontal, showsIndicators: false) {
+        HStack(spacing: 0) {
+          ForEach(0..<currentGuides.count, id: \.self) { index in
+            ConnectionGuidePage(guide: currentGuides[index])
+              .frame(width: geometry.size.width)
+          }
+        }
+        .scrollTargetLayout()
       }
+      .scrollTargetBehavior(.paging)
+      .scrollPosition(id: $activeIndex)
+    }
+  }
+  
+  var footer: some View {
+    VStack(spacing: 0) {
+      Spacer()
+
+      pagingControl
+
+      Spacer()
+        .frame(height: 36)
+
+      if lastPageVisited {
+        Button {
+          startConnectingButtonDidTap()
+        } label: {
+          Text("연결 시작하기")
+            .typo(.sb16)
+            .foregroundColor(.offWhite)
+            .background(
+              Capsule()
+                .foregroundStyle(.clear)
+            )
+            .frame(maxWidth: .infinity, maxHeight: mainButtonHeight)
+        }
+        .glassEffect()
+      } else {
+        Color.clear.frame(height: mainButtonHeight)
+      }
+
+      Spacer()
+        .frame(height: 48)
+    }
+  }
+}
+
+extension ConnectionGuideView {
+  var pagingControl: some View {
+    HStack {
+      ForEach(0..<currentGuides.count, id: \.self) { index in
+        let regularColor = Color(uiColor: .systemGray3)
+        let selectedColor = Color(uiColor: .systemGray)
+
+        Button {
+          withAnimation {
+            self.activeIndex = index
+          }
+        } label: {
+          Image(systemName: "circle.fill")
+            .resizable()
+            .foregroundStyle(self.activeIndex == index ? selectedColor : regularColor)
+            .frame(width: 8, height: 8)
+        }
+      }
+    }
+  }
+}
+
+extension ConnectionGuideView {
+  // MARK: - User Intents
+  
+  private func startConnectingButtonDidTap() {
+    router.push(.makeConnection)
+  }
+  
+  private func skipButtonDidTap() {
+    withAnimation {
+      activeIndex = currentGuides.count - 1
     }
   }
 }

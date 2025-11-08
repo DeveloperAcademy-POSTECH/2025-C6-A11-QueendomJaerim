@@ -1,5 +1,5 @@
 //
-//  GuideViewPlayerView.swift
+//  ConnectionGuidePage+GuideViewPlayerView.swift
 //  QueenCam
 //
 //  Created by 임영택 on 11/8/25.
@@ -8,7 +8,7 @@
 import AVKit
 import SwiftUI
 
-extension ConnectionGuideView {
+extension ConnectionGuidePage {
   struct GuideViewPlayerView: View {
     let guideVideo: GuideVideo?
 
@@ -58,7 +58,7 @@ extension ConnectionGuideView {
   }
 }
 
-extension ConnectionGuideView.GuideViewPlayerView {
+extension ConnectionGuidePage.GuideViewPlayerView {
   private func setupPlayer() {
     isError = false
 
@@ -74,5 +74,5 @@ extension ConnectionGuideView.GuideViewPlayerView {
 }
 
 #Preview {
-  ConnectionGuideView.GuideViewPlayerView(guideVideo: .modelGuide0)
+  ConnectionGuidePage.GuideViewPlayerView(guideVideo: .modelGuide0)
 }

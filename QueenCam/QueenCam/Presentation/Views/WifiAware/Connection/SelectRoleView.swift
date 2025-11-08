@@ -11,7 +11,7 @@ struct SelectRoleView: View {
   let selectedRole: Role?
   let didRoleSelect: (Role) -> Void
   let didRoleSubmit: (Role) -> Void
-  
+
   private let imageOffset: CGFloat = 5
 
   var body: some View {
