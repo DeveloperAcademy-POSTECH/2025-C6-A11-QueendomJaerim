@@ -24,7 +24,11 @@ extension ConnectionView {
       SelectRoleView(
         selectedRole: activeRole,
         didRoleSelect: { role in
-          activeRole = role
+          if role == activeRole {
+            activeRole = nil
+          } else {
+            activeRole = role
+          }
         },
         didRoleSubmit: { role in
           viewModel.selectRole(for: role)

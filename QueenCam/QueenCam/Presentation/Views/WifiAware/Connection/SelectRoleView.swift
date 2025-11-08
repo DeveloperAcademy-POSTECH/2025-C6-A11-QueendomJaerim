@@ -12,7 +12,17 @@ struct SelectRoleView: View {
   let didRoleSelect: (Role) -> Void
   let didRoleSubmit: (Role) -> Void
 
-  private let imageOffset: CGFloat = 5
+  private let individualSymbolOffset: CGFloat = 7.5
+
+  private var symbolsContainerOffset: CGFloat { // 선택 시 가운데 정렬
+    if selectedRole == .model {
+      return -80 + individualSymbolOffset
+    } else if selectedRole == .photographer {
+      return 80 - individualSymbolOffset
+    } else {
+      return .zero
+    }
+  }
 
   var body: some View {
     ZStack {
@@ -35,19 +45,42 @@ struct SelectRoleView: View {
           .frame(height: 38)
 
         HStack(spacing: 0) {
-          RoleSelectButton(roleText: "촬영") {
+          RoleSelectButton {
             didRoleSelect(.photographer)
           }
-          .selected(selectedRole == .photographer)
-          .themeColor(Color(.photographerPrimary))
-          .offset(.init(width: imageOffset, height: 0))
+          .selected(selectedRole == nil || selectedRole == .photographer)
+          .role(.photographer)
+          .offset(.init(width: individualSymbolOffset, height: 0))
 
-          RoleSelectButton(roleText: "모델") {
+          RoleSelectButton {
             didRoleSelect(.model)
           }
-          .selected(selectedRole == .model)
-          .themeColor(Color(.modelPrimary))
-          .offset(.init(width: -imageOffset, height: 0))
+          .selected(selectedRole == nil || selectedRole == .model)
+          .role(.model)
+          .offset(.init(width: -individualSymbolOffset, height: 0))
+        }
+        .offset(.init(width: symbolsContainerOffset, height: 0))
+
+        Spacer()
+          .frame(height: 38)
+
+        if selectedRole == nil {
+          HStack {
+            Spacer()
+
+            Text("촬영")
+
+            Spacer()
+
+            Text("모델")
+
+            Spacer()
+          }
+          .typo(.sb20)
+        } else {
+          Text(selectedRole?.displayName ?? "")
+            .typo(.sb20)
+            .foregroundStyle(.white)
         }
 
         Spacer()
@@ -68,6 +101,7 @@ struct SelectRoleView: View {
         }
         .glassEffect(.regular)
       }
+      .animation(.linear, value: selectedRole)
       .padding(16)
     }
   }
