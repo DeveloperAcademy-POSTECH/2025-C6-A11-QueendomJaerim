@@ -4,11 +4,15 @@ extension Font {
   enum PretendardWeight {
     case regular
     case medium
+    case semibold
+    case bold
 
     var fontName: String {
       switch self {
       case .regular: return "Pretendard-Regular"
       case .medium: return "Pretendard-Medium"
+      case .semibold: return "Pretendard-Semibold"
+      case .bold: return "Pretendard-Bold"
       }
     }
   }
@@ -22,11 +26,15 @@ extension UIFont {
   enum PretendardWeight {
     case regular
     case medium
+    case semibold
+    case bold
 
     var fontName: String {
       switch self {
       case .regular: return "Pretendard-Regular"
       case .medium: return "Pretendard-Medium"
+      case .semibold: return "Pretendard-Semibold"
+      case .bold: return "Pretendard-Bold"
       }
     }
   }
@@ -56,7 +64,16 @@ enum TypographyStyle {
   case r12
   case m10
   case m13
+  case m14
   case m15
+  case m18
+  case m22
+  case sb12
+  case sb15
+  case sb16
+  case sb17
+  case sb20
+  case b22
   case sfRoundedR15
   case sfR11
   case sfR13
@@ -70,7 +87,16 @@ enum TypographyStyle {
     case .r12: return .pretendard(.regular, size: 12)
     case .m10: return .pretendard(.medium, size: 10)
     case .m13: return .pretendard(.medium, size: 13)
+    case .m14: return .pretendard(.medium, size: 14)
     case .m15: return .pretendard(.medium, size: 15)
+    case .m18: return .pretendard(.medium, size: 18)
+    case .m22: return .pretendard(.medium, size: 22)
+    case .sb12: return .pretendard(.medium, size: 12)
+    case .sb15: return .pretendard(.medium, size: 15)
+    case .sb16: return .pretendard(.medium, size: 16)
+    case .sb17: return .pretendard(.medium, size: 17)
+    case .sb20: return .pretendard(.medium, size: 20)
+    case .b22: return .pretendard(.bold, size: 22)
     case .sfRoundedR15: return .system(size: 15, weight: .regular, design: .rounded)
     case .sfR11: return .system(size: 11, weight: .regular)
     case .sfR13: return .system(size: 13, weight: .regular)
@@ -86,7 +112,16 @@ enum TypographyStyle {
     case .r12: return .pretendard(.regular, size: 12)
     case .m10: return .pretendard(.medium, size: 10)
     case .m13: return .pretendard(.medium, size: 13)
+    case .m14: return .pretendard(.medium, size: 14)
     case .m15: return .pretendard(.medium, size: 15)
+    case .m18: return .pretendard(.medium, size: 18)
+    case .m22: return .pretendard(.medium, size: 22)
+    case .sb12: return .pretendard(.medium, size: 12)
+    case .sb15: return .pretendard(.medium, size: 15)
+    case .sb16: return .pretendard(.medium, size: 16)
+    case .sb17: return .pretendard(.medium, size: 17)
+    case .sb20: return .pretendard(.medium, size: 20)
+    case .b22: return .pretendard(.bold, size: 22)
     case .sfRoundedR15: return .rounded(ofSize: 15, weight: .regular)
     case .sfR11: return .systemFont(ofSize: 11, weight: .regular)
     case .sfR13: return .systemFont(ofSize: 13, weight: .regular)
@@ -102,7 +137,16 @@ enum TypographyStyle {
     case .r12: return 16
     case .m10: return 12
     case .m13: return 16
+    case .m14: return 21
     case .m15: return 23
+    case .m18: return 27
+    case .m22: return 33
+    case .sb12: return 18
+    case .sb15: return 22
+    case .sb16: return 24
+    case .sb17: return 20
+    case .sb20: return 30
+    case .b22: return 33
     case .sfRoundedR15: return 18
     case .sfR11: return 13
     case .sfR13: return 16
@@ -115,8 +159,8 @@ enum TypographyStyle {
 
   var letterSpacing: CGFloat {
     switch self {
-    case .sfRoundedR15: return -0.4 // Figma 상 0인데 차이가 나서 매뉴얼하게 조정
-    case .sfSB15: return -0.05 // Figma 상 -0.2인데 차이가 나서 매뉴얼하게 조정 (네 배 차이)
+    case .sfRoundedR15: return -0.4  // Figma 상 0인데 차이가 나서 매뉴얼하게 조정
+    case .sfSB15: return -0.05  // Figma 상 -0.2인데 차이가 나서 매뉴얼하게 조정 (네 배 차이)
     default: return 0
     }
   }
