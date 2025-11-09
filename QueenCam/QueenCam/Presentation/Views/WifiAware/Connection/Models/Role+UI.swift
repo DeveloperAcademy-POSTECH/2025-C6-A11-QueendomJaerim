@@ -10,7 +10,7 @@ import Foundation
 extension Role {
   var displayName: String {
     switch self {
-    case .photographer: return "작가"
+    case .photographer: return "촬영"
     case .model: return "모델"
     }
   }
