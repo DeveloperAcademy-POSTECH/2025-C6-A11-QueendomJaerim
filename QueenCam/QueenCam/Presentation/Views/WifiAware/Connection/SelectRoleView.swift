@@ -54,9 +54,9 @@ extension SelectRoleView: View {
             didRoleSubmit(selectedRole)
           }
         } label: {
-          Text("기기 연결 시작")
-            .font(.pretendard(.medium, size: 16))
-            .foregroundColor(selectedRole == nil ? .gray : .white)
+          Text("연결하기")
+            .font(.pretendard(.semibold, size: 16))
+            .foregroundColor(.offWhite)
             .background(
               Capsule()
                 .foregroundStyle(.clear)
@@ -64,6 +64,8 @@ extension SelectRoleView: View {
             .frame(maxWidth: .infinity, maxHeight: 52)
         }
         .glassEffect(.regular)
+        .disabled(selectedRole == nil)
+        .opacity(selectedRole == nil ? 0.0 : 1.0)
       }
       .animation(.linear, value: selectedRole)
       .padding(16)
