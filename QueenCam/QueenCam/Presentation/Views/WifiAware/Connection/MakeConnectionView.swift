@@ -12,7 +12,7 @@ import WiFiAware
 
 struct MakeConnectionView {
   @Environment(\.dismiss) private var dismiss
-  
+
   let role: Role
   let networkState: NetworkState?
   let selectedPairedDevice: WAPairedDevice?
@@ -27,6 +27,9 @@ struct MakeConnectionView {
   // MARK: Colors
   let photographerTheme = Color(red: 0x14 / 255, green: 0xB1 / 255, blue: 0xBB / 255)
   let modelTheme = Color(red: 0xD8 / 255, green: 0xEB / 255, blue: 0x05 / 255)
+
+  // MARK: State
+  @State private var isShowingParingGuide: Bool = false
 }
 
 extension MakeConnectionView: View {
@@ -35,37 +38,64 @@ extension MakeConnectionView: View {
       ZStack {
         Color.black.ignoresSafeArea()
 
-        VStack(spacing: 0) {
-          ToolBar(role: role, changeRoleButtonDidTap: changeRoleButtonDidTap)
-
-          Spacer()
-            .frame(height: 20)
-
-          // MARK: - 주변 기기 찾기 버튼
-          DeviceDiscoveryButton(role: role, photographerTheme: photographerTheme, modelTheme: modelTheme)
-
-          Spacer()
-            .frame(height: 40)
-
-          // MARK: - 찾아낸 기기 리스트
-          PairedDevicesList(
-            pairedDevices: pairedDevices,
-            isPairing: { device in
-              selectedPairedDevice == device
-                && (networkState == .host(.publishing)
-                  || networkState == .viewer(.browsing)
-                  || networkState == .viewer(.connecting)
-                  || networkState == .viewer(.connected))
-            },
-            connectButtonDidTap: connectButtonDidTap
-          )
-          .frame(maxHeight: .infinity, alignment: .top)
+        if isShowingParingGuide {
+          pairingGuideView
+        } else {
+          makeConnectionControls
         }
-        .padding(.horizontal, 16)
-        .ignoresSafeArea(edges: .bottom)
       }
     }
-    .navigationBarTitleDisplayMode(.inline) // LargeTitle 때문에 레이아웃 깨지는 문제 수정
+  }
+}
+
+extension MakeConnectionView {
+  var pairingGuideView: some View {
+    ConnectionGuideView(
+      role: role,
+      didGuideComplete: {
+        isShowingParingGuide = false
+      },
+      backButtonDidTap: {
+        isShowingParingGuide = false
+      }
+    )
+  }
+}
+
+// MARK: 연결 진행 페이지
+extension MakeConnectionView {
+  var makeConnectionControls: some View {
+    NavigationStack {
+      VStack(spacing: 0) {
+        ToolBar(role: role, changeRoleButtonDidTap: changeRoleButtonDidTap)
+
+        Spacer()
+          .frame(height: 20)
+
+        // MARK: - 주변 기기 찾기 버튼
+        DeviceDiscoveryButton(role: role, photographerTheme: photographerTheme, modelTheme: modelTheme)
+
+        Spacer()
+          .frame(height: 40)
+
+        // MARK: - 찾아낸 기기 리스트
+        PairedDevicesList(
+          pairedDevices: pairedDevices,
+          isPairing: { device in
+            selectedPairedDevice == device
+              && (networkState == .host(.publishing)
+                || networkState == .viewer(.browsing)
+                || networkState == .viewer(.connecting)
+                || networkState == .viewer(.connected))
+          },
+          connectButtonDidTap: connectButtonDidTap
+        )
+        .frame(maxHeight: .infinity, alignment: .top)
+      }
+      .padding(.horizontal, 16)
+      .ignoresSafeArea(edges: .bottom)
+    }
+    .navigationBarTitleDisplayMode(.inline)  // LargeTitle 때문에 레이아웃 깨지는 문제 수정
     .toolbar {
       ToolbarItem(placement: .navigation) {
         Button("닫기", systemImage: "chevron.left") {
@@ -80,43 +110,7 @@ extension MakeConnectionView: View {
 
       ToolbarItem(placement: .topBarTrailing) {
         Button("가이드", systemImage: "questionmark.circle") {
-          //
-        }
-      }
-    }
-  }
-}
-
-extension MakeConnectionView {
-  struct DeviceDiscoveryButton: View {
-    let role: Role
-
-    // MARK: Colors
-    let photographerTheme: Color
-    let modelTheme: Color
-
-    // MARK: Logger
-    private let logger = Logger(
-      subsystem: Bundle.main.bundleIdentifier ?? "com.queendom.QueenCam",
-      category: "MakeConnectionView+DevicePicker"
-    )
-
-    var body: some View {
-      if role == .photographer {
-        DevicePairingView(.wifiAware(.connecting(to: .previewService, from: .userSpecifiedDevices))) {
-          DeviceDiscoveryButtonLabelView(themeColor: photographerTheme)
-        } fallback: {
-          Image(systemName: "xmark.circle")
-          Text("Unavailable")
-        }
-      } else {
-        DevicePicker(.wifiAware(.connecting(to: .userSpecifiedDevices, from: .previewService))) { endpoint in
-          logger.info("publisher did select endpoint - \(endpoint)")
-        } label: {
-          DeviceDiscoveryButtonLabelView(themeColor: modelTheme)
-        } fallback: {
-          Image(systemName: "xmark.circle")
-          Text("Unavailable")
+          isShowingParingGuide = true
         }
       }
     }

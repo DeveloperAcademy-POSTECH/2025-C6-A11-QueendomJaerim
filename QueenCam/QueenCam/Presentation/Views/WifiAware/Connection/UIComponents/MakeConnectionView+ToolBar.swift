@@ -41,20 +41,24 @@ extension MakeConnectionView.ToolBar: View {
 
       Spacer()
 
+      // 역할 바꾸기 버튼
       Button(action: changeRoleButtonDidTap) {
         HStack(alignment: .center, spacing: 4) {
           Text(role.currentModeLabel)
             .font(.pretendard(.medium, size: 14))
 
           Image(systemName: "arrow.trianglehead.2.clockwise.rotate.90")
+            .renderingMode(.template)
             .font(.system(size: 11))
         }
-        .foregroundStyle(changeRoleButtonForegroundColor)
-        .padding(.vertical, 12)
-        .padding(.leading, 19)
-        .padding(.trailing, 15)
+        .foregroundStyle(.gray900)
+        .padding(.vertical, 10)
+        .padding(.horizontal, 16)
+        .background(
+          Capsule()
+            .foregroundStyle(role == .model ? .modelPrimary : .photographerPrimary)
+        )
       }
-      .glassEffect(.regular)
     }
   }
 }
