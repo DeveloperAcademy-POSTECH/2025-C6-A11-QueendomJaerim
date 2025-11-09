@@ -19,6 +19,7 @@ extension MakeConnectionView {
     let titleLabelForegroundColor = Color(red: 0xD4 / 255, green: 0xD4 / 255, blue: 0xD4 / 255)
     let dividerColor = Color(red: 0xEB / 25, green: 0xEB / 25, blue: 0xEB / 25)
 
+    // MARK: Constants
     // 디바이스 수에 따라 UI가 바뀜. 바뀌는 기준 정의
     // 반드시 devicesCountsThreshold1 < devicesCountsThreshold2를 만족
     let devicesCountsThreshold1: Int = 2
@@ -46,7 +47,7 @@ extension MakeConnectionView.PairedDevicesList: View {
         .padding(.bottom, 16)
 
       GeometryReader { geometry in  // Spacer를 사용하기 위해 크기를 알아야 함
-        ScrollView {
+        ScrollView(showsIndicators: false) {
           HStack {  // 디바이스 전체 너비 스크롤
             Spacer()
           }
@@ -85,6 +86,7 @@ extension MakeConnectionView.PairedDevicesList: View {
               }
             }
 
+            // 페어링 기기 수 조건에 따라 앞 혹은 뒤에 Spacer
             if pairedDevices.count < devicesCountsThreshold2 {
               Spacer()
             }
@@ -92,22 +94,13 @@ extension MakeConnectionView.PairedDevicesList: View {
             // MARK: 안내 메시지
             switch pairedDevices.count {
             case 0..<devicesCountsThreshold1:
-              Text("친구와 연결하기 위해 먼저\n‘주변 기기 찾기’를 통해 친구를 등록해주세요.")
-                .multilineTextAlignment(.center)
-                .typo(.m15)
-                .foregroundStyle(.gray600)
+              guidingMessageView
                 .padding(.bottom, 300)
             case devicesCountsThreshold1..<devicesCountsThreshold2:
-              Text("친구와 연결하기 위해 먼저\n‘주변 기기 찾기’를 통해 친구를 등록해주세요.")
-                .multilineTextAlignment(.center)
-                .typo(.m15)
-                .foregroundStyle(.gray600)
+              guidingMessageView
                 .padding(.bottom, 240)
             case devicesCountsThreshold2...:
-              Text("친구와 연결하기 위해 먼저\n‘주변 기기 찾기’를 통해 친구를 등록해주세요.")
-                .multilineTextAlignment(.center)
-                .typo(.m15)
-                .foregroundStyle(.gray600)
+              guidingMessageView
                 .padding(.top, 60)
             default:  // should not reach
               Text("잘못된 범위")
@@ -121,6 +114,13 @@ extension MakeConnectionView.PairedDevicesList: View {
         }
       }
     }
+  }
+  
+  var guidingMessageView: some View {
+    Text("친구와 연결하기 위해 먼저\n‘주변 기기 찾기’를 통해 친구를 등록해주세요.")
+      .multilineTextAlignment(.center)
+      .typo(.m15)
+      .foregroundStyle(.gray600)
   }
 }
 

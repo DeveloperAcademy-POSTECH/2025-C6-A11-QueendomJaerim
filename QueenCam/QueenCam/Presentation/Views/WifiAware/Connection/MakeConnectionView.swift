@@ -59,12 +59,13 @@ extension MakeConnectionView: View {
             },
             connectButtonDidTap: connectButtonDidTap
           )
-
-          Spacer()
+          .frame(maxHeight: .infinity, alignment: .top)
         }
-        .padding(16)
+        .padding(.horizontal, 16)
+        .ignoresSafeArea(edges: .bottom)
       }
     }
+    .navigationBarTitleDisplayMode(.inline) // LargeTitle 때문에 레이아웃 깨지는 문제 수정
     .toolbar {
       ToolbarItem(placement: .navigation) {
         Button("닫기", systemImage: "chevron.left") {
