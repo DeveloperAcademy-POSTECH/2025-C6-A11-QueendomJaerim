@@ -9,14 +9,14 @@ import SwiftUI
 
 struct SelectRoleView {
   @Environment(\.dismiss) private var dismiss
-  
+
   let selectedRole: Role?
   let didRoleSelect: (Role) -> Void
   let didRoleSubmit: (Role) -> Void
 
   let individualSymbolOffset: CGFloat = 7.5
 
-  var symbolsContainerOffset: CGFloat { // 선택 시 가운데 정렬
+  var symbolsContainerOffset: CGFloat {  // 선택 시 가운데 정렬
     if selectedRole == .model {
       return -80 + individualSymbolOffset
     } else if selectedRole == .photographer {
@@ -75,13 +75,35 @@ extension SelectRoleView: View {
         }
       }
     }
+    .gesture(
+      DragGesture(minimumDistance: 30, coordinateSpace: .local)
+        .onEnded { value in
+          if abs(value.translation.width) > abs(value.translation.height) {  // 수평 스크롤 판별
+            self.didSwipe(direction: value.translation.width)
+          }
+        }
+    )
+  }
+}
+
+extension SelectRoleView {
+  func didSwipe(direction: CGFloat) {
+    guard selectedRole != nil else { return }  // 이미 역할이 선택된 경우만 스와이프하여 역할을 스위칭할 수 있음
+
+    if direction < .zero && selectedRole != .model {  // 왼쪽으로 스와이프한 경우
+      didRoleSelect(.model)
+    }
+
+    if direction > .zero && selectedRole != .photographer {  // 오른쪽으로 스와이프한 경우
+      didRoleSelect(.photographer)
+    }
   }
 }
 
 #Preview {
-  SelectRoleView(selectedRole: nil) { role in
+  SelectRoleView(selectedRole: nil) { _ in
     //
-  } didRoleSubmit: { role in
+  } didRoleSubmit: { _ in
     //
   }
 }
