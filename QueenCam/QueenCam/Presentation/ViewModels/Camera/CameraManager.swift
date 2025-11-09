@@ -31,7 +31,8 @@ final class CameraManager: NSObject {
 
   private let logger = QueenLogger(category: "CameraManager")
 
-  private var cameraDelegate: CameraDelegate?
+//  private var cameraDelegate: CameraDelegate?
+  private var inTrackingCameraDelegate: [Int64: CameraDelegate] = [:]
 
   var onPhotoCapture: ((UIImage) -> Void)?
   var onTapCameraSwitch: ((AVCaptureDevice.Position) -> Void)?
@@ -111,9 +112,21 @@ final class CameraManager: NSObject {
       logger.info("Capture -> photoOutput.isLivePhotoCaptureSupported: \(photoOutput.isLivePhotoCaptureSupported)")
       logger.info("Capture -> photoOutput.isLivePhotoCaptureEnabled: \(photoOutput.isLivePhotoCaptureEnabled)")
 
-      self.cameraDelegate = CameraDelegate(isCameraPosition: self.position) { photoOutput in
+      // 1
+      let uniqueID = photoSettings.uniqueID
+
+      // 2
+      let delegate = CameraDelegate(isCameraPosition: self.position) { [weak self] photoOutput in
+        guard let self else { return }
+
+        // 5
+        self.captureSessionQueue.async {
+          self.inTrackingCameraDelegate.removeValue(forKey: uniqueID)
+        }
+
         guard let photoOutput else { return }
 
+        // 6
         DispatchQueue.main.async {
           switch photoOutput {
           case .basicPhoto(let thumbnail, let imageData):
@@ -126,7 +139,10 @@ final class CameraManager: NSObject {
         self.sendPhoto(photoOutput)
       }
 
-      guard let delegate = self.cameraDelegate else { return }
+      // 3
+      self.inTrackingCameraDelegate[uniqueID] = delegate
+
+      // 4
       self.photoOutput.capturePhoto(with: photoSettings, delegate: delegate)
     }
   }
@@ -273,7 +289,7 @@ extension CameraManager {
           setupPhotoOutput()
 
           session.commitConfiguration()
-          
+
           photoOutput.isLivePhotoCaptureEnabled = photoOutput.isLivePhotoCaptureSupported
 
           logger.info("Switch -> photoOutput.isLivePhotoCaptureSupported: \(photoOutput.isLivePhotoCaptureSupported)")
