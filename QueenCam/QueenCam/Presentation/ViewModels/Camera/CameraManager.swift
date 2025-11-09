@@ -31,7 +31,7 @@ final class CameraManager: NSObject {
 
   private let logger = QueenLogger(category: "CameraManager")
 
-//  private var cameraDelegate: CameraDelegate?
+  //  private var cameraDelegate: CameraDelegate?
   private var inTrackingCameraDelegate: [Int64: CameraDelegate] = [:]
 
   var onPhotoCapture: ((UIImage) -> Void)?
@@ -104,6 +104,7 @@ final class CameraManager: NSObject {
       }
 
       photoSettings.isAutoRedEyeReductionEnabled = true
+      photoSettings.photoQualityPrioritization = .speed
 
       if self.isLivePhotoOn, self.photoOutput.isLivePhotoCaptureEnabled {
         photoSettings.livePhotoMovieFileURL = URL.movieFileURL
@@ -218,8 +219,23 @@ extension CameraManager {
   private func setupPhotoOutput() {
     guard session.canAddOutput(photoOutput) else { return }
     session.addOutput(photoOutput)
-    photoOutput.maxPhotoQualityPrioritization = .balanced
+
     photoOutput.isLivePhotoCaptureEnabled = photoOutput.isLivePhotoCaptureSupported
+    photoOutput.maxPhotoQualityPrioritization = .quality
+
+    if photoOutput.isResponsiveCaptureSupported {
+      photoOutput.isResponsiveCaptureEnabled = true
+    }
+
+    if photoOutput.isFastCapturePrioritizationSupported {
+
+      photoOutput.isFastCapturePrioritizationEnabled = true
+    }
+
+    if photoOutput.isAutoDeferredPhotoDeliverySupported {
+      photoOutput.isAutoDeferredPhotoDeliveryEnabled = true
+    }
+
   }
 
   private func setupPreviewCaptureOutput() {

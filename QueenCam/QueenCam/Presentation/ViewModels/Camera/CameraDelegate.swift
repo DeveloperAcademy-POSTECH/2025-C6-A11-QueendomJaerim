@@ -19,6 +19,22 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
 
   func photoOutput(
     _ output: AVCapturePhotoOutput,
+    didFinishCapturingDeferredPhotoProxy deferredPhotoProxy: AVCaptureDeferredPhotoProxy?,
+    error: (any Error)?
+  ) {
+    guard error == nil else {
+      logger.error("Deferred Photo Proxy Error: \(error)")
+      return
+    }
+
+    guard deferredPhotoProxy != nil else {
+      return
+    }
+    logger.info("Deffer processing started")
+  }
+
+  func photoOutput(
+    _ output: AVCapturePhotoOutput,
     didFinishProcessingPhoto photo: AVCapturePhoto,
     error: (any Error)?
   ) {
