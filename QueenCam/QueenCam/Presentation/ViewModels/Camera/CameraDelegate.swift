@@ -12,9 +12,16 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
   private var lastStillImageData: Data?
   private var livePhotoMovieURL: URL?
 
+  private var isLivePhoto: Bool = false
+
   init(isCameraPosition: AVCaptureDevice.Position, completion: @escaping (PhotoOuput?) -> Void) {
     self.isCameraPosition = isCameraPosition
     self.completion = completion
+  }
+
+  func photoOutput(_ output: AVCapturePhotoOutput, willBeginCaptureFor resolvedSettings: AVCaptureResolvedPhotoSettings) {
+    isLivePhoto = (resolvedSettings.livePhotoMovieDimensions.width > 0 && resolvedSettings.livePhotoMovieDimensions.height > 0)
+
   }
 
   func photoOutput(
@@ -56,10 +63,7 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
     lastThumbnailImage = image
     lastStillImageData = imageData
 
-    let capturingLivePhoto =
-      (photo.resolvedSettings.livePhotoMovieDimensions.width > 0 && photo.resolvedSettings.livePhotoMovieDimensions.height > 0)
-
-    if !capturingLivePhoto {
+    if !isLivePhoto {
       PhotoLibraryHelpers.saveToPhotoLibrary(image)
       completion(.basicPhoto(thumbnail: image, imageData: imageData))
     }
