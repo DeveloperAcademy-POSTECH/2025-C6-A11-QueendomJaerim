@@ -63,6 +63,10 @@ final class CameraViewModel {
     cameraManager.onReadinessState = { [weak self] readiness in
       self?.handleReadiness(readiness: readiness)
     }
+    
+    cameraManager.onPhotoCapture = { [weak self] image in
+      self?.lastImage = image
+    }
 
     cameraManager.onTapCameraSwitch = { [weak self] position in
       self?.cameraPostion = position
