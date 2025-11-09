@@ -11,8 +11,8 @@ struct ConnectionGuideView {
   @Environment(\.router) private var router
 
   @State var role: Role
-  @State private var activeIndex: Int? = 0
-  private var currentGuides: [WifiAwareGuide] {
+  @State var activeIndex: Int? = 0
+  var currentGuides: [WifiAwareGuide] {
     if role == .photographer {
       return WifiAwareGuide.photographerGuides
     } else if role == .model {
@@ -21,9 +21,9 @@ struct ConnectionGuideView {
     return []  // should not reach
   }
 
-  @State private var lastPageVisited: Bool = false
+  @State var lastPageVisited: Bool = false
 
-  private let mainButtonHeight: CGFloat = 52
+  let mainButtonHeight: CGFloat = 52
 }
 
 extension ConnectionGuideView: View {
@@ -56,84 +56,15 @@ extension ConnectionGuideView: View {
       }
     }
   }
-
-  var guidePages: some View {
-    GeometryReader { geometry in
-      ScrollView(.horizontal, showsIndicators: false) {
-        HStack(spacing: 0) {
-          ForEach(0..<currentGuides.count, id: \.self) { index in
-            ConnectionGuidePage(guide: currentGuides[index])
-              .frame(width: geometry.size.width)
-          }
-        }
-        .scrollTargetLayout()
-      }
-      .scrollTargetBehavior(.paging)
-      .scrollPosition(id: $activeIndex)
-    }
-  }
-
-  var footer: some View {
-    VStack(spacing: 0) {
-      Spacer()
-
-      pagingControl
-
-      Spacer()
-        .frame(height: 36)
-
-      Button {
-        startConnectingButtonDidTap()
-      } label: {
-        Text("연결 시작하기")
-          .typo(.sb16)
-          .foregroundColor(.offWhite)
-          .background(
-            Capsule()
-              .foregroundStyle(.clear)
-          )
-          .frame(maxWidth: .infinity, maxHeight: mainButtonHeight)
-      }
-      .glassEffect()
-      .opacity(lastPageVisited ? 1.0 : 0.0)
-
-      Spacer()
-        .frame(height: 48)
-    }
-    .animation(.easeInOut, value: lastPageVisited)
-  }
 }
 
+// MARK: - User Intents
 extension ConnectionGuideView {
-  var pagingControl: some View {
-    HStack {
-      ForEach(0..<currentGuides.count, id: \.self) { index in
-        let regularColor = Color(red: 0x2E / 255, green: 0x2E / 255, blue: 0x2E / 255)
-        let selectedColor = Color(red: 0x97 / 255, green: 0x97 / 255, blue: 0x97 / 255)
-
-        Button {
-          withAnimation {
-            self.activeIndex = index
-          }
-        } label: {
-          Image(systemName: "circle.fill")
-            .resizable()
-            .foregroundStyle(self.activeIndex == index ? selectedColor : regularColor)
-            .frame(width: 8, height: 8)
-        }
-      }
-    }
-  }
-}
-
-extension ConnectionGuideView {
-  // MARK: - User Intents
-
-  private func startConnectingButtonDidTap() {
+  func startConnectingButtonDidTap() {
     router.push(.makeConnection)
   }
 
-  private func skipButtonDidTap() {
+  func skipButtonDidTap() {
     withAnimation {
       activeIndex = currentGuides.count - 1
     }
