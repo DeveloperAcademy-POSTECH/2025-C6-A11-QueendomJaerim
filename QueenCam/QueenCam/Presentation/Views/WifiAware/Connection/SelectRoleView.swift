@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct SelectRoleView: View {
+struct SelectRoleView {
   let selectedRole: Role?
   let didRoleSelect: (Role) -> Void
   let didRoleSubmit: (Role) -> Void
@@ -23,7 +23,9 @@ struct SelectRoleView: View {
       return .zero
     }
   }
+}
 
+extension SelectRoleView: View {
   var body: some View {
     ZStack {
       Color.black.ignoresSafeArea()
@@ -39,48 +41,37 @@ struct SelectRoleView: View {
             .multilineTextAlignment(.center)
             .font(.pretendard(.medium, size: 15))
         }
-        .foregroundStyle(.offWhite)
+        .foregroundStyle(selectedRole == nil ? .systemWhite : .gray400)
 
         Spacer()
           .frame(height: 38)
 
-        HStack(spacing: 0) {
-          RoleSelectButton {
-            didRoleSelect(.photographer)
-          }
-          .selected(selectedRole == nil || selectedRole == .photographer)
-          .role(.photographer)
-          .offset(.init(width: individualSymbolOffset, height: 0))
-
-          RoleSelectButton {
-            didRoleSelect(.model)
-          }
-          .selected(selectedRole == nil || selectedRole == .model)
-          .role(.model)
-          .offset(.init(width: -individualSymbolOffset, height: 0))
-        }
-        .offset(.init(width: symbolsContainerOffset, height: 0))
+        roleSelectButtons
 
         Spacer()
           .frame(height: 38)
 
         if selectedRole == nil {
-          HStack {
-            Spacer()
+          VStack(spacing: 15) {
+            HStack {
+              Spacer()
 
-            Text("촬영")
+              Text(Role.photographer.displayName)
 
-            Spacer()
+              Spacer()
 
-            Text("모델")
+              Text(Role.model.displayName)
 
-            Spacer()
-          }
-          .typo(.sb20)
-        } else {
-          Text(selectedRole?.displayName ?? "")
+              Spacer()
+            }
             .typo(.sb20)
-            .foregroundStyle(.white)
+
+            Text("\n") // invisible
+              .typo(.sb15)
+          }
+          .foregroundStyle(.systemWhite)
+        } else {
+          RoleDescriptionView(role: selectedRole ?? .model)
         }
 
         Spacer()
@@ -107,11 +98,32 @@ struct SelectRoleView: View {
   }
 }
 
+extension SelectRoleView {
+  /// 가운데 역할 선택 버튼
+  var roleSelectButtons: some View {
+    HStack(spacing: 0) {
+      RoleSelectButton {
+        didRoleSelect(.photographer)
+      }
+      .selected(selectedRole == nil || selectedRole == .photographer)
+      .role(.photographer)
+      .offset(.init(width: individualSymbolOffset, height: 0))
+
+      RoleSelectButton {
+        didRoleSelect(.model)
+      }
+      .selected(selectedRole == nil || selectedRole == .model)
+      .role(.model)
+      .offset(.init(width: -individualSymbolOffset, height: 0))
+    }
+    .offset(.init(width: symbolsContainerOffset, height: 0))
+  }
+}
+
 #Preview {
   SelectRoleView(selectedRole: nil) { role in
     //
   } didRoleSubmit: { role in
     //
   }
-
 }
