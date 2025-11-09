@@ -12,7 +12,7 @@ struct SelectRoleView {
 
   let selectedRole: Role?
   let didRoleSelect: (Role) -> Void
-  let didRoleSubmit: (Role) -> Void
+  let didRoleSubmit: () -> Void
 
   let individualSymbolOffset: CGFloat = 7.5
 
@@ -98,8 +98,8 @@ extension SelectRoleView: View {
     }
     .onChange(of: loadingAnimationDidComplete) { _, newValue in
       if newValue {
-        if let selectedRole {
-          self.didRoleSubmit(selectedRole)
+        if selectedRole != nil {
+          self.didRoleSubmit()
         }
 
         Task { // 다음 사이클에서 상태 초기화
@@ -128,7 +128,7 @@ extension SelectRoleView {
 #Preview {
   SelectRoleView(selectedRole: nil) { _ in
     //
-  } didRoleSubmit: { _ in
+  } didRoleSubmit: {
     //
   }
 }

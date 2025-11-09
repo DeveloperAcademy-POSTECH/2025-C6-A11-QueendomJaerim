@@ -11,6 +11,8 @@ import SwiftUI
 import WiFiAware
 
 struct MakeConnectionView {
+  @Environment(\.dismiss) private var dismiss
+  
   let role: Role
   let networkState: NetworkState?
   let selectedPairedDevice: WAPairedDevice?
@@ -29,46 +31,54 @@ struct MakeConnectionView {
 
 extension MakeConnectionView: View {
   var body: some View {
-    ZStack {
-      Color.black.ignoresSafeArea()
+    NavigationStack {
+      ZStack {
+        Color.black.ignoresSafeArea()
 
-      VStack(spacing: 0) {
-        ToolBar(role: role, changeRoleButtonDidTap: changeRoleButtonDidTap)
+        VStack(spacing: 0) {
+          ToolBar(role: role, changeRoleButtonDidTap: changeRoleButtonDidTap)
 
-        Spacer()
-          .frame(height: 20)
+          Spacer()
+            .frame(height: 20)
 
-        // MARK: - 주변 기기 찾기 버튼
-        DeviceDiscoveryButton(role: role, photographerTheme: photographerTheme, modelTheme: modelTheme)
+          // MARK: - 주변 기기 찾기 버튼
+          DeviceDiscoveryButton(role: role, photographerTheme: photographerTheme, modelTheme: modelTheme)
 
-        Spacer()
-          .frame(height: 40)
+          Spacer()
+            .frame(height: 40)
 
-        // MARK: - 찾아낸 기기 리스트
-        PairedDevicesList(
-          pairedDevices: pairedDevices,
-          isPairing: { device in
-            selectedPairedDevice == device
-              && (networkState == .host(.publishing)
-                || networkState == .viewer(.browsing)
-                || networkState == .viewer(.connecting)
-                || networkState == .viewer(.connected))
-          },
-          connectButtonDidTap: connectButtonDidTap
-        )
+          // MARK: - 찾아낸 기기 리스트
+          PairedDevicesList(
+            pairedDevices: pairedDevices,
+            isPairing: { device in
+              selectedPairedDevice == device
+                && (networkState == .host(.publishing)
+                  || networkState == .viewer(.browsing)
+                  || networkState == .viewer(.connecting)
+                  || networkState == .viewer(.connected))
+            },
+            connectButtonDidTap: connectButtonDidTap
+          )
 
-        Spacer()
+          Spacer()
+        }
+        .padding(16)
       }
-      .padding(16)
     }
     .toolbar {
+      ToolbarItem(placement: .navigation) {
+        Button("닫기", systemImage: "chevron.left") {
+          dismiss()
+        }
+      }
+
       ToolbarItem(placement: .principal) {
         Text("기기 연결하기")
           .foregroundStyle(.offWhite)
       }
 
       ToolbarItem(placement: .topBarTrailing) {
-        Button("Infomation", systemImage: "questionmark.circle") {
+        Button("가이드", systemImage: "questionmark.circle") {
           //
         }
       }

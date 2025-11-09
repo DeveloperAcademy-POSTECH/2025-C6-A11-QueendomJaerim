@@ -9,34 +9,63 @@ import DeviceDiscoveryUI
 import SwiftUI
 import WiFiAware
 
-struct ConnectionView: View {
+struct ConnectionView {
   @State private var router = NavigationRouter()
   @Environment(\.dismiss) var dismiss
   var viewModel: ConnectionViewModel
   var previewStreamingViewModel: PreviewModel
 
+  /// 사용자가 선택중인 역할 (아직 확정된 것은 아님)
   @State private var activeRole: Role?
+
+  /// 가이드를 보여줘야하는지 여부
+  @State private var shouldGuideShow: Bool = false
 }
 
-extension ConnectionView {
+extension ConnectionView: View {
   var body: some View {
-    NavigationStack(path: $router.path) {
-      SelectRoleView(
-        selectedRole: activeRole,
-        didRoleSelect: { role in
-          if role == activeRole {
-            activeRole = nil
-          } else {
-            activeRole = role
+    NavigationStack {
+      if let selectedRole = viewModel.role {
+        MakeConnectionView(
+          role: selectedRole,
+          networkState: viewModel.networkState,
+          selectedPairedDevice: viewModel.selectedPairedDevice,
+          pairedDevices: viewModel.pairedDevices,
+          changeRoleButtonDidTap: {
+            viewModel.selectRole(for: selectedRole.counterpart)
+          },
+          connectButtonDidTap: { device in
+            viewModel.connectButtonDidTap(for: device)
           }
-        },
-        didRoleSubmit: { role in
-          viewModel.selectRole(for: role)
-          router.push(.connectionGuide)
+        )
+      } else {
+        if shouldGuideShow, let activeRole {
+          ConnectionGuideView(
+            role: activeRole,
+            didGuideComplete: {
+              shouldGuideShow = false
+              viewModel.selectRole(for: activeRole) // 가이드가 끝나면 역할 확정
+            },
+            backButtonDidTap: {
+              shouldGuideShow = false
+              viewModel.selectRole(for: nil)
+            }
+          )
+        } else {
+          SelectRoleView(
+            selectedRole: activeRole,
+            didRoleSelect: { role in
+              if role == activeRole {
+                activeRole = nil
+              } else {
+                activeRole = role
+              }
+            },
+            didRoleSubmit: {
+              shouldGuideShow = true // 역할 선택 버튼을 누르면 가이드를 보여줌
+            }
+          )
         }
-      )
-      .navigationDestination(for: Route.self) { route in
-        ConnectionNavigatedView(route: route, connectionViewModel: viewModel)
       }
     }
     .task {
@@ -46,7 +75,6 @@ extension ConnectionView {
       viewModel.connectionViewDisappear()
     }
     .onChange(of: viewModel.connections) { _, newValue in  // 연결 완료
-      
       if !newValue.isEmpty {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
           dismiss()

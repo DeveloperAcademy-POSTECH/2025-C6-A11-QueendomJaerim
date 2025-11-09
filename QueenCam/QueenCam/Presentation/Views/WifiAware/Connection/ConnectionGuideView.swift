@@ -8,8 +8,6 @@
 import SwiftUI
 
 struct ConnectionGuideView {
-  @Environment(\.router) private var router
-
   @State var role: Role
   @State var activeIndex: Int? = 0
   var currentGuides: [WifiAwareGuide] {
@@ -24,16 +22,22 @@ struct ConnectionGuideView {
   @State var lastPageVisited: Bool = false
 
   let mainButtonHeight: CGFloat = 52
+
+  let didGuideComplete: () -> Void
+
+  let backButtonDidTap: () -> Void
 }
 
 extension ConnectionGuideView: View {
   var body: some View {
-    ZStack {
-      Color.black.ignoresSafeArea()
+    NavigationStack {
+      ZStack {
+        Color.black.ignoresSafeArea()
 
-      guidePages
+        guidePages
 
-      footer
+        footer
+      }
     }
     .onChange(of: activeIndex) { _, newValue in
       if newValue == currentGuides.count - 1 {
@@ -42,16 +46,24 @@ extension ConnectionGuideView: View {
     }
     .ignoresSafeArea()
     .toolbar {
-      if activeIndex != currentGuides.count - 1 {
-        Button {
-          skipButtonDidTap()
-        } label: {
-          Text("건너뛰기")
-            .typo(.m15)
-            .padding(.top, 10)
-            .padding(.bottom, 11)
-            .padding(.horizontal, 4)
-            .foregroundStyle(.gray400)
+      ToolbarItem(placement: .navigation) {
+        Button("뒤로가기", systemImage: "chevron.left") {
+          backButtonDidTap()
+        }
+      }
+
+      ToolbarItem(placement: .topBarTrailing) {
+        if activeIndex != currentGuides.count - 1 {
+          Button {
+            skipButtonDidTap()
+          } label: {
+            Text("건너뛰기")
+              .typo(.m15)
+              .padding(.top, 10)
+              .padding(.bottom, 11)
+              .padding(.horizontal, 4)
+              .foregroundStyle(.gray400)
+          }
         }
       }
     }
@@ -61,7 +73,7 @@ extension ConnectionGuideView: View {
 // MARK: - User Intents
 extension ConnectionGuideView {
   func startConnectingButtonDidTap() {
-    router.push(.makeConnection)
+    didGuideComplete()
   }
 
   func skipButtonDidTap() {
@@ -72,5 +84,9 @@ extension ConnectionGuideView {
 }
 
 #Preview {
-  ConnectionGuideView(role: .model)
+  ConnectionGuideView(
+    role: .model,
+    didGuideComplete: {},
+    backButtonDidTap: {}
+  )
 }
