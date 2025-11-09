@@ -37,6 +37,9 @@ final class CameraManager: NSObject {
   var onPhotoCapture: ((UIImage) -> Void)?
   var onTapCameraSwitch: ((AVCaptureDevice.Position) -> Void)?
 
+  // 카메라 촬영이 준비되는 상태 추적
+  var onReadinessState: ((AVCapturePhotoOutput.CaptureReadiness) -> Void)?
+
   init(previewCaptureService: PreviewCaptureService, networkService: NetworkServiceProtocol) {
     self.previewCaptureService = previewCaptureService
     self.networkService = networkService
@@ -236,6 +239,15 @@ extension CameraManager {
       photoOutput.isAutoDeferredPhotoDeliveryEnabled = true
     }
 
+    photoOutput.publisher(for: \.captureReadiness)
+      .sink { [weak self] readiness in
+        self?.logger.info("📷 Capture readiness: \(readiness)")
+
+        DispatchQueue.main.async { [weak self] in
+          self?.onReadinessState?(readiness)
+        }
+      }
+      .store(in: &cancellables)
   }
 
   private func setupPreviewCaptureOutput() {

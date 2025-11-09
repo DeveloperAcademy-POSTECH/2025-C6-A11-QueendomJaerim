@@ -484,6 +484,8 @@ extension CameraView: View {
                   .stroke(.gray900, lineWidth: 6)
                   .frame(width: 80, height: 80)
               }
+              .disabled(!cameraViewModel.isCaptureButtonEnabled)
+
 
               Spacer()
 

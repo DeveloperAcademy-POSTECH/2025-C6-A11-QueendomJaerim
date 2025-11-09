@@ -1,4 +1,5 @@
 import AVFoundation
+import Combine
 import Foundation
 import Photos
 import UIKit
@@ -25,6 +26,8 @@ final class CameraViewModel {
   var cameraPostion: AVCaptureDevice.Position?
 
   var errorMessage = ""
+
+  var isCaptureButtonEnabled: Bool = true
 
   // MARK: Thumbnail
   private let cachingManger = PHCachingImageManager()
@@ -57,8 +60,8 @@ final class CameraViewModel {
     cameraManager.isLivePhotoOn = isLivePhotoOn
     cameraManager.flashMode = isFlashMode.convertAVCaptureDeviceFlashMode
 
-    cameraManager.onPhotoCapture = { [weak self] image in
-      self?.lastImage = image
+    cameraManager.onReadinessState = { [weak self] readiness in
+      self?.handleReadiness(readiness: readiness)
     }
 
     cameraManager.onTapCameraSwitch = { [weak self] position in
@@ -183,7 +186,7 @@ final class CameraViewModel {
 
     await fetchThumbnail()
   }
-  
+
   func showGuidingToast(isRemoteGuideHidden: Bool) {
     if isRemoteGuideHidden {
       notificationService.registerNotification(.make(type: .turnOffGuiding))
@@ -194,6 +197,36 @@ final class CameraViewModel {
 }
 
 extension CameraViewModel {
+  private func handleReadiness(readiness: AVCapturePhotoOutput.CaptureReadiness) {
+    switch readiness {
+    // 세션이 실행 중이 아닐 때
+    case .sessionNotRunning:
+      isCaptureButtonEnabled = false
+
+    // 촬영 준비 완료 (가장 중요)
+    // 플래시도 충전되어 있고, 이전 작업 처리도 모두 끝났습니다.
+    case .ready:
+      isCaptureButtonEnabled = true
+
+    // 일시적으로 준비 안 됨
+    // 시스템이 다음 캡처를 받을 수 없는 '일시적인' 상태입니다.
+    case .notReadyMomentarily:
+      isCaptureButtonEnabled = false
+
+    // 캡처 대기 중
+    case .notReadyWaitingForCapture:
+      isCaptureButtonEnabled = false
+
+    // 처리 대기 중
+    // 시스템이 '이전 캡처'를 아직 처리 중인 상태입니다.
+    case .notReadyWaitingForProcessing:
+      isCaptureButtonEnabled = false
+
+    @unknown default:
+      isCaptureButtonEnabled = false
+    }
+  }
+
   private func fetchThumbnail() async {
     let fetchOptions = PHFetchOptions()
     fetchOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
