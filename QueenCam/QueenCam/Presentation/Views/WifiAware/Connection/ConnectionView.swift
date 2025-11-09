@@ -25,46 +25,13 @@ struct ConnectionView {
 extension ConnectionView: View {
   var body: some View {
     NavigationStack {
-      if let selectedRole = viewModel.role {
-        MakeConnectionView(
-          role: selectedRole,
-          networkState: viewModel.networkState,
-          selectedPairedDevice: viewModel.selectedPairedDevice,
-          pairedDevices: viewModel.pairedDevices,
-          changeRoleButtonDidTap: {
-            viewModel.selectRole(for: selectedRole.counterpart)
-          },
-          connectButtonDidTap: { device in
-            viewModel.connectButtonDidTap(for: device)
-          }
-        )
+      if viewModel.role != nil {
+        makeConnectionView
       } else {
-        if shouldGuideShow, let activeRole {
-          ConnectionGuideView(
-            role: activeRole,
-            didGuideComplete: {
-              shouldGuideShow = false
-              viewModel.selectRole(for: activeRole) // 가이드가 끝나면 역할 확정
-            },
-            backButtonDidTap: {
-              shouldGuideShow = false
-              viewModel.selectRole(for: nil)
-            }
-          )
+        if shouldGuideShow && activeRole != nil {
+          connectionGuideView
         } else {
-          SelectRoleView(
-            selectedRole: activeRole,
-            didRoleSelect: { role in
-              if role == activeRole {
-                activeRole = nil
-              } else {
-                activeRole = role
-              }
-            },
-            didRoleSubmit: {
-              shouldGuideShow = true // 역할 선택 버튼을 누르면 가이드를 보여줌
-            }
-          )
+          selectRoleView
         }
       }
     }
@@ -82,6 +49,65 @@ extension ConnectionView: View {
       }
     }
     .environment(\.router, router)
+  }
+}
+
+extension ConnectionView {
+  // MARK: Subviews
+  
+  @ViewBuilder
+  var makeConnectionView: some View {
+    if let selectedRole = viewModel.role {
+      MakeConnectionView(
+        role: selectedRole,
+        networkState: viewModel.networkState,
+        selectedPairedDevice: viewModel.selectedPairedDevice,
+        pairedDevices: viewModel.pairedDevices,
+        changeRoleButtonDidTap: {
+          viewModel.selectRole(for: selectedRole.counterpart)
+        },
+        connectButtonDidTap: { device in
+          viewModel.connectButtonDidTap(for: device)
+        }
+      )
+    } else { // should not reach
+      Text("역할이 선택되지 않았습니다")
+    }
+  }
+
+  @ViewBuilder
+  var connectionGuideView: some View {
+    if let activeRole {
+      ConnectionGuideView(
+        role: activeRole,
+        didGuideComplete: {
+          shouldGuideShow = false
+          viewModel.selectRole(for: activeRole) // 가이드가 끝나면 역할 확정
+        },
+        backButtonDidTap: {
+          shouldGuideShow = false
+          viewModel.selectRole(for: nil)
+        }
+      )
+    } else {
+      Text("역할이 선택되지 않았습니다")
+    }
+  }
+
+  var selectRoleView: some View {
+    SelectRoleView(
+      selectedRole: activeRole,
+      didRoleSelect: { role in
+        if role == activeRole {
+          activeRole = nil
+        } else {
+          activeRole = role
+        }
+      },
+      didRoleSubmit: {
+        shouldGuideShow = true // 역할 선택 버튼을 누르면 가이드를 보여줌
+      }
+    )
   }
 }
 
