@@ -25,66 +25,89 @@ struct SelectRoleView {
       return .zero
     }
   }
+  
+  @State private var isShowLoadingAnimation: Bool = false
+  @State private var loadingAnimationDidComplete: Bool = false
 }
 
 extension SelectRoleView: View {
   var body: some View {
     ZStack {
       Color.black.ignoresSafeArea()
-
-      VStack {
-        Spacer()
-
-        header
-
-        Spacer()
-          .frame(height: 38)
-
-        roleSelectButtons
-
-        Spacer()
-          .frame(height: 38)
-
-        roleDescriptions
-
-        Spacer()
-
-        Button {
-          if let selectedRole {
-            didRoleSubmit(selectedRole)
-          }
-        } label: {
-          Text("연결하기")
-            .font(.pretendard(.semibold, size: 16))
-            .foregroundColor(.offWhite)
-            .background(
-              Capsule()
-                .foregroundStyle(.clear)
-            )
-            .frame(maxWidth: .infinity, maxHeight: 52)
+      
+      if isShowLoadingAnimation {
+        TransitionAnimationView {
+          self.loadingAnimationDidComplete = true
         }
-        .glassEffect(.regular)
-        .disabled(selectedRole == nil)
-        .opacity(selectedRole == nil ? 0.0 : 1.0)
+      } else {
+        VStack {
+          Spacer()
+
+          header
+
+          Spacer()
+            .frame(height: 38)
+
+          roleSelectButtons
+
+          Spacer()
+            .frame(height: 38)
+
+          roleDescriptions
+
+          Spacer()
+
+          Button {
+            if let selectedRole {
+              isShowLoadingAnimation = true
+            }
+          } label: {
+            Text("연결하기")
+              .font(.pretendard(.semibold, size: 16))
+              .foregroundColor(.offWhite)
+              .background(
+                Capsule()
+                  .foregroundStyle(.clear)
+              )
+              .frame(maxWidth: .infinity, maxHeight: 52)
+          }
+          .glassEffect(.regular)
+          .disabled(selectedRole == nil)
+          .opacity(selectedRole == nil ? 0.0 : 1.0)
+        }
+        .padding(16)
+        .animation(.linear, value: selectedRole)
+        .gesture(
+          DragGesture(minimumDistance: 30, coordinateSpace: .local)
+            .onEnded { value in
+              if abs(value.translation.width) > abs(value.translation.height) {  // 수평 스크롤 판별
+                self.didSwipe(direction: value.translation.width)
+              }
+            }
+        )
       }
-      .animation(.linear, value: selectedRole)
-      .padding(16)
     }
     .toolbar {
       ToolbarItem(placement: .navigation) {
-        Button("닫기", systemImage: "chevron.left") {
-          dismiss()
+        if !isShowLoadingAnimation {
+          Button("닫기", systemImage: "chevron.left") {
+            dismiss()
+          }
         }
       }
     }
-    .gesture(
-      DragGesture(minimumDistance: 30, coordinateSpace: .local)
-        .onEnded { value in
-          if abs(value.translation.width) > abs(value.translation.height) {  // 수평 스크롤 판별
-            self.didSwipe(direction: value.translation.width)
-          }
+    .onChange(of: loadingAnimationDidComplete) { _, newValue in
+      if newValue {
+        if let selectedRole {
+          self.didRoleSubmit(selectedRole)
         }
-    )
+
+        Task { // 다음 사이클에서 상태 초기화
+          self.isShowLoadingAnimation = false
+          self.loadingAnimationDidComplete = false
+        }
+      }
+    }
   }
 }
 
