@@ -17,11 +17,18 @@ struct MakeConnectionView {
   let networkState: NetworkState?
   let selectedPairedDevice: WAPairedDevice?
   let pairedDevices: [WAPairedDevice]
+  let isConnected: Bool
   let changeRoleButtonDidTap: () -> Void
   let connectButtonDidTap: (WAPairedDevice) -> Void
 
   private var myDeviceName: String {
     UIDevice.current.name
+  }
+  
+  private var isPairing: Bool {
+    networkState == .host(.publishing)
+      || networkState == .viewer(.browsing)
+      || networkState == .viewer(.connecting)
   }
 
   // MARK: Colors
@@ -81,13 +88,9 @@ extension MakeConnectionView {
         // MARK: - 찾아낸 기기 리스트
         PairedDevicesList(
           pairedDevices: pairedDevices,
-          isPairing: { device in
-            selectedPairedDevice == device
-              && (networkState == .host(.publishing)
-                || networkState == .viewer(.browsing)
-                || networkState == .viewer(.connecting)
-                || networkState == .viewer(.connected))
-          },
+          isPairing: isPairing,
+          isConnected: isConnected,
+          selectedDevice: selectedPairedDevice,
           connectButtonDidTap: connectButtonDidTap
         )
         .frame(maxHeight: .infinity, alignment: .top)
@@ -123,6 +126,7 @@ extension MakeConnectionView {
     networkState: .host(.stopped),
     selectedPairedDevice: nil,
     pairedDevices: [],
+    isConnected: false,
     changeRoleButtonDidTap: {},
     connectButtonDidTap: { _ in }
   )

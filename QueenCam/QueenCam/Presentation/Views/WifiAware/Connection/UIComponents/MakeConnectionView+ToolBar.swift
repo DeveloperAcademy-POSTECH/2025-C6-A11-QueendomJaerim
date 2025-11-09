@@ -67,7 +67,7 @@ private extension Role {
   var currentModeLabel: String {
     switch self {
     case .model: "모델 모드"
-    case .photographer: "작가 모드"
+    case .photographer: "촬영 모드"
     }
   }
 }

@@ -11,19 +11,25 @@ import WiFiAware
 extension MakeConnectionView {
   struct PairedDevicesList {
     let pairedDevices: [WAPairedDevice]
-    /// 특정 디바이스에 대해 페어링 중인지 판단하는 클로져. true를 반환하면 프로그레스 뷰를 해당 디바이스 옆에 띄운다.
-    let isPairing: (_ device: WAPairedDevice) -> Bool
+    let isPairing: Bool
+    let isConnected: Bool
+    /// 특정 디바이스가 선택된 디바이스인지 여부를 반환하는 클로져.. true를 반환하면 프로그레스 뷰를 해당 디바이스 옆에 띄운다.
+    let selectedDevice: WAPairedDevice?
     let connectButtonDidTap: (WAPairedDevice) -> Void
 
     // MARK: Colors
     let titleLabelForegroundColor = Color(red: 0xD4 / 255, green: 0xD4 / 255, blue: 0xD4 / 255)
     let dividerColor = Color(red: 0xEB / 25, green: 0xEB / 25, blue: 0xEB / 25)
+    let checkmarkBackgroundColor = Color(red: 0x27 / 255, green: 0xC8 / 255, blue: 0x40 / 255)
 
     // MARK: Constants
     // 디바이스 수에 따라 UI가 바뀜. 바뀌는 기준 정의
     // 반드시 devicesCountsThreshold1 < devicesCountsThreshold2를 만족
     let devicesCountsThreshold1: Int = 2
     let devicesCountsThreshold2: Int = 4
+
+    // MARK: State
+    @State private var isCheckMarkAnimating: Bool = true
   }
 }
 
@@ -54,35 +60,9 @@ extension MakeConnectionView.PairedDevicesList: View {
 
           VStack {
             // MARK: 페어링 기기 리스트
-            VStack(spacing: 8) {
+            VStack(spacing: 16) {
               ForEach(pairedDevices) { device in
-                HStack(alignment: .center) {
-                  Text(device.pairingInfo?.pairingName ?? "알 수 없는 이름")
-                    .font(.pretendard(.medium, size: 18))
-                    .foregroundStyle(.offWhite)
-
-                  Spacer()
-
-                  // 프로그레스 뷰 + 연결 버튼
-                  if isPairing(device) {
-                    ProgressView()
-                      .tint(.offWhite)
-                      .frame(width: 42, height: 42)
-                  } else {
-                    Button {
-                      connectButtonDidTap(device)
-                    } label: {
-                      HStack(alignment: .center, spacing: 4) {
-                        Text("연결")
-                          .font(.pretendard(.medium, size: 14))
-                      }
-                      .foregroundStyle(.offWhite)
-                      .padding(.vertical, 12)
-                      .padding(.horizontal, 20)
-                    }
-                    .glassEffect(.regular)
-                  }
-                }
+                pairedDeviceRowView(for: device)
               }
             }
 
@@ -114,13 +94,70 @@ extension MakeConnectionView.PairedDevicesList: View {
         }
       }
     }
+    .onChange(of: isConnected) { _, newValue in
+      if newValue {
+        isCheckMarkAnimating.toggle()  // 체크마크 애니메이션 시작
+      }
+    }
   }
-  
+
   var guidingMessageView: some View {
     Text("친구와 연결하기 위해 먼저\n‘주변 기기 찾기’를 통해 친구를 등록해주세요.")
       .multilineTextAlignment(.center)
       .typo(.m15)
       .foregroundStyle(.gray600)
+  }
+
+  var connectCompleteSymbol: some View {
+    Image(systemName: "checkmark")
+      .resizable()
+      .renderingMode(.template)
+      .symbolEffect(.drawOn, isActive: isCheckMarkAnimating)
+      .scaledToFit()
+      .frame(width: 18)
+      .padding(.horizontal, 5.5)
+      .padding(.vertical, 5)
+      .background(
+        Circle()
+          .foregroundStyle(checkmarkBackgroundColor)
+      )
+  }
+
+  func pairedDeviceRowView(for device: WAPairedDevice) -> some View {
+    HStack(alignment: .center) {
+      Text(device.pairingInfo?.pairingName ?? "알 수 없는 이름")
+        .typo(.m18)
+        .foregroundStyle(.offWhite)
+
+      Spacer()
+
+      // 프로그레스 뷰 + 연결 버튼
+      VStack(alignment: .center, spacing: 0) {  // 정렬을 위한 컨테이너
+        if device == selectedDevice {
+          if isConnected {
+            connectCompleteSymbol
+          }
+
+          if isPairing && !isConnected {  // host의 경우 연결중과 연결완료가 구분되지 않으므로 조건을 더 한정
+            ProgressView()
+              .tint(.offWhite)
+              .frame(width: 42, height: 42)
+          }
+        } else {
+          Button {
+            connectButtonDidTap(device)
+          } label: {
+            Text("연결")
+              .typo(.m14)
+              .foregroundStyle(.offWhite)
+              .padding(.vertical, 6)
+              .padding(.horizontal, 16)
+          }
+          .glassEffect(.regular)
+        }
+      }
+      .frame(width: 60)
+    }
   }
 }
 
@@ -137,9 +174,11 @@ extension MakeConnectionView.PairedDevicesList: View {
         createTestDevice(id: 4, name: "페퍼폰")!,
         createTestDevice(id: 5, name: "차차폰")!,
         createTestDevice(id: 6, name: "섭섭폰")!,
-        createTestDevice(id: 7, name: "하워드폰")!
+        createTestDevice(id: 7, name: "하워드폰")!,
       ],
-      isPairing: { device in false },
+      isPairing: false,
+      isConnected: false,
+      selectedDevice: nil,
       connectButtonDidTap: { _ in }
     )
   }
@@ -171,4 +210,28 @@ private func createTestDevice(id: Int, name: String) -> WAPairedDevice? {
   }
 
   return nil
+}
+
+#Preview("DrawOn Animation") {
+  struct AnimationPreviewContainer: View {
+    @State var isAnimating: Bool = true
+
+    var body: some View {
+      VStack {
+        Button("애니메이션 토글") {
+          isAnimating.toggle()
+        }
+
+        Text("isAnimating: \(isAnimating ? "true" : "false")")
+
+        Image(systemName: "checkmark")
+          .resizable()
+          .renderingMode(.template)
+          .symbolEffect(.drawOff, isActive: isAnimating)
+          .frame(width: 29, height: 29)
+      }
+    }
+  }
+
+  return AnimationPreviewContainer()
 }

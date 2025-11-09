@@ -177,6 +177,10 @@ extension ConnectionViewModel {
     }
   }
 
+  func connectionViewAppear() {
+    selectedPairedDevice = nil // 연결에 앞서 선택된 페어링 디바이스를 초기화한다
+  }
+
   func connectionViewDisappear() {
     if connections.isEmpty {  // 연결 중인 경우 연결 뷰에서 벗어나면 연결을 취소한다
       networkService.stop(byUser: true)

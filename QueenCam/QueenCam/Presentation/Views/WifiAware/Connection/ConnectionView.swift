@@ -20,6 +20,9 @@ struct ConnectionView {
 
   /// 가이드를 보여줘야하는지 여부
   @State private var shouldGuideShow: Bool = false
+  
+  /// 하위 뷰로 전파할 연결 여부
+  @State private var isConnected: Bool = false
 }
 
 extension ConnectionView: View {
@@ -38,12 +41,16 @@ extension ConnectionView: View {
     .task {
       await viewModel.viewDidAppearTask()
     }
+    .onAppear {
+      viewModel.connectionViewAppear()
+    }
     .onDisappear {
       viewModel.connectionViewDisappear()
     }
     .onChange(of: viewModel.connections) { _, newValue in  // 연결 완료
       if !newValue.isEmpty {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+        isConnected = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
           dismiss()
         }
       }
@@ -63,6 +70,7 @@ extension ConnectionView {
         networkState: viewModel.networkState,
         selectedPairedDevice: viewModel.selectedPairedDevice,
         pairedDevices: viewModel.pairedDevices,
+        isConnected: isConnected,
         changeRoleButtonDidTap: {
           viewModel.selectRole(for: selectedRole.counterpart)
         },
