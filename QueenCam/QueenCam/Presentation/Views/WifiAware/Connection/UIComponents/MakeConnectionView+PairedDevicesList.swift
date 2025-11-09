@@ -18,6 +18,11 @@ extension MakeConnectionView {
     // MARK: Colors
     let titleLabelForegroundColor = Color(red: 0xD4 / 255, green: 0xD4 / 255, blue: 0xD4 / 255)
     let dividerColor = Color(red: 0xEB / 25, green: 0xEB / 25, blue: 0xEB / 25)
+
+    // 디바이스 수에 따라 UI가 바뀜. 바뀌는 기준 정의
+    // 반드시 devicesCountsThreshold1 < devicesCountsThreshold2를 만족
+    let devicesCountsThreshold1: Int = 2
+    let devicesCountsThreshold2: Int = 4
   }
 }
 
@@ -26,9 +31,9 @@ extension MakeConnectionView.PairedDevicesList: View {
     VStack(spacing: 0) {
       // 타이틀
       HStack {
-        Text("찾아낸 기기")
+        Text("등록된 친구")
           .foregroundStyle(titleLabelForegroundColor)
-          .font(.pretendard(.medium, size: 15))
+          .font(.pretendard(.semibold, size: 15))
 
         Spacer()
       }
@@ -40,40 +45,130 @@ extension MakeConnectionView.PairedDevicesList: View {
         .padding(.top, 8.5)
         .padding(.bottom, 16)
 
-      // 리스트
-      ScrollView {
-        VStack(spacing: 8) {
-          ForEach(pairedDevices) { device in
-            HStack(alignment: .center) {
-              Text(device.pairingInfo?.pairingName ?? "알 수 없는 이름")
-                .font(.pretendard(.medium, size: 18))
-                .foregroundStyle(.offWhite)
+      GeometryReader { geometry in  // Spacer를 사용하기 위해 크기를 알아야 함
+        ScrollView {
+          HStack {  // 디바이스 전체 너비 스크롤
+            Spacer()
+          }
 
-              Spacer()
+          VStack {
+            // MARK: 페어링 기기 리스트
+            VStack(spacing: 8) {
+              ForEach(pairedDevices) { device in
+                HStack(alignment: .center) {
+                  Text(device.pairingInfo?.pairingName ?? "알 수 없는 이름")
+                    .font(.pretendard(.medium, size: 18))
+                    .foregroundStyle(.offWhite)
 
-              // 프로그레스 뷰 + 연결 버튼
-              if isPairing(device) {
-                ProgressView()
-                  .tint(.offWhite)
-                  .frame(width: 42, height: 42)
-              } else {
-                Button {
-                  connectButtonDidTap(device)
-                } label: {
-                  HStack(alignment: .center, spacing: 4) {
-                    Text("연결")
-                      .font(.pretendard(.medium, size: 14))
+                  Spacer()
+
+                  // 프로그레스 뷰 + 연결 버튼
+                  if isPairing(device) {
+                    ProgressView()
+                      .tint(.offWhite)
+                      .frame(width: 42, height: 42)
+                  } else {
+                    Button {
+                      connectButtonDidTap(device)
+                    } label: {
+                      HStack(alignment: .center, spacing: 4) {
+                        Text("연결")
+                          .font(.pretendard(.medium, size: 14))
+                      }
+                      .foregroundStyle(.offWhite)
+                      .padding(.vertical, 12)
+                      .padding(.horizontal, 20)
+                    }
+                    .glassEffect(.regular)
                   }
-                  .foregroundStyle(.offWhite)
-                  .padding(.vertical, 12)
-                  .padding(.horizontal, 20)
                 }
-                .glassEffect(.regular)
               }
             }
+
+            if pairedDevices.count < devicesCountsThreshold2 {
+              Spacer()
+            }
+
+            // MARK: 안내 메시지
+            switch pairedDevices.count {
+            case 0..<devicesCountsThreshold1:
+              Text("친구와 연결하기 위해 먼저\n‘주변 기기 찾기’를 통해 친구를 등록해주세요.")
+                .multilineTextAlignment(.center)
+                .typo(.m15)
+                .foregroundStyle(.gray600)
+                .padding(.bottom, 300)
+            case devicesCountsThreshold1..<devicesCountsThreshold2:
+              Text("친구와 연결하기 위해 먼저\n‘주변 기기 찾기’를 통해 친구를 등록해주세요.")
+                .multilineTextAlignment(.center)
+                .typo(.m15)
+                .foregroundStyle(.gray600)
+                .padding(.bottom, 240)
+            case devicesCountsThreshold2...:
+              Text("친구와 연결하기 위해 먼저\n‘주변 기기 찾기’를 통해 친구를 등록해주세요.")
+                .multilineTextAlignment(.center)
+                .typo(.m15)
+                .foregroundStyle(.gray600)
+                .padding(.top, 60)
+            default:  // should not reach
+              Text("잘못된 범위")
+            }
+
+            if pairedDevices.count >= devicesCountsThreshold2 {
+              Spacer()
+            }
           }
+          .frame(minHeight: geometry.size.height)
         }
       }
     }
   }
+}
+
+#Preview {
+  ZStack {
+    Color.black.ignoresSafeArea()
+
+    MakeConnectionView.PairedDevicesList(
+      pairedDevices: [
+        createTestDevice(id: 0, name: "임영폰")!,
+        createTestDevice(id: 1, name: "루크폰")!,
+        createTestDevice(id: 2, name: "보타폰")!,
+        createTestDevice(id: 3, name: "요시폰")!,
+        createTestDevice(id: 4, name: "페퍼폰")!,
+        createTestDevice(id: 5, name: "차차폰")!,
+        createTestDevice(id: 6, name: "섭섭폰")!,
+        createTestDevice(id: 7, name: "하워드폰")!
+      ],
+      isPairing: { device in false },
+      connectButtonDidTap: { _ in }
+    )
+  }
+}
+
+/// 프리뷰를 위한 테스트 데이터 팩토리
+private func createTestDevice(id: Int, name: String) -> WAPairedDevice? {
+  // 테스트할 WAPairedDevice의 JSON 형태를 문자열로 정의합니다.
+  let deviceJSON = """
+      {
+        "id": \(id),
+        "name": "\(name)",
+        "pairingInfo": {
+          "pairingName": "\(name)",
+          "vendorName": "QueenDom",
+          "modelName": "TestModel-001"
+        }
+      }
+    """
+
+  // JSON 문자열을 Data로 변환
+  if let jsonData = deviceJSON.data(using: .utf8) {
+    do {
+      return try JSONDecoder().decode(WAPairedDevice.self, from: jsonData)
+    } catch {
+      // swiftlint:disable:next no_print_in_production
+      print("디코딩 실패: \(error)")
+    }
+  }
+
+  return nil
 }
