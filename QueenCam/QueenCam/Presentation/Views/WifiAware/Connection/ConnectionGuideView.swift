@@ -43,12 +43,16 @@ extension ConnectionGuideView: View {
     .ignoresSafeArea()
     .toolbar {
       if activeIndex != currentGuides.count - 1 {
-        Text("건너뛰기")
-          .typo(.m15)
-          .foregroundStyle(.gray400)
-          .onTapGesture {
-            skipButtonDidTap()
-          }
+        Button {
+          skipButtonDidTap()
+        } label: {
+          Text("건너뛰기")
+            .typo(.m15)
+            .padding(.top, 10)
+            .padding(.bottom, 11)
+            .padding(.horizontal, 4)
+            .foregroundStyle(.gray400)
+        }
       }
     }
   }
@@ -68,7 +72,7 @@ extension ConnectionGuideView: View {
       .scrollPosition(id: $activeIndex)
     }
   }
-  
+
   var footer: some View {
     VStack(spacing: 0) {
       Spacer()
@@ -78,27 +82,25 @@ extension ConnectionGuideView: View {
       Spacer()
         .frame(height: 36)
 
-      if lastPageVisited {
-        Button {
-          startConnectingButtonDidTap()
-        } label: {
-          Text("연결 시작하기")
-            .typo(.sb16)
-            .foregroundColor(.offWhite)
-            .background(
-              Capsule()
-                .foregroundStyle(.clear)
-            )
-            .frame(maxWidth: .infinity, maxHeight: mainButtonHeight)
-        }
-        .glassEffect()
-      } else {
-        Color.clear.frame(height: mainButtonHeight)
+      Button {
+        startConnectingButtonDidTap()
+      } label: {
+        Text("연결 시작하기")
+          .typo(.sb16)
+          .foregroundColor(.offWhite)
+          .background(
+            Capsule()
+              .foregroundStyle(.clear)
+          )
+          .frame(maxWidth: .infinity, maxHeight: mainButtonHeight)
       }
+      .glassEffect()
+      .opacity(lastPageVisited ? 1.0 : 0.0)
 
       Spacer()
         .frame(height: 48)
     }
+    .animation(.easeInOut, value: lastPageVisited)
   }
 }
 
@@ -106,8 +108,8 @@ extension ConnectionGuideView {
   var pagingControl: some View {
     HStack {
       ForEach(0..<currentGuides.count, id: \.self) { index in
-        let regularColor = Color(uiColor: .systemGray3)
-        let selectedColor = Color(uiColor: .systemGray)
+        let regularColor = Color(red: 0x2E / 255, green: 0x2E / 255, blue: 0x2E / 255)
+        let selectedColor = Color(red: 0x97 / 255, green: 0x97 / 255, blue: 0x97 / 255)
 
         Button {
           withAnimation {
@@ -126,11 +128,11 @@ extension ConnectionGuideView {
 
 extension ConnectionGuideView {
   // MARK: - User Intents
-  
+
   private func startConnectingButtonDidTap() {
     router.push(.makeConnection)
   }
-  
+
   private func skipButtonDidTap() {
     withAnimation {
       activeIndex = currentGuides.count - 1
