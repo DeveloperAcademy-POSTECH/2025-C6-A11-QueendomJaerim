@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct SelectRoleView {
+  @Environment(\.dismiss) private var dismiss
+  
   let selectedRole: Role?
   let didRoleSelect: (Role) -> Void
   let didRoleSubmit: (Role) -> Void
@@ -65,6 +67,13 @@ extension SelectRoleView: View {
       }
       .animation(.linear, value: selectedRole)
       .padding(16)
+    }
+    .toolbar {
+      ToolbarItem(placement: .navigation) {
+        Button("닫기", systemImage: "chevron.left") {
+          dismiss()
+        }
+      }
     }
   }
 }
