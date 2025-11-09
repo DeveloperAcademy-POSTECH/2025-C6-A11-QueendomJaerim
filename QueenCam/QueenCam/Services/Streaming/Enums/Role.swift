@@ -18,13 +18,6 @@ enum Role: CustomDebugStringConvertible, Codable {
     }
   }
 
-  var displayName: String {
-    switch self {
-    case .photographer: return "작가"
-    case .model: return "모델"
-    }
-  }
-  
   var counterpart: Role {
     switch self {
     case .photographer: return .model
