@@ -164,6 +164,7 @@ extension ConnectionViewModel {
 
   func disconnectButtonDidTap() {
     networkService.disconnect()
+    role = nil // 정상 종료인 경우 역할 초기화
   }
 
   func viewDidAppearTask() async {
@@ -210,9 +211,10 @@ extension ConnectionViewModel {
     connectionLost = false
     reconnectingDeviceName = nil
   }
-  
+
   func sessionFinishedOverlayCloseButtonDidTap() {
     needReportSessionFinished = false
+    role = nil // 정상 종료인 경우 역할 초기화
   }
 }
 
