@@ -10,7 +10,6 @@ import SwiftUI
 import WiFiAware
 
 struct ConnectionView {
-  @State private var router = NavigationRouter()
   @Environment(\.dismiss) var dismiss
   var viewModel: ConnectionViewModel
   var previewStreamingViewModel: PreviewModel
@@ -55,13 +54,12 @@ extension ConnectionView: View {
         }
       }
     }
-    .environment(\.router, router)
   }
 }
 
 extension ConnectionView {
   // MARK: Subviews
-  
+
   @ViewBuilder
   var makeConnectionView: some View {
     if let selectedRole = viewModel.role {
