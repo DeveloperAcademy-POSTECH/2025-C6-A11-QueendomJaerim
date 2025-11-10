@@ -373,10 +373,12 @@ extension CameraView: View {
           }
         }
         .aspectRatio(3 / 4, contentMode: .fill)
+        .clipped()
         .clipShape(.rect(cornerRadius: 5))
         .overlay {
           RoundedRectangle(cornerRadius: 5)
-            .stroke(.gray, lineWidth: 1)
+            .inset(by: 0.5)
+            .stroke(.gray600, lineWidth: 1)
         }
         .padding(.horizontal, 16)
         .overlay(alignment: .center) {
