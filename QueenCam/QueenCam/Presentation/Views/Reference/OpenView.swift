@@ -40,6 +40,7 @@ struct OpenView: View {
             .resizable()
             .scaledToFill()
             .frame(width: width, height: height, alignment: .center)
+            .glassEffect( .clear, in: .rect(cornerRadius: 24))
             .clipShape(.rect(cornerRadius: 24))
             .onTapGesture {
               isLarge.toggle()
