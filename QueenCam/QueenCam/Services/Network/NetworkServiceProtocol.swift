@@ -33,6 +33,9 @@ protocol NetworkServiceProtocol: AnyObject {
   // MARK: - Methods
   /// 네트워크 서비스를 시작합니다.
   func run(for device: WAPairedDevice)
+  
+  /// 네트워크 서비스를 재시작합니다.
+  func reconnect(for device: WAPairedDevice)
 
   /// 네트워크 서비스를 중지합니다.
   func stop(byUser: Bool)
