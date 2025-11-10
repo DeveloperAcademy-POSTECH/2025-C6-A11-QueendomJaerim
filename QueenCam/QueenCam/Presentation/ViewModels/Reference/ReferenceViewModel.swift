@@ -23,6 +23,10 @@ final class ReferenceViewModel {
   var hasReferenceImage: Bool {
     image != nil
   }
+  /// 현재 레퍼런스 토스트 존재 여부
+  var hasReferenceToast: Bool {
+    notificationService.currentNotification != nil
+  }
 
   // MARK: - Network
   let networkService: NetworkServiceProtocol

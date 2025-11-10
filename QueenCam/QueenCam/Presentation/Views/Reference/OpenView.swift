@@ -9,10 +9,10 @@
 import SwiftUI
 
 struct OpenView: View {
-  @Bindable var referenceViewModel: ReferenceViewModel
+  var referenceViewModel: ReferenceViewModel
   @State private var showDelete: Bool = false
   @Binding var isLarge: Bool
-
+  
   var body: some View {
     ZStack(alignment: .topTrailing) {
       Group {
@@ -44,8 +44,8 @@ struct OpenView: View {
             .onTapGesture {
               withAnimation(.easeInOut(duration: isLarge ? 0.4 : 0.8)){
                 isLarge.toggle()
+                showDelete.toggle()
               }
-              showDelete.toggle()
             }
         }
       }

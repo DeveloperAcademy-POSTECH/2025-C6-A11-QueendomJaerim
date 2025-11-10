@@ -9,7 +9,7 @@ import SwiftUI
 
 /// 레퍼런스 뷰 - 레퍼런스를 표시한다.
 struct ReferenceView: View {
-  @Bindable var referenceViewModel: ReferenceViewModel
+  var referenceViewModel: ReferenceViewModel
   @Binding var isLarge: Bool
   private let containerName = "ReferenceViewContainer"
 
@@ -59,6 +59,7 @@ struct ReferenceView: View {
         }
       }
     }
+    .padding(.top, referenceViewModel.hasReferenceToast ? 48 : 0)
     .coordinateSpace(name: containerName)
   }
 }
