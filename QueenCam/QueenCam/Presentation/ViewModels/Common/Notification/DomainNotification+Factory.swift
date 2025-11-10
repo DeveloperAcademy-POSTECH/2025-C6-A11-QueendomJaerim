@@ -41,11 +41,17 @@ extension DomainNotification {
     case turnOffGuiding
     case turnOnGuiding
     /// 상대가 프레임을 수정하고 있을 때 (최초 1회)
+    case peerEditingFrameGuide
     /// 상대가 가이드 프레임을 생성했을 때 (최초 1회)
+    case peerCreateFrameGuide
     /// 사용자가 가이드 프레임을 껐을 때 (최초 1회)
+    case closeFrameGuide
     /// 상대가 가이드 프레임을 껐을 때 (최초 1회)
+    case peerCloseFrameGuide
     /// 상대가 프레임 수정 모드에 돌입 했을 때 (최초 1회)
+    case peerFirstEditMode
     /// 사용자가 프레임 수정 모드에 돌입 했을 때 (최초 1회)
+    case firstEditMode
     /// 레퍼런스가 없는 상황에서,  사용자가 새로운 레퍼런스를 등록했을 때
     case registerFirstReference
     /// 레퍼런스가 없는 상황에서, 상대가 새로운 레퍼런스를 등록했을 때
@@ -117,6 +123,19 @@ extension DomainNotification {
         return .init(message: "깔끔하게 지웠어요", isImportant: false, showingTime: 2)
       case .firstMagicToolSelected:
         return .init(message: "지우지 않아도 사라지는 펜입니다.", isImportant: false, showingTime: 2)
+      // 프레임
+      case .peerEditingFrameGuide:
+        return .init(message: "친구가 프레임을 수정하고 있어요.", isImportant: false, showingTime: 2)
+      case .peerCreateFrameGuide:
+        return .init(message: "친구가 가이드 프레임을 생성했어요.", isImportant: false, showingTime: 2)
+      case .closeFrameGuide:
+        return .init(message: "친구에게도 프레임이 꺼집니다.", isImportant: false, showingTime: 2)
+      case .peerCloseFrameGuide:
+        return .init(message: "친구가 프레임을 껐어요.", isImportant: false, showingTime: 2)
+      case .peerFirstEditMode:
+        return .init(message: "친구가 프레임을 수정하고 있어요", isImportant: false, showingTime: 2)
+      case .firstEditMode:
+        return .init(message: "프레임의 비율을 조정합니다.", isImportant: false, showingTime: 2)
       }
     }
   }

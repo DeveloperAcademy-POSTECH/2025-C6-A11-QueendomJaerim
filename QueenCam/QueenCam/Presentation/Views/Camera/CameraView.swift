@@ -37,6 +37,8 @@ struct CameraView {
 
   @State private var frameViewModel = FrameViewModel()
   @State private var isFrame: Bool = false
+  @State private var hasShownCreateToast: Bool = false
+  @State private var hasShownDeleteToast: Bool = false
 
   @State private var isRemoteGuideHidden: Bool = false
   @State private var isShowCameraSettingTool: Bool = false

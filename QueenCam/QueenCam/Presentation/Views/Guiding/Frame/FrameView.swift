@@ -30,6 +30,9 @@ struct FrameView: View {
     let myRole = frameViewModel.currentRole ?? .photographer
     return frameViewModel.isFrameEnabled && (frameViewModel.interactingRole == nil || frameViewModel.interactingRole == myRole)
   }
+  
+  // 현재 토스트 근황
+  @State private var hasShownRatioEditToast: Bool = false
 
   var body: some View {
     let rect = frame.rect
@@ -87,6 +90,10 @@ struct FrameView: View {
             frameViewModel.selectFrame(nil)
           } else {
             frameViewModel.selectFrame(frame.id)
+            if !hasShownRatioEditToast{
+              frameViewModel.myFrameGuidingToast(type: .ratioEdit)
+              hasShownRatioEditToast = true
+            }
           }
         }
         .gesture(  // 프레임 이동
