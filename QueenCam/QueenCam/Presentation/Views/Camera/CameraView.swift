@@ -352,7 +352,7 @@ extension CameraView: View {
                   } else if !isRemoteGuideHidden && !frameViewModel.frames.isEmpty {
                     frameViewModel.setFrame(true)
                   }
-                  
+
                   cameraViewModel.showGuidingToast(isRemoteGuideHidden: isRemoteGuideHidden)
                 }
               )
@@ -517,8 +517,10 @@ extension CameraView: View {
           DragGesture(minimumDistance: 30)
             .onEnded { value in
               guard isPhotographerMode else { return }
-              withAnimation {
-                self.isShowCameraSettingTool = true
+              if value.translation.height > 0 {
+                withAnimation {
+                  self.isShowCameraSettingTool = false
+                }
               }
             }
         )
@@ -529,6 +531,17 @@ extension CameraView: View {
       if isShowCameraSettingTool {
         Color.black.opacity(0.1)
           .ignoresSafeArea()
+          .gesture(
+            DragGesture(minimumDistance: 30)
+              .onEnded { value in
+                guard isPhotographerMode else { return }
+                if value.translation.height < 0 {
+                  withAnimation {
+                    self.isShowCameraSettingTool = true
+                  }
+                }
+              }
+          )
           .onTapGesture {
             withAnimation {
               isShowCameraSettingTool = false
