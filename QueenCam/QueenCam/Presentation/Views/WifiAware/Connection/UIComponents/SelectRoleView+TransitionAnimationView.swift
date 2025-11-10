@@ -20,13 +20,13 @@ extension SelectRoleView {
         Image(phase == .off ? .loadingAnimationOff : .loadingAnimationOn)
           .resizable()
           .scaledToFit()
-          .padding(45)
+          .frame(height: 160)
 
         Spacer()
       }
       .onAppear {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-          withAnimation {
+          withAnimation(.linear) {
             self.phase = .on
           }
 

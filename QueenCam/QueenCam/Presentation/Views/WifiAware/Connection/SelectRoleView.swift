@@ -14,68 +14,68 @@ struct SelectRoleView {
   let didRoleSelect: (Role) -> Void
   let didRoleSubmit: () -> Void
 
-  let individualSymbolOffset: CGFloat = 7.5
-
-  var symbolsContainerOffset: CGFloat {  // 선택 시 가운데 정렬
-    if selectedRole == .model {
-      return -80 + individualSymbolOffset
-    } else if selectedRole == .photographer {
-      return 80 - individualSymbolOffset
-    } else {
-      return .zero
-    }
-  }
-  
+  @State var willShowLoadingAnimation: Bool = false
   @State private var isShowLoadingAnimation: Bool = false
   @State private var loadingAnimationDidComplete: Bool = false
+
+  // MARK: Spacing
+  private let topSpacing: CGFloat = 115
+  private let bottomSpacing: CGFloat = 90
 }
 
 extension SelectRoleView: View {
   var body: some View {
     ZStack {
       Color.black.ignoresSafeArea()
-      
+
       if isShowLoadingAnimation {
         TransitionAnimationView {
           self.loadingAnimationDidComplete = true
         }
       } else {
-        VStack {
-          Spacer()
+        ZStack {
+          roleSelectButtons // 애니메이션 연결을 위해 화면 세로 가운데 정렬
 
-          header
+          VStack {
+            Spacer()
+              .frame(height: 115)
 
-          Spacer()
-            .frame(height: 38)
+            header
 
-          roleSelectButtons
+            Spacer() // 가운데에는 역할 선택 버튼이 들어가야하므로 비어둔다
 
-          Spacer()
-            .frame(height: 38)
+            roleDescriptions
 
-          roleDescriptions
+            Spacer()
+              .frame(height: 90)
 
-          Spacer()
+            Button {
+              if selectedRole != nil {
+                withAnimation {
+                  willShowLoadingAnimation = true
+                }
 
-          Button {
-            if let selectedRole {
-              isShowLoadingAnimation = true
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                  willShowLoadingAnimation = false
+                  isShowLoadingAnimation = true
+                }
+              }
+            } label: {
+              Text("연결하기")
+                .font(.pretendard(.semibold, size: 16))
+                .foregroundColor(.offWhite)
+                .background(
+                  Capsule()
+                    .foregroundStyle(.clear)
+                )
+                .frame(maxWidth: .infinity, maxHeight: 52)
             }
-          } label: {
-            Text("연결하기")
-              .font(.pretendard(.semibold, size: 16))
-              .foregroundColor(.offWhite)
-              .background(
-                Capsule()
-                  .foregroundStyle(.clear)
-              )
-              .frame(maxWidth: .infinity, maxHeight: 52)
+            .glassEffect(.regular)
+            .disabled(selectedRole == nil)
+            .opacity(selectedRole == nil ? 0.0 : 1.0)
           }
-          .glassEffect(.regular)
-          .disabled(selectedRole == nil)
-          .opacity(selectedRole == nil ? 0.0 : 1.0)
+          .padding(16)
         }
-        .padding(16)
         .animation(.linear, value: selectedRole)
         .gesture(
           DragGesture(minimumDistance: 30, coordinateSpace: .local)
@@ -95,7 +95,12 @@ extension SelectRoleView: View {
           }
         }
       }
+
+      ToolbarItem(placement: .principal) {
+        Text("") // 애니메이션 중 닫기 버튼 사라져도 툴바가 유지되어야 레이아웃이 깨지지 않음
+      }
     }
+    .navigationBarTitleDisplayMode(.inline) // LargeTitle 영역 제외
     .onChange(of: loadingAnimationDidComplete) { _, newValue in
       if newValue {
         if selectedRole != nil {

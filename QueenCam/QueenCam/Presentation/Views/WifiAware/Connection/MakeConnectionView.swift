@@ -24,7 +24,7 @@ struct MakeConnectionView {
   private var myDeviceName: String {
     UIDevice.current.name
   }
-  
+
   private var isPairing: Bool {
     networkState == .host(.publishing)
       || networkState == .viewer(.browsing)

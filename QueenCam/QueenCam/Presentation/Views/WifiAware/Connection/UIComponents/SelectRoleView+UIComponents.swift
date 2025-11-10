@@ -8,6 +8,20 @@
 import SwiftUI
 
 extension SelectRoleView {
+  var individualSymbolOffset: CGFloat { 7.5 }
+
+  var symbolsContainerOffset: CGFloat {  // 선택 시 가운데 정렬
+    guard !willShowLoadingAnimation else { return .zero } // 애니메이션 노출 전 원점으로 돌린다
+
+    if selectedRole == .model {
+      return -80 + individualSymbolOffset
+    } else if selectedRole == .photographer {
+      return 80 - individualSymbolOffset
+    } else {
+      return .zero
+    }
+  }
+
   /// 페이지 헤더
   var header: some View {
     VStack(spacing: 18) {
@@ -27,14 +41,14 @@ extension SelectRoleView {
       RoleSelectButton {
         didRoleSelect(.photographer)
       }
-      .selected(selectedRole == nil || selectedRole == .photographer)
+      .selected(!willShowLoadingAnimation && (selectedRole == nil || selectedRole == .photographer))
       .role(.photographer)
       .offset(.init(width: individualSymbolOffset, height: 0))
 
       RoleSelectButton {
         didRoleSelect(.model)
       }
-      .selected(selectedRole == nil || selectedRole == .model)
+      .selected(!willShowLoadingAnimation && (selectedRole == nil || selectedRole == .model))
       .role(.model)
       .offset(.init(width: -individualSymbolOffset, height: 0))
     }
