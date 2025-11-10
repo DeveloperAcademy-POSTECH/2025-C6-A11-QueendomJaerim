@@ -52,6 +52,7 @@ extension DomainNotification {
     case peerFirstEditMode
     /// 사용자가 프레임 수정 모드에 돌입 했을 때 (최초 1회)
     case firstEditMode
+
     /// 레퍼런스가 없는 상황에서,  사용자가 새로운 레퍼런스를 등록했을 때
     case registerFirstReference
     /// 레퍼런스가 없는 상황에서, 상대가 새로운 레퍼런스를 등록했을 때
@@ -70,6 +71,7 @@ extension DomainNotification {
     case penEraserSelected
     /// 매직펜툴을 처음 선택한 경우 (최초 1회)
     case firstMagicToolSelected
+
     
     var preset: Preset {
       switch self {
