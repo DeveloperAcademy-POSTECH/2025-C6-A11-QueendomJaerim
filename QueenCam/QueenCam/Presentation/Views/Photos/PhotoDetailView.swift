@@ -84,7 +84,7 @@ extension PhotoDetailView: View {
             }
           )
 
-          HStack {
+          HStack(alignment: .top) {
             LiveIconComponent(isLivePhoto: isLivePhoto)
 
             Spacer()
