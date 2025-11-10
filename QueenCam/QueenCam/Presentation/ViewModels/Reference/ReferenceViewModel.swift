@@ -28,6 +28,7 @@ final class ReferenceViewModel {
   /// 현재 레퍼런스 토스트 존재 여부
   var hasReferenceToast: Bool = false
 
+
   // MARK: - Network
   let networkService: NetworkServiceProtocol
   var cancellables: Set<AnyCancellable> = []

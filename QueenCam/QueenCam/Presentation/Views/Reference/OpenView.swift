@@ -48,8 +48,6 @@ struct OpenView: View {
               withAnimation(.easeInOut(duration: !isLarge ? enlargeDuration : shrinkDuration)) {
                 isLarge.toggle()
               }
-              showDelete.toggle()
-
             }
         }
       }
