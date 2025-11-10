@@ -27,7 +27,7 @@ final class CameraViewModel {
   var errorMessage = ""
 
   // MARK: Thumbnail
-  private let cachingManger = PHCachingImageManager()
+  private let cachingManager = PHCachingImageManager()
   var thumbnailImage: UIImage?
 
   private let logger = QueenLogger(category: "CameraViewModel")
@@ -217,7 +217,7 @@ extension CameraViewModel {
     options.resizeMode = .exact
     options.isNetworkAccessAllowed = true
 
-    cachingManger.requestImage(
+    cachingManager.requestImage(
       for: asset,
       targetSize: targetSize,
       contentMode: .aspectFill,
