@@ -112,14 +112,14 @@ extension MakeConnectionView.PairedDevicesList: View {
     Image(systemName: "checkmark")
       .resizable()
       .renderingMode(.template)
+      .foregroundStyle(.originalWhite)
       .symbolEffect(.drawOn, isActive: isCheckMarkAnimating)
       .scaledToFit()
-      .frame(width: 18)
-      .padding(.horizontal, 5.5)
-      .padding(.vertical, 5)
+      .frame(width: 13)
       .background(
         Circle()
           .foregroundStyle(checkmarkBackgroundColor)
+          .frame(width: 29, height: 29)
       )
   }
 
@@ -227,8 +227,17 @@ private func createTestDevice(id: Int, name: String) -> WAPairedDevice? {
         Image(systemName: "checkmark")
           .resizable()
           .renderingMode(.template)
-          .symbolEffect(.drawOff, isActive: isAnimating)
-          .frame(width: 29, height: 29)
+          .foregroundStyle(.originalWhite)
+          .symbolEffect(.drawOn, isActive: isAnimating)
+          .scaledToFit()
+          .frame(width: 13)
+          .background(
+            Circle()
+              .foregroundStyle(
+                Color(red: 0x27 / 255, green: 0xC8 / 255, blue: 0x40 / 255)
+              )
+              .frame(width: 29, height: 29)
+          )
       }
     }
   }
