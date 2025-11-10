@@ -41,14 +41,14 @@ extension SelectRoleView {
       RoleSelectButton {
         didRoleSelect(.photographer)
       }
-      .selected(!willShowLoadingAnimation && (selectedRole == nil || selectedRole == .photographer))
+      .selected(!willShowLoadingAnimation && selectedRole == .photographer)
       .role(.photographer)
       .offset(.init(width: individualSymbolOffset, height: 0))
 
       RoleSelectButton {
         didRoleSelect(.model)
       }
-      .selected(!willShowLoadingAnimation && (selectedRole == nil || selectedRole == .model))
+      .selected(!willShowLoadingAnimation && selectedRole == .model)
       .role(.model)
       .offset(.init(width: -individualSymbolOffset, height: 0))
     }
