@@ -42,6 +42,16 @@ struct ReferenceView: View {
             }
             .padding(.horizontal, -8)
             .padding(.vertical, 30)
+            .highPriorityGesture(
+              DragGesture(minimumDistance: 5, coordinateSpace: .named(containerName))
+                .onChanged { value in
+                  referenceViewModel.dragChanged(value)
+                }
+                .onEnded { value in
+                  // fold/unfold 접힘 판정
+                  referenceViewModel.dragEnded()
+                }
+            )
 
           case .delete:  // 레퍼런스 삭제
             EmptyView()

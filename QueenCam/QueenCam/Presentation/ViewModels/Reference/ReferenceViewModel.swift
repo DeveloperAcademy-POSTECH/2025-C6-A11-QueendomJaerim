@@ -51,10 +51,14 @@ final class ReferenceViewModel {
     if location == .topLeft || location == .bottomLeft {
       if dragOffset.width <= foldThreshold {
         state = .close
+      } else {
+        state = .open
       }
     } else {
       if dragOffset.width >= -foldThreshold {
         state = .close
+      } else {
+        state = .open
       }
     }
     withAnimation(.snappy) {
