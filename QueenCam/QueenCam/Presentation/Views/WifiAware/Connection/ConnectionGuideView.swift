@@ -77,9 +77,7 @@ extension ConnectionGuideView {
   }
 
   func skipButtonDidTap() {
-    withAnimation {
-      activeIndex = currentGuides.count - 1
-    }
+    didGuideComplete()
   }
 }
 

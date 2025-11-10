@@ -126,7 +126,7 @@ extension MakeConnectionView.PairedDevicesList: View {
   func pairedDeviceRowView(for device: WAPairedDevice) -> some View {
     let controlsContainerWidth: CGFloat = 60
     let controlsContainerHeight: CGFloat = 42
-    
+
     return HStack(alignment: .center) {
       Text(device.pairingInfo?.pairingName ?? "알 수 없는 이름")
         .typo(.m18)
