@@ -505,6 +505,13 @@ extension CameraView: View {
                   }
               }
             } else {
+
+              Circle()
+                .fill(.clear)
+                .frame(width: 80, height: 80)
+
+              Spacer()
+
               BoomupButton(tapAction: {})
             }
           }
