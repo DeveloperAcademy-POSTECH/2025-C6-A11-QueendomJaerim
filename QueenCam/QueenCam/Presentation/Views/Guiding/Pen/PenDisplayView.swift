@@ -7,7 +7,7 @@
 import Foundation
 import SwiftUI
 
-/// 저장된 펜 가이드라인 조회(출력) 뷰 (Both)
+/// 저장된 펜 가이드라인 조회(출력) 뷰
 struct PenDisplayView: View {
   var penViewModel: PenViewModel
 
@@ -29,10 +29,13 @@ struct PenDisplayView: View {
         }
         ForEach(magicPenStrokes, id: \.self) { stroke in
           SingleMagicStrokeView(penViewModel: penViewModel, roleForTheme: stroke.author, geoSize: geo.size, stroke: stroke)
+            .transition(.opacity)
         }
       }
       .background(.clear)
       .allowsHitTesting(false)
+      .animation(.easeInOut(duration: 0.3), value: penViewModel.strokes) // 사라짐 애니메이션
     }
   }
 }
+

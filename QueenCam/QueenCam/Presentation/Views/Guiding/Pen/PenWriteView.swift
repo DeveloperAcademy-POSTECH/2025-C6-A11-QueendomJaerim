@@ -29,8 +29,7 @@ struct PenWriteView: View {
   private var topColor = Color.offWhite
   private var photographerColor = Color.photographerPrimary
   private var modelColor = Color.modelPrimary
-  private let magicAfter: TimeInterval = 0.7
-
+  
   var body: some View {
     GeometryReader { geo in
       ZStack {
@@ -66,7 +65,7 @@ struct PenWriteView: View {
               points: tempPoints,
               layers: [
                 .stroke(color: outerColor, width: 10),
-                .stroke(color: .offWhite, width: 5),
+                .stroke(color: .systemWhite, width: 5)
               ]
             )
           }
@@ -82,7 +81,7 @@ struct PenWriteView: View {
               size: geo.size,
               points: tempPoints,
               layers: [
-                .stroke(color: .offWhite, width: 3)
+                .stroke(color: .systemWhite, width: 3)
               ]
             )
           }
@@ -111,12 +110,6 @@ struct PenWriteView: View {
               return
             }
             penViewModel.updateStroke(id: id, points: tempPoints)
-
-            if isMagicPen {
-              DispatchQueue.main.asyncAfter(deadline: .now() + magicAfter) {
-                penViewModel.remove(id)
-              }
-            }
             tempPoints.removeAll()
             currentStrokeID = nil
             penViewModel.redoStrokes.removeAll()
@@ -181,3 +174,4 @@ private extension PenWriteView {
     }
   }
 }
+
