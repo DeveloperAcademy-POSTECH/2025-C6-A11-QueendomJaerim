@@ -208,7 +208,10 @@ extension CameraView: View {
           connectedDeviceName: connectionViewModel.connectedDeviceName,
           reconnectingDeviceName: connectionViewModel.reconnectingDeviceName,
           contextMenuContent: {
-            toolBarCameraSettingTool
+
+            if isPhotographerMode {
+              toolBarCameraSettingTool
+            }
 
             Button("기능 1") {}
             Button("기능 2") {}
