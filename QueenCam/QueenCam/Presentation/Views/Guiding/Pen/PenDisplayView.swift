@@ -4,20 +4,15 @@
 //
 //  Created by Bora Yun on 10/16/25.
 
-import Observation
+import Foundation
 import SwiftUI
 
 /// 저장된 펜 가이드라인 조회(출력) 뷰 (Both)
 struct PenDisplayView: View {
   var penViewModel: PenViewModel
-  let role: Role?
-  private var topColor = Color.offWhite
-  private var photographerColor = Color.photographerPrimary
-  private var modelColor = Color.modelPrimary
 
-  init(penViewModel: PenViewModel, role: Role?) {
+  init(penViewModel: PenViewModel) {
     self.penViewModel = penViewModel
-    self.role = role
   }
 
   var body: some View {

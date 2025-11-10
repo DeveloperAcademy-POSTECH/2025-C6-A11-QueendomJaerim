@@ -7,7 +7,7 @@
 import Foundation
 import SwiftUI
 
-/// 일반펜에 해당하는 stroke의 View
+/// 매직펜에 해당하는 stroke의 View
 struct SingleMagicStrokeView: View {
   var penViewModel: PenViewModel
   let roleForTheme: Role?
