@@ -30,7 +30,9 @@ struct CameraView {
   @State private var isLarge: Bool = false
 
   @State private var isPen: Bool = false
+  @State private var hasShownPenToast = false
   @State private var isMagicPen: Bool = false
+  @State private var hasShownMagicPenToast: Bool = false
   @State private var penViewModel = PenViewModel()
 
   @State private var frameViewModel = FrameViewModel()
@@ -422,6 +424,10 @@ extension CameraView: View {
                   penViewModel.showGuidingDisabledToast(type: .pen)
                   return
                 }
+                if !hasShownPenToast{
+                  penViewModel.showFirstToolToast(type: .pen)
+                  hasShownPenToast = true
+                }
 
                 isPen.toggle()
                 isMagicPen = false
@@ -440,6 +446,10 @@ extension CameraView: View {
                 guard !isRemoteGuideHidden else {
                   penViewModel.showGuidingDisabledToast(type: .magicPen)
                   return
+                }
+                if !hasShownMagicPenToast{
+                  penViewModel.showFirstToolToast(type: .magicPen)
+                  hasShownMagicPenToast = true
                 }
 
                 isMagicPen.toggle()

@@ -156,6 +156,7 @@ struct PenWriteView: View {
           switch action {
           case .deleteAll:
             penViewModel.deleteAll()
+            penViewModel.showEraseGuidingLineToast()
           case .undo:
             penViewModel.undo()
           case .redo:

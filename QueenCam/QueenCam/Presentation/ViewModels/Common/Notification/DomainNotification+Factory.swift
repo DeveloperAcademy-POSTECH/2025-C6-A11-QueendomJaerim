@@ -40,6 +40,12 @@ extension DomainNotification {
     case turnOnGuidingFirstWithMagicPen
     case turnOffGuiding
     case turnOnGuiding
+    /// 상대가 프레임을 수정하고 있을 때 (최초 1회)
+    /// 상대가 가이드 프레임을 생성했을 때 (최초 1회)
+    /// 사용자가 가이드 프레임을 껐을 때 (최초 1회)
+    /// 상대가 가이드 프레임을 껐을 때 (최초 1회)
+    /// 상대가 프레임 수정 모드에 돌입 했을 때 (최초 1회)
+    /// 사용자가 프레임 수정 모드에 돌입 했을 때 (최초 1회)
     /// 레퍼런스가 없는 상황에서,  사용자가 새로운 레퍼런스를 등록했을 때
     case registerFirstReference
     /// 레퍼런스가 없는 상황에서, 상대가 새로운 레퍼런스를 등록했을 때
@@ -52,6 +58,12 @@ extension DomainNotification {
     case deleteReference
     /// 상대가 레퍼런스 삭제시
     case peerDeleteReference
+    /// 펜툴을 처음 선택한 경우 (최초 1회)
+    case firstPenToolSelected
+    /// 펜의 지우개를 사용할 때
+    case penEraserSelected
+    /// 매직펜툴을 처음 선택한 경우 (최초 1회)
+    case firstMagicToolSelected
     
     var preset: Preset {
       switch self {
@@ -98,6 +110,13 @@ extension DomainNotification {
         return .init(message: "참고 이미지를 삭제했어요", isImportant: false, showingTime: 2)
       case .peerDeleteReference:
         return  .init(message: "친구가 참고 이미지를 삭제했어요", isImportant: false, showingTime: 2)
+      // 펜 + 매직펜
+      case .firstPenToolSelected:
+        return .init(message: "펜으로 가이드를 그립니다.", isImportant: false, showingTime: 2)
+      case .penEraserSelected:
+        return .init(message: "깔끔하게 지웠어요", isImportant: false, showingTime: 2)
+      case .firstMagicToolSelected:
+        return .init(message: "지우지 않아도 사라지는 펜입니다.", isImportant: false, showingTime: 2)
       }
     }
   }
