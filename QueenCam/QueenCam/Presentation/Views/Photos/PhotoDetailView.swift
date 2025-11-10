@@ -20,7 +20,7 @@ struct PhotoDetailView {
   @State private var loadedImageList: [String: UIImage] = [:]  // 캐시된 이미지 리스트들 원본 (사진 ID: 고화질 원본)
 
   // 한번 탭 UI 변경용
-  @State private var isSingleTapped: Bool = false
+  @State private var isSingleTapped: Bool = true
 
   private let logger = QueenLogger(category: "PhotoDetailView")
 }
