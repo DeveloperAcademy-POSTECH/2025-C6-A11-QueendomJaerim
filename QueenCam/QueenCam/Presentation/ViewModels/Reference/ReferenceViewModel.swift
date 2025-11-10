@@ -21,12 +21,14 @@ final class ReferenceViewModel {
   var alignment: Alignment { location.alignment }
   /// CloseView의 위치 계산에 사용될 레퍼런스 높이
   var referenceHeight: CGFloat = 0
+
   /// 현재 레퍼런스 존재 여부
   var hasReferenceImage: Bool {
     image != nil
   }
   /// 현재 레퍼런스 토스트 존재 여부
   var hasReferenceToast: Bool = false
+
 
   // MARK: - Network
   let networkService: NetworkServiceProtocol
