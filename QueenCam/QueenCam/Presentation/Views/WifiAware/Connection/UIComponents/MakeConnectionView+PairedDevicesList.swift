@@ -124,7 +124,10 @@ extension MakeConnectionView.PairedDevicesList: View {
   }
 
   func pairedDeviceRowView(for device: WAPairedDevice) -> some View {
-    HStack(alignment: .center) {
+    let controlsContainerWidth: CGFloat = 60
+    let controlsContainerHeight: CGFloat = 42
+    
+    return HStack(alignment: .center) {
       Text(device.pairingInfo?.pairingName ?? "알 수 없는 이름")
         .typo(.m18)
         .foregroundStyle(.offWhite)
@@ -141,7 +144,7 @@ extension MakeConnectionView.PairedDevicesList: View {
           if isPairing && !isConnected {  // host의 경우 연결중과 연결완료가 구분되지 않으므로 조건을 더 한정
             ProgressView()
               .tint(.offWhite)
-              .frame(width: 42, height: 42)
+              .frame(width: controlsContainerHeight, height: controlsContainerHeight)
           }
         } else {
           Button {
@@ -156,7 +159,7 @@ extension MakeConnectionView.PairedDevicesList: View {
           .glassEffect(.regular)
         }
       }
-      .frame(width: 60)
+      .frame(width: controlsContainerWidth, height: controlsContainerHeight)
     }
   }
 }
