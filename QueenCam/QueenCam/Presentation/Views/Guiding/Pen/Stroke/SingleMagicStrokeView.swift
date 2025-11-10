@@ -14,9 +14,10 @@ struct SingleMagicStrokeView: View {
   let geoSize: CGSize
   let stroke: Stroke
   var body: some View {
+    let outerColor = (stroke.author == .model) ? Color.modelPrimary : .photographerPrimary
+    
     // 매직펜의 Blur 레이어
     Canvas { context, _ in
-      let outerColor = (stroke.author == .model) ? Color.modelPrimary : .photographerPrimary
       var path = Path()
       path.addLines(stroke.absolutePoints(in: geoSize))
 
@@ -36,7 +37,6 @@ struct SingleMagicStrokeView: View {
 
     // 매직펜의 !Blur 레이어
     Canvas { context, _ in
-      for stroke in penViewModel.strokes where stroke.points.count > 1 && stroke.isMagicPen {
         var path = Path()
         path.addLines(stroke.absolutePoints(in: geoSize))
 
@@ -45,7 +45,6 @@ struct SingleMagicStrokeView: View {
           with: .color(.offWhite),
           style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round)
         )
-      }
     }
   }
 }
