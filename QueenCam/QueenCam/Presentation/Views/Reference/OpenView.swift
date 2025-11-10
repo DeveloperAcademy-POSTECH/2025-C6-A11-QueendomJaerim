@@ -35,7 +35,6 @@ struct OpenView: View {
               return isLarge ? baseHeight * 2 : baseHeight
             }
           }()
-
           Image(uiImage: image)
             .resizable()
             .scaledToFill()
@@ -43,7 +42,9 @@ struct OpenView: View {
             .glassEffect( .clear, in: .rect(cornerRadius: 24))
             .clipShape(.rect(cornerRadius: 24))
             .onTapGesture {
-              isLarge.toggle()
+              withAnimation(.easeInOut(duration: isLarge ? 0.4 : 0.8)){
+                isLarge.toggle()
+              }
               showDelete.toggle()
             }
         }
