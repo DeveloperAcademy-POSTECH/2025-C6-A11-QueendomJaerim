@@ -90,7 +90,7 @@ final class NetworkService: NetworkServiceProtocol {
   private var eventHandlerTasks: [Task<Void, Error>] = []
 
   // Health Check
-  private let healthCheckPeriod: TimeInterval = 1.0
+  private let healthCheckPeriod: TimeInterval = 0.5
   private var healthCheckTimer: Timer?
   private var requestedRandomCode: String?
   private var healthCheckPending: Bool = false  // 현재 요청한 헬스 체크 응답이 도착하지 않으면 true, 도착했으면 false
@@ -278,7 +278,7 @@ final class NetworkService: NetworkServiceProtocol {
     networkTask?.cancel()
     Task {
       await self.connectionManager.stopAll()
-      
+
       if byUser {
         self.networkState = self.mode == .host ? .host(.cancelled) : .viewer(.cancelled)
       } else {
@@ -300,7 +300,7 @@ extension NetworkService {
 
   /// 연결이 끊겼다고 판정할 헬스 체크 시간
   private var healthCheckTimeout: TimeInterval {
-    4.0
+    2.0
   }
 
   /// 헬스 체크 프로토콜 시작 (뷰어)
