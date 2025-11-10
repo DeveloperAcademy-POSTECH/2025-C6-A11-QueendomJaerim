@@ -139,7 +139,7 @@ final class PenViewModel {
     case pen
     case magicPen
   }
-
+  // 가이드 숨김 토글 관련 토스트
   func showGuidingDisabledToast(type: GuidingType) {
     switch type {
     case .pen:
@@ -147,6 +147,19 @@ final class PenViewModel {
     case .magicPen:
       notificationService.registerNotification(DomainNotification.make(type: .turnOnGuidingFirstWithMagicPen))
     }
+  }
+  // 처음으로 툴 선택 할때 토스트
+  func showFirstToolToast(type: GuidingType) {
+    switch type {
+    case .pen:
+      notificationService.registerNotification(DomainNotification.make(type: .firstPenToolSelected))
+    case .magicPen:
+      notificationService.registerNotification(DomainNotification.make(type: .firstMagicToolSelected))
+    }
+  }
+  // 지우개로 펜 가이드라인 지울때마다의 토스트
+  func showEraseGuidingLineToast() {
+    notificationService.registerNotification(DomainNotification.make(type: .penEraserSelected))
   }
 }
 
