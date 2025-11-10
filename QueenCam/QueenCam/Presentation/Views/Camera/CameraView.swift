@@ -49,6 +49,8 @@ struct CameraView {
 
   /// 연결 플로우가 진행되는 ConnectionView를 띄울지 여부
   @State private var isShowConnectionView: Bool = false
+  
+  @Environment(\.displayScale) private var displayScale
 }
 
 extension CameraView {
@@ -649,7 +651,7 @@ extension CameraView: View {
     }
     .task {
       await cameraViewModel.checkPermissions()
-      await cameraViewModel.loadThumbnail()
+      await cameraViewModel.loadThumbnail(scale: displayScale)
     }
     // Life Cycle of the view
     .onAppear {

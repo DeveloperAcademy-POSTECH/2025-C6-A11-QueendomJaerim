@@ -173,7 +173,7 @@ final class CameraViewModel {
     cameraSettingsService.gridOn = isShowGrid
   }
 
-  func loadThumbnail() async {
+  func loadThumbnail(scale: CGFloat) async {
     let status = await PHPhotoLibrary.requestAuthorization(for: .readWrite)
 
     guard status == .authorized || status == .limited else {
@@ -181,9 +181,9 @@ final class CameraViewModel {
       return
     }
 
-    await fetchThumbnail()
+    await fetchThumbnail(scale: scale)
   }
-  
+
   func showGuidingToast(isRemoteGuideHidden: Bool) {
     if isRemoteGuideHidden {
       notificationService.registerNotification(.make(type: .turnOffGuiding))
@@ -194,7 +194,7 @@ final class CameraViewModel {
 }
 
 extension CameraViewModel {
-  private func fetchThumbnail() async {
+  private func fetchThumbnail(scale: CGFloat) async {
     let fetchOptions = PHFetchOptions()
     fetchOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
     fetchOptions.fetchLimit = 1  // 한개만 요청
@@ -207,11 +207,11 @@ extension CameraViewModel {
     }
 
     // 이미지 생성
-    await requestThumbnailImage(asset: asset)
+    await requestThumbnailImage(asset: asset, scale: scale)
   }
 
-  private func requestThumbnailImage(asset: PHAsset) async {
-    let targetSize = CGSize(width: 48, height: 48)
+  private func requestThumbnailImage(asset: PHAsset, scale: CGFloat) async {
+    let targetSize = CGSize(width: 48 * scale, height: 48 * scale)
     let options = PHImageRequestOptions()
     options.deliveryMode = .highQualityFormat
     options.resizeMode = .exact
