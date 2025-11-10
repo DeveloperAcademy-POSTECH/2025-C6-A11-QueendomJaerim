@@ -40,6 +40,18 @@ extension DomainNotification {
     case turnOnGuidingFirstWithMagicPen
     case turnOffGuiding
     case turnOnGuiding
+    /// 레퍼런스가 없는 상황에서,  사용자가 새로운 레퍼런스를 등록했을 때
+    case registerFirstReference
+    /// 레퍼런스가 없는 상황에서, 상대가 새로운 레퍼런스를 등록했을 때
+    case peerRegisterFirstReference
+    /// 레퍼런스가 있는 상황에서 사용자가 새로운 레퍼런스 등록했을 때
+    case registerNewReference
+    /// 레퍼런스가 있는 상황에서, 상대가 새로운 레퍼런스 등록했을 때
+    case peerRegisterNewReference
+    /// 사용자가 레퍼런스 삭제시
+    case deleteReference
+    /// 상대가 레퍼런스 삭제시
+    case peerDeleteReference
     
     var preset: Preset {
       switch self {
@@ -73,6 +85,19 @@ extension DomainNotification {
         return .init(message: "모든 가이드를 숨깁니다.", isImportant: false, showingTime: 2)
       case .turnOnGuiding:
         return .init(message: "가이드가 보여집니다.", isImportant: false, showingTime: 2)
+      // 레퍼런스
+      case .registerFirstReference:
+        return .init(message: "친구에게도 참고 이미지가 공유되었어요", isImportant: false , showingTime: 2)
+      case .peerRegisterFirstReference:
+        return .init(message: "친구가 참고 이미지를 등록했어요", isImportant: false, showingTime: 2)
+      case .registerNewReference:
+        return .init(message: "새로운 참고 이미지를 등록했어요", isImportant: false, showingTime: 2)
+      case .peerRegisterNewReference:
+        return .init(message: "친구가 새로운 참고 이미지를 등록했어요", isImportant: false, showingTime: 2)
+      case .deleteReference:
+        return .init(message: "참고 이미지를 삭제했어요", isImportant: false, showingTime: 2)
+      case .peerDeleteReference:
+        return  .init(message: "친구가 참고 이미지를 삭제했어요", isImportant: false, showingTime: 2)
       }
     }
   }
