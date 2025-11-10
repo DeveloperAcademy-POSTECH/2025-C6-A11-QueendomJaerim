@@ -526,9 +526,9 @@ extension CameraView: View {
           DragGesture(minimumDistance: 30)
             .onEnded { value in
               guard isPhotographerMode else { return }
-              if value.translation.height > 0 {
+              if value.translation.height < 0 {
                 withAnimation {
-                  self.isShowCameraSettingTool = false
+                  self.isShowCameraSettingTool = true
                 }
               }
             }
@@ -544,9 +544,9 @@ extension CameraView: View {
             DragGesture(minimumDistance: 30)
               .onEnded { value in
                 guard isPhotographerMode else { return }
-                if value.translation.height < 0 {
+                if value.translation.height > 0 {
                   withAnimation {
-                    self.isShowCameraSettingTool = true
+                    self.isShowCameraSettingTool = false
                   }
                 }
               }
