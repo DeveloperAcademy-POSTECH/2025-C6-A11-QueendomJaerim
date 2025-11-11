@@ -235,7 +235,7 @@ extension ConnectionViewModel {
   private func tryReconnect() {
     if let lastConnectedDevice {
       logger.info("try to reconnect to \(lastConnectedDevice)")
-      networkService.run(for: lastConnectedDevice)
+      networkService.reconnect(for: lastConnectedDevice)
     } else {
       logger.warning("최근 연결한 디바이스 정보가 없어 재연결에 실패했습니다.")
     }
