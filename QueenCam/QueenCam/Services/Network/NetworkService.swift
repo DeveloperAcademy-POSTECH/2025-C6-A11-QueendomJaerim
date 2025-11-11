@@ -89,6 +89,19 @@ final class NetworkService: NetworkServiceProtocol {
   private let connectionManager: ConnectionManagerProtocol
   private var eventHandlerTasks: [Task<Void, Error>] = []
 
+  // Monitoring
+  private var monitorTimer: Timer?
+  private let monitoringInterval: TimeInterval = 0.5
+  private var deviceReports: [WAPairedDevice: WAPerformanceReport] = [:] {
+    didSet {
+      deviceReportsSubject.send(deviceReports)
+    }
+  }
+  private let deviceReportsSubject = CurrentValueSubject<[WAPairedDevice: WAPerformanceReport], Never>([:])
+  var deviceReportsPublisher: AnyPublisher<[WAPairedDevice: WAPerformanceReport], Never> {
+    deviceReportsSubject.eraseToAnyPublisher()
+  }
+
   // Health Check
   private let healthCheckPeriod: TimeInterval = 0.5
   private var healthCheckTimer: Timer?
@@ -122,6 +135,10 @@ final class NetworkService: NetworkServiceProtocol {
     eventHandlerTasks.append(setupEventHandler(for: connectionManager.localEvents))
     eventHandlerTasks.append(setupEventHandler(for: connectionManager.networkEvents))
   }
+}
+
+extension NetworkService {
+  // MARK: - Event Handling
 
   private func setupEventHandler<T>(for stream: AsyncStream<T>) -> Task<Void, Error> {
     Task {
@@ -196,8 +213,9 @@ final class NetworkService: NetworkServiceProtocol {
       } else {
         networkState = .host(.publishing)
       }
+
     case .performance(let device, let connectionDetail):
-      deviceConnections[device] = connectionDetail
+      deviceReports[device] = connectionDetail.performanceReport
 
     case .stopped(let device, let connectionID, let error):
       logger.info("handle stopped event \(error)")
@@ -242,6 +260,23 @@ final class NetworkService: NetworkServiceProtocol {
     networkEventSubject.send(event)
   }
 
+  private func startMonitoring(interval: TimeInterval) {
+    monitorTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { timer in
+      Task { [weak self] in
+        try await self?.connectionManager.monitor()
+      }
+    }
+  }
+
+  private func stopMonitoring() {
+    monitorTimer?.invalidate()
+    monitorTimer = nil
+  }
+}
+
+extension NetworkService {
+  // MARK: - Public Interfaces
+
   func run(for device: WAPairedDevice) {
     logger.debug("run() invoked")
 
@@ -254,6 +289,8 @@ final class NetworkService: NetworkServiceProtocol {
         }
       }
     }
+
+    startMonitoring(interval: monitoringInterval)
   }
 
   func disconnect() {
@@ -308,6 +345,7 @@ final class NetworkService: NetworkServiceProtocol {
   }
 
   func stop(byUser: Bool) {
+    stopMonitoring()
     networkTask?.cancel()
     Task {
       await self.connectionManager.stopAll()
