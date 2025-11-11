@@ -56,7 +56,9 @@ extension SelectRoleView: View {
                 }
 
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                  willShowLoadingAnimation = false
+                  withAnimation {
+                    willShowLoadingAnimation = false
+                  }
                   isShowLoadingAnimation = true
                 }
               }
