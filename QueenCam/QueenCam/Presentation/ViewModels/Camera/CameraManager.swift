@@ -31,7 +31,6 @@ final class CameraManager: NSObject {
 
   private let logger = QueenLogger(category: "CameraManager")
 
-  //  private var cameraDelegate: CameraDelegate?
   private var inTrackingCameraDelegate: [Int64: CameraDelegate] = [:]
 
   var onPhotoCapture: ((UIImage) -> Void)?
