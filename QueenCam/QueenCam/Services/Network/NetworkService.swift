@@ -96,6 +96,9 @@ final class NetworkService: NetworkServiceProtocol {
   private var healthCheckPending: Bool = false  // 현재 요청한 헬스 체크 응답이 도착하지 않으면 true, 도착했으면 false
   private var lastHealthCheckTime: Date?
 
+  // Reconnection
+  @MainActor private var isReconnecting: Bool = false
+
   private let logger = QueenLogger(category: "NetworkService")
 
   init() {
@@ -251,17 +254,42 @@ final class NetworkService: NetworkServiceProtocol {
   func disconnect() {
     Task {
       await send(for: .willDisconnect)
-      try? await Task.sleep(for: .milliseconds(100)) // 상대가 연결 중단 이벤트를 처리할 수 있도록 조금 기다린다
+      try? await Task.sleep(for: .milliseconds(100))  // 상대가 연결 중단 이벤트를 처리할 수 있도록 조금 기다린다
       stop(byUser: true)
     }
   }
-  
+
   func reconnect(for device: WAPairedDevice) {
+    Task { @MainActor in
+      guard !isReconnecting else {
+        logger.warning("Reconnect already in progress. Ignoring new request.")
+        return
+      }
+
+      isReconnecting = true
+
+      networkTask?.cancel()
+
+      await self.connectionManager.stopAll()
+
+      networkTask = Task {
+        _ = try await withTaskCancellationHandler {
+          try await mode == .host ? networkManager.listen(to: device) : networkManager.browse(for: device)
+        } onCancel: {
+          Task { @MainActor in
+            networkState = mode == .host ? .host(.stopped) : .viewer(.stopped)
+          }
+        }
+      }
+
+      isReconnecting = false
+    }
+
     networkTask?.cancel()
-    
+
     Task {
       await self.connectionManager.stopAll()
-      
+
       networkTask = Task {
         _ = try await withTaskCancellationHandler {
           try await mode == .host ? networkManager.listen(to: device) : networkManager.browse(for: device)
