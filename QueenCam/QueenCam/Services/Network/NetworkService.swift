@@ -158,6 +158,11 @@ final class NetworkService: NetworkServiceProtocol {
           logger.debug("The error was .serviceAlreadyPublishing, so do nothing.")
           return
         }
+        
+        if case .serviceAlreadySubscribing = waError {
+          logger.debug("The error was .serviceAlreadySubscribing, so do nothing.")
+          return
+        }
 
         if mode == .viewer {
           networkState = .viewer(.lost)
