@@ -19,6 +19,8 @@ struct PhotoDetailView {
   @State private var currentIndex: Int?  // 현재 스와이프해서 보고 있는 사진 인덱스 (순서)
   @State private var loadedImageList: [String: UIImage] = [:]  // 캐시된 이미지 리스트들 원본 (사진 ID: 고화질 원본)
 
+  @State private var imageAspectRatioList: [String: CGFloat] = [:]  // 각 이미지의 비율 딕셔너리 공유 (가져오는 사진의 비율을 가지고 툴바 색상 변경)
+
   // 한번 탭 UI 변경용
   @State private var isSingleTapped: Bool = true
 
@@ -45,6 +47,22 @@ extension PhotoDetailView {
   private var currentAssetID: String? {
     return currentAsset?.localIdentifier
   }
+
+  private var currentImageAspectRatio: CGFloat {
+    guard let assetID = currentAssetID else { return 1.0 }
+    return imageAspectRatioList[assetID] ?? 1.0
+  }
+
+  private var isOverlap: Bool {
+    guard currentImageAspectRatio != 1.0 else { return false }
+
+    // 0.7보다 작으면 세로로 긴 이미지로 판단 (16:9, 스크린샷 등)
+    let isVerticalImage = currentImageAspectRatio < 0.7
+
+    logger.debug("비율: \(currentImageAspectRatio), 세로형 이미지: \(isVerticalImage)")
+
+    return isVerticalImage
+  }
 }
 
 extension PhotoDetailView: View {
@@ -57,7 +75,8 @@ extension PhotoDetailView: View {
             asset: asset,
             manager: manager,
             onSingleTapAction: { isSingleTapped.toggle() },
-            loadedImageList: $loadedImageList
+            loadedImageList: $loadedImageList,
+            imageAspectRatioList: $imageAspectRatioList
           )
           .containerRelativeFrame(.horizontal)
           .id(index)
@@ -74,6 +93,7 @@ extension PhotoDetailView: View {
             currentIndex: currentIndex ?? .zero,
             totalItemListCount: assetList.count,
             isActive: selectedImageID != nil,
+            isOverlap: isOverlap,
             onTapBackAction: { onTapClose() },
             onTapRegisterAction: {
               if let confirmAssetID = selectedImageID,
