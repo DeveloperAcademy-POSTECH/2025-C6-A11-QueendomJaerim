@@ -49,7 +49,7 @@ struct CameraView {
 
   /// 연결 플로우가 진행되는 ConnectionView를 띄울지 여부
   @State private var isShowConnectionView: Bool = false
-  
+
   @Environment(\.displayScale) private var displayScale
 }
 
@@ -170,7 +170,7 @@ extension CameraView: View {
       )
     }
     .frame(width: 377, height: 192)
-    .glassEffect(.clear.tint(Color.hex333333), in: .rect(cornerRadius: 59))
+    .glassEffect(.clear.tint(Color(red: 0.2, green: 0.2, blue: 0.2)), in: .rect(cornerRadius: 59))
   }
 
   private var toolBarCameraSettingTool: some View {
