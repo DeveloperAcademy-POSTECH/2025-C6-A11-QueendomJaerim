@@ -50,18 +50,22 @@ final class NetworkService: NetworkServiceProtocol {
 
       networkStateSubject.send(networkState)
 
+      // Analytics
+      if networkState == .host(.lost) || networkState == .viewer(.lost) {
+        traceConnectionLostEvent()
+      }
+
       // 연결이 취소되거나 유실되었다면 헬스 체크를 리셋한다
       if networkState == .host(.cancelled)
-          || networkState == .viewer(.cancelled)
-          || networkState == .host(.lost)
-          || networkState == .viewer(.lost) {
+        || networkState == .viewer(.cancelled)
+        || networkState == .host(.lost)
+        || networkState == .viewer(.lost) {
         resetHealthCheck()  // 헬스 체크 리셋
       }
-      
+
       // 연결이 취소되었다면 다음 태스크에서 stopped 상태로 전환한다
       // 유실된 경우 추가적인 액션을 필요로 한다. 따라서 바로 stopped 상태로 전환하지 않는다.
-      if networkState == .host(.cancelled)
-          || networkState == .viewer(.cancelled) {
+      if networkState == .host(.cancelled) || networkState == .viewer(.cancelled) {
         Task {
           networkState = mode == .host ? .host(.stopped) : .viewer(.stopped)
         }
@@ -158,7 +162,7 @@ final class NetworkService: NetworkServiceProtocol {
           logger.debug("The error was .serviceAlreadyPublishing, so do nothing.")
           return
         }
-        
+
         if case .serviceAlreadySubscribing = waError {
           logger.debug("The error was .serviceAlreadySubscribing, so do nothing.")
           return
@@ -237,6 +241,10 @@ final class NetworkService: NetworkServiceProtocol {
     if case .willDisconnect = event {
       logger.info("Received willDisconnect event. Stopping connection.")
       stop(byUser: true)
+    }
+
+    if case .startSession = event {
+      traceSessionStartEvent()
     }
 
     networkEventSubject.send(event)
