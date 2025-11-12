@@ -41,7 +41,7 @@ struct ReferenceView: View {
               CloseView(referenceViewModel: referenceViewModel)
             }
             .padding(.horizontal, -8)
-            .padding(.vertical, 30)
+            .padding(.vertical, referenceViewModel.referenceHeight/2-50.5)
             .highPriorityGesture(
               DragGesture(minimumDistance: 5, coordinateSpace: .named(containerName))
                 .onChanged { value in

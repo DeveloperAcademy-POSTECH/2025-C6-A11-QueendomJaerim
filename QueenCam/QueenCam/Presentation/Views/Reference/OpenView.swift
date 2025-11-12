@@ -39,6 +39,7 @@ struct OpenView: View {
             .resizable()
             .scaledToFill()
             .frame(width: width, height: height, alignment: .center)
+            .onAppear { referenceViewModel.referenceHeight = height }
             .glassEffect( .clear, in: .rect(cornerRadius: 24))
             .clipShape(.rect(cornerRadius: 24))
             .onTapGesture {
