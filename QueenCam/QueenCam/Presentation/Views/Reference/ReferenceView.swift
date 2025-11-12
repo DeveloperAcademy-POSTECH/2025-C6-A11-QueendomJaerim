@@ -29,7 +29,9 @@ struct ReferenceView: View {
                   }
                   .onEnded { value in
                     // fold/unfold 접힘 판정
-                    referenceViewModel.dragEnded()
+                    if !isLarge {
+                      referenceViewModel.dragEnded()
+                    }
                     // corner 위치 이동 판정
                     referenceViewModel.updateLocation(end: value.predictedEndLocation, size: geo.size)
                   }
