@@ -73,9 +73,9 @@ final class ReferenceViewModel {
       dragOffset = .zero
     }
   }
-
+  /// CloseView에서의 버튼 누를때 액션
   func unFold() {
-    withAnimation(.snappy) {
+    withAnimation(.easeIn(duration: 0.6)) {
       state = .open
       dragOffset = .zero
     }
