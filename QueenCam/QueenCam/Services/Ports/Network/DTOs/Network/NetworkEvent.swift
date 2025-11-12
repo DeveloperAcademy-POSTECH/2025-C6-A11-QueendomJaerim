@@ -54,6 +54,9 @@ enum NetworkEvent: Sendable {
 
   /// 역할 바꾸기 요청. 상대의 새 역할을 제안한다
   case changeRole(RolePayload, LWWRegister)
+  
+  /// 따봉 이벤트
+  case thumbsUp(ThumbsUpEventType)
 }
 
 nonisolated extension NetworkEvent: Codable {
