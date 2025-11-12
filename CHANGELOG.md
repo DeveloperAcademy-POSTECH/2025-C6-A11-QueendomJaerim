@@ -18,6 +18,7 @@
 - 가이딩 토글 버튼에 따른 비활성화 상태 변경
 - Appearance를 Dark로 고정
 - 디자인 세부 조정 (카메라 뷰, 재연결 뷰, 프레임 가이딩)
+- `LocalEvent.browserStopped(let error)` / `LocalEvent.listenerStopped(let error)`에 대한 대응 방식 변경
 
 ### Deprecated
 
