@@ -23,4 +23,7 @@ final class DependencyContainer {
   lazy var cameraSettingServcice: CameraSettingsServiceProtocol = CameraSettingsService()
 
   lazy var notificationService: NotificationService = NotificationService()
+  
+  // lazy면 NotificaitonCenter 기반 이벤트 로깅이 작동하지 않을 수 있음
+  let analyticsService: AnalyticsService = AnalyticsService()
 }
