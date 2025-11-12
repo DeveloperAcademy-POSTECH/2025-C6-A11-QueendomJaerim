@@ -12,7 +12,9 @@ struct OpenView: View {
   var referenceViewModel: ReferenceViewModel
   @State private var showDelete: Bool = false
   @Binding var isLarge: Bool
-  
+  private let enlargeDuration: Double = 0.8
+  private let shrinkDuration: Double = 0.4
+
   var body: some View {
     ZStack(alignment: .topTrailing) {
       Group {
@@ -40,17 +42,18 @@ struct OpenView: View {
             .scaledToFill()
             .frame(width: width, height: height, alignment: .center)
             .onAppear { referenceViewModel.referenceHeight = height }
-            .glassEffect( .clear, in: .rect(cornerRadius: 24))
+            .glassEffect(.clear, in: .rect(cornerRadius: 24))
             .clipShape(.rect(cornerRadius: 24))
             .onTapGesture {
-              withAnimation(.easeInOut(duration: isLarge ? 0.4 : 0.8)){
+              withAnimation(.easeInOut(duration: !isLarge ? enlargeDuration : shrinkDuration)) {
                 isLarge.toggle()
-                showDelete.toggle()
               }
             }
         }
       }
-      if isLarge && (referenceViewModel.image != nil) {
+
+      if showDelete && (referenceViewModel.image != nil) {
+        // 레퍼런스 삭제 버튼
         Button {
           referenceViewModel.onDelete()
           showDelete = false
@@ -59,6 +62,16 @@ struct OpenView: View {
           ReferenceDeleteButton()
         }
         .padding(12)
+        .transition(.opacity.combined(with: .scale))
+      }
+    }
+    .onChange(of: isLarge) { _, newValue in
+      if newValue {
+        DispatchQueue.main.asyncAfter(deadline: .now() + enlargeDuration) {
+          showDelete = true
+        }
+      } else {
+        showDelete = false
       }
     }
   }
