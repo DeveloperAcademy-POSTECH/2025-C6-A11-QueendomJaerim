@@ -108,6 +108,12 @@ final class NetworkService: NetworkServiceProtocol {
   private var requestedRandomCode: String?
   private var healthCheckPending: Bool = false  // 현재 요청한 헬스 체크 응답이 도착하지 않으면 true, 도착했으면 false
   private var lastHealthCheckTime: Date?
+  
+  // Publisher Timeout Counts
+  /// .publihserTimeout이 발생한 횟수
+  private var publisherTimeoutCounts: Int = 0
+  /// .publihserTimeout이 누적되었을 때 연결을 끊을 최대 카운트
+  private let maxPublisherTimeoutCounts: Int = 10
 
   // Reconnection
   @MainActor private var isReconnecting: Bool = false
@@ -178,9 +184,13 @@ extension NetworkService {
           logger.debug("The error was .serviceAlreadySubscribing, so do nothing.")
           return
         }
-        
-        if case .publisherTimeout = waError {
-          logger.debug("The error was .publisherTimeout, currently do nothing and monitor the healthcheck.")
+
+        if case .publisherTimeout = waError, publisherTimeoutCounts < maxPublisherTimeoutCounts {
+          publisherTimeoutCounts += 1
+          logger.debug(
+            "The error was .publisherTimeout, currently do nothing and monitor the healthcheck. " +
+            "current count: \(publisherTimeoutCounts), max: \(maxPublisherTimeoutCounts)"
+          )
           return
         }
 
