@@ -220,6 +220,9 @@ struct FrameView: View {
         }
       }
     }
+    .onAppear {
+      frameViewOnAppear()
+    }
   }
 
   /// 모서리 핸들의 위치에 대한 함수
@@ -250,5 +253,10 @@ struct FrameView: View {
     frameViewModel.isInteracting = false
     frameViewModel.interactingRole = nil
     frameViewModel.sendFrameInteracting(false)
+  }
+  
+  // MARK: Life Cycle
+  private func frameViewOnAppear() {
+    frameViewModel.setContainerSize(for: containerSize)
   }
 }
