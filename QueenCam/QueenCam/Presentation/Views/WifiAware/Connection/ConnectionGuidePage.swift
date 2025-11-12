@@ -23,6 +23,7 @@ struct ConnectionGuidePage: View {
           .typo(.sb12)
           .foregroundStyle(.gray400)
           .underline()
+          .opacity(0.0) // FIXME: 디자인 파트 요청으로 디자인 작업 완료까지 숨긴다
 
         Spacer()
           .frame(height: 26)
