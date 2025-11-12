@@ -49,6 +49,8 @@ struct CameraView {
 
   /// 연결 플로우가 진행되는 ConnectionView를 띄울지 여부
   @State private var isShowConnectionView: Bool = false
+
+  @Environment(\.displayScale) private var displayScale
 }
 
 extension CameraView {
@@ -168,7 +170,7 @@ extension CameraView: View {
       )
     }
     .frame(width: 377, height: 192)
-    .glassEffect(.clear.tint(Color.hex333333), in: .rect(cornerRadius: 59))
+    .glassEffect(.clear.tint(Color(red: 0.2, green: 0.2, blue: 0.2)), in: .rect(cornerRadius: 59))
   }
 
   private var toolBarCameraSettingTool: some View {
@@ -208,7 +210,10 @@ extension CameraView: View {
           connectedDeviceName: connectionViewModel.connectedDeviceName,
           reconnectingDeviceName: connectionViewModel.reconnectingDeviceName,
           contextMenuContent: {
-            toolBarCameraSettingTool
+
+            if isPhotographerMode {
+              toolBarCameraSettingTool
+            }
 
             Button("기능 1") {}
             Button("기능 2") {}
@@ -352,7 +357,7 @@ extension CameraView: View {
                   } else if !isRemoteGuideHidden && !frameViewModel.frames.isEmpty {
                     frameViewModel.setFrame(true)
                   }
-                  
+
                   cameraViewModel.showGuidingToast(isRemoteGuideHidden: isRemoteGuideHidden)
                 }
               )
@@ -373,10 +378,12 @@ extension CameraView: View {
           }
         }
         .aspectRatio(3 / 4, contentMode: .fill)
+        .clipped()
         .clipShape(.rect(cornerRadius: 5))
         .overlay {
           RoundedRectangle(cornerRadius: 5)
-            .stroke(.gray, lineWidth: 1)
+            .inset(by: 0.5)
+            .stroke(.gray600, lineWidth: 1)
         }
         .padding(.horizontal, 16)
         .overlay(alignment: .center) {
@@ -507,6 +514,13 @@ extension CameraView: View {
                   }
               }
             } else {
+
+              Circle()
+                .fill(.clear)
+                .frame(width: 80, height: 80)
+
+              Spacer()
+
               BoomupButton(tapAction: {})
             }
           }
@@ -519,8 +533,10 @@ extension CameraView: View {
           DragGesture(minimumDistance: 30)
             .onEnded { value in
               guard isPhotographerMode else { return }
-              withAnimation {
-                self.isShowCameraSettingTool = true
+              if value.translation.height < 0 {
+                withAnimation {
+                  self.isShowCameraSettingTool = true
+                }
               }
             }
         )
@@ -531,6 +547,17 @@ extension CameraView: View {
       if isShowCameraSettingTool {
         Color.black.opacity(0.1)
           .ignoresSafeArea()
+          .gesture(
+            DragGesture(minimumDistance: 30)
+              .onEnded { value in
+                guard isPhotographerMode else { return }
+                if value.translation.height > 0 {
+                  withAnimation {
+                    self.isShowCameraSettingTool = false
+                  }
+                }
+              }
+          )
           .onTapGesture {
             withAnimation {
               isShowCameraSettingTool = false
@@ -626,7 +653,7 @@ extension CameraView: View {
     }
     .task {
       await cameraViewModel.checkPermissions()
-      await cameraViewModel.loadThumbnail()
+      await cameraViewModel.loadThumbnail(scale: displayScale)
     }
     // Life Cycle of the view
     .onAppear {

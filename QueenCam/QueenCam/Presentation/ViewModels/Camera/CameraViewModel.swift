@@ -30,7 +30,7 @@ final class CameraViewModel {
   var isCaptureButtonEnabled: Bool = true
 
   // MARK: Thumbnail
-  private let cachingManger = PHCachingImageManager()
+  private let cachingManager = PHCachingImageManager()
   var thumbnailImage: UIImage?
 
   private let logger = QueenLogger(category: "CameraViewModel")
@@ -180,7 +180,7 @@ final class CameraViewModel {
     cameraSettingsService.gridOn = isShowGrid
   }
 
-  func loadThumbnail() async {
+  func loadThumbnail(scale: CGFloat) async {
     let status = await PHPhotoLibrary.requestAuthorization(for: .readWrite)
 
     guard status == .authorized || status == .limited else {
@@ -188,7 +188,7 @@ final class CameraViewModel {
       return
     }
 
-    await fetchThumbnail()
+    await fetchThumbnail(scale: scale)
   }
 
   func showGuidingToast(isRemoteGuideHidden: Bool) {
@@ -201,6 +201,7 @@ final class CameraViewModel {
 }
 
 extension CameraViewModel {
+
   private func handleReadiness(readiness: AVCapturePhotoOutput.CaptureReadiness) {
     switch readiness {
     // 세션이 실행 중이 아닐 때
@@ -244,17 +245,17 @@ extension CameraViewModel {
     }
 
     // 이미지 생성
-    await requestThumbnailImage(asset: asset)
+    await requestThumbnailImage(asset: asset, scale: scale)
   }
 
-  private func requestThumbnailImage(asset: PHAsset) async {
-    let targetSize = CGSize(width: 48, height: 48)
+  private func requestThumbnailImage(asset: PHAsset, scale: CGFloat) async {
+    let targetSize = CGSize(width: 48 * scale, height: 48 * scale)
     let options = PHImageRequestOptions()
     options.deliveryMode = .highQualityFormat
     options.resizeMode = .exact
     options.isNetworkAccessAllowed = true
 
-    cachingManger.requestImage(
+    cachingManager.requestImage(
       for: asset,
       targetSize: targetSize,
       contentMode: .aspectFill,
