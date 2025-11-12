@@ -198,6 +198,18 @@ final class CameraViewModel {
       notificationService.registerNotification(.make(type: .turnOnGuiding))
     }
   }
+
+  func managePhotosPickerToast(isShowPhotosPicker: Bool) {
+    if isShowPhotosPicker {
+      notificationService.registerNotification(.make(type: .photosPickerShowing))
+    } else {
+      if let currentNotification = notificationService.currentNotification,
+        currentNotification.isType(of: .photosPickerShowing) {
+        // 현재 표시되고 있는 토스트가 photosPickerShowing 타입이면 리셋
+        notificationService.reset()
+      }
+    }
+  }
 }
 
 extension CameraViewModel {

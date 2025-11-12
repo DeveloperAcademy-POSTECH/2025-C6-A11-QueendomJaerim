@@ -628,6 +628,9 @@ extension CameraView: View {
       guard !isRemoteGuideHidden else { return }
       isFrame = enabled
     }
+    .onChange(of: isShowPhotoPicker) { _, isShow in
+      cameraViewModel.managePhotosPickerToast(isShowPhotosPicker: isShow)
+    }
     .sheet(isPresented: $isShowLogExportingSheet) {
       LogExportingView()
     }
