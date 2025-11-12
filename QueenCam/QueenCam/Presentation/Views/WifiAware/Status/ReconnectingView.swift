@@ -29,7 +29,7 @@ extension ReconnectingView: View {
         .padding(.bottom, 32)
 
       Button(action: didCancelButtonTap) {
-        Text("처음부터 다시 연결하기")
+        Text("연결 취소하기")
           .underline()
           .foregroundStyle(.gray200)
           .typo(.m13)
