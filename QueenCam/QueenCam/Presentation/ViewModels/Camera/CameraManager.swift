@@ -31,10 +31,13 @@ final class CameraManager: NSObject {
 
   private let logger = QueenLogger(category: "CameraManager")
 
-  private var cameraDelegate: CameraDelegate?
+  private var inTrackingCameraDelegate: [Int64: CameraDelegate] = [:]
 
   var onPhotoCapture: ((UIImage) -> Void)?
   var onTapCameraSwitch: ((AVCaptureDevice.Position) -> Void)?
+
+  // 카메라 촬영이 준비되는 상태 추적
+  var onReadinessState: ((AVCapturePhotoOutput.CaptureReadiness) -> Void)?
 
   init(previewCaptureService: PreviewCaptureService, networkService: NetworkServiceProtocol) {
     self.previewCaptureService = previewCaptureService
@@ -103,6 +106,7 @@ final class CameraManager: NSObject {
       }
 
       photoSettings.isAutoRedEyeReductionEnabled = true
+      photoSettings.photoQualityPrioritization = .speed
 
       if self.isLivePhotoOn, self.photoOutput.isLivePhotoCaptureEnabled {
         photoSettings.livePhotoMovieFileURL = URL.movieFileURL
@@ -111,9 +115,21 @@ final class CameraManager: NSObject {
       logger.info("Capture -> photoOutput.isLivePhotoCaptureSupported: \(photoOutput.isLivePhotoCaptureSupported)")
       logger.info("Capture -> photoOutput.isLivePhotoCaptureEnabled: \(photoOutput.isLivePhotoCaptureEnabled)")
 
-      self.cameraDelegate = CameraDelegate(isCameraPosition: self.position) { photoOutput in
+      // 1
+      let uniqueID = photoSettings.uniqueID
+
+      // 2
+      let delegate = CameraDelegate(isCameraPosition: self.position) { [weak self] photoOutput in
+        guard let self else { return }
+
+        // 5
+        self.captureSessionQueue.async {
+          self.inTrackingCameraDelegate.removeValue(forKey: uniqueID)
+        }
+
         guard let photoOutput else { return }
 
+        // 6
         DispatchQueue.main.async {
           switch photoOutput {
           case .basicPhoto(let thumbnail, let imageData):
@@ -126,7 +142,10 @@ final class CameraManager: NSObject {
         self.sendPhoto(photoOutput)
       }
 
-      guard let delegate = self.cameraDelegate else { return }
+      // 3
+      self.inTrackingCameraDelegate[uniqueID] = delegate
+
+      // 4
       self.photoOutput.capturePhoto(with: photoSettings, delegate: delegate)
     }
   }
@@ -202,8 +221,32 @@ extension CameraManager {
   private func setupPhotoOutput() {
     guard session.canAddOutput(photoOutput) else { return }
     session.addOutput(photoOutput)
-    photoOutput.maxPhotoQualityPrioritization = .balanced
+
     photoOutput.isLivePhotoCaptureEnabled = photoOutput.isLivePhotoCaptureSupported
+    photoOutput.maxPhotoQualityPrioritization = .quality
+
+    if photoOutput.isResponsiveCaptureSupported {
+      photoOutput.isResponsiveCaptureEnabled = true
+    }
+
+    if photoOutput.isFastCapturePrioritizationSupported {
+
+      photoOutput.isFastCapturePrioritizationEnabled = true
+    }
+
+    if photoOutput.isAutoDeferredPhotoDeliverySupported {
+      photoOutput.isAutoDeferredPhotoDeliveryEnabled = true
+    }
+
+    photoOutput.publisher(for: \.captureReadiness)
+      .sink { [weak self] readiness in
+        self?.logger.info("📷 Capture readiness: \(readiness)")
+
+        DispatchQueue.main.async { [weak self] in
+          self?.onReadinessState?(readiness)
+        }
+      }
+      .store(in: &cancellables)
   }
 
   private func setupPreviewCaptureOutput() {
@@ -273,7 +316,7 @@ extension CameraManager {
           setupPhotoOutput()
 
           session.commitConfiguration()
-          
+
           photoOutput.isLivePhotoCaptureEnabled = photoOutput.isLivePhotoCaptureSupported
 
           logger.info("Switch -> photoOutput.isLivePhotoCaptureSupported: \(photoOutput.isLivePhotoCaptureSupported)")
