@@ -8,16 +8,13 @@
 import SwiftUI
 
 /// Top Tool Bar
-struct TopToolBarView<ContextMenuContent: View, IndicatorMenuContent: View> {
+struct TopToolBarView<IndicatorMenuContent: View> {
   /// 연결된 디바이스 이름 (연결이 끊어졌으면 nil)
   let connectedDeviceName: String?
 
   /// 재연결 중인 디바이스 이름 (연결이 끊어졌지만 재연결 중이면 nil이 아님)
   let reconnectingDeviceName: String?
 
-  /// 컨텍스트 메뉴 아이템
-  @ViewBuilder let contextMenuContent: () -> ContextMenuContent
-  
   /// 가운데 연결 메뉴 아이템
   @ViewBuilder let indicatorMenuContent: () -> IndicatorMenuContent
 
@@ -29,19 +26,16 @@ struct TopToolBarView<ContextMenuContent: View, IndicatorMenuContent: View> {
 
   private let minimumSpacing: CGFloat = 16
   private let backButtonSymbolName: String = "chevron.left"
-  private let contextMenuSymbolName: String = "ellipsis"
 
   init(
     connectedDeviceName: String?,
     reconnectingDeviceName: String?,
-    @ViewBuilder contextMenuContent: @escaping () -> ContextMenuContent,
     @ViewBuilder indicatorMenuContent: @escaping () -> IndicatorMenuContent,
     backButtonDidTap: (() -> Void)? = nil,
     connectedWithButtonDidTap: @escaping () -> Void
   ) {
     self.connectedDeviceName = connectedDeviceName
     self.reconnectingDeviceName = reconnectingDeviceName
-    self.contextMenuContent = contextMenuContent
     self.indicatorMenuContent = indicatorMenuContent
     self.backButtonDidTap = backButtonDidTap
     self.connectedWithButtonDidTap = connectedWithButtonDidTap
@@ -56,9 +50,7 @@ extension TopToolBarView: View {
           backButtonDidTap()
         }
       } else {
-        Rectangle()
-          .foregroundStyle(.clear)
-          .frame(width: 44, height: 44)
+        placeholderEmptyView
       }
 
       Spacer(minLength: minimumSpacing)
@@ -72,7 +64,35 @@ extension TopToolBarView: View {
 
       Spacer(minLength: minimumSpacing)
 
-      ToolBarMenu(symbolName: contextMenuSymbolName, menuContent: contextMenuContent)
+      placeholderEmptyView
+    }
+  }
+
+  var placeholderEmptyView: some View {
+    Rectangle()
+      .foregroundStyle(.clear)
+      .frame(width: 44, height: 44)
+  }
+}
+
+#Preview {
+  ZStack {
+    Color.black.ignoresSafeArea()
+
+    VStack {
+      TopToolBarView(connectedDeviceName: "임영택의 iPhone 16", reconnectingDeviceName: nil) {
+        //
+      } connectedWithButtonDidTap: {
+        //
+      }
+      
+      TopToolBarView(connectedDeviceName: "임영택의 iPhone 16", reconnectingDeviceName: nil) {
+        //
+      } backButtonDidTap: {
+        //
+      } connectedWithButtonDidTap: {
+        //
+      }
     }
   }
 }
