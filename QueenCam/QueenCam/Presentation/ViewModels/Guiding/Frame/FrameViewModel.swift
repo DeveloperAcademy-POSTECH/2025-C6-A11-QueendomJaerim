@@ -34,7 +34,11 @@ final class FrameViewModel {
 
   // MARK: - Toast
   let notificationService: NotificationServiceProtocol
-  
+  private var hasShownPeerCreateToast: Bool = false
+  private var hasShownPeerEditToast: Bool = false
+  private var hasShownPeerRatioEditToast: Bool = false
+  private var hasShownPeerDeleteToast: Bool = false
+
   init(
     networkService: NetworkServiceProtocol = DependencyContainer.defaultContainer.networkService,
     notificationService: NotificationServiceProtocol = DependencyContainer.defaultContainer.notificationService
@@ -160,6 +164,38 @@ final class FrameViewModel {
   func showGuidingDisabledToast() {
     notificationService.registerNotification(DomainNotification.make(type: .turnOnGuidingFirstWithFrame))
   }
+  enum FrameToastEventType {
+    case create
+    case delete
+    case edit
+    case ratioEdit
+  }
+  // 상대가 이벤트를 한 경우
+  func peerFrameGuidingToast(type: FrameToastEventType) {
+    switch type {
+    case .create:
+      notificationService.registerNotification(DomainNotification.make(type: .peerCreateFrameGuide))
+    case .delete:
+      notificationService.registerNotification(DomainNotification.make(type: .peerCloseFrameGuide))
+    case .edit:
+      notificationService.registerNotification(DomainNotification.make(type: .peerEditingFrameGuide))
+    case .ratioEdit:
+      notificationService.registerNotification(DomainNotification.make(type: .peerFirstEditMode))
+    }
+  }
+  // 사용자(본인)가 이벤트를 한 경우
+  func myFrameGuidingToast(type: FrameToastEventType){
+    switch type {
+    case .create:
+      notificationService.registerNotification(DomainNotification.make(type: .sharingFrameGuideStarted))
+    case .delete:
+      notificationService.registerNotification(DomainNotification.make(type: .closeFrameGuide))
+    case .edit:
+      return
+    case .ratioEdit:
+      notificationService.registerNotification(DomainNotification.make(type: .firstEditMode))
+    }
+  }
 }
 
 // MARK: Receiving network event
@@ -173,14 +209,27 @@ extension FrameViewModel {
         switch event {
         case .frameUpdated(let eventType):
           self.handleFrameEvent(eventType: eventType)
+          
 
         case .frameEnabled(let enabled):
           self.isFrameEnabled = enabled
-
+          if !hasShownPeerCreateToast{
+            peerFrameGuidingToast(type: .create)
+            hasShownPeerCreateToast = true
+          }
+          if !hasShownPeerDeleteToast{
+            peerFrameGuidingToast(type: .delete)
+            hasShownPeerDeleteToast = true
+          }
+          
         case .frameInteracting(let role, let interacting):
           if interacting {
             self.isInteracting = true
             self.interactingRole = role
+            if !hasShownPeerEditToast{
+              peerFrameGuidingToast(type: .edit)
+              hasShownPeerEditToast = true
+            }
           } else {
             self.isInteracting = false
             self.interactingRole = nil

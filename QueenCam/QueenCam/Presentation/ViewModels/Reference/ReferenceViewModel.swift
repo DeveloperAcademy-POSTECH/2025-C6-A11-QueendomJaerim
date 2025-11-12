@@ -19,16 +19,24 @@ final class ReferenceViewModel {
   var dragOffset: CGSize = .zero  // 드래그 중 임시편차
   var location: ReferenceLocation = .topLeft
   var alignment: Alignment { location.alignment }
+  /// 현재 레퍼런스 존재 여부
+  var hasReferenceImage: Bool {
+    image != nil
+  }
 
   // MARK: - Network
   let networkService: NetworkServiceProtocol
   var cancellables: Set<AnyCancellable> = []
 
+  // MARK: - Toast State
+  private let notificationService: NotificationServiceProtocol
+  
   init(
-    networkService: NetworkServiceProtocol = DependencyContainer.defaultContainer.networkService
+    networkService: NetworkServiceProtocol = DependencyContainer.defaultContainer.networkService,
+    notificationService: NotificationServiceProtocol = DependencyContainer.defaultContainer.notificationService
   ) {
     self.networkService = networkService
-
+    self.notificationService = notificationService
     bind()
   }
 
@@ -106,11 +114,17 @@ extension ReferenceViewModel {
   private func handleReferenceImageEvent(eventType: ReferenceImageEventType) {
     switch eventType {
     case .register(let imageData):
+      if hasReferenceImage {
+        notificationService.registerNotification(.make(type: .peerRegisterNewReference))
+      } else {
+        notificationService.registerNotification(.make(type: .peerRegisterFirstReference))
+      }
       if let uiImage = UIImage(data: imageData) {
-        self.image = uiImage
+        self.image = uiImage        
       }
     case .remove:
       self.image = nil
+      notificationService.registerNotification(.make(type:.peerDeleteReference))
     }
   }
 }
@@ -120,10 +134,16 @@ extension ReferenceViewModel {
   nonisolated var compressionQualityOfReferenceImage: CGFloat { 0.8 }
 
   private func sendReferenceImageCommand(command: ReferenceNetworkCommand) {
+    if hasReferenceImage {
+      notificationService.registerNotification(.make(type: .registerNewReference))
+    } else {
+      notificationService.registerNotification(.make(type: .registerFirstReference))
+    }
     if case .register(let image) = command {
       sendReferenceImageRegisteredEvent(referenceImage: image)
     } else {
       sendReferenceImageRemovedEvent()
+      notificationService.registerNotification(.make(type: .deleteReference))
     }
   }
 
