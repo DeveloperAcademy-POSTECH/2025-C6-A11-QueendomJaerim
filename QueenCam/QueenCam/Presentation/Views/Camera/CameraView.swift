@@ -303,7 +303,18 @@ extension CameraView: View {
           }
 
           VStack {
+            HStack {
+              Spacer()
+              ToggleToolboxButton {
+                withAnimation {
+                  isShowCameraSettingTool = true
+                }
+              }
+            }
+            .padding(12)
+
             Spacer()
+
             HStack {
               Spacer()
               GuidingToggleButton(
@@ -534,6 +545,7 @@ extension CameraView: View {
 
         VStack {
           Spacer()
+
           bottomCameraSettingTool
         }
         .padding(.bottom, 12)
