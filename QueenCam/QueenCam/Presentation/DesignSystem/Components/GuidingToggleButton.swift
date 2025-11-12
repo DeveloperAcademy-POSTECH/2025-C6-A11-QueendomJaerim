@@ -4,7 +4,16 @@ struct GuidingToggleButton {
   let role: Role?
   let systemName: String
   let isActive: Bool
+  let buttonSize: CGFloat
   let tapAction: () -> Void
+  
+  init(role: Role?, systemName: String, isActive: Bool, buttonSize: CGFloat = 40, tapAction: @escaping () -> Void) {
+    self.role = role
+    self.systemName = systemName
+    self.isActive = isActive
+    self.buttonSize = buttonSize
+    self.tapAction = tapAction
+  }
 }
 
 extension GuidingToggleButton: View {
@@ -15,7 +24,7 @@ extension GuidingToggleButton: View {
         Button(action: { tapAction() }) {
           Circle()
             .fill(.black.opacity(0.6))
-            .frame(width: 38, height: 38)
+            .frame(width: buttonSize, height: buttonSize)
             .overlay {
               Image(systemName: systemName)
                 .resizable()
@@ -29,7 +38,7 @@ extension GuidingToggleButton: View {
         Button(action: { tapAction() }) {
           Circle()
             .fill(.black.opacity(0.6))
-            .frame(width: 38, height: 38)
+            .frame(width: buttonSize, height: buttonSize)
             .overlay {
               Image(systemName: systemName)
                 .resizable()
@@ -43,7 +52,7 @@ extension GuidingToggleButton: View {
         Button(action: { tapAction() }) {
           Circle()
             .fill(.black.opacity(0.6))
-            .frame(width: 38, height: 38)
+            .frame(width: buttonSize, height: buttonSize)
             .overlay {
               Image(systemName: systemName)
                 .resizable()
