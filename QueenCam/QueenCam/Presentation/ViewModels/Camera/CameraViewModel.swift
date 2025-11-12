@@ -232,7 +232,7 @@ extension CameraViewModel {
     }
   }
 
-  private func fetchThumbnail() async {
+  private func fetchThumbnail(scale: CGFloat) async {
     let fetchOptions = PHFetchOptions()
     fetchOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
     fetchOptions.fetchLimit = 1  // 한개만 요청
