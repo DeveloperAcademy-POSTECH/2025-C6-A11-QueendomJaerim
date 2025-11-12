@@ -43,7 +43,7 @@ struct ReferenceView: View {
               )
           case .close:  // 레퍼런스 Off
             Button {
-              withAnimation(.easeInOut(duration: 0.6)){
+              withAnimation(.spring(response: 0.6, dampingFraction: 0.9)){
                 referenceViewModel.unFold()
               }
             } label: {
@@ -57,8 +57,8 @@ struct ReferenceView: View {
                   referenceViewModel.dragChanged(value)
                 }
                 .onEnded { value in
-                  // fold/unfold 접힘 판정
-                  withAnimation(.easeInOut(duration: 0.6)){
+                  // unFold(Open) 접힘 판정
+                  withAnimation(.spring(response: 0.6, dampingFraction: 0.9)){
                     referenceViewModel.dragEnded()
                   }
                 }
