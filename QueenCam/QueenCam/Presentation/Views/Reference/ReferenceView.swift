@@ -54,7 +54,9 @@ struct ReferenceView: View {
                 }
                 .onEnded { value in
                   // fold/unfold 접힘 판정
-                  referenceViewModel.dragEnded()
+                  withAnimation(.easeInOut(duration: 0.6)){
+                    referenceViewModel.dragEnded()
+                  }
                 }
             )
 
