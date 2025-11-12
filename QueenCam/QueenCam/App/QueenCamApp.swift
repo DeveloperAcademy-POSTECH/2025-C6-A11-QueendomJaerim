@@ -9,6 +9,8 @@ import SwiftUI
 
 @main
 struct QueenCamApp: App {
+  @UIApplicationDelegateAdaptor(QueenCamAppDelegate.self) var delegate
+
   var body: some Scene {
     WindowGroup {
       MainView()

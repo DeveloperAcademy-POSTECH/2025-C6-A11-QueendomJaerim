@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3D3ABD912EC45C9E001FD2C3 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 3D3ABD902EC45C9E001FD2C3 /* FirebaseAnalytics */; };
+		3D3ABD932EC45C9E001FD2C3 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 3D3ABD922EC45C9E001FD2C3 /* FirebaseCore */; };
+		3D3ABD952EC45C9E001FD2C3 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 3D3ABD942EC45C9E001FD2C3 /* FirebaseCrashlytics */; };
 		3D525A9C2EA7CC5B00B4860A /* Transcoding in Frameworks */ = {isa = PBXBuildFile; productRef = 3D525A9B2EA7CC5B00B4860A /* Transcoding */; };
 /* End PBXBuildFile section */
 
@@ -70,6 +73,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3D3ABD912EC45C9E001FD2C3 /* FirebaseAnalytics in Frameworks */,
+				3D3ABD952EC45C9E001FD2C3 /* FirebaseCrashlytics in Frameworks */,
+				3D3ABD932EC45C9E001FD2C3 /* FirebaseCore in Frameworks */,
 				3D525A9C2EA7CC5B00B4860A /* Transcoding in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -135,6 +141,9 @@
 			name = QueenCam;
 			packageProductDependencies = (
 				3D525A9B2EA7CC5B00B4860A /* Transcoding */,
+				3D3ABD902EC45C9E001FD2C3 /* FirebaseAnalytics */,
+				3D3ABD922EC45C9E001FD2C3 /* FirebaseCore */,
+				3D3ABD942EC45C9E001FD2C3 /* FirebaseCrashlytics */,
 			);
 			productName = QueenCam;
 			productReference = 3D5E6BEE2E7D687300A0E03A /* QueenCam.app */;
@@ -222,6 +231,7 @@
 			packageReferences = (
 				3D6CDA672E8E3EDD006C445A /* XCRemoteSwiftPackageReference "SwiftLintPlugins" */,
 				3D525A9A2EA7CC5B00B4860A /* XCRemoteSwiftPackageReference "Transcoding" */,
+				3D3ABD8F2EC45C9E001FD2C3 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 3D5E6BEF2E7D687300A0E03A /* Products */;
@@ -662,6 +672,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		3D3ABD8F2EC45C9E001FD2C3 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = exactVersion;
+				version = 12.5.0;
+			};
+		};
 		3D525A9A2EA7CC5B00B4860A /* XCRemoteSwiftPackageReference "Transcoding" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/0tak2/Transcoding";
@@ -681,6 +699,21 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		3D3ABD902EC45C9E001FD2C3 /* FirebaseAnalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3D3ABD8F2EC45C9E001FD2C3 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalytics;
+		};
+		3D3ABD922EC45C9E001FD2C3 /* FirebaseCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3D3ABD8F2EC45C9E001FD2C3 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCore;
+		};
+		3D3ABD942EC45C9E001FD2C3 /* FirebaseCrashlytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3D3ABD8F2EC45C9E001FD2C3 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCrashlytics;
+		};
 		3D525A9B2EA7CC5B00B4860A /* Transcoding */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 3D525A9A2EA7CC5B00B4860A /* XCRemoteSwiftPackageReference "Transcoding" */;
