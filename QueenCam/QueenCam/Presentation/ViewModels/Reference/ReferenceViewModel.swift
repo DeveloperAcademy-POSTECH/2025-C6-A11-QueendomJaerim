@@ -75,10 +75,8 @@ final class ReferenceViewModel {
   }
   /// CloseView에서의 버튼 누를때 액션
   func unFold() {
-    withAnimation(.easeIn(duration: 0.6)) {
       state = .open
       dragOffset = .zero
-    }
   }
 
   // MARK: - DRAG(for location change)

@@ -41,7 +41,9 @@ struct ReferenceView: View {
               )
           case .close:  // 레퍼런스 Off
             Button {
-              referenceViewModel.unFold()
+              withAnimation(.easeInOut(duration: 0.6)){
+                referenceViewModel.unFold()
+              }
             } label: {
               CloseView(referenceViewModel: referenceViewModel)
             }
