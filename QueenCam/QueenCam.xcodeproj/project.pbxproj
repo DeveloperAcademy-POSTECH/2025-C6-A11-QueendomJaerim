@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		3D525A9C2EA7CC5B00B4860A /* Transcoding in Frameworks */ = {isa = PBXBuildFile; productRef = 3D525A9B2EA7CC5B00B4860A /* Transcoding */; };
-		ECABE3362EC4B0C3003B506B /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = ECABE3352EC4B0C3003B506B /* Lottie */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -72,7 +71,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				3D525A9C2EA7CC5B00B4860A /* Transcoding in Frameworks */,
-				ECABE3362EC4B0C3003B506B /* Lottie in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -137,7 +135,6 @@
 			name = QueenCam;
 			packageProductDependencies = (
 				3D525A9B2EA7CC5B00B4860A /* Transcoding */,
-				ECABE3352EC4B0C3003B506B /* Lottie */,
 			);
 			productName = QueenCam;
 			productReference = 3D5E6BEE2E7D687300A0E03A /* QueenCam.app */;
@@ -225,7 +222,6 @@
 			packageReferences = (
 				3D6CDA672E8E3EDD006C445A /* XCRemoteSwiftPackageReference "SwiftLintPlugins" */,
 				3D525A9A2EA7CC5B00B4860A /* XCRemoteSwiftPackageReference "Transcoding" */,
-				ECABE3342EC4B0C3003B506B /* XCRemoteSwiftPackageReference "lottie-ios" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 3D5E6BEF2E7D687300A0E03A /* Products */;
@@ -684,14 +680,6 @@
 				version = 0.61.0;
 			};
 		};
-		ECABE3342EC4B0C3003B506B /* XCRemoteSwiftPackageReference "lottie-ios" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/airbnb/lottie-ios.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 4.5.2;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -704,11 +692,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 3D6CDA672E8E3EDD006C445A /* XCRemoteSwiftPackageReference "SwiftLintPlugins" */;
 			productName = "plugin:SwiftLintBuildToolPlugin";
-		};
-		ECABE3352EC4B0C3003B506B /* Lottie */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = ECABE3342EC4B0C3003B506B /* XCRemoteSwiftPackageReference "lottie-ios" */;
-			productName = Lottie;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
