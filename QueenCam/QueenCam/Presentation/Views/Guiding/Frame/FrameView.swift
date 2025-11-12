@@ -183,8 +183,13 @@ struct FrameView: View {
         let cornerList: [Corner] = [.topLeft, .topRight, .bottomLeft, .bottomRight]
         ForEach(cornerList, id: \.self) { corner in
           Rectangle()
-            .fill(frameColor)
-            .frame(width: 11, height: 11)
+            .fill(Color.clear)
+            .frame(width: 31, height: 31) // 전체 터치 영역
+            .contentShape(Rectangle()) // 투명 뷰라서 contentShape을 줘야 터치 이벤트를 받을 수 있음
+            .overlay( // 실제 그려지는 핸들
+              Rectangle()
+                .fill(frameColor).frame(width: 11, height: 11)
+            )
             .position(cornerPosition(for: corner))
             .gesture(
               // 현재 상대방이 수정 중 아님
