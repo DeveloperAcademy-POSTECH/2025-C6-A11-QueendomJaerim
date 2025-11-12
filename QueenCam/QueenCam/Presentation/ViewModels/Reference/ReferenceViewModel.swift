@@ -26,9 +26,7 @@ final class ReferenceViewModel {
     image != nil
   }
   /// 현재 레퍼런스 토스트 존재 여부
-  var hasReferenceToast: Bool { // lastNotificationPublisher 으로 변경 예정
-    notificationService.currentNotification != nil
-  }
+  var hasReferenceToast: Bool = false
 
   // MARK: - Network
   let networkService: NetworkServiceProtocol
@@ -43,6 +41,8 @@ final class ReferenceViewModel {
   ) {
     self.networkService = networkService
     self.notificationService = notificationService
+    self.hasReferenceToast = (notificationService.currentNotification != nil)
+
     bind()
   }
 
@@ -105,9 +105,10 @@ final class ReferenceViewModel {
   }
 }
 
-// MARK: - Receiving network event
+// MARK: - Receiving network/notification event
 extension ReferenceViewModel {
   private func bind() {
+    // 네트워크 이벤트 구독
     networkService.networkEventPublisher
       .receive(on: RunLoop.main)
       .compactMap { $0 }
@@ -117,6 +118,14 @@ extension ReferenceViewModel {
           self?.handleReferenceImageEvent(eventType: eventType)
         default: break
         }
+      }
+      .store(in: &cancellables)
+
+    // 토스트(도메인 알림) 변경 구독
+    notificationService.lastNotificationPublisher
+      .receive(on: RunLoop.main)
+      .sink { [weak self] notification in
+        self?.hasReferenceToast = (notification != nil)
       }
       .store(in: &cancellables)
   }
