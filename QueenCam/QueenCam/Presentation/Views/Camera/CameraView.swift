@@ -387,7 +387,7 @@ extension CameraView: View {
         .overlay {
           RoundedRectangle(cornerRadius: 5)
             .inset(by: 0.5)
-            .stroke(.gray600, lineWidth: 1)
+            .stroke(.gray900, lineWidth: 1)
         }
         .padding(.horizontal, 16)
         .overlay(alignment: .center) {
