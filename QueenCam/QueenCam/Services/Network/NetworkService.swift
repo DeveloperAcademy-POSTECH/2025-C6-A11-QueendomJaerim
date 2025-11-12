@@ -165,8 +165,6 @@ extension NetworkService {
       networkState = .viewer(.connecting)
 
     case .browserStopped(let error), .listenerStopped(let error):
-      networkState = mode == .host ? .host(.stopped) : .viewer(.stopped)
-
       if let waError = error {
         logger.error("browserStopped 또는 listenerStopped 상태에서 에러가 발생했습니다. \(waError.localizedDescription)")
         lastErrorSubject.send(waError)
@@ -175,9 +173,14 @@ extension NetworkService {
           logger.debug("The error was .serviceAlreadyPublishing, so do nothing.")
           return
         }
-        
+
         if case .serviceAlreadySubscribing = waError {
           logger.debug("The error was .serviceAlreadySubscribing, so do nothing.")
+          return
+        }
+        
+        if case .publisherTimeout = waError {
+          logger.debug("The error was .publisherTimeout, currently do nothing and monitor the healthcheck.")
           return
         }
 
@@ -186,7 +189,11 @@ extension NetworkService {
         } else {
           networkState = .host(.lost)
         }
+
+        return
       }
+
+      networkState = mode == .host ? .host(.stopped) : .viewer(.stopped)
 
     case .connection(let conectionEvent):
       await handleConnectionEvent(conectionEvent)
