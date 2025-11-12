@@ -500,7 +500,7 @@ extension CameraView: View {
 
               Spacer()
 
-              BoomupButton(tapAction: {})
+              ThumbsUpButton(tapAction: {})
             }
           }
           .padding(.bottom, 51)
