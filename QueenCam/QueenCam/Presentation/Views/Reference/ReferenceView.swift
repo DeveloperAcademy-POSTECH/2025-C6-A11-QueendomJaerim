@@ -13,7 +13,10 @@ struct ReferenceView: View {
   @Binding var isLarge: Bool
   private let containerName = "ReferenceViewContainer"
   private var closeViewPadding: CGFloat {
-    referenceViewModel.referenceHeight/2-50.5
+    referenceViewModel.referenceHeight / 2 - 50.5
+  }
+  private var referenceToastPadding: CGFloat {
+    referenceViewModel.hasReferenceToast ? 48 : 0
   }
 
   var body: some View {
@@ -67,7 +70,7 @@ struct ReferenceView: View {
         }
       }
     }
-    .padding(.top, referenceViewModel.hasReferenceToast ? 48 : 0)
+    .padding(.top, referenceToastPadding)
     .coordinateSpace(name: containerName)
   }
 }
