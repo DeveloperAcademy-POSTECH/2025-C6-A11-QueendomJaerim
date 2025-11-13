@@ -10,7 +10,6 @@ import SwiftUI
 struct ReconnectingView {
   let didCancelButtonTap: () -> Void
 
-  private let backgroundColor = Color(red: 0 / 255, green: 0 / 255, blue: 0 / 255).opacity(0.8)
   private let progressViewSize: CGFloat = 30
 }
 
@@ -29,7 +28,7 @@ extension ReconnectingView: View {
         .padding(.bottom, 32)
 
       Button(action: didCancelButtonTap) {
-        Text("처음부터 다시 연결하기")
+        Text("연결 취소하기")
           .underline()
           .foregroundStyle(.gray200)
           .typo(.m13)
@@ -38,7 +37,7 @@ extension ReconnectingView: View {
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity)
     .background(
-      backgroundColor
+      .originalBlack
     )
   }
 }
