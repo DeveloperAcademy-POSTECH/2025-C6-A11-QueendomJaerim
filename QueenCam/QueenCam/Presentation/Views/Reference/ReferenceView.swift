@@ -25,6 +25,7 @@ struct ReferenceView: View {
           case .open:  // 레퍼런스 On
             OpenView(referenceViewModel: referenceViewModel, isLarge: $isLarge)
               .offset(referenceViewModel.dragOffset)
+              .transition(.scale)
               .highPriorityGesture(
                 DragGesture(minimumDistance: 5, coordinateSpace: .named(containerName))
                   .onChanged { value in
@@ -33,9 +34,8 @@ struct ReferenceView: View {
                   .onEnded { value in
                     // fold/unfold 접힘 판정
                     if !isLarge {
-                      withAnimation(.easeInOut(duration: 0.3)) {
-                        referenceViewModel.dragEnded()
-                      }
+                      // Open => Close 애니메이션 위치
+                      referenceViewModel.dragEnded()
                     }
                     // corner 위치 이동 판정
                     referenceViewModel.updateLocation(end: value.predictedEndLocation, size: geo.size)
