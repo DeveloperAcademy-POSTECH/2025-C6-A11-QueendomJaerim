@@ -277,7 +277,7 @@ extension CameraView: View {
             if isPen || isMagicPen {
               PenWriteView(penViewModel: penViewModel, isPen: isPen, isMagicPen: isMagicPen, role: currentRole)
             } else {
-              PenDisplayView(penViewModel: penViewModel, role: currentRole)
+              PenDisplayView(penViewModel: penViewModel)
             }
           }
           .opacity(isRemoteGuideHidden ? .zero : 1)
