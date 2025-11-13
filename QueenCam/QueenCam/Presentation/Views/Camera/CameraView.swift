@@ -264,7 +264,7 @@ extension CameraView: View {
           if isLarge {
             Color.black.opacity(0.5)
               .onTapGesture {
-                withAnimation(.easeInOut(duration: 0.25)){
+                withAnimation(.easeInOut(duration: 0.25)) {
                   isLarge = false
                 }
               }

@@ -124,9 +124,10 @@ extension ReferenceViewModel {
     notificationService.lastNotificationPublisher
       .receive(on: RunLoop.main)
       .sink { [weak self] notification in
-        withAnimation(.bouncy(duration: 0.6)){
+        withAnimation(.bouncy(duration: 0.6)) {
           self?.hasReferenceToast = (notification != nil)
-        }}
+        }
+      }
       .store(in: &cancellables)
   }
 

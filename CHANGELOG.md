@@ -22,7 +22,6 @@
 - Appearance를 Dark로 고정
 - 디자인 세부 조정 (카메라 뷰, 재연결 뷰, 프레임 가이딩)
 
-
 ### Deprecated
 
 

@@ -11,20 +11,20 @@ import SwiftUI
 extension DomainNotification {
   static func make(type: DomainNotificationType) -> DomainNotification {
     let preset = type.preset
-    
+
     return .init(
       message: preset.message,
       isImportant: preset.isImportant,
       showingTime: preset.showingTime
     )
   }
-  
+
   struct Preset {
     let message: LocalizedStringKey
     let isImportant: Bool
     let showingTime: TimeInterval?
   }
-  
+
   enum DomainNotificationType {
     case ready
     case flashOn
@@ -78,7 +78,6 @@ extension DomainNotification {
     /// 매직펜툴을 처음 선택한 경우 (최초 1회)
     case firstMagicToolSelected
 
-    
     var preset: Preset {
       switch self {
       case .ready:
@@ -101,10 +100,10 @@ extension DomainNotification {
         return .init(message: "내가 그린 가이드를 공유합니다.", isImportant: false, showingTime: 2)
       case .turnOnGuidingFirstWithFrame:
         return .init(message: "프레임을 사용하려면 먼저 눈을 켜주세요.", isImportant: false, showingTime: 2)
-        
+
       case .turnOnGuidingFirstWithPen:
         return .init(message: "펜을 사용하려면 먼저 눈을 켜주세요.", isImportant: false, showingTime: 2)
-        
+
       case .turnOnGuidingFirstWithMagicPen:
         return .init(message: "매직펜을 사용하려면 먼저 눈을 켜주세요.", isImportant: false, showingTime: 2)
       case .turnOffGuiding:
@@ -113,7 +112,7 @@ extension DomainNotification {
         return .init(message: "가이드가 보여집니다.", isImportant: false, showingTime: 2)
       // 레퍼런스
       case .registerFirstReference:
-        return .init(message: "친구에게도 참고 이미지가 공유되었어요", isImportant: false , showingTime: 2)
+        return .init(message: "친구에게도 참고 이미지가 공유되었어요", isImportant: false, showingTime: 2)
       case .peerRegisterFirstReference:
         return .init(message: "친구가 참고 이미지를 등록했어요", isImportant: false, showingTime: 2)
       case .registerNewReference:
@@ -123,7 +122,7 @@ extension DomainNotification {
       case .deleteReference:
         return .init(message: "참고 이미지를 삭제했어요", isImportant: false, showingTime: 2)
       case .peerDeleteReference:
-        return  .init(message: "친구가 참고 이미지를 삭제했어요", isImportant: false, showingTime: 2)
+        return .init(message: "친구가 참고 이미지를 삭제했어요", isImportant: false, showingTime: 2)
 
       // 펜 + 매직펜
       case .firstPenToolSelected:

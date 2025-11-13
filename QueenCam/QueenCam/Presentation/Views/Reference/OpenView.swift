@@ -69,7 +69,7 @@ struct OpenView: View {
     }
     .onChange(of: isLarge) { _, newValue in
       if newValue {
-        DispatchQueue.main.asyncAfter(deadline: .now() + enlargeDuration*0.6) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + enlargeDuration * 0.6) {
           withAnimation(.easeOut(duration: 0.09)) {
             showDelete = true
           }
