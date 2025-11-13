@@ -43,24 +43,21 @@ struct ReferenceView: View {
               )
           case .close:  // 레퍼런스 Off
             Button {
-              withAnimation(.spring(response: 0.6, dampingFraction: 0.9)){
-                referenceViewModel.unFold()
-              }
+              // Close => Open 애니메이션 위치
+              referenceViewModel.unFold()
             } label: {
               CloseView(referenceViewModel: referenceViewModel)
             }
+            .transition(.scale)
             .padding(.horizontal, -8)
-            .padding(.vertical,closeViewPadding )
+            .padding(.vertical, closeViewPadding)
             .highPriorityGesture(
               DragGesture(minimumDistance: 5, coordinateSpace: .named(containerName))
                 .onChanged { value in
                   referenceViewModel.dragChanged(value)
                 }
                 .onEnded { value in
-                  // unFold(Open) 접힘 판정
-                  withAnimation(.spring(response: 0.6, dampingFraction: 0.9)){
-                    referenceViewModel.dragEnded()
-                  }
+                  referenceViewModel.dragEnded()
                 }
             )
 
