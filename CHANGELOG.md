@@ -16,6 +16,7 @@
 ### Changed
 
 - 가이딩 토글 버튼에 따른 비활성화 상태 변경
+- Appearance를 Dark로 고정
 
 ### Deprecated
 
