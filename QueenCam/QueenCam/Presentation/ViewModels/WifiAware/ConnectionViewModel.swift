@@ -70,6 +70,9 @@ final class ConnectionViewModel {
 
   /// State Toast
   private let notificationService: NotificationServiceProtocol
+  
+  /// Error
+  private(set) var connectionError: Error?
 
   private let logger = QueenLogger(category: "ConnectionViewModel")
 
@@ -134,6 +137,14 @@ final class ConnectionViewModel {
       .compactMap { $0 }
       .sink { [weak self] reportsByDevices in
         self?.deviceReportsUpdated(reports: reportsByDevices)
+      }
+      .store(in: &cancellables)
+    
+    networkService.lastErrorPublisher
+      .receive(on: RunLoop.main)
+      .compactMap { $0 }
+      .sink { [weak self] error in
+        self?.connectionError = error
       }
       .store(in: &cancellables)
   }
@@ -228,6 +239,12 @@ extension ConnectionViewModel {
   func sessionFinishedOverlayCloseButtonDidTap() {
     needReportSessionFinished = false
     role = nil // 정상 종료인 경우 역할 초기화
+  }
+  
+  func errorConfirmedByUser() {
+    networkService.stop(byUser: true)
+    selectedPairedDevice = nil
+    connectionError = nil
   }
 }
 
