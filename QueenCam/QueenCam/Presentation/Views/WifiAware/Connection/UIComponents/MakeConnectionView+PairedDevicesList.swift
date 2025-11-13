@@ -19,8 +19,8 @@ extension MakeConnectionView {
 
     // MARK: Colors
     let titleLabelForegroundColor = Color(red: 0xD4 / 255, green: 0xD4 / 255, blue: 0xD4 / 255)
-    let dividerColor = Color(red: 0xEB / 25, green: 0xEB / 25, blue: 0xEB / 25)
     let checkmarkBackgroundColor = Color(red: 0x27 / 255, green: 0xC8 / 255, blue: 0x40 / 255)
+    let dividerColor = Color.gray900
 
     // MARK: Constants
     // 디바이스 수에 따라 UI가 바뀜. 바뀌는 기준 정의
@@ -50,7 +50,7 @@ extension MakeConnectionView.PairedDevicesList: View {
         .foregroundStyle(dividerColor)
         .frame(height: 0.5)
         .padding(.top, 8.5)
-        .padding(.bottom, 16)
+        .padding(.bottom, 8)
 
       GeometryReader { geometry in  // Spacer를 사용하기 위해 크기를 알아야 함
         ScrollView(showsIndicators: false) {
@@ -124,8 +124,8 @@ extension MakeConnectionView.PairedDevicesList: View {
   }
 
   func pairedDeviceRowView(for device: WAPairedDevice) -> some View {
-    let controlsContainerWidth: CGFloat = 60
-    let controlsContainerHeight: CGFloat = 42
+    let controlsContainerWidth: CGFloat = 57
+    let controlsContainerHeight: CGFloat = 33
 
     return HStack(alignment: .center) {
       Text(device.pairingInfo?.pairingName ?? "알 수 없는 이름")
