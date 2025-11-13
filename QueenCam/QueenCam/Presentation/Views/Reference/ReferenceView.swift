@@ -25,6 +25,7 @@ struct ReferenceView: View {
           case .open:  // 레퍼런스 On
             OpenView(referenceViewModel: referenceViewModel, isLarge: $isLarge)
               .offset(referenceViewModel.dragOffset)
+              .transition(.scale)
               .highPriorityGesture(
                 DragGesture(minimumDistance: 5, coordinateSpace: .named(containerName))
                   .onChanged { value in
