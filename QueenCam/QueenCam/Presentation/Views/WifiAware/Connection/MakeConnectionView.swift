@@ -68,19 +68,13 @@ extension MakeConnectionView: View {
           }
         ),
         actions: {
-          Button(role: .confirm) {
-            openSetting()
-          } label: {
-            Text("설정으로 가기")
-          }
-
           Button(role: .cancel) {
           } label: {
             Text("확인")
           }
         },
         message: {
-          Text("Wi-Fi 기능을 활성화하고 다시 시도해주세요.")
+          Text("설정 앱에서 Wi-Fi 기능을 활성화하고 다시 시도해주세요.")
         }
       )
     }
@@ -148,14 +142,6 @@ extension MakeConnectionView {
           isShowingParingGuide = true
         }
       }
-    }
-  }
-}
-
-extension MakeConnectionView {
-  private func openSetting() {
-    if let url = URL(string: UIApplication.openSettingsURLString) {
-      UIApplication.shared.open(url)
     }
   }
 }
