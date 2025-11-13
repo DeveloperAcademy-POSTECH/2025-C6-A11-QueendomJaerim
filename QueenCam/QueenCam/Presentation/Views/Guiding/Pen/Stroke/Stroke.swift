@@ -10,7 +10,8 @@ import Foundation
 // 하나의 획(펜으로 그린 하나의 선)
 struct Stroke: Identifiable, Hashable, Equatable {
   var id: UUID
-  var points: [CGPoint]  // 선을 구성하는 점(x,y)들
+  var points: [CGPoint]
+  /// 매직펜 여부
   var isMagicPen: Bool = false
   /// Stroke 생성자의 역할 - 역할 변경시 Reset 예정
   let author: Role
