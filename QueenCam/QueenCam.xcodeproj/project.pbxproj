@@ -470,6 +470,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = QueenCam/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "찍자";
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.photography";
 				INFOPLIST_KEY_NSCameraUsageDescription = "사진을 촬영하기 위해 카메라 접근이 필요합니다.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "라이브 포토 촬영 시 오디오 녹음을 위해 마이크 접근이 필요합니다";
@@ -519,6 +520,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = QueenCam/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "찍자";
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.photography";
 				INFOPLIST_KEY_NSCameraUsageDescription = "사진을 촬영하기 위해 카메라 접근이 필요합니다.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "라이브 포토 촬영 시 오디오 녹음을 위해 마이크 접근이 필요합니다";
