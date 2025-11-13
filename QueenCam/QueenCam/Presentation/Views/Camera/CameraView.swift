@@ -592,8 +592,8 @@ extension CameraView: View {
     .fullScreenCover(isPresented: $isShowConnectionView) {
       ConnectionView(viewModel: connectionViewModel, previewStreamingViewModel: previewModel)
     }
-    .onChange(of: connectionViewModel.connections) { _, newValue in
-      if !newValue.isEmpty && connectionViewModel.role == .photographer {
+    .onChange(of: connectionViewModel.connections) { oldValue, newValue in
+      if !newValue.isEmpty && newValue.count > oldValue.count && connectionViewModel.role == .photographer {
         previewModel.startCapture()
       }
     }
