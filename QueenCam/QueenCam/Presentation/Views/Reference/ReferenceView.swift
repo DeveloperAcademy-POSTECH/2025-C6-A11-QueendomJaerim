@@ -46,15 +46,15 @@ struct ReferenceView: View {
             } label: {
               CloseView(referenceViewModel: referenceViewModel)
             }
+            .transition(.scale)
             .padding(.horizontal, -8)
-            .padding(.vertical,closeViewPadding )
+            .padding(.vertical, closeViewPadding)
             .highPriorityGesture(
               DragGesture(minimumDistance: 5, coordinateSpace: .named(containerName))
                 .onChanged { value in
                   referenceViewModel.dragChanged(value)
                 }
                 .onEnded { value in
-                  // fold/unfold 접힘 판정
                   referenceViewModel.dragEnded()
                 }
             )
