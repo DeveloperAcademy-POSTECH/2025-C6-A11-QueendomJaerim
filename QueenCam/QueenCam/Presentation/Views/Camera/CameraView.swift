@@ -224,8 +224,10 @@ extension CameraView: View {
             CameraPreview(session: cameraViewModel.cameraManager.session)
               .onCameraCaptureEvent { event in
                 if event.phase == .ended {
-                  flashScreen()
-                  cameraViewModel.capturePhoto()
+                  if cameraViewModel.isCaptureButtonEnabled {
+                    flashScreen()
+                    cameraViewModel.capturePhoto()
+                  }
                 }
               }
               .opacity(isShowShutterFlash ? 0 : 1)
@@ -400,7 +402,7 @@ extension CameraView: View {
                   penViewModel.showGuidingDisabledToast(type: .pen)
                   return
                 }
-                if !hasShownPenToast{
+                if !hasShownPenToast {
                   penViewModel.showFirstToolToast(type: .pen)
                   hasShownPenToast = true
                 }
@@ -423,7 +425,7 @@ extension CameraView: View {
                   penViewModel.showGuidingDisabledToast(type: .magicPen)
                   return
                 }
-                if !hasShownMagicPenToast{
+                if !hasShownMagicPenToast {
                   penViewModel.showFirstToolToast(type: .magicPen)
                   hasShownMagicPenToast = true
                 }
@@ -471,7 +473,6 @@ extension CameraView: View {
                   .frame(width: 80, height: 80)
               }
               .disabled(!cameraViewModel.isCaptureButtonEnabled)
-
 
               Spacer()
 
