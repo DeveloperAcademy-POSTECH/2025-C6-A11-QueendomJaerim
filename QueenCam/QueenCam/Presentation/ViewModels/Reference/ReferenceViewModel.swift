@@ -19,10 +19,14 @@ final class ReferenceViewModel {
   var dragOffset: CGSize = .zero  // 드래그 중 임시편차
   var location: ReferenceLocation = .topLeft
   var alignment: Alignment { location.alignment }
+  /// CloseView의 위치 계산에 사용될 레퍼런스 높이
+  var referenceHeight: CGFloat = 0
   /// 현재 레퍼런스 존재 여부
   var hasReferenceImage: Bool {
     image != nil
   }
+  /// 현재 레퍼런스 토스트 존재 여부
+  var hasReferenceToast: Bool = false
 
   // MARK: - Network
   let networkService: NetworkServiceProtocol
@@ -37,6 +41,8 @@ final class ReferenceViewModel {
   ) {
     self.networkService = networkService
     self.notificationService = notificationService
+    self.hasReferenceToast = (notificationService.currentNotification != nil)
+
     bind()
   }
 
@@ -51,10 +57,14 @@ final class ReferenceViewModel {
     if location == .topLeft || location == .bottomLeft {
       if dragOffset.width <= foldThreshold {
         state = .close
+      } else {
+        state = .open
       }
     } else {
       if dragOffset.width >= -foldThreshold {
         state = .close
+      } else {
+        state = .open
       }
     }
     withAnimation(.snappy) {
@@ -95,9 +105,10 @@ final class ReferenceViewModel {
   }
 }
 
-// MARK: - Receiving network event
+// MARK: - Receiving network/notification event
 extension ReferenceViewModel {
   private func bind() {
+    // 네트워크 이벤트 구독
     networkService.networkEventPublisher
       .receive(on: RunLoop.main)
       .compactMap { $0 }
@@ -107,6 +118,14 @@ extension ReferenceViewModel {
           self?.handleReferenceImageEvent(eventType: eventType)
         default: break
         }
+      }
+      .store(in: &cancellables)
+
+    // 토스트(도메인 알림) 변경 구독
+    notificationService.lastNotificationPublisher
+      .receive(on: RunLoop.main)
+      .sink { [weak self] notification in
+        self?.hasReferenceToast = (notification != nil)
       }
       .store(in: &cancellables)
   }
