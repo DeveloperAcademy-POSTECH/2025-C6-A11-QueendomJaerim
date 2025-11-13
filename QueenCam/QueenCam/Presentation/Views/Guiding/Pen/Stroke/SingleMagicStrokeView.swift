@@ -13,8 +13,8 @@ struct SingleMagicStrokeView: View {
   let roleForTheme: Role?
   let geoSize: CGSize
   let stroke: Stroke
-  private var photographerColor = Color.photographerPrimary
-  private var modelColor = Color.modelPrimary
+  private let photographerColor = Color.photographerPrimary
+  private let modelColor = Color.modelPrimary
 
   // 사라지는 애니메이션을 위해 필요한 요소들
   @State private var opacity: Double = 1.0
