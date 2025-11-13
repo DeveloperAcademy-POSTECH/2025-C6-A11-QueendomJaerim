@@ -303,15 +303,17 @@ extension CameraView: View {
           }
 
           VStack {
-            HStack {
-              Spacer()
-              ToggleToolboxButton {
-                withAnimation {
-                  isShowCameraSettingTool = true
+            if connectionViewModel.role == .photographer || connectionViewModel.role == nil {
+              HStack {
+                Spacer()
+                ToggleToolboxButton {
+                  withAnimation {
+                    isShowCameraSettingTool = true
+                  }
                 }
               }
+              .padding(12)
             }
-            .padding(12)
 
             Spacer()
 
