@@ -16,23 +16,12 @@ struct ConnectionGuidePage: View {
       GuideViewPlayerView(guideVideo: guide.video)
 
       Spacer()
-        .frame(height: 31)
+        .frame(height: 60)
 
-      VStack(spacing: 0) {
-        Text("페어링이 왜 필요해요?")
-          .typo(.sb12)
-          .foregroundStyle(.gray400)
-          .underline()
-          .opacity(0.0) // FIXME: 디자인 파트 요청으로 디자인 작업 완료까지 숨긴다
-
-        Spacer()
-          .frame(height: 26)
-
-        Text("\(guide.message)")
-          .multilineTextAlignment(.center)
-          .typo(.m22)
-          .foregroundStyle(.systemWhite)
-      }
+      Text("\(guide.message)")
+        .multilineTextAlignment(.center)
+        .typo(.m22)
+        .foregroundStyle(.systemWhite)
     }
   }
 }
