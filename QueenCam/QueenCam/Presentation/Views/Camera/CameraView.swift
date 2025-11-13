@@ -174,35 +174,7 @@ extension CameraView: View {
       )
     }
     .frame(width: 377, height: 192)
-    .glassEffect(.clear.tint(Color(red: 0.2, green: 0.2, blue: 0.2)), in: .rect(cornerRadius: 59))
-  }
-
-  private var toolBarCameraSettingTool: some View {
-    ControlGroup {
-      CameraSettingButton(
-        title: "플래시",
-        systemName: flashImage,
-        isActive: cameraViewModel.isFlashMode != .off,
-        tapAction: { cameraViewModel.switchFlashMode() },
-        isToolBar: true
-      )
-
-      CameraSettingButton(
-        title: "LIVE",
-        systemName: liveImage,
-        isActive: cameraViewModel.isLivePhotoOn,
-        tapAction: { cameraViewModel.switchLivePhoto() },
-        isToolBar: true
-      )
-
-      CameraSettingButton(
-        title: "그리드",
-        systemName: "grid",
-        isActive: cameraViewModel.isShowGrid,
-        tapAction: { cameraViewModel.switchGrid() },
-        isToolBar: true
-      )
-    }
+    .glassEffect(.clear.tint(Color.hex333333), in: .rect(cornerRadius: 59))
   }
 
   var body: some View {
@@ -213,22 +185,6 @@ extension CameraView: View {
         TopToolBarView(
           connectedDeviceName: connectionViewModel.connectedDeviceName,
           reconnectingDeviceName: connectionViewModel.reconnectingDeviceName,
-          contextMenuContent: {
-
-            if isPhotographerMode {
-              toolBarCameraSettingTool
-            }
-
-            Button("기능 1") {}
-            Button("기능 2") {}
-            Button("로그 내보내기") {
-              isShowLogExportingSheet = true
-            }
-
-            Divider()
-
-            Button("신고하기", systemImage: "exclamationmark.triangle") {}
-          },
           indicatorMenuContent: {
             Button("역할 바꾸기") {
               changeRoleButtonDidTap()
@@ -347,7 +303,18 @@ extension CameraView: View {
           }
 
           VStack {
+            HStack {
+              Spacer()
+              ToggleToolboxButton {
+                withAnimation {
+                  isShowCameraSettingTool = true
+                }
+              }
+            }
+            .padding(12)
+
             Spacer()
+
             HStack {
               Spacer()
               GuidingToggleButton(
@@ -387,7 +354,7 @@ extension CameraView: View {
         .overlay {
           RoundedRectangle(cornerRadius: 5)
             .inset(by: 0.5)
-            .stroke(.gray600, lineWidth: 1)
+            .stroke(.gray900, lineWidth: 1)
         }
         .padding(.horizontal, 16)
         .overlay(alignment: .center) {
@@ -578,6 +545,7 @@ extension CameraView: View {
 
         VStack {
           Spacer()
+
           bottomCameraSettingTool
         }
         .padding(.bottom, 12)
