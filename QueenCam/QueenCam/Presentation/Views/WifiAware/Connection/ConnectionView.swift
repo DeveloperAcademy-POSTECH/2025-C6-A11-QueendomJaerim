@@ -69,6 +69,10 @@ extension ConnectionView {
         selectedPairedDevice: viewModel.selectedPairedDevice,
         pairedDevices: viewModel.pairedDevices,
         isConnected: isConnected,
+        lastConnectionError: viewModel.connectionError,
+        errorWasConsumeByUser: {
+          viewModel.errorConfirmedByUser()
+        },
         changeRoleButtonDidTap: {
           viewModel.selectRole(for: selectedRole.counterpart)
         },

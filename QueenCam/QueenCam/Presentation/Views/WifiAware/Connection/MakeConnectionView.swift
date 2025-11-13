@@ -18,8 +18,12 @@ struct MakeConnectionView {
   let selectedPairedDevice: WAPairedDevice?
   let pairedDevices: [WAPairedDevice]
   let isConnected: Bool
+  var lastConnectionError: Error?
+  let errorWasConsumeByUser: () -> Void
   let changeRoleButtonDidTap: () -> Void
   let connectButtonDidTap: (WAPairedDevice) -> Void
+  
+  @State private var errorAlertShowing: Bool = false
 
   private var myDeviceName: String {
     UIDevice.current.name
@@ -51,6 +55,34 @@ extension MakeConnectionView: View {
           makeConnectionControls
         }
       }
+      .alert(
+        "연결에 실패했습니다",
+        isPresented: .init(
+          get: {
+            lastConnectionError != nil
+          },
+          set: { newValue in
+            if !newValue {
+              errorWasConsumeByUser()
+            }
+          }
+        ),
+        actions: {
+          Button(role: .confirm) {
+            openSetting()
+          } label: {
+            Text("설정으로 가기")
+          }
+
+          Button(role: .cancel) {
+          } label: {
+            Text("확인")
+          }
+        },
+        message: {
+          Text("Wi-Fi 기능을 활성화하고 다시 시도해주세요.")
+        }
+      )
     }
   }
 }
@@ -120,6 +152,14 @@ extension MakeConnectionView {
   }
 }
 
+extension MakeConnectionView {
+  private func openSetting() {
+    if let url = URL(string: UIApplication.openSettingsURLString) {
+      UIApplication.shared.open(url)
+    }
+  }
+}
+
 #Preview {
   MakeConnectionView(
     role: .photographer,
@@ -127,6 +167,8 @@ extension MakeConnectionView {
     selectedPairedDevice: nil,
     pairedDevices: [],
     isConnected: false,
+    lastConnectionError: nil,
+    errorWasConsumeByUser: {},
     changeRoleButtonDidTap: {},
     connectButtonDidTap: { _ in }
   )
