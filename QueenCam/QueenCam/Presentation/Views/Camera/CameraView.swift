@@ -226,8 +226,10 @@ extension CameraView: View {
             CameraPreview(session: cameraViewModel.cameraManager.session)
               .onCameraCaptureEvent { event in
                 if event.phase == .ended {
-                  flashScreen()
-                  cameraViewModel.capturePhoto()
+                  if cameraViewModel.isCaptureButtonEnabled {
+                    flashScreen()
+                    cameraViewModel.capturePhoto()
+                  }
                 }
               }
               .opacity(isShowShutterFlash ? 0 : 1)
