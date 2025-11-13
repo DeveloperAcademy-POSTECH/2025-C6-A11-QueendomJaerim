@@ -9,7 +9,7 @@ import Foundation
 
 enum NetworkEvent: Sendable {
   // MARK: - Infra Level Events
-  
+
   /// Wake Up Event. 처음 연결되면 Publisher는 임의의 메시지를 받아야 이후 이벤트를 받을 수 있다
   /// 모델 -> 작가
   case startSession
@@ -37,7 +37,7 @@ enum NetworkEvent: Sendable {
   /// 촬영 결과물. (작가 -> 모델)  라이브포토인 경우 영상을 포함한다.
   case photoResult(imageData: Data, videoData: Data?)
 
-  /// 등록된 레퍼런스 
+  /// 등록된 레퍼런스
   case referenceImage(ReferenceImageEventType)
 
   /// 프레임 이벤트
@@ -45,7 +45,7 @@ enum NetworkEvent: Sendable {
 
   /// 프레임 (비)활성화
   case frameEnabled(Bool)
-  
+
   /// 프레임 수정 시작 및 종료
   case frameInteracting(role: Role, isInteracting: Bool)
 
@@ -54,9 +54,9 @@ enum NetworkEvent: Sendable {
 
   /// 역할 바꾸기 요청. 상대의 새 역할을 제안한다
   case changeRole(RolePayload, LWWRegister)
-  
+
   /// 따봉 이벤트
-  case thumbsUp(ThumbsUpEventType)
+  case thumbsUp
 }
 
 nonisolated extension NetworkEvent: Codable {
