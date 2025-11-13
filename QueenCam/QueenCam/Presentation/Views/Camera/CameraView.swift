@@ -57,7 +57,6 @@ struct CameraView {
   @Environment(\.displayScale) private var displayScale
 
   @State private var thumbsUpViewModel = ThumbsUpViewModel()
-
 }
 
 extension CameraView {
@@ -368,18 +367,8 @@ extension CameraView: View {
         }
         // 따봉 버튼 눌렀을 때 나올 뷰 => 둘다 표현해야 되기 때문에 따로 분기 처리 X
         .overlay(alignment: .bottom) {
-          Group {
-            if thumbsUpViewModel.testString != nil {
-              ThumbsUpView(thumbsUpViewModel: thumbsUpViewModel)
-                .padding(.bottom, 80)
-                .transition(
-                  .move(edge: .bottom)
-                    .combined(with: .scale(0.3, anchor: .bottom))
-                )
-            }
-          }
-          // 각각의 애니메이션 시간 0.2 => 올라올때 0.2 / 내려갈때 0.2
-          .animation(.easeInOut(duration: 0.2), value: thumbsUpViewModel.testString)
+          ThumbsUpView(trigger: $thumbsUpViewModel.animationTriger)
+            .opacity(thumbsUpViewModel.isShowInitialView ? 1 : .zero)
         }
 
         // 프리뷰 밖 => 이부분을 기준으로 바구니 표현
@@ -418,7 +407,7 @@ extension CameraView: View {
                   penViewModel.showGuidingDisabledToast(type: .pen)
                   return
                 }
-                if !hasShownPenToast{
+                if !hasShownPenToast {
                   penViewModel.showFirstToolToast(type: .pen)
                   hasShownPenToast = true
                 }
@@ -441,7 +430,7 @@ extension CameraView: View {
                   penViewModel.showGuidingDisabledToast(type: .magicPen)
                   return
                 }
-                if !hasShownMagicPenToast{
+                if !hasShownMagicPenToast {
                   penViewModel.showFirstToolToast(type: .magicPen)
                   hasShownMagicPenToast = true
                 }
@@ -509,14 +498,9 @@ extension CameraView: View {
                       .foregroundStyle(.offWhite)
                   }
               }
-
-              ThumbsUpButton(tapAction: {
-                thumbsUpViewModel.register(testString: "테스트!")
-              })
-
             } else {
               ThumbsUpButton(tapAction: {
-                thumbsUpViewModel.register(testString: "테스트!")
+                thumbsUpViewModel.userTriggerThumbsUp()
               })
             }
           }
