@@ -37,7 +37,6 @@ struct ReferenceView: View {
                   .onEnded { value in
                     // fold/unfold 접힘 판정
                     if !isLarge {
-                      // Open => Close 애니메이션 위치
                       referenceViewModel.dragEnded()
                     }
                     // corner 위치 이동 판정
@@ -46,7 +45,6 @@ struct ReferenceView: View {
               )
           case .close:  // 레퍼런스 Off
             Button {
-              // Close => Open 애니메이션 위치
               referenceViewModel.unFold()
             } label: {
               CloseView(referenceViewModel: referenceViewModel)
