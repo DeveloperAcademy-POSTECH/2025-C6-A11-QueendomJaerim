@@ -1,10 +1,10 @@
 import SwiftUI
 
-struct BoomupButton {
+struct ThumbsUpButton {
   let tapAction: () -> Void
 }
 
-extension BoomupButton: View {
+extension ThumbsUpButton: View {
   var body: some View {
     Button(action: { tapAction() }) {
       Circle()
@@ -22,5 +22,5 @@ extension BoomupButton: View {
 }
 
 #Preview {
-  BoomupButton(tapAction: { })
+  ThumbsUpButton(tapAction: { })
 }

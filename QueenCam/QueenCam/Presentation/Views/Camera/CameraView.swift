@@ -55,6 +55,8 @@ struct CameraView {
   @State private var isShowConnectionView: Bool = false
 
   @Environment(\.displayScale) private var displayScale
+
+  @State private var thumbsUpViewModel = ThumbsUpViewModel()
 }
 
 extension CameraView {
@@ -363,6 +365,11 @@ extension CameraView: View {
               .padding(.top, 16)
           }
         }
+        // 따봉 버튼 눌렀을 때 나올 뷰 => 둘다 표현해야 되기 때문에 따로 분기 처리 X
+        .overlay(alignment: .bottom) {
+          ThumbsUpView(trigger: $thumbsUpViewModel.animationTriger)
+            .opacity(thumbsUpViewModel.isShowInitialView ? 1 : .zero)
+        }
 
         // 프리뷰 밖 => 이부분을 기준으로 바구니 표현
         VStack(spacing: 24) {
@@ -400,7 +407,7 @@ extension CameraView: View {
                   penViewModel.showGuidingDisabledToast(type: .pen)
                   return
                 }
-                if !hasShownPenToast{
+                if !hasShownPenToast {
                   penViewModel.showFirstToolToast(type: .pen)
                   hasShownPenToast = true
                 }
@@ -423,7 +430,7 @@ extension CameraView: View {
                   penViewModel.showGuidingDisabledToast(type: .magicPen)
                   return
                 }
-                if !hasShownMagicPenToast{
+                if !hasShownMagicPenToast {
                   penViewModel.showFirstToolToast(type: .magicPen)
                   hasShownMagicPenToast = true
                 }
@@ -472,7 +479,6 @@ extension CameraView: View {
               }
               .disabled(!cameraViewModel.isCaptureButtonEnabled)
 
-
               Spacer()
 
               Button(action: {
@@ -493,14 +499,9 @@ extension CameraView: View {
                   }
               }
             } else {
-
-              Circle()
-                .fill(.clear)
-                .frame(width: 80, height: 80)
-
-              Spacer()
-
-              BoomupButton(tapAction: {})
+              ThumbsUpButton(tapAction: {
+                thumbsUpViewModel.userTriggerThumbsUp()
+              })
             }
           }
           .padding(.bottom, 51)
