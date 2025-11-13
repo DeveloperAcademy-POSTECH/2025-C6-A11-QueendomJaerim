@@ -13,6 +13,8 @@ struct SingleMagicStrokeView: View {
   let roleForTheme: Role?
   let geoSize: CGSize
   let stroke: Stroke
+  private var photographerColor = Color.photographerPrimary
+  private var modelColor = Color.modelPrimary
 
   // 사라지는 애니메이션을 위해 필요한 요소들
   @State private var opacity: Double = 1.0
@@ -20,7 +22,7 @@ struct SingleMagicStrokeView: View {
   private let fadeDuration: TimeInterval = 0.3
 
   var body: some View {
-    let outerColor = (stroke.author == .model) ? Color.modelPrimary : .photographerPrimary
+    let outerColor = (stroke.author == .model) ? modelColor : photographerColor
 
     ZStack {
       // 매직펜의 Blur 레이어
