@@ -9,9 +9,12 @@ import SwiftUI
 
 /// 레퍼런스 뷰 - 레퍼런스를 표시한다.
 struct ReferenceView: View {
-  @Bindable var referenceViewModel: ReferenceViewModel
+  var referenceViewModel: ReferenceViewModel
   @Binding var isLarge: Bool
   private let containerName = "ReferenceViewContainer"
+  private var closeViewPadding: CGFloat {
+    referenceViewModel.referenceHeight/2-50.5
+  }
 
   var body: some View {
     GeometryReader { geo in
@@ -29,7 +32,9 @@ struct ReferenceView: View {
                   }
                   .onEnded { value in
                     // fold/unfold 접힘 판정
-                    referenceViewModel.dragEnded()
+                    if !isLarge {
+                      referenceViewModel.dragEnded()
+                    }
                     // corner 위치 이동 판정
                     referenceViewModel.updateLocation(end: value.predictedEndLocation, size: geo.size)
                   }
@@ -41,7 +46,17 @@ struct ReferenceView: View {
               CloseView(referenceViewModel: referenceViewModel)
             }
             .padding(.horizontal, -8)
-            .padding(.vertical, 30)
+            .padding(.vertical,closeViewPadding )
+            .highPriorityGesture(
+              DragGesture(minimumDistance: 5, coordinateSpace: .named(containerName))
+                .onChanged { value in
+                  referenceViewModel.dragChanged(value)
+                }
+                .onEnded { value in
+                  // fold/unfold 접힘 판정
+                  referenceViewModel.dragEnded()
+                }
+            )
 
           case .delete:  // 레퍼런스 삭제
             EmptyView()
@@ -49,6 +64,7 @@ struct ReferenceView: View {
         }
       }
     }
+    .padding(.top, referenceViewModel.hasReferenceToast ? 48 : 0)
     .coordinateSpace(name: containerName)
   }
 }

@@ -27,6 +27,18 @@ final class FrameViewModel {
   var selectedFrameID: UUID?
   /// 최대 허용 프레임 갯수
   let maxFrames = 1
+  /// 프레임 최소 크기 (절대 좌표 기준)
+  let minimumFrameSizeByAbsoulteScale: CGFloat = 67
+  /// 프레임 최소 너비
+  var minimumFrameWidth: CGFloat {
+    minimumFrameSizeByAbsoulteScale / (containerSize?.width ?? 363)
+  }
+  /// 프레임 최소 높이
+  var minimumFrameHeight: CGFloat {
+    minimumFrameSizeByAbsoulteScale / (containerSize?.height ?? 484)
+  }
+  /// 컨테이너 크기
+  var containerSize: CGSize?
 
   // MARK: - 네트워크
   let networkService: NetworkServiceProtocol
@@ -47,6 +59,12 @@ final class FrameViewModel {
     self.notificationService = notificationService
 
     bind()
+  }
+  
+  func setContainerSize(for size: CGSize) {
+    if self.containerSize == nil {
+      self.containerSize = size
+    }
   }
 
   // MARK: - 프레임 활성화 토글 + 네트워크
@@ -98,8 +116,8 @@ final class FrameViewModel {
     guard let frameIndex = frames.firstIndex(where: { $0.id == id }) else { return }
 
     var new = start
-    new.size.width = min(max(start.size.width * scale, 0.05), 1.0)
-    new.size.height = min(max(start.size.height * scale, 0.05), 1.0)
+    new.size.width = min(max(start.size.width * scale, minimumFrameWidth), 1.0)
+    new.size.height = min(max(start.size.height * scale, minimumFrameHeight), 1.0)
     let dx = (start.size.width - new.size.width) / 2
     let dy = (start.size.height - new.size.height) / 2
     new.origin.x += dx
@@ -120,31 +138,52 @@ final class FrameViewModel {
     let dx = translation.width / container.width
     let dy = translation.height / container.height
 
+    var minX = new.minX
+    var minY = new.minY
+    var maxX = new.maxX
+    var maxY = new.maxY
+
     switch corner {
     case .topLeft:
-      new.origin.x += dx
-      new.origin.y += dy
-      new.size.width -= dx
-      new.size.height -= dy
+      minX = start.minX + dx
+      minY = start.minY + dy
 
+      minX = min(minX, maxX - minimumFrameWidth)
+      minY = min(minY, maxY - minimumFrameHeight)
+
+      minX = max(minX, 0)
+      minY = max(minY, 0)
     case .topRight:
-      new.origin.y += dy
-      new.size.width += dx
-      new.size.height -= dy
+      maxX = start.maxX + dx
+      minY = start.minY + dy
 
+      maxX = max(maxX, minX + minimumFrameWidth)
+      minY = min(minY, maxY - minimumFrameHeight)
+
+      maxX = min(maxX, 1)
+      minY = max(minY, 0)
     case .bottomLeft:
-      new.origin.x += dx
-      new.size.width -= dx
-      new.size.height += dy
+      minX = start.minX + dx
+      maxY = start.maxY + dy
 
+      minX = min(minX, maxX - minimumFrameWidth)
+      maxY = max(maxY, minY + minimumFrameHeight)
+
+      minX = max(minX, 0)
+      maxY = min(maxY, 1)
     case .bottomRight:
-      new.size.width += dx
-      new.size.height += dy
+      maxX = start.maxX + dx
+      maxY = start.maxY + dy
+
+      maxX = max(maxX, minX + minimumFrameWidth)
+      maxY = max(maxY, minY + minimumFrameHeight)
+
+      maxX = min(maxX, 1)
+      maxY = min(maxY, 1)
     }
-    new.size.width = min(max(new.size.width, 0.05), 1.0)
-    new.size.height = min(max(new.height, 0.05), 1.0)
-    new.origin.x = min(max(new.minX, 0), 1 - new.width)
-    new.origin.y = min(max(new.minY, 0), 1 - new.height)
+
+    new = CGRect(x: minX, y: minY, width: maxX - minX, height: maxY - minY)
+
     frames[frameIndex].rect = new
 
     // Send to network
