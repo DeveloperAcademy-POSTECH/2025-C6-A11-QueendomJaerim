@@ -12,6 +12,9 @@ struct ReferenceView: View {
   var referenceViewModel: ReferenceViewModel
   @Binding var isLarge: Bool
   private let containerName = "ReferenceViewContainer"
+  private var closeViewPadding: CGFloat {
+    referenceViewModel.referenceHeight/2-50.5
+  }
 
   var body: some View {
     GeometryReader { geo in
@@ -43,7 +46,7 @@ struct ReferenceView: View {
               CloseView(referenceViewModel: referenceViewModel)
             }
             .padding(.horizontal, -8)
-            .padding(.vertical, referenceViewModel.referenceHeight/2-50.5)
+            .padding(.vertical,closeViewPadding )
             .highPriorityGesture(
               DragGesture(minimumDistance: 5, coordinateSpace: .named(containerName))
                 .onChanged { value in
