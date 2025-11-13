@@ -121,6 +121,7 @@ final class CameraViewModel {
   }
 
   func capturePhoto() {
+    traceShutterPressedEvent()
     cameraManager.capturePhoto()
   }
 
