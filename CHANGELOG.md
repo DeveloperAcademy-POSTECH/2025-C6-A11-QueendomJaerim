@@ -15,12 +15,14 @@
 - 따봉 버튼 기능 추가
 - 레퍼런스에 애니메이션 추가
 - 매직펜에 사라지는 애니메이션 추가
+- Wi-Fi 기능이 꺼져있을 때 연결 뷰에서 사용자에게 얼럿을 노출
 
 ### Changed
 
 - 가이딩 토글 버튼에 따른 비활성화 상태 변경
 - Appearance를 Dark로 고정
 - 디자인 세부 조정 (카메라 뷰, 재연결 뷰, 프레임 가이딩)
+- `LocalEvent.browserStopped(let error)` / `LocalEvent.listenerStopped(let error)`에 대한 대응 방식 변경
 
 ### Deprecated
 

@@ -77,7 +77,9 @@ extension DomainNotification {
     case penEraserSelected
     /// 매직펜툴을 처음 선택한 경우 (최초 1회)
     case firstMagicToolSelected
-
+    /// Photos 진입 시. 바텀시트로 화면 반만 덮었을 때.
+    case photosPickerShowing
+    
     var preset: Preset {
       switch self {
       case .ready:
@@ -122,8 +124,9 @@ extension DomainNotification {
       case .deleteReference:
         return .init(message: "참고 이미지를 삭제했어요", isImportant: false, showingTime: 2)
       case .peerDeleteReference:
-        return .init(message: "친구가 참고 이미지를 삭제했어요", isImportant: false, showingTime: 2)
-
+        return  .init(message: "친구가 참고 이미지를 삭제했어요", isImportant: false, showingTime: 2)
+      case .photosPickerShowing:
+        return .init(message: "함께 참고할 이미지를 등록할 수 있습니다.", isImportant: false, showingTime: nil)
       // 펜 + 매직펜
       case .firstPenToolSelected:
         return .init(message: "펜으로 가이드를 그립니다.", isImportant: false, showingTime: 2)

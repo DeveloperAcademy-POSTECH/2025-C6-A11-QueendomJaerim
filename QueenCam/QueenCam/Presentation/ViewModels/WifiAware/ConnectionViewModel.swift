@@ -54,7 +54,7 @@ final class ConnectionViewModel {
   var connectionLost: Bool = false
   /// 재연결 중인 디바이스 이름
   var reconnectingDeviceName: String?
-  
+
   var needReportSessionFinished: Bool = false
 
   /// 최근 역할 스왑 LWW 기록
@@ -70,6 +70,9 @@ final class ConnectionViewModel {
 
   /// State Toast
   private let notificationService: NotificationServiceProtocol
+  
+  /// Error
+  private(set) var connectionError: Error?
 
   private let logger = QueenLogger(category: "ConnectionViewModel")
 
@@ -108,7 +111,7 @@ final class ConnectionViewModel {
         self?.connections = connections
 
         // 이벤트 전파 후 핸들링
-        self?.didEstablishConnection(connections: connections)
+        self?.deviceConnectionsUpdated(connections: connections)
       }
       .store(in: &cancellables)
 
@@ -128,6 +131,22 @@ final class ConnectionViewModel {
         }
       }
       .store(in: &cancellables)
+
+    networkService.deviceReportsPublisher
+      .receive(on: RunLoop.main)
+      .compactMap { $0 }
+      .sink { [weak self] reportsByDevices in
+        self?.deviceReportsUpdated(reports: reportsByDevices)
+      }
+      .store(in: &cancellables)
+    
+    networkService.lastErrorPublisher
+      .receive(on: RunLoop.main)
+      .compactMap { $0 }
+      .sink { [weak self] error in
+        self?.connectionError = error
+      }
+      .store(in: &cancellables)
   }
 
   private func updatePairedDevices() async {
@@ -143,6 +162,7 @@ final class ConnectionViewModel {
   }
 }
 
+// MARK: - User Intents
 extension ConnectionViewModel {
   func didEndpointSelect(endpoint: WASubscriberBrowser.Endpoint) {
     logger.info("endpoint selected. \(endpoint)")
@@ -220,11 +240,17 @@ extension ConnectionViewModel {
     needReportSessionFinished = false
     role = nil // 정상 종료인 경우 역할 초기화
   }
+  
+  func errorConfirmedByUser() {
+    networkService.stop(byUser: true)
+    selectedPairedDevice = nil
+    connectionError = nil
+  }
 }
 
 // MARK: - Connecting
 extension ConnectionViewModel {
-  private func didEstablishConnection(connections: [WAPairedDevice: ConnectionDetail]) {
+  private func deviceConnectionsUpdated(connections: [WAPairedDevice: ConnectionDetail]) {
     if let firstConnection = connections.first {
       lastConnectedDevice = firstConnection.key
       connectionLost = false  // 재연결인 경우 connectionLost 플래그를 초기화
@@ -238,6 +264,26 @@ extension ConnectionViewModel {
       networkService.reconnect(for: lastConnectedDevice)
     } else {
       logger.warning("최근 연결한 디바이스 정보가 없어 재연결에 실패했습니다.")
+    }
+  }
+
+  private func deviceReportsUpdated(reports: [WAPairedDevice: WAPerformanceReport]) {
+    func logPreformanceReport(_ report: WAPerformanceReport) {
+      logger.debug(
+        """
+        === Wi-Fi Aware Performance Report ===
+        *  timestamp: \(report.timestamp)
+        *  signalStrength: \(report.signalStrength ?? .nan)
+        *  throughputCeiling: \(report.throughputCeiling ?? .nan)
+        *  throughputCapacity: \(report.throughputCapacity ?? .nan)
+        *  throughputCapacityRatio: \(report.throughputCapacityRatio ?? .nan)
+        *  transmitLatencyAverage: \(report.transmitLatency.values.first?.average ?? .zero)
+        """
+      )
+    }
+
+    if let firstReport = reports.first?.value {
+      logPreformanceReport(firstReport)
     }
   }
 }

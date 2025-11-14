@@ -30,3 +30,9 @@ struct DomainNotification {
 }
 
 extension DomainNotification: Equatable { }
+
+extension DomainNotification {
+  func isType(of type: DomainNotification.DomainNotificationType) -> Bool {
+    self.message == type.preset.message
+  }
+}
