@@ -12,8 +12,8 @@ struct OpenView: View {
   var referenceViewModel: ReferenceViewModel
   @State private var showDelete: Bool = false
   @Binding var isLarge: Bool
-  private let enlargeDuration: Double = 0.8
-  private let shrinkDuration: Double = 0.4
+  private let enlargeDuration: Double = 0.25
+  private let shrinkDuration: Double = 0.25
 
   var body: some View {
     ZStack(alignment: .topTrailing) {
@@ -60,6 +60,8 @@ struct OpenView: View {
           isLarge = false
         } label: {
           ReferenceDeleteButton()
+            .scaleEffect(showDelete ? 1.0 : 0.5)
+            .opacity(showDelete ? 1.0 : 0.0)
         }
         .padding(12)
         .transition(.opacity.combined(with: .scale))
@@ -67,8 +69,10 @@ struct OpenView: View {
     }
     .onChange(of: isLarge) { _, newValue in
       if newValue {
-        DispatchQueue.main.asyncAfter(deadline: .now() + enlargeDuration) {
-          showDelete = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + enlargeDuration * 0.6) {
+          withAnimation(.easeOut(duration: 0.09)) {
+            showDelete = true
+          }
         }
       } else {
         showDelete = false

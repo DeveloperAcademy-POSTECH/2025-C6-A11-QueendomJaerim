@@ -21,6 +21,7 @@ final class ReferenceViewModel {
   var alignment: Alignment { location.alignment }
   /// CloseView의 위치 계산에 사용될 레퍼런스 높이
   var referenceHeight: CGFloat = 0
+
   /// 현재 레퍼런스 존재 여부
   var hasReferenceImage: Bool {
     image != nil
@@ -34,7 +35,7 @@ final class ReferenceViewModel {
 
   // MARK: - Toast State
   private let notificationService: NotificationServiceProtocol
-  
+
   init(
     networkService: NetworkServiceProtocol = DependencyContainer.defaultContainer.networkService,
     notificationService: NotificationServiceProtocol = DependencyContainer.defaultContainer.notificationService
@@ -71,12 +72,10 @@ final class ReferenceViewModel {
       dragOffset = .zero
     }
   }
-
+  /// CloseView에서의 버튼 누를때 액션
   func unFold() {
-    withAnimation(.snappy) {
-      state = .open
-      dragOffset = .zero
-    }
+    state = .open
+    dragOffset = .zero
   }
 
   // MARK: - DRAG(for location change)
@@ -125,7 +124,9 @@ extension ReferenceViewModel {
     notificationService.lastNotificationPublisher
       .receive(on: RunLoop.main)
       .sink { [weak self] notification in
-        self?.hasReferenceToast = (notification != nil)
+        withAnimation(.bouncy(duration: 0.6)) {
+          self?.hasReferenceToast = (notification != nil)
+        }
       }
       .store(in: &cancellables)
   }
@@ -139,11 +140,11 @@ extension ReferenceViewModel {
         notificationService.registerNotification(.make(type: .peerRegisterFirstReference))
       }
       if let uiImage = UIImage(data: imageData) {
-        self.image = uiImage        
+        self.image = uiImage
       }
     case .remove:
       self.image = nil
-      notificationService.registerNotification(.make(type:.peerDeleteReference))
+      notificationService.registerNotification(.make(type: .peerDeleteReference))
     }
   }
 }
