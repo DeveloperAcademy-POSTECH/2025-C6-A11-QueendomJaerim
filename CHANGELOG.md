@@ -9,6 +9,26 @@
 
 ### Added
 
+
+### Changed
+
+
+### Deprecated
+
+
+### Removed
+
+
+### Fixed
+
+
+### Security
+
+
+## [1.0.0] (2025-11-14)
+
+### Added
+
 - 타이포그라피 시스템 업데이트
 - 페어링 및 연결 하이파이 디자인 적용
 - 가이딩 관련 토스트 추가
@@ -24,9 +44,6 @@
 - 디자인 세부 조정 (카메라 뷰, 재연결 뷰, 프레임 가이딩)
 - `LocalEvent.browserStopped(let error)` / `LocalEvent.listenerStopped(let error)`에 대한 대응 방식 변경
 
-### Deprecated
-
-
 ### Removed
 
 - "페어링이 왜 필요해요?" 레이블 숨김처리 (디자인 작업 완료 후 작업 예정)
@@ -38,8 +55,6 @@
 - `v0.3.3`에서의 디자인 QA 카메라, Photos 부분 수정
 - 재연결시 이전 커넥션을 잘 정리하지 않았던 문제 수정
 - 특정 디바이스에 연결 중인 상태에서 다른 디바이스 연결 버튼이 잘 작동하지 않았던 문제 수정
-
-### Security
 
 
 ## [0.3.3] (2025-11-07)
@@ -199,6 +214,7 @@
 - Wi-Fi Aware 연결 후, 라이브 포토 촬영 시 앱이 크래시되는 문제
 - 레퍼런스 삭제 후 재등록에 관한 상태 초기화 문제
 
+[1.0.0]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v0.3.3...v1.0.0
 [0.3.3]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v0.3.2...v0.3.3
 [0.3.2]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v0.3.0...v0.3.1
