@@ -5,6 +5,7 @@ extension PhotoDetailView {
     let currentIndex: Int
     let totalItemListCount: Int
     let isActive: Bool
+    let isOverlap: Bool
     let onTapBackAction: () -> Void
     let onTapRegisterAction: () -> Void
   }
@@ -54,15 +55,25 @@ extension PhotoDetailView.TopToolBarComponent: View {
     }
     .frame(maxWidth: .infinity)
     .frame(height: 120, alignment: .bottom)
-    .background(.black.opacity(0.5))
-    .blur(radius: 0)
+    .background {
+      if isOverlap {
+        Color.clear.background(.ultraThinMaterial)
+      } else {
+        Color.black.opacity(0.5)
+      }
+    }
   }
 }
 
 #Preview {
   ScrollView {
-
+    Rectangle()
+      .fill(.blue)
+      .frame(height: 50)
+      .padding(.top, 50)
   }
+  .frame(maxWidth: .infinity)
+  //  .frame(height: 50)
   .background(.black)
   .overlay(alignment: .top) {
     VStack(spacing: .zero) {
@@ -70,6 +81,7 @@ extension PhotoDetailView.TopToolBarComponent: View {
         currentIndex: 3,
         totalItemListCount: 6,
         isActive: false,
+        isOverlap: true,
         onTapBackAction: {},
         onTapRegisterAction: {}
       )
@@ -91,6 +103,7 @@ extension PhotoDetailView.TopToolBarComponent: View {
       }
     }
     .ignoresSafeArea()
+    .preferredColorScheme(.dark)
   }
 }
 

@@ -4,10 +4,14 @@
 <dict>
 	<key>CFBundleIconName</key>
 	<string>AppIcon</string>
+	<key>FirebaseAppDelegateProxyEnabled</key>
+	<false/>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Pretendard-Medium.ttf</string>
 		<string>Pretendard-Regular.ttf</string>
+		<string>Pretendard-Bold.ttf</string>
+		<string>Pretendard-SemiBold.ttf</string>
 	</array>
 	<key>WiFiAwareServices</key>
 	<dict>

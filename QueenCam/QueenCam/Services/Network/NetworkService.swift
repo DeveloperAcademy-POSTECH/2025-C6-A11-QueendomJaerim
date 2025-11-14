@@ -50,18 +50,22 @@ final class NetworkService: NetworkServiceProtocol {
 
       networkStateSubject.send(networkState)
 
+      // Analytics
+      if networkState == .host(.lost) || networkState == .viewer(.lost) {
+        traceConnectionLostEvent()
+      }
+
       // 연결이 취소되거나 유실되었다면 헬스 체크를 리셋한다
       if networkState == .host(.cancelled)
-          || networkState == .viewer(.cancelled)
-          || networkState == .host(.lost)
-          || networkState == .viewer(.lost) {
+        || networkState == .viewer(.cancelled)
+        || networkState == .host(.lost)
+        || networkState == .viewer(.lost) {
         resetHealthCheck()  // 헬스 체크 리셋
       }
-      
+
       // 연결이 취소되었다면 다음 태스크에서 stopped 상태로 전환한다
       // 유실된 경우 추가적인 액션을 필요로 한다. 따라서 바로 stopped 상태로 전환하지 않는다.
-      if networkState == .host(.cancelled)
-          || networkState == .viewer(.cancelled) {
+      if networkState == .host(.cancelled) || networkState == .viewer(.cancelled) {
         Task {
           networkState = mode == .host ? .host(.stopped) : .viewer(.stopped)
         }
@@ -89,12 +93,34 @@ final class NetworkService: NetworkServiceProtocol {
   private let connectionManager: ConnectionManagerProtocol
   private var eventHandlerTasks: [Task<Void, Error>] = []
 
+  // Monitoring
+  private var monitorTimer: Timer?
+  private let monitoringInterval: TimeInterval = 0.5
+  private var deviceReports: [WAPairedDevice: WAPerformanceReport] = [:] {
+    didSet {
+      deviceReportsSubject.send(deviceReports)
+    }
+  }
+  private let deviceReportsSubject = CurrentValueSubject<[WAPairedDevice: WAPerformanceReport], Never>([:])
+  var deviceReportsPublisher: AnyPublisher<[WAPairedDevice: WAPerformanceReport], Never> {
+    deviceReportsSubject.eraseToAnyPublisher()
+  }
+
   // Health Check
-  private let healthCheckPeriod: TimeInterval = 1.0
+  private let healthCheckPeriod: TimeInterval = 0.5
   private var healthCheckTimer: Timer?
   private var requestedRandomCode: String?
   private var healthCheckPending: Bool = false  // 현재 요청한 헬스 체크 응답이 도착하지 않으면 true, 도착했으면 false
   private var lastHealthCheckTime: Date?
+  
+  // Publisher Timeout Counts
+  /// .publihserTimeout이 발생한 횟수
+  private var publisherTimeoutCounts: Int = 0
+  /// .publihserTimeout이 누적되었을 때 연결을 끊을 최대 카운트
+  private let maxPublisherTimeoutCounts: Int = 10
+
+  // Reconnection
+  @MainActor private var isReconnecting: Bool = false
 
   private let logger = QueenLogger(category: "NetworkService")
 
@@ -119,6 +145,10 @@ final class NetworkService: NetworkServiceProtocol {
     eventHandlerTasks.append(setupEventHandler(for: connectionManager.localEvents))
     eventHandlerTasks.append(setupEventHandler(for: connectionManager.networkEvents))
   }
+}
+
+extension NetworkService {
+  // MARK: - Event Handling
 
   private func setupEventHandler<T>(for stream: AsyncStream<T>) -> Task<Void, Error> {
     Task {
@@ -145,8 +175,6 @@ final class NetworkService: NetworkServiceProtocol {
       networkState = .viewer(.connecting)
 
     case .browserStopped(let error), .listenerStopped(let error):
-      networkState = mode == .host ? .host(.stopped) : .viewer(.stopped)
-
       if let waError = error {
         logger.error("browserStopped 또는 listenerStopped 상태에서 에러가 발생했습니다. \(waError.localizedDescription)")
         lastErrorSubject.send(waError)
@@ -156,12 +184,30 @@ final class NetworkService: NetworkServiceProtocol {
           return
         }
 
+        if case .serviceAlreadySubscribing = waError {
+          logger.debug("The error was .serviceAlreadySubscribing, so do nothing.")
+          return
+        }
+
+        if case .publisherTimeout = waError, publisherTimeoutCounts < maxPublisherTimeoutCounts {
+          publisherTimeoutCounts += 1
+          logger.debug(
+            "The error was .publisherTimeout, currently do nothing and monitor the healthcheck. " +
+            "current count: \(publisherTimeoutCounts), max: \(maxPublisherTimeoutCounts)"
+          )
+          return
+        }
+
         if mode == .viewer {
           networkState = .viewer(.lost)
         } else {
           networkState = .host(.lost)
         }
+
+        return
       }
+
+      networkState = mode == .host ? .host(.stopped) : .viewer(.stopped)
 
     case .connection(let conectionEvent):
       await handleConnectionEvent(conectionEvent)
@@ -188,8 +234,9 @@ final class NetworkService: NetworkServiceProtocol {
       } else {
         networkState = .host(.publishing)
       }
+
     case .performance(let device, let connectionDetail):
-      deviceConnections[device] = connectionDetail
+      deviceReports[device] = connectionDetail.performanceReport
 
     case .stopped(let device, let connectionID, let error):
       logger.info("handle stopped event \(error)")
@@ -231,8 +278,29 @@ final class NetworkService: NetworkServiceProtocol {
       stop(byUser: true)
     }
 
+    if case .startSession = event {
+      traceSessionStartEvent()
+    }
+
     networkEventSubject.send(event)
   }
+
+  private func startMonitoring(interval: TimeInterval) {
+    monitorTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { timer in
+      Task { [weak self] in
+        try await self?.connectionManager.monitor()
+      }
+    }
+  }
+
+  private func stopMonitoring() {
+    monitorTimer?.invalidate()
+    monitorTimer = nil
+  }
+}
+
+extension NetworkService {
+  // MARK: - Public Interfaces
 
   func run(for device: WAPairedDevice) {
     logger.debug("run() invoked")
@@ -246,21 +314,51 @@ final class NetworkService: NetworkServiceProtocol {
         }
       }
     }
+
+    startMonitoring(interval: monitoringInterval)
   }
 
   func disconnect() {
     Task {
       await send(for: .willDisconnect)
-      try? await Task.sleep(for: .milliseconds(100)) // 상대가 연결 중단 이벤트를 처리할 수 있도록 조금 기다린다
+      try? await Task.sleep(for: .milliseconds(100))  // 상대가 연결 중단 이벤트를 처리할 수 있도록 조금 기다린다
       stop(byUser: true)
     }
   }
 
+  func reconnect(for device: WAPairedDevice) {
+    Task { @MainActor in
+      guard !isReconnecting else {
+        logger.warning("Reconnect already in progress. Ignoring new request.")
+        return
+      }
+
+      isReconnecting = true
+
+      networkTask?.cancel()
+
+      await self.connectionManager.stopAll()
+
+      networkTask = Task {
+        _ = try await withTaskCancellationHandler {
+          try await mode == .host ? networkManager.listen(to: device) : networkManager.browse(for: device)
+        } onCancel: {
+          Task { @MainActor in
+            networkState = mode == .host ? .host(.stopped) : .viewer(.stopped)
+          }
+        }
+      }
+
+      isReconnecting = false
+    }
+  }
+
   func stop(byUser: Bool) {
+    stopMonitoring()
     networkTask?.cancel()
     Task {
       await self.connectionManager.stopAll()
-      
+
       if byUser {
         self.networkState = self.mode == .host ? .host(.cancelled) : .viewer(.cancelled)
       } else {
@@ -282,7 +380,7 @@ extension NetworkService {
 
   /// 연결이 끊겼다고 판정할 헬스 체크 시간
   private var healthCheckTimeout: TimeInterval {
-    4.0
+    2.0
   }
 
   /// 헬스 체크 프로토콜 시작 (뷰어)

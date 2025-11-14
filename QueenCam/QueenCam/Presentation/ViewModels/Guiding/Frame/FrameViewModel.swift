@@ -1,3 +1,4 @@
+import Combine
 //
 //  FrameViewModel.swift
 //  QueenCam
@@ -6,7 +7,6 @@
 //
 import Foundation
 import SwiftUI
-import Combine
 
 /// 프레임의 상태 관리(이동, 확대, 축소, 모서리 크기 조절)
 @Observable
@@ -27,17 +27,44 @@ final class FrameViewModel {
   var selectedFrameID: UUID?
   /// 최대 허용 프레임 갯수
   let maxFrames = 1
+  /// 프레임 최소 크기 (절대 좌표 기준)
+  let minimumFrameSizeByAbsoulteScale: CGFloat = 67
+  /// 프레임 최소 너비
+  var minimumFrameWidth: CGFloat {
+    minimumFrameSizeByAbsoulteScale / (containerSize?.width ?? 363)
+  }
+  /// 프레임 최소 높이
+  var minimumFrameHeight: CGFloat {
+    minimumFrameSizeByAbsoulteScale / (containerSize?.height ?? 484)
+  }
+  /// 컨테이너 크기
+  var containerSize: CGSize?
 
   // MARK: - 네트워크
   let networkService: NetworkServiceProtocol
   var cancellables: Set<AnyCancellable> = []
 
+  // MARK: - Toast
+  let notificationService: NotificationServiceProtocol
+  private var hasShownPeerCreateToast: Bool = false
+  private var hasShownPeerEditToast: Bool = false
+  private var hasShownPeerRatioEditToast: Bool = false
+  private var hasShownPeerDeleteToast: Bool = false
+
   init(
-    networkService: NetworkServiceProtocol = DependencyContainer.defaultContainer.networkService
+    networkService: NetworkServiceProtocol = DependencyContainer.defaultContainer.networkService,
+    notificationService: NotificationServiceProtocol = DependencyContainer.defaultContainer.notificationService
   ) {
     self.networkService = networkService
+    self.notificationService = notificationService
 
     bind()
+  }
+  
+  func setContainerSize(for size: CGSize) {
+    if self.containerSize == nil {
+      self.containerSize = size
+    }
   }
 
   // MARK: - 프레임 활성화 토글 + 네트워크
@@ -89,8 +116,8 @@ final class FrameViewModel {
     guard let frameIndex = frames.firstIndex(where: { $0.id == id }) else { return }
 
     var new = start
-    new.size.width = min(max(start.size.width * scale, 0.05), 1.0)
-    new.size.height = min(max(start.size.height * scale, 0.05), 1.0)
+    new.size.width = min(max(start.size.width * scale, minimumFrameWidth), 1.0)
+    new.size.height = min(max(start.size.height * scale, minimumFrameHeight), 1.0)
     let dx = (start.size.width - new.size.width) / 2
     let dy = (start.size.height - new.size.height) / 2
     new.origin.x += dx
@@ -111,31 +138,52 @@ final class FrameViewModel {
     let dx = translation.width / container.width
     let dy = translation.height / container.height
 
+    var minX = new.minX
+    var minY = new.minY
+    var maxX = new.maxX
+    var maxY = new.maxY
+
     switch corner {
     case .topLeft:
-      new.origin.x += dx
-      new.origin.y += dy
-      new.size.width -= dx
-      new.size.height -= dy
+      minX = start.minX + dx
+      minY = start.minY + dy
 
+      minX = min(minX, maxX - minimumFrameWidth)
+      minY = min(minY, maxY - minimumFrameHeight)
+
+      minX = max(minX, 0)
+      minY = max(minY, 0)
     case .topRight:
-      new.origin.y += dy
-      new.size.width += dx
-      new.size.height -= dy
+      maxX = start.maxX + dx
+      minY = start.minY + dy
 
+      maxX = max(maxX, minX + minimumFrameWidth)
+      minY = min(minY, maxY - minimumFrameHeight)
+
+      maxX = min(maxX, 1)
+      minY = max(minY, 0)
     case .bottomLeft:
-      new.origin.x += dx
-      new.size.width -= dx
-      new.size.height += dy
+      minX = start.minX + dx
+      maxY = start.maxY + dy
 
+      minX = min(minX, maxX - minimumFrameWidth)
+      maxY = max(maxY, minY + minimumFrameHeight)
+
+      minX = max(minX, 0)
+      maxY = min(maxY, 1)
     case .bottomRight:
-      new.size.width += dx
-      new.size.height += dy
+      maxX = start.maxX + dx
+      maxY = start.maxY + dy
+
+      maxX = max(maxX, minX + minimumFrameWidth)
+      maxY = max(maxY, minY + minimumFrameHeight)
+
+      maxX = min(maxX, 1)
+      maxY = min(maxY, 1)
     }
-    new.size.width = min(max(new.size.width, 0.05), 1.0)
-    new.size.height = min(max(new.height, 0.05), 1.0)
-    new.origin.x = min(max(new.minX, 0), 1 - new.width)
-    new.origin.y = min(max(new.minY, 0), 1 - new.height)
+
+    new = CGRect(x: minX, y: minY, width: maxX - minX, height: maxY - minY)
+
     frames[frameIndex].rect = new
 
     // Send to network
@@ -150,6 +198,43 @@ final class FrameViewModel {
     // Send to network
     sendFrameCommand(command: .deleteAll)
   }
+
+  // MARK: - Toast
+  func showGuidingDisabledToast() {
+    notificationService.registerNotification(DomainNotification.make(type: .turnOnGuidingFirstWithFrame))
+  }
+  enum FrameToastEventType {
+    case create
+    case delete
+    case edit
+    case ratioEdit
+  }
+  // 상대가 이벤트를 한 경우
+  func peerFrameGuidingToast(type: FrameToastEventType) {
+    switch type {
+    case .create:
+      notificationService.registerNotification(DomainNotification.make(type: .peerCreateFrameGuide))
+    case .delete:
+      notificationService.registerNotification(DomainNotification.make(type: .peerCloseFrameGuide))
+    case .edit:
+      notificationService.registerNotification(DomainNotification.make(type: .peerEditingFrameGuide))
+    case .ratioEdit:
+      notificationService.registerNotification(DomainNotification.make(type: .peerFirstEditMode))
+    }
+  }
+  // 사용자(본인)가 이벤트를 한 경우
+  func myFrameGuidingToast(type: FrameToastEventType){
+    switch type {
+    case .create:
+      notificationService.registerNotification(DomainNotification.make(type: .sharingFrameGuideStarted))
+    case .delete:
+      notificationService.registerNotification(DomainNotification.make(type: .closeFrameGuide))
+    case .edit:
+      return
+    case .ratioEdit:
+      notificationService.registerNotification(DomainNotification.make(type: .firstEditMode))
+    }
+  }
 }
 
 // MARK: Receiving network event
@@ -163,14 +248,27 @@ extension FrameViewModel {
         switch event {
         case .frameUpdated(let eventType):
           self.handleFrameEvent(eventType: eventType)
+          
 
         case .frameEnabled(let enabled):
           self.isFrameEnabled = enabled
-
+          if !hasShownPeerCreateToast{
+            peerFrameGuidingToast(type: .create)
+            hasShownPeerCreateToast = true
+          }
+          if !hasShownPeerDeleteToast{
+            peerFrameGuidingToast(type: .delete)
+            hasShownPeerDeleteToast = true
+          }
+          
         case .frameInteracting(let role, let interacting):
           if interacting {
             self.isInteracting = true
             self.interactingRole = role
+            if !hasShownPeerEditToast{
+              peerFrameGuidingToast(type: .edit)
+              hasShownPeerEditToast = true
+            }
           } else {
             self.isInteracting = false
             self.interactingRole = nil

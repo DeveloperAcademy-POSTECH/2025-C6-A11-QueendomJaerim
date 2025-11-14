@@ -24,6 +24,7 @@ extension PhotoDetailView {
     let onSingleTapAction: () -> Void  // 한번 탭
 
     @Binding var loadedImageList: [String: UIImage]
+    @Binding var imageAspectRatioList: [String: CGFloat]
 
     @State private var detailImage: UIImage?  // 로드한 이미지를 담을 개별 상태
     @State private var livePhoto: PHLivePhoto?
@@ -77,6 +78,9 @@ extension PhotoDetailView.ItemComponent {
         self.detailImage = result
         let isDegraded = (info?[PHImageResultIsDegradedKey] as? NSNumber)?.boolValue ?? false
         self.logger.debug("\(isDegraded ? "저화질 썸네일 로드" : "고화질 원본 로드")")
+
+        // 저화질이든 고화질이든 비율은 동일하므로 즉시 저장
+        saveAspectRatio(image: result)
 
         if !isDegraded {
           // 고화질 로드에 성공하면 캐시 저장 (캐시에는 원본 고화질이 저장됨)
@@ -167,6 +171,17 @@ extension PhotoDetailView.ItemComponent {
 
     currentOffset.width = min(max(currentOffset.width, -maxOffsetX), maxOffsetX)
     currentOffset.height = min(max(currentOffset.height, -maxOffsetY), maxOffsetY)
+  }
+
+  // 본 이미지의 비율 저장
+  private func saveAspectRatio(image: UIImage) {
+    let aspectRatio = image.size.width / image.size.height
+
+    // 이미 저장된 비율이 있으면 중복 저장 방지
+    if imageAspectRatioList[asset.localIdentifier] == nil {
+      imageAspectRatioList[asset.localIdentifier] = aspectRatio
+      logger.debug("비율 저장: \(aspectRatio))")
+    }
   }
 }
 

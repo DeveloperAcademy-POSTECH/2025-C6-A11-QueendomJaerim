@@ -19,15 +19,30 @@ final class ReferenceViewModel {
   var dragOffset: CGSize = .zero  // 드래그 중 임시편차
   var location: ReferenceLocation = .topLeft
   var alignment: Alignment { location.alignment }
+  /// CloseView의 위치 계산에 사용될 레퍼런스 높이
+  var referenceHeight: CGFloat = 0
+
+  /// 현재 레퍼런스 존재 여부
+  var hasReferenceImage: Bool {
+    image != nil
+  }
+  /// 현재 레퍼런스 토스트 존재 여부
+  var hasReferenceToast: Bool = false
 
   // MARK: - Network
   let networkService: NetworkServiceProtocol
   var cancellables: Set<AnyCancellable> = []
 
+  // MARK: - Toast State
+  private let notificationService: NotificationServiceProtocol
+
   init(
-    networkService: NetworkServiceProtocol = DependencyContainer.defaultContainer.networkService
+    networkService: NetworkServiceProtocol = DependencyContainer.defaultContainer.networkService,
+    notificationService: NotificationServiceProtocol = DependencyContainer.defaultContainer.notificationService
   ) {
     self.networkService = networkService
+    self.notificationService = notificationService
+    self.hasReferenceToast = (notificationService.currentNotification != nil)
 
     bind()
   }
@@ -43,22 +58,24 @@ final class ReferenceViewModel {
     if location == .topLeft || location == .bottomLeft {
       if dragOffset.width <= foldThreshold {
         state = .close
+      } else {
+        state = .open
       }
     } else {
       if dragOffset.width >= -foldThreshold {
         state = .close
+      } else {
+        state = .open
       }
     }
     withAnimation(.snappy) {
       dragOffset = .zero
     }
   }
-
+  /// CloseView에서의 버튼 누를때 액션
   func unFold() {
-    withAnimation(.snappy) {
-      state = .open
-      dragOffset = .zero
-    }
+    state = .open
+    dragOffset = .zero
   }
 
   // MARK: - DRAG(for location change)
@@ -87,9 +104,10 @@ final class ReferenceViewModel {
   }
 }
 
-// MARK: - Receiving network event
+// MARK: - Receiving network/notification event
 extension ReferenceViewModel {
   private func bind() {
+    // 네트워크 이벤트 구독
     networkService.networkEventPublisher
       .receive(on: RunLoop.main)
       .compactMap { $0 }
@@ -101,16 +119,32 @@ extension ReferenceViewModel {
         }
       }
       .store(in: &cancellables)
+
+    // 토스트(도메인 알림) 변경 구독
+    notificationService.lastNotificationPublisher
+      .receive(on: RunLoop.main)
+      .sink { [weak self] notification in
+        withAnimation(.bouncy(duration: 0.6)) {
+          self?.hasReferenceToast = (notification != nil)
+        }
+      }
+      .store(in: &cancellables)
   }
 
   private func handleReferenceImageEvent(eventType: ReferenceImageEventType) {
     switch eventType {
     case .register(let imageData):
+      if hasReferenceImage {
+        notificationService.registerNotification(.make(type: .peerRegisterNewReference))
+      } else {
+        notificationService.registerNotification(.make(type: .peerRegisterFirstReference))
+      }
       if let uiImage = UIImage(data: imageData) {
         self.image = uiImage
       }
     case .remove:
       self.image = nil
+      notificationService.registerNotification(.make(type: .peerDeleteReference))
     }
   }
 }
@@ -120,10 +154,16 @@ extension ReferenceViewModel {
   nonisolated var compressionQualityOfReferenceImage: CGFloat { 0.8 }
 
   private func sendReferenceImageCommand(command: ReferenceNetworkCommand) {
+    if hasReferenceImage {
+      notificationService.registerNotification(.make(type: .registerNewReference))
+    } else {
+      notificationService.registerNotification(.make(type: .registerFirstReference))
+    }
     if case .register(let image) = command {
       sendReferenceImageRegisteredEvent(referenceImage: image)
     } else {
       sendReferenceImageRemovedEvent()
+      notificationService.registerNotification(.make(type: .deleteReference))
     }
   }
 

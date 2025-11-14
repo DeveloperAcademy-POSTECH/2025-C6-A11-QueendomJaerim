@@ -71,8 +71,8 @@ extension CheckCircleButton: View {
   @ViewBuilder
   var deselectedCircle: some View {
     Circle()
-      .strokeBorder(diselectedBorderColor, lineWidth: strokeWidth)
       .fill(diselectedFillColor)
+      .strokeBorder(diselectedBorderColor, lineWidth: strokeWidth)
   }
 }
 

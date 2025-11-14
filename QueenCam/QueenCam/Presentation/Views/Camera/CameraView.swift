@@ -30,25 +30,33 @@ struct CameraView {
   @State private var isLarge: Bool = false
 
   @State private var isPen: Bool = false
+  @State private var hasShownPenToast = false
   @State private var isMagicPen: Bool = false
+  @State private var hasShownMagicPenToast: Bool = false
   @State private var penViewModel = PenViewModel()
 
   @State private var frameViewModel = FrameViewModel()
   @State private var isFrame: Bool = false
+  @State private var hasShownCreateToast: Bool = false
+  @State private var hasShownDeleteToast: Bool = false
 
   @State private var isRemoteGuideHidden: Bool = false
   @State private var isShowCameraSettingTool: Bool = false
-  
+
   /// 로그 내보내기 시트 노출 여부
   @State private var isShowLogExportingSheet: Bool = false
 
   @State private var isShowShutterFlash = false
-  
+
   // 연결 종료 여부 확인 시트 노출 여부
   @State private var isShowDisconnectAlert = false
 
   /// 연결 플로우가 진행되는 ConnectionView를 띄울지 여부
   @State private var isShowConnectionView: Bool = false
+
+  @Environment(\.displayScale) private var displayScale
+
+  @State private var thumbsUpViewModel = ThumbsUpViewModel()
 }
 
 extension CameraView {
@@ -171,34 +179,6 @@ extension CameraView: View {
     .glassEffect(.clear.tint(Color.hex333333), in: .rect(cornerRadius: 59))
   }
 
-  private var toolBarCameraSettingTool: some View {
-    ControlGroup {
-      CameraSettingButton(
-        title: "플래시",
-        systemName: flashImage,
-        isActive: cameraViewModel.isFlashMode != .off,
-        tapAction: { cameraViewModel.switchFlashMode() },
-        isToolBar: true
-      )
-
-      CameraSettingButton(
-        title: "LIVE",
-        systemName: liveImage,
-        isActive: cameraViewModel.isLivePhotoOn,
-        tapAction: { cameraViewModel.switchLivePhoto() },
-        isToolBar: true
-      )
-
-      CameraSettingButton(
-        title: "그리드",
-        systemName: "grid",
-        isActive: cameraViewModel.isShowGrid,
-        tapAction: { cameraViewModel.switchGrid() },
-        isToolBar: true
-      )
-    }
-  }
-
   var body: some View {
     ZStack {
       Color.black.ignoresSafeArea()
@@ -207,19 +187,6 @@ extension CameraView: View {
         TopToolBarView(
           connectedDeviceName: connectionViewModel.connectedDeviceName,
           reconnectingDeviceName: connectionViewModel.reconnectingDeviceName,
-          contextMenuContent: {
-            toolBarCameraSettingTool
-
-            Button("기능 1") {}
-            Button("기능 2") {}
-            Button("로그 내보내기") {
-              isShowLogExportingSheet = true
-            }
-
-            Divider()
-
-            Button("신고하기", systemImage: "exclamationmark.triangle") {}
-          },
           indicatorMenuContent: {
             Button("역할 바꾸기") {
               changeRoleButtonDidTap()
@@ -259,8 +226,10 @@ extension CameraView: View {
             CameraPreview(session: cameraViewModel.cameraManager.session)
               .onCameraCaptureEvent { event in
                 if event.phase == .ended {
-                  flashScreen()
-                  cameraViewModel.capturePhoto()
+                  if cameraViewModel.isCaptureButtonEnabled {
+                    flashScreen()
+                    cameraViewModel.capturePhoto()
+                  }
                 }
               }
               .opacity(isShowShutterFlash ? 0 : 1)
@@ -295,7 +264,9 @@ extension CameraView: View {
           if isLarge {
             Color.black.opacity(0.5)
               .onTapGesture {
-                isLarge = false
+                withAnimation(.easeInOut(duration: 0.25)) {
+                  isLarge = false
+                }
               }
           }
 
@@ -312,7 +283,7 @@ extension CameraView: View {
             if isPen || isMagicPen {
               PenWriteView(penViewModel: penViewModel, isPen: isPen, isMagicPen: isMagicPen, role: currentRole)
             } else {
-              PenDisplayView(penViewModel: penViewModel, role: currentRole)
+              PenDisplayView(penViewModel: penViewModel)
             }
           }
           .opacity(isRemoteGuideHidden ? .zero : 1)
@@ -338,7 +309,20 @@ extension CameraView: View {
           }
 
           VStack {
+            if connectionViewModel.role == .photographer || connectionViewModel.role == nil {
+              HStack {
+                Spacer()
+                ToggleToolboxButton {
+                  withAnimation {
+                    isShowCameraSettingTool = true
+                  }
+                }
+              }
+              .padding(12)
+            }
+
             Spacer()
+
             HStack {
               Spacer()
               GuidingToggleButton(
@@ -348,13 +332,12 @@ extension CameraView: View {
                 tapAction: {
                   isRemoteGuideHidden.toggle()
                   if isRemoteGuideHidden {
-                    isPen = false
-                    isMagicPen = false
-                    isFrame = false
                     frameViewModel.setFrame(false)
                   } else if !isRemoteGuideHidden && !frameViewModel.frames.isEmpty {
                     frameViewModel.setFrame(true)
                   }
+
+                  cameraViewModel.showGuidingToast(isRemoteGuideHidden: isRemoteGuideHidden)
                 }
               )
             }
@@ -374,10 +357,12 @@ extension CameraView: View {
           }
         }
         .aspectRatio(3 / 4, contentMode: .fill)
+        .clipped()
         .clipShape(.rect(cornerRadius: 5))
         .overlay {
           RoundedRectangle(cornerRadius: 5)
-            .stroke(.gray, lineWidth: 1)
+            .inset(by: 0.5)
+            .stroke(.gray900, lineWidth: 1)
         }
         .padding(.horizontal, 16)
         .overlay(alignment: .center) {
@@ -385,6 +370,11 @@ extension CameraView: View {
             StateToastContainer()
               .padding(.top, 16)
           }
+        }
+        // 따봉 버튼 눌렀을 때 나올 뷰 => 둘다 표현해야 되기 때문에 따로 분기 처리 X
+        .overlay(alignment: .bottom) {
+          ThumbsUpView(trigger: $thumbsUpViewModel.animationTriger)
+            .opacity(thumbsUpViewModel.isShowInitialView ? 1 : .zero)
         }
 
         // 프리뷰 밖 => 이부분을 기준으로 바구니 표현
@@ -394,9 +384,16 @@ extension CameraView: View {
             GuidingButton(
               role: connectionViewModel.role,
               isActive: isFrame,
+              isDisabeld: isRemoteGuideHidden,
               tapAction: {
+                guard !isRemoteGuideHidden else {
+                  frameViewModel.showGuidingDisabledToast()
+                  return
+                }
+
                 isFrame.toggle()
                 frameViewModel.setFrame(isFrame)
+
                 if isFrame && frameViewModel.frames.isEmpty {
                   frameViewModel.addFrame(at: CGPoint(x: 0.24, y: 0.15))
                 }
@@ -410,7 +407,17 @@ extension CameraView: View {
             GuidingButton(
               role: connectionViewModel.role,
               isActive: isPen,
+              isDisabeld: isRemoteGuideHidden,
               tapAction: {
+                guard !isRemoteGuideHidden else {
+                  penViewModel.showGuidingDisabledToast(type: .pen)
+                  return
+                }
+                if !hasShownPenToast {
+                  penViewModel.showFirstToolToast(type: .pen)
+                  hasShownPenToast = true
+                }
+
                 isPen.toggle()
                 isMagicPen = false
                 if isPen {
@@ -423,7 +430,17 @@ extension CameraView: View {
             GuidingButton(
               role: connectionViewModel.role,
               isActive: isMagicPen,
+              isDisabeld: isRemoteGuideHidden,
               tapAction: {
+                guard !isRemoteGuideHidden else {
+                  penViewModel.showGuidingDisabledToast(type: .magicPen)
+                  return
+                }
+                if !hasShownMagicPenToast {
+                  penViewModel.showFirstToolToast(type: .magicPen)
+                  hasShownMagicPenToast = true
+                }
+
                 isMagicPen.toggle()
                 isPen = false
                 if isMagicPen {
@@ -466,6 +483,7 @@ extension CameraView: View {
                   .stroke(.gray900, lineWidth: 6)
                   .frame(width: 80, height: 80)
               }
+              .disabled(!cameraViewModel.isCaptureButtonEnabled)
 
               Spacer()
 
@@ -487,7 +505,9 @@ extension CameraView: View {
                   }
               }
             } else {
-              BoomupButton(tapAction: {})
+              ThumbsUpButton(tapAction: {
+                thumbsUpViewModel.userTriggerThumbsUp()
+              })
             }
           }
           .padding(.bottom, 51)
@@ -499,8 +519,10 @@ extension CameraView: View {
           DragGesture(minimumDistance: 30)
             .onEnded { value in
               guard isPhotographerMode else { return }
-              withAnimation {
-                self.isShowCameraSettingTool = true
+              if value.translation.height < 0 {
+                withAnimation {
+                  self.isShowCameraSettingTool = true
+                }
               }
             }
         )
@@ -511,6 +533,17 @@ extension CameraView: View {
       if isShowCameraSettingTool {
         Color.black.opacity(0.1)
           .ignoresSafeArea()
+          .gesture(
+            DragGesture(minimumDistance: 30)
+              .onEnded { value in
+                guard isPhotographerMode else { return }
+                if value.translation.height > 0 {
+                  withAnimation {
+                    self.isShowCameraSettingTool = false
+                  }
+                }
+              }
+          )
           .onTapGesture {
             withAnimation {
               isShowCameraSettingTool = false
@@ -519,6 +552,7 @@ extension CameraView: View {
 
         VStack {
           Spacer()
+
           bottomCameraSettingTool
         }
         .padding(.bottom, 12)
@@ -560,8 +594,8 @@ extension CameraView: View {
     .fullScreenCover(isPresented: $isShowConnectionView) {
       ConnectionView(viewModel: connectionViewModel, previewStreamingViewModel: previewModel)
     }
-    .onChange(of: connectionViewModel.connections) { _, newValue in
-      if !newValue.isEmpty && connectionViewModel.role == .photographer {
+    .onChange(of: connectionViewModel.connections) { oldValue, newValue in
+      if !newValue.isEmpty && newValue.count > oldValue.count && connectionViewModel.role == .photographer {
         previewModel.startCapture()
       }
     }
@@ -581,7 +615,8 @@ extension CameraView: View {
         || newState == .host(.lost)
         || newState == .viewer(.lost)
         || newState == .host(.stopped)
-        || newState == .viewer(.stopped) {
+        || newState == .viewer(.stopped)
+      {
         // 가이딩 초기화
         penViewModel.reset()
         frameViewModel.deleteAll()
@@ -597,18 +632,22 @@ extension CameraView: View {
     }
     // 프레임 토글 시 양쪽 모두 (비)활성화
     .onChange(of: frameViewModel.isFrameEnabled) { _, enabled in
+      guard !isRemoteGuideHidden else { return }
       isFrame = enabled
+    }
+    .onChange(of: isShowPhotoPicker) { _, isShow in
+      cameraViewModel.managePhotosPickerToast(isShowPhotosPicker: isShow)
     }
     .sheet(isPresented: $isShowLogExportingSheet) {
       LogExportingView()
     }
     .task {
       await cameraViewModel.checkPermissions()
-      await cameraViewModel.loadThumbnail()
+      await cameraViewModel.loadThumbnail(scale: displayScale)
     }
     // Life Cycle of the view
     .onAppear {
-      UIApplication.shared.isIdleTimerDisabled = true // 화면 꺼짐 방지
+      UIApplication.shared.isIdleTimerDisabled = true  // 화면 꺼짐 방지
     }
     .onDisappear {
       UIApplication.shared.isIdleTimerDisabled = false

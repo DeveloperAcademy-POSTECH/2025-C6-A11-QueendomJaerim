@@ -1,4 +1,5 @@
 import AVFoundation
+import Combine
 import Foundation
 import Photos
 import UIKit
@@ -26,8 +27,10 @@ final class CameraViewModel {
 
   var errorMessage = ""
 
+  var isCaptureButtonEnabled: Bool = true
+
   // MARK: Thumbnail
-  private let cachingManger = PHCachingImageManager()
+  private let cachingManager = PHCachingImageManager()
   var thumbnailImage: UIImage?
 
   private let logger = QueenLogger(category: "CameraViewModel")
@@ -57,6 +60,10 @@ final class CameraViewModel {
     cameraManager.isLivePhotoOn = isLivePhotoOn
     cameraManager.flashMode = isFlashMode.convertAVCaptureDeviceFlashMode
 
+    cameraManager.onReadinessState = { [weak self] readiness in
+      self?.handleReadiness(readiness: readiness)
+    }
+    
     cameraManager.onPhotoCapture = { [weak self] image in
       self?.lastImage = image
     }
@@ -114,6 +121,7 @@ final class CameraViewModel {
   }
 
   func capturePhoto() {
+    traceShutterPressedEvent()
     cameraManager.capturePhoto()
   }
 
@@ -173,7 +181,7 @@ final class CameraViewModel {
     cameraSettingsService.gridOn = isShowGrid
   }
 
-  func loadThumbnail() async {
+  func loadThumbnail(scale: CGFloat) async {
     let status = await PHPhotoLibrary.requestAuthorization(for: .readWrite)
 
     guard status == .authorized || status == .limited else {
@@ -181,12 +189,63 @@ final class CameraViewModel {
       return
     }
 
-    await fetchThumbnail()
+    await fetchThumbnail(scale: scale)
+  }
+
+  func showGuidingToast(isRemoteGuideHidden: Bool) {
+    if isRemoteGuideHidden {
+      notificationService.registerNotification(.make(type: .turnOffGuiding))
+    } else {
+      notificationService.registerNotification(.make(type: .turnOnGuiding))
+    }
+  }
+
+  func managePhotosPickerToast(isShowPhotosPicker: Bool) {
+    if isShowPhotosPicker {
+      notificationService.registerNotification(.make(type: .photosPickerShowing))
+    } else {
+      if let currentNotification = notificationService.currentNotification,
+        currentNotification.isType(of: .photosPickerShowing) {
+        // 현재 표시되고 있는 토스트가 photosPickerShowing 타입이면 리셋
+        notificationService.reset()
+      }
+    }
   }
 }
 
 extension CameraViewModel {
-  private func fetchThumbnail() async {
+
+  private func handleReadiness(readiness: AVCapturePhotoOutput.CaptureReadiness) {
+    switch readiness {
+    // 세션이 실행 중이 아닐 때
+    case .sessionNotRunning:
+      isCaptureButtonEnabled = false
+
+    // 촬영 준비 완료 (가장 중요)
+    // 플래시도 충전되어 있고, 이전 작업 처리도 모두 끝났습니다.
+    case .ready:
+      isCaptureButtonEnabled = true
+
+    // 일시적으로 준비 안 됨
+    // 시스템이 다음 캡처를 받을 수 없는 '일시적인' 상태입니다.
+    case .notReadyMomentarily:
+      isCaptureButtonEnabled = false
+
+    // 캡처 대기 중
+    case .notReadyWaitingForCapture:
+      isCaptureButtonEnabled = false
+
+    // 처리 대기 중
+    // 시스템이 '이전 캡처'를 아직 처리 중인 상태입니다.
+    case .notReadyWaitingForProcessing:
+      isCaptureButtonEnabled = false
+
+    @unknown default:
+      isCaptureButtonEnabled = false
+    }
+  }
+
+  private func fetchThumbnail(scale: CGFloat) async {
     let fetchOptions = PHFetchOptions()
     fetchOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
     fetchOptions.fetchLimit = 1  // 한개만 요청
@@ -199,17 +258,17 @@ extension CameraViewModel {
     }
 
     // 이미지 생성
-    await requestThumbnailImage(asset: asset)
+    await requestThumbnailImage(asset: asset, scale: scale)
   }
 
-  private func requestThumbnailImage(asset: PHAsset) async {
-    let targetSize = CGSize(width: 48, height: 48)
+  private func requestThumbnailImage(asset: PHAsset, scale: CGFloat) async {
+    let targetSize = CGSize(width: 48 * scale, height: 48 * scale)
     let options = PHImageRequestOptions()
     options.deliveryMode = .highQualityFormat
     options.resizeMode = .exact
     options.isNetworkAccessAllowed = true
 
-    cachingManger.requestImage(
+    cachingManager.requestImage(
       for: asset,
       targetSize: targetSize,
       contentMode: .aspectFill,
