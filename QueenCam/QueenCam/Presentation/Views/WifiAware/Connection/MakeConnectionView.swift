@@ -121,6 +121,7 @@ extension MakeConnectionView {
         )
         .frame(maxHeight: .infinity, alignment: .top)
       }
+      .padding(.top, 14)
       .padding(.horizontal, 16)
       .ignoresSafeArea(edges: .bottom)
     }
