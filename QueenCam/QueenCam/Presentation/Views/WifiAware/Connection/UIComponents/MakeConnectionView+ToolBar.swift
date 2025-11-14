@@ -11,10 +11,10 @@ extension MakeConnectionView {
   struct ToolBar {
     // MARK: Properties
     let role: Role
-    
+
     // MARK: Actions
     let changeRoleButtonDidTap: () -> Void
-    
+
     // MARK: Computed
     private var myDeviceName: String {
       UIDevice.current.name
@@ -31,12 +31,30 @@ extension MakeConnectionView.ToolBar: View {
     // MARK: - 툴바
     HStack(alignment: .center) {
       VStack(alignment: .leading, spacing: 8) {
-        Text("다음 이름으로 보여집니다")
-          .foregroundStyle(guidingLabelColor)
-          .font(.pretendard(.medium, size: 14))
-        Text("\(myDeviceName)")
-          .foregroundStyle(.offWhite)
-          .font(.pretendard(.medium, size: 18))
+        //        Text("다음 이름으로 보여집니다")
+        //          .foregroundStyle(guidingLabelColor)
+        //          .font(.pretendard(.medium, size: 14))
+        //        Text("\(myDeviceName)")
+        //          .foregroundStyle(.offWhite)
+        //          .font(.pretendard(.medium, size: 18))
+
+        switch role {
+        case .photographer:
+          Text("현재 **촬영 모드** 입니다.")
+            .foregroundStyle(.offWhite)
+            .font(.pretendard(.medium, size: 18))
+          Text("내 기기로 찍고 있어요")
+            .foregroundStyle(.gray400)
+            .font(.pretendard(.medium, size: 14))
+        case .model:
+          Text("현재 **모델 모드** 입니다.")
+            .foregroundStyle(.offWhite)
+            .font(.pretendard(.medium, size: 18))
+          Text("친구의 화면을 함께 볼 수 있어요")
+            .foregroundStyle(.gray400)
+            .font(.pretendard(.medium, size: 14))
+        }
+
       }
 
       Spacer()
@@ -44,7 +62,9 @@ extension MakeConnectionView.ToolBar: View {
       // 역할 바꾸기 버튼
       Button(action: changeRoleButtonDidTap) {
         HStack(alignment: .center, spacing: 4) {
-          Text(role.currentModeLabel)
+          //          Text(role.currentModeLabel)
+
+          Text("역할 바꾸기")
             .font(.pretendard(.medium, size: 14))
 
           Image(systemName: "arrow.trianglehead.2.clockwise.rotate.90")
