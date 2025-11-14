@@ -169,16 +169,22 @@ extension ConnectionViewModel {
   }
 
   func connectButtonDidTap(for device: WAPairedDevice) {
-    selectedPairedDevice = device
+    Task {
+      networkService.stop(byUser: true)
 
-    if role == .model {
-      networkService.mode = .viewer
-    } else if role == .photographer {
-      networkService.mode = .host
-    }
+      try await Task.sleep(for: .milliseconds(100))
 
-    if networkState == .host(.stopped) || networkState == .viewer(.stopped) {
-      networkService.run(for: device)
+      selectedPairedDevice = device
+
+      if role == .model {
+        networkService.mode = .viewer
+      } else if role == .photographer {
+        networkService.mode = .host
+      }
+
+      if networkState == .host(.stopped) || networkState == .viewer(.stopped) {
+        networkService.run(for: device)
+      }
     }
   }
 

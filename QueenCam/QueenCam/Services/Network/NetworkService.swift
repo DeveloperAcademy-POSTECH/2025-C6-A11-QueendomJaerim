@@ -351,22 +351,6 @@ extension NetworkService {
 
       isReconnecting = false
     }
-
-    networkTask?.cancel()
-
-    Task {
-      await self.connectionManager.stopAll()
-
-      networkTask = Task {
-        _ = try await withTaskCancellationHandler {
-          try await mode == .host ? networkManager.listen(to: device) : networkManager.browse(for: device)
-        } onCancel: {
-          Task { @MainActor in
-            networkState = mode == .host ? .host(.stopped) : .viewer(.stopped)
-          }
-        }
-      }
-    }
   }
 
   func stop(byUser: Bool) {
