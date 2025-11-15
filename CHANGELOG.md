@@ -24,6 +24,11 @@
 
 ### Security
 
+## [1.0.1] (2025-11-15)
+
+### Changed
+
+- 카메라, 마이크, 사진 보관함 요청 문구 수정
 
 ## [1.0.0] (2025-11-14)
 
@@ -214,6 +219,7 @@
 - Wi-Fi Aware 연결 후, 라이브 포토 촬영 시 앱이 크래시되는 문제
 - 레퍼런스 삭제 후 재등록에 관한 상태 초기화 문제
 
+[1.0.1]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v0.3.3...v1.0.0
 [0.3.3]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v0.3.2...v0.3.3
 [0.3.2]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v0.3.1...v0.3.2
