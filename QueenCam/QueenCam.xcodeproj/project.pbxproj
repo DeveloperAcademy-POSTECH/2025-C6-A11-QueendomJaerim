@@ -472,9 +472,9 @@
 				INFOPLIST_KEY_CFBundleDisplayName = "찍자";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.photography";
-				INFOPLIST_KEY_NSCameraUsageDescription = "사진을 촬영하기 위해 카메라 접근이 필요합니다.";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "라이브 포토 촬영 시 오디오 녹음을 위해 마이크 접근이 필요합니다";
-				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "사진에 접근할 수 있도록 권한을 허용해주세요.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "찍자 서비스 이용을 위해 카메라 사용 권한이 필요합니다. 실시간 촬영 화면 공유, 사진 촬영 및 저장 기능을 위해 카메라를 사용합니다.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "찍자 서비스 이용을 위해 마이크 사용 권한이 필요합니다. 라이브 포토 촬영 시 동영상과 함께 음성을 녹음하기 위해 마이크를 사용합니다.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "찍자 서비스 이용을 위해 사진 보관함 접근 권한이 필요합니다. 촬영한 사진 저장 및 불러오기, 레퍼런스 사진 등록 기능을 위해 사용자의 사진 라이브러리에 접근합니다.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -522,9 +522,9 @@
 				INFOPLIST_KEY_CFBundleDisplayName = "찍자";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.photography";
-				INFOPLIST_KEY_NSCameraUsageDescription = "사진을 촬영하기 위해 카메라 접근이 필요합니다.";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "라이브 포토 촬영 시 오디오 녹음을 위해 마이크 접근이 필요합니다";
-				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "사진에 접근할 수 있도록 권한을 허용해주세요.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "찍자 서비스 이용을 위해 카메라 사용 권한이 필요합니다. 실시간 촬영 화면 공유, 사진 촬영 및 저장 기능을 위해 카메라를 사용합니다.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "찍자 서비스 이용을 위해 마이크 사용 권한이 필요합니다. 라이브 포토 촬영 시 동영상과 함께 음성을 녹음하기 위해 마이크를 사용합니다.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "찍자 서비스 이용을 위해 사진 보관함 접근 권한이 필요합니다. 촬영한 사진 저장 및 불러오기, 레퍼런스 사진 등록 기능을 위해 사용자의 사진 라이브러리에 접근합니다.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
