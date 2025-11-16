@@ -5,14 +5,14 @@ import WiFiAware
 
 extension CameraView {
   struct CameraPreviewArea {
-    @State private var isFocused = false
-    @State private var focusLocation: CGPoint = .zero
+    @State var isFocused = false
+    @State var focusLocation: CGPoint = .zero
     @State private var isReferenceLarge: Bool = false  // 레퍼런스 확대 축소 프로퍼티
     @State private var zoomScaleItemList: [CGFloat] = [0.5, 1, 2]
     // 현재 적용된 줌 배율 (카메라와 UI 상태 동기화용)
-    @State private var currentZoomFactor: CGFloat = 1.0
+    @State var currentZoomFactor: CGFloat = 1.0
     // 현재 하나의 핀치 동작 내에서 이전 배율 값을 임시 저장 (변화량을 계산하기 위해)
-    @State private var previousMagnificationValue: CGFloat = 1.0
+    @State var previousMagnificationValue: CGFloat = 1.0
 
     let cameraViewModel: CameraViewModel
     let previewModel: PreviewModel
@@ -43,7 +43,7 @@ extension CameraView {
 }
 
 extension CameraView.CameraPreviewArea {
-  private var currentMode: Role {
+  var currentMode: Role {
     self.currentRole ?? .photographer
   }
 
@@ -68,72 +68,10 @@ extension CameraView.CameraPreviewArea {
 }
 
 extension CameraView.CameraPreviewArea: View {
-  var magnificationGesture: some Gesture {
-    MagnifyGesture()
-      // 핀치를 하는 동안 계속 호출
-      .onChanged { value in
-        // 이전 값 대비 상대적 변화량
-        let delta = value.magnification / previousMagnificationValue
-        // 다음 계산을 위해 현재 배율을 이전 값으로 저장
-        previousMagnificationValue = value.magnification
-
-        // 전체 줌 배율 업데이트
-        let newZoom = currentZoomFactor * delta
-        let clampedZoom = max(0.5, min(newZoom, 2.0))
-        currentZoomFactor = clampedZoom
-
-        cameraViewModel.setZoom(factor: currentZoomFactor, ramp: false)
-      }
-      // 핀치를 마쳤을때 한 번 호출될 로직
-      .onEnded { _ in
-        cameraViewModel.setZoom(factor: currentZoomFactor, ramp: true)
-        previousMagnificationValue = 1.0
-
-      }
-  }
-
   var body: some View {
     // 카메라 프리뷰
     ZStack {
-
-      if currentMode == .photographer {  // 작가 + Default
-        CameraPreview(session: cameraViewModel.cameraManager.session)
-          .onCameraCaptureEvent { event in
-            if event.phase == .ended {
-              if cameraViewModel.isCaptureButtonEnabled {
-                shutterActionEffect()
-                cameraViewModel.capturePhoto()
-              }
-            }
-          }
-          .opacity(isShowShutterFlash ? 0 : 1)
-          .onTapGesture { location in  // 초점
-            isFocused = true
-            focusLocation = location
-            cameraViewModel.setFocus(point: location)
-          }
-          .gesture(magnificationGesture)
-
-          .overlay {  // 초점
-            if isFocused {
-              CameraView.FocusView(position: $focusLocation)
-                .onAppear {
-                  withAnimation {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-                      self.isFocused = false
-
-                    }
-                  }
-                }
-            }
-          }
-      } else {  // 모델
-        #if DEBUG
-        DebugPreviewPlayerView(previewModel: previewModel)
-        #else
-        PreviewPlayerView(previewModel: previewModel)
-        #endif
-      }
+      previewContent
 
       if isReferenceLarge {  // 레퍼런스 확대 축소
         Color.black.opacity(0.5)
