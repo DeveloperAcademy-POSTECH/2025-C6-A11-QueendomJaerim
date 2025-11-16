@@ -86,18 +86,7 @@ extension CameraView.CameraPreviewArea: View {
         GridView()
       }
 
-      Group {
-
-        if isActiveFrame {
-          FrameEditorView(frameViewModel: frameViewModel, currentRole: currentMode)
-        }
-        if isActivePen || isActiveMagicPen {
-          PenWriteView(penViewModel: penViewModel, isPen: isActivePen, isMagicPen: isActiveMagicPen, role: currentMode)
-        } else {
-          PenDisplayView(penViewModel: penViewModel)
-        }
-      }
-      .opacity(isRemoteGuideHidden ? .zero : 1)
+      guidingOverlayContainer
 
       VStack {  //  렌즈 배율
         Spacer()
