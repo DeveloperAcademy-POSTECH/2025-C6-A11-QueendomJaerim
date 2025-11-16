@@ -26,11 +26,23 @@ struct MainView: View {
     notificationService: DependencyContainer.defaultContainer.notificationService
   )
 
+  @State private var referenceViewModel = ReferenceViewModel()
+
+  @State private var penViewModel = PenViewModel()
+
+  @State private var frameViewModel = FrameViewModel()
+
+  @State private var thumbsUpViewModel = ThumbsUpViewModel()
+
   var body: some View {
     CameraView(
       cameraViewModel: cameraViewModel,
       previewModel: previewModel,
-      connectionViewModel: connectionViewModel
+      connectionViewModel: connectionViewModel,
+      referenceViewModel: referenceViewModel,
+      penViewModel: penViewModel,
+      frameViewModel: frameViewModel,
+      thumbsUpViewModel: thumbsUpViewModel
     )
     #if DEBUG
     .alert(
