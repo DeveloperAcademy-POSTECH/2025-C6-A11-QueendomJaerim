@@ -73,14 +73,7 @@ extension CameraView.CameraPreviewArea: View {
     ZStack {
       previewContent
 
-      if isReferenceLarge {  // 레퍼런스 확대 축소
-        Color.black.opacity(0.5)
-          .onTapGesture {
-            withAnimation(.easeInOut(duration: 0.25)) {
-              isReferenceLarge = false
-            }
-          }
-      }
+      largeReferenceImageDimming
 
       if cameraViewModel.isShowGrid {
         GridView()
@@ -171,6 +164,19 @@ extension CameraView.CameraPreviewArea: View {
     .overlay(alignment: .bottom) {
       ThumbsUpView(trigger: $thumbsUpViewModel.animationTriger)
         .opacity(thumbsUpViewModel.isShowInitialView ? 1 : .zero)
+    }
+  }
+  
+  /// 레퍼런스 확대되면 배경에 깔리는 디밍
+  @ViewBuilder
+  var largeReferenceImageDimming: some View {
+    if isReferenceLarge {  // 레퍼런스 확대 축소
+      Color.black.opacity(0.5)
+        .onTapGesture {
+          withAnimation(.easeInOut(duration: 0.25)) {
+            isReferenceLarge = false
+          }
+        }
     }
   }
 }
