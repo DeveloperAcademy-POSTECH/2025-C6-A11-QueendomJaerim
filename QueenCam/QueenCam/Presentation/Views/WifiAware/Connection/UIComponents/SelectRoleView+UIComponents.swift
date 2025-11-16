@@ -11,7 +11,7 @@ extension SelectRoleView {
   var individualSymbolOffset: CGFloat { 7.5 }
 
   var symbolsContainerOffset: CGFloat {  // 선택 시 가운데 정렬
-    guard !willShowLoadingAnimation else { return .zero } // 애니메이션 노출 전 원점으로 돌린다
+    guard !willShowLoadingAnimation else { return .zero }  // 애니메이션 노출 전 원점으로 돌린다
 
     if selectedRole == .model {
       return -80 + individualSymbolOffset
@@ -72,7 +72,7 @@ extension SelectRoleView {
         }
         .typo(.sb20)
 
-        Text("\n") // invisible
+        Text("\n")  // invisible
           .typo(.sb15)
       }
       .foregroundStyle(.systemWhite)

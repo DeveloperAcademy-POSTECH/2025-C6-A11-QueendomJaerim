@@ -89,6 +89,7 @@ final class MockConnectionManager: ConnectionManagerProtocol {
   func sendToAll(_ event: NetworkEvent) async {}
   func monitor() async throws {}
   func stop(_ connection: WiFiAwareConnection) async {}
+  func stopAll() {}
 
   func invalidate(_ id: WiFiAwareConnectionID) async {
     invalidateCalledWith.append(id)
@@ -149,7 +150,7 @@ struct NetworkServiceTests {
     #expect(mockNM.listenCalledWith?.id == device.id)
 
     // viewer
-    service.stop()
+    service.stop(byUser: true)
     service.mode = .viewer
     Task.detached { service.run(for: device) }
     try await Task.sleep(nanoseconds: 50_000_000)
@@ -229,7 +230,7 @@ struct NetworkServiceTests {
     try await Task.sleep(nanoseconds: 50_000_000)
 
     // stop
-    service.stop()
+    service.stop(byUser: true)
     try await Task.sleep(nanoseconds: 50_000_000)
 
     #expect(receivedStates.contains(.viewer(.stopped)))
@@ -253,7 +254,8 @@ struct NetworkServiceTests {
 extension WAPairedDevice {
   /// SwiftUI 미리보기 또는 테스트에서 사용할 수 있는 단일 샘플 데이터입니다.
   static var sample: WAPairedDevice {
-    let jsonString = """
+    let jsonString =
+      """
       {
           "id": 1001,
           "name": "안방 조명",

@@ -41,11 +41,11 @@ extension PhotoDetailView {
 
   // 현재 Asset이 라이브 포토인지 확인하는 프로퍼티
   private var isLivePhoto: Bool {
-    return currentAsset?.mediaSubtypes.contains(.photoLive) ?? false
+    currentAsset?.mediaSubtypes.contains(.photoLive) ?? false
   }
 
   private var currentAssetID: String? {
-    return currentAsset?.localIdentifier
+    currentAsset?.localIdentifier
   }
 
   private var currentImageAspectRatio: CGFloat {
@@ -112,17 +112,16 @@ extension PhotoDetailView: View {
             CheckCircleButton(
               isSelected: selectedImageID == currentAssetID,
               role: role,
-              isLarge: true,
-              didTap: {
-                guard let assetID = currentAssetID else { return }
+              isLarge: true
+            ) {
+              guard let assetID = currentAssetID else { return }
 
-                if selectedImageID == assetID {
-                  selectedImageID = nil
-                } else {
-                  selectedImageID = assetID
-                }
+              if selectedImageID == assetID {
+                selectedImageID = nil
+              } else {
+                selectedImageID = assetID
               }
-            )
+            }
           }
           .padding(.top, 16)
           .padding(.trailing, 18)

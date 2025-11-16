@@ -12,7 +12,7 @@ struct PenWriteView: View {
   var isPen: Bool
   var isMagicPen: Bool
   let role: Role?
-  
+
   init(penViewModel: PenViewModel, isPen: Bool, isMagicPen: Bool, role: Role?) {
     self.penViewModel = penViewModel
     self.isPen = isPen
@@ -20,37 +20,37 @@ struct PenWriteView: View {
     self.role = role
     self.penViewModel.currentRole = role
   }
-  
+
   /// 현재 그리고 있는 Stroke의 좌표 (저장 전)
   @State private var tempPoints: [CGPoint] = []
   /// 작성 중인 스트로크 ID
   @State private var currentStrokeID: UUID?
-  
+
   private var topColor = Color.offWhite
   private var photographerColor = Color.photographerPrimary
   private var modelColor = Color.modelPrimary
-  
+
   var body: some View {
     GeometryReader { geo in
       ZStack {
         // MARK: - 저장된 Stroke
         PenDisplayView(penViewModel: penViewModel)
-        
+
         // MARK: - 저장 안된, 현재 그리고 있는 Stroke
         let author = role ?? .photographer
         let outerColor = (author == .model) ? modelColor : photographerColor
         // 1) 일반펜
         if tempPoints.count > 1, !isMagicPen {
           Canvas { context, _ in
-              drawTempPoints(
-                context: context,
-                size: geo.size,
-                points: tempPoints,
-                layers: [
-                  .stroke(color: topColor, width: 10),
-                  .stroke(color: outerColor, width: 7),
-                ]
-              )
+            drawTempPoints(
+              context: context,
+              size: geo.size,
+              points: tempPoints,
+              layers: [
+                .stroke(color: topColor, width: 10),
+                .stroke(color: outerColor, width: 7)
+              ]
+            )
           }
           .background(.clear)
         }
@@ -174,4 +174,3 @@ private extension PenWriteView {
     }
   }
 }
-

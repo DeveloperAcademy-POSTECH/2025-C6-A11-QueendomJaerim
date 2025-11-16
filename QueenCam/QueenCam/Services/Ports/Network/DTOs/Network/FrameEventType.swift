@@ -5,8 +5,8 @@
 //  Created by 임영택 on 10/20/25.
 //
 
-import Foundation
 import CoreGraphics
+import Foundation
 
 enum FrameEventType: Codable, Sendable {
   /// 새로운 가이딩 프레임을 추가한다

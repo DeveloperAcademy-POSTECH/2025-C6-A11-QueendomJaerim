@@ -157,7 +157,7 @@ extension CameraManager {
     let deviceTypeList: [AVCaptureDevice.DeviceType] = [
       .builtInTripleCamera,  // 프로 시리즈
       .builtInDualWideCamera,  // 일반 모델
-      .builtInWideAngleCamera,  // 단일 렌즈
+      .builtInWideAngleCamera  // 단일 렌즈
     ]
 
     // 현재 position에 해당하는 카메라 검색

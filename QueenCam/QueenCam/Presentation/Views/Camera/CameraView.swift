@@ -296,12 +296,11 @@ extension CameraView: View {
                   LensZoomTool(
                     zoomScaleItemList: zoomScaleItemList,
                     currentZoomFactor: currentZoomFactor,
-                    activeZoom: activeZoom,
-                    onZoomChange: { zoom in
-                      cameraViewModel.setZoom(factor: zoom, ramp: true)
-                      currentZoomFactor = zoom
-                    }
-                  )
+                    activeZoom: activeZoom
+                  ) { zoom in
+                    cameraViewModel.setZoom(factor: zoom, ramp: true)
+                    currentZoomFactor = zoom
+                  }
                 }
               }
               .padding(.vertical, 12)
@@ -328,18 +327,17 @@ extension CameraView: View {
               GuidingToggleButton(
                 role: connectionViewModel.role,
                 systemName: guideToggleImage,
-                isActive: !isRemoteGuideHidden,
-                tapAction: {
-                  isRemoteGuideHidden.toggle()
-                  if isRemoteGuideHidden {
-                    frameViewModel.setFrame(false)
-                  } else if !isRemoteGuideHidden && !frameViewModel.frames.isEmpty {
-                    frameViewModel.setFrame(true)
-                  }
-
-                  cameraViewModel.showGuidingToast(isRemoteGuideHidden: isRemoteGuideHidden)
+                isActive: !isRemoteGuideHidden
+              ) {
+                isRemoteGuideHidden.toggle()
+                if isRemoteGuideHidden {
+                  frameViewModel.setFrame(false)
+                } else if !isRemoteGuideHidden && !frameViewModel.frames.isEmpty {
+                  frameViewModel.setFrame(true)
                 }
-              )
+
+                cameraViewModel.showGuidingToast(isRemoteGuideHidden: isRemoteGuideHidden)
+              }
             }
             .padding(12)
           }
@@ -380,7 +378,7 @@ extension CameraView: View {
         // 프리뷰 밖 => 이부분을 기준으로 바구니 표현
         VStack(spacing: 24) {
           HStack(alignment: .center, spacing: 40) {
-            //프레임
+            // 프레임
             GuidingButton(
               role: connectionViewModel.role,
               isActive: isFrame,
@@ -505,9 +503,9 @@ extension CameraView: View {
                   }
               }
             } else {
-              ThumbsUpButton(tapAction: {
+              ThumbsUpButton {
                 thumbsUpViewModel.userTriggerThumbsUp()
-              })
+              }
             }
           }
           .padding(.bottom, 51)

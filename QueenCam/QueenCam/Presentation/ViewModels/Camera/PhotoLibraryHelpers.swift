@@ -6,13 +6,13 @@
 //
 
 import Foundation
-import Photos
 import OSLog
+import Photos
 import UIKit
 
 struct PhotoLibraryHelpers {
   static let logger = QueenLogger(category: "PhotoLiberaryHelpers")
-  
+
   static func saveToPhotoLibrary(_ image: UIImage) {
     PHPhotoLibrary.shared().performChanges {
       PHAssetChangeRequest.creationRequestForAsset(from: image)

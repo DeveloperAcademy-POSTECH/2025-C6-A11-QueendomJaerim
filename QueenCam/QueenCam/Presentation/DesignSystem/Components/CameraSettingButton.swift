@@ -15,7 +15,7 @@ extension CameraSettingButton: View {
         VStack {
           Image(systemName: systemName)
             .typo(.sfR13)
-          
+
           Text(title)
             .typo(.sfM12)
         }
@@ -40,8 +40,7 @@ extension CameraSettingButton: View {
           .multilineTextAlignment(.center)
       }
     }
-    
-    
+
   }
 }
 
@@ -71,8 +70,7 @@ extension CameraSettingButton: View {
 
       CameraSettingButton(title: "그리드", systemName: "grid", isActive: true, tapAction: {}, isToolBar: false)
     }
-    
-    
+
     Text("test")
       .contextMenu {
         ControlGroup {
@@ -80,16 +78,18 @@ extension CameraSettingButton: View {
             title: "플래시",
             systemName: "bolt.fill",
             isActive: true,
-            tapAction: { },
-            isToolBar: true)
+            tapAction: {},
+            isToolBar: true
+          )
           .tint(.photographerPrimary)
-          
+
           CameraSettingButton(
             title: "LIVE",
             systemName: "livephoto",
             isActive: true,
-            tapAction: { },
-            isToolBar: true)
+            tapAction: {},
+            isToolBar: true
+          )
           .tint(.black)
         }
       }

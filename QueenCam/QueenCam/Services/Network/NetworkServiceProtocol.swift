@@ -29,7 +29,7 @@ protocol NetworkServiceProtocol: AnyObject {
 
   /// 수신된 네트워크 이벤트를 방출하는 퍼블리셔입니다.
   var networkEventPublisher: AnyPublisher<NetworkEvent?, Never> { get }
-  
+
   /// 기기별 퍼포먼스 레포트를 방출하는 퍼블리셔입니다.
   var deviceReportsPublisher: AnyPublisher<[WAPairedDevice: WAPerformanceReport], Never> { get }
 

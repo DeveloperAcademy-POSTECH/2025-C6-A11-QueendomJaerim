@@ -30,7 +30,7 @@ struct FrameView: View {
     let myRole = frameViewModel.currentRole ?? .photographer
     return frameViewModel.isFrameEnabled && (frameViewModel.interactingRole == nil || frameViewModel.interactingRole == myRole)
   }
-  
+
   // 현재 토스트 근황
   @State private var hasShownRatioEditToast: Bool = false
 
@@ -59,7 +59,7 @@ struct FrameView: View {
           LinearGradient(
             stops: [
               Gradient.Stop(color: .modelPrimary, location: 0.00),
-              Gradient.Stop(color: .photographerPrimary, location: 1.00),
+              Gradient.Stop(color: .photographerPrimary, location: 1.00)
             ],
             startPoint: UnitPoint(x: 0.01, y: 0),
             endPoint: UnitPoint(x: 0.99, y: 1)
@@ -90,7 +90,7 @@ struct FrameView: View {
             frameViewModel.selectFrame(nil)
           } else {
             frameViewModel.selectFrame(frame.id)
-            if !hasShownRatioEditToast{
+            if !hasShownRatioEditToast {
               frameViewModel.myFrameGuidingToast(type: .ratioEdit)
               hasShownRatioEditToast = true
             }
@@ -157,7 +157,7 @@ struct FrameView: View {
 
             // 프레임 영역을 제외
             Rectangle()
-              .frame(width: width+1, height: height+1)
+              .frame(width: width + 1, height: height + 1)
               .position(x: x, y: y)
               .blendMode(.destinationOut)
           }
@@ -191,9 +191,9 @@ struct FrameView: View {
         ForEach(cornerList, id: \.self) { corner in
           Rectangle()
             .fill(Color.clear)
-            .frame(width: 31, height: 31) // 전체 터치 영역
-            .contentShape(Rectangle()) // 투명 뷰라서 contentShape을 줘야 터치 이벤트를 받을 수 있음
-            .overlay( // 실제 그려지는 핸들
+            .frame(width: 31, height: 31)  // 전체 터치 영역
+            .contentShape(Rectangle())  // 투명 뷰라서 contentShape을 줘야 터치 이벤트를 받을 수 있음
+            .overlay(  // 실제 그려지는 핸들
               Rectangle()
                 .fill(frameColor).frame(width: 11, height: 11)
             )
@@ -261,7 +261,7 @@ struct FrameView: View {
     frameViewModel.interactingRole = nil
     frameViewModel.sendFrameInteracting(false)
   }
-  
+
   // MARK: Life Cycle
   private func frameViewOnAppear() {
     frameViewModel.setContainerSize(for: containerSize)

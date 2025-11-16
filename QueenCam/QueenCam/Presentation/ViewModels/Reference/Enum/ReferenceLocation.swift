@@ -7,7 +7,7 @@
 import Foundation
 import SwiftUI
 
-///레퍼런스 위치에 따른 enum
+/// 레퍼런스 위치에 따른 enum
 enum ReferenceLocation {
   case topLeft
   case topRight

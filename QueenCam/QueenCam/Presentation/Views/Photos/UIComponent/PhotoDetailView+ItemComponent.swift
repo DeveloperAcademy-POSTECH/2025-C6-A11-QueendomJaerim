@@ -191,7 +191,7 @@ extension PhotoDetailView.ItemComponent: View {
       .onChanged { value in
         isPinching = true
 
-        /// 배율 계산 및 제한 (최대 배율을 도달하면 그 이상 줌인이 안됌)
+        // 배율 계산 및 제한 (최대 배율을 도달하면 그 이상 줌인이 안됌)
         // 손가락을 움직인 만큼 줌을 적용했을 때의 예상 배율
         // (최종 확정된 현재 배율 * 이번 동작으로 변경된 배율)
         let newVisualScale = currentScale * value.magnification

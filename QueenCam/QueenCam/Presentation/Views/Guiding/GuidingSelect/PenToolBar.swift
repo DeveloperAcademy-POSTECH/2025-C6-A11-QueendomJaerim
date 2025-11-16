@@ -38,20 +38,18 @@ struct PenToolBar: View {
         // 전체 삭제(내가 그린 것만 존재할 때 활성)
         PenToolButton(
           penToolType: .eraser,
-          isActive: isEraserActive,
-          tapAction: {
-            onAction(.deleteAll)
-          }
-        )
+          isActive: isEraserActive
+        ) {
+          onAction(.deleteAll)
+        }
 
         // 실행 취소(내가 그린 현재 strokes가 있거나, 내가 방금 전체삭제한 기록이 있으면 활성)
         PenToolButton(
           penToolType: .undo,
-          isActive: isUndoActive,
-          tapAction: {
-            onAction(.undo)
-          }
-        )
+          isActive: isUndoActive
+        ) {
+          onAction(.undo)
+        }
       }
       Spacer()
     }
@@ -61,6 +59,7 @@ struct PenToolBar: View {
 
 #Preview {
   PenToolBar(penViewModel: PenViewModel()) { action in
+    // swiftlint:disable:next no_print_in_production
     print("Tapped: \(action)")
   }
 }

@@ -36,7 +36,7 @@ extension PreviewCaptureService {
       nil,
       newWidth,
       newHeight,
-      CVPixelBufferGetPixelFormatType(pixelBuffer), // 원본과 동일한 픽셀 포맷 사용
+      CVPixelBufferGetPixelFormatType(pixelBuffer),  // 원본과 동일한 픽셀 포맷 사용
       attributes,
       &newPixelBuffer
     )

@@ -59,7 +59,8 @@ final class NetworkService: NetworkServiceProtocol {
       if networkState == .host(.cancelled)
         || networkState == .viewer(.cancelled)
         || networkState == .host(.lost)
-        || networkState == .viewer(.lost) {
+        || networkState == .viewer(.lost)
+      {
         resetHealthCheck()  // 헬스 체크 리셋
       }
 
@@ -112,7 +113,7 @@ final class NetworkService: NetworkServiceProtocol {
   private var requestedRandomCode: String?
   private var healthCheckPending: Bool = false  // 현재 요청한 헬스 체크 응답이 도착하지 않으면 true, 도착했으면 false
   private var lastHealthCheckTime: Date?
-  
+
   // Publisher Timeout Counts
   /// .publihserTimeout이 발생한 횟수
   private var publisherTimeoutCounts: Int = 0
@@ -192,8 +193,8 @@ extension NetworkService {
         if case .publisherTimeout = waError, publisherTimeoutCounts < maxPublisherTimeoutCounts {
           publisherTimeoutCounts += 1
           logger.debug(
-            "The error was .publisherTimeout, currently do nothing and monitor the healthcheck. " +
-            "current count: \(publisherTimeoutCounts), max: \(maxPublisherTimeoutCounts)"
+            "The error was .publisherTimeout, currently do nothing and monitor the healthcheck. "
+              + "current count: \(publisherTimeoutCounts), max: \(maxPublisherTimeoutCounts)"
           )
           return
         }
@@ -286,7 +287,7 @@ extension NetworkService {
   }
 
   private func startMonitoring(interval: TimeInterval) {
-    monitorTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { timer in
+    monitorTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { _ in
       Task { [weak self] in
         try await self?.connectionManager.monitor()
       }

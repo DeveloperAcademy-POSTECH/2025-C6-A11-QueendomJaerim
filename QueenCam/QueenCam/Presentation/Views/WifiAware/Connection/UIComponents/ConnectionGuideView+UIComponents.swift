@@ -55,7 +55,7 @@ extension ConnectionGuideView {
     }
     .animation(.easeInOut, value: lastPageVisited)
   }
-  
+
   /// 가이드 페이지 컨트롤
   var pagingControl: some View {
     HStack {

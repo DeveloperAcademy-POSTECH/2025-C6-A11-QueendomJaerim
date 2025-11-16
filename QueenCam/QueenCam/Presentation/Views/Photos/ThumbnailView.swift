@@ -13,7 +13,7 @@ struct ThumbnailView {
 
   let onTapCheck: (UIImage) -> Void
   let onTapThumbnail: (PHAsset) -> Void
-  
+
   private let loadingPlaceholderFillColor = Color.gray.opacity(0.12)
 }
 
