@@ -17,7 +17,8 @@ nonisolated struct SharingLogFile: Codable {
   init(url: URL, deviceInfo: DeviceInfo) {
     let logData = try? Data(contentsOf: url)
     if let logData,
-      let logContent = String(data: logData, encoding: .utf8) {
+      let logContent = String(data: logData, encoding: .utf8)
+    {
       self.logContent = logContent
     } else {
       self.logContent = ""

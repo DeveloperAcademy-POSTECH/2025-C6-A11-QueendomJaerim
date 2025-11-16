@@ -60,7 +60,7 @@ final class FrameViewModel {
 
     bind()
   }
-  
+
   func setContainerSize(for size: CGSize) {
     if self.containerSize == nil {
       self.containerSize = size
@@ -91,7 +91,7 @@ final class FrameViewModel {
 
   // MARK: - 프레임 선택
   func selectFrame(_ id: UUID?) { selectedFrameID = id }
-  func isSelected(_ id: UUID) -> Bool { return selectedFrameID == id }
+  func isSelected(_ id: UUID) -> Bool { selectedFrameID == id }
 
   // MARK: - 프레임 이동
   func moveFrame(id: UUID, start: CGRect, translation: CGSize, container: CGSize) {
@@ -223,7 +223,7 @@ final class FrameViewModel {
     }
   }
   // 사용자(본인)가 이벤트를 한 경우
-  func myFrameGuidingToast(type: FrameToastEventType){
+  func myFrameGuidingToast(type: FrameToastEventType) {
     switch type {
     case .create:
       notificationService.registerNotification(DomainNotification.make(type: .sharingFrameGuideStarted))
@@ -248,24 +248,23 @@ extension FrameViewModel {
         switch event {
         case .frameUpdated(let eventType):
           self.handleFrameEvent(eventType: eventType)
-          
 
         case .frameEnabled(let enabled):
           self.isFrameEnabled = enabled
-          if !hasShownPeerCreateToast{
+          if !hasShownPeerCreateToast {
             peerFrameGuidingToast(type: .create)
             hasShownPeerCreateToast = true
           }
-          if !hasShownPeerDeleteToast{
+          if !hasShownPeerDeleteToast {
             peerFrameGuidingToast(type: .delete)
             hasShownPeerDeleteToast = true
           }
-          
+
         case .frameInteracting(let role, let interacting):
           if interacting {
             self.isInteracting = true
             self.interactingRole = role
-            if !hasShownPeerEditToast{
+            if !hasShownPeerEditToast {
               peerFrameGuidingToast(type: .edit)
               hasShownPeerEditToast = true
             }

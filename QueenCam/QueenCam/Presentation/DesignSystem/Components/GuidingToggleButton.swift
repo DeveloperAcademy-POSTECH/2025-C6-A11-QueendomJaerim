@@ -6,7 +6,7 @@ struct GuidingToggleButton {
   let isActive: Bool
   let buttonSize: CGFloat
   let tapAction: () -> Void
-  
+
   init(role: Role?, systemName: String, isActive: Bool, buttonSize: CGFloat = 40, tapAction: @escaping () -> Void) {
     self.role = role
     self.systemName = systemName
@@ -68,8 +68,8 @@ extension GuidingToggleButton: View {
 
 #Preview {
   VStack {
-    GuidingToggleButton(role: .none, systemName: "eye.slash", isActive: false, tapAction: {})
-    GuidingToggleButton(role: .photographer, systemName: "eye", isActive: true, tapAction: {})
-    GuidingToggleButton(role: .model, systemName: "eye", isActive: true, tapAction: {})
+    GuidingToggleButton(role: .none, systemName: "eye.slash", isActive: false) {}
+    GuidingToggleButton(role: .photographer, systemName: "eye", isActive: true) {}
+    GuidingToggleButton(role: .model, systemName: "eye", isActive: true) {}
   }
 }

@@ -19,7 +19,9 @@ struct LogExportingView: View {
         ShareLink(
           item: sharingLogFile,
           preview: .init(
-            "로그 내보내기", image: Image(systemName: "text.page"), icon: Image(systemName: "text.page")
+            "로그 내보내기",
+            image: Image(systemName: "text.page"),
+            icon: Image(systemName: "text.page")
           )
         )
       } else {

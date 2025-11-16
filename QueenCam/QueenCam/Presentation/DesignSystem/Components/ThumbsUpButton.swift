@@ -22,5 +22,5 @@ extension ThumbsUpButton: View {
 }
 
 #Preview {
-  ThumbsUpButton(tapAction: { })
+  ThumbsUpButton { }
 }

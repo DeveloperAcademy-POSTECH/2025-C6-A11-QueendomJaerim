@@ -94,9 +94,8 @@ extension PhotoDetailView.TopToolBarComponent: View {
         CheckCircleButton(
           isSelected: true,
           role: .photographer,
-          isLarge: true,
-          didTap: {}
-        )
+          isLarge: true
+        ) { }
         .padding(.top, 16)
         .padding(.trailing, 18)
 

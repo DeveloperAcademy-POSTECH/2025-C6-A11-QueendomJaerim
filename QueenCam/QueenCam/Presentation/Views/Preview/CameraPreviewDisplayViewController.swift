@@ -24,7 +24,7 @@ final class CameraPreviewDisplayViewController: UIViewController {
       displayView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
       displayView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
       displayView.topAnchor.constraint(equalTo: view.topAnchor),
-      displayView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+      displayView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
     ])
 
     view.transform = CGAffineTransformMakeRotation(rotateDegrees * .pi / 180)

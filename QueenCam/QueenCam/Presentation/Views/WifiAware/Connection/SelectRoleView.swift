@@ -34,7 +34,7 @@ extension SelectRoleView: View {
         }
       } else {
         ZStack {
-          roleSelectButtons // 애니메이션 연결을 위해 화면 세로 가운데 정렬
+          roleSelectButtons  // 애니메이션 연결을 위해 화면 세로 가운데 정렬
 
           VStack {
             Spacer()
@@ -42,7 +42,7 @@ extension SelectRoleView: View {
 
             header
 
-            Spacer() // 가운데에는 역할 선택 버튼이 들어가야하므로 비어둔다
+            Spacer()  // 가운데에는 역할 선택 버튼이 들어가야하므로 비어둔다
 
             roleDescriptions
 
@@ -99,17 +99,17 @@ extension SelectRoleView: View {
       }
 
       ToolbarItem(placement: .principal) {
-        Text("") // 애니메이션 중 닫기 버튼 사라져도 툴바가 유지되어야 레이아웃이 깨지지 않음
+        Text("")  // 애니메이션 중 닫기 버튼 사라져도 툴바가 유지되어야 레이아웃이 깨지지 않음
       }
     }
-    .navigationBarTitleDisplayMode(.inline) // LargeTitle 영역 제외
+    .navigationBarTitleDisplayMode(.inline)  // LargeTitle 영역 제외
     .onChange(of: loadingAnimationDidComplete) { _, newValue in
       if newValue {
         if selectedRole != nil {
           self.didRoleSubmit()
         }
 
-        Task { // 다음 사이클에서 상태 초기화
+        Task {  // 다음 사이클에서 상태 초기화
           self.isShowLoadingAnimation = false
           self.loadingAnimationDidComplete = false
         }

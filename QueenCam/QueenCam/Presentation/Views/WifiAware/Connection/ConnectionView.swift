@@ -19,7 +19,7 @@ struct ConnectionView {
 
   /// 가이드를 보여줘야하는지 여부
   @State private var shouldGuideShow: Bool = false
-  
+
   /// 하위 뷰로 전파할 연결 여부
   @State private var isConnected: Bool = false
 }
@@ -80,7 +80,7 @@ extension ConnectionView {
           viewModel.connectButtonDidTap(for: device)
         }
       )
-    } else { // should not reach
+    } else {  // should not reach
       Text("역할이 선택되지 않았습니다")
     }
   }
@@ -92,7 +92,7 @@ extension ConnectionView {
         role: activeRole,
         didGuideComplete: {
           shouldGuideShow = false
-          viewModel.selectRole(for: activeRole) // 가이드가 끝나면 역할 확정
+          viewModel.selectRole(for: activeRole)  // 가이드가 끝나면 역할 확정
         },
         backButtonDidTap: {
           shouldGuideShow = false
@@ -115,7 +115,7 @@ extension ConnectionView {
         }
       },
       didRoleSubmit: {
-        shouldGuideShow = true // 역할 선택 버튼을 누르면 가이드를 보여줌
+        shouldGuideShow = true  // 역할 선택 버튼을 누르면 가이드를 보여줌
       }
     )
   }

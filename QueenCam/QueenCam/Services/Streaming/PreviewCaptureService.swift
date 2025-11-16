@@ -118,10 +118,10 @@ extension PreviewCaptureService {
   func setupEncoder() {
     let videoEncoder = VideoEncoder(config: .queenCamCustomConfig)
     self.videoEncoder = videoEncoder
-    
+
     let videoEncoderAnnexBAdaptor = VideoEncoderAnnexBAdaptor(videoEncoder: videoEncoder)
     self.videoEncoderAnnexBAdaptor = videoEncoderAnnexBAdaptor
-    
+
     encoderStreamTask = Task { [weak self] in
       guard let self else { return }
 
@@ -176,4 +176,3 @@ extension PreviewCaptureService {
     }
   }
 }
-

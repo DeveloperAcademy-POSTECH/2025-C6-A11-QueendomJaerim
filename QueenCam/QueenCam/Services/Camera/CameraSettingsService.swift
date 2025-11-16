@@ -9,7 +9,7 @@ final class CameraSettingsService: CameraSettingsServiceProtocol {
     UserDefaults.standard.register(defaults: [
       livePhotoKey: false,
       gridKey: false,
-      flashKey: FlashMode.off.rawValue,
+      flashKey: FlashMode.off.rawValue
     ])
   }
 

@@ -42,13 +42,13 @@ extension PenToolButton: View {
 
 #Preview {
   HStack(spacing: 16) {
-    PenToolButton(penToolType: .undo, isActive: false, tapAction: {})
+    PenToolButton(penToolType: .undo, isActive: false) {}
 
-    PenToolButton(penToolType: .undo, isActive: true, tapAction: {})
+    PenToolButton(penToolType: .undo, isActive: true) {}
 
-    PenToolButton(penToolType: .eraser, isActive: true, tapAction: {})
+    PenToolButton(penToolType: .eraser, isActive: true) {}
 
-    PenToolButton(penToolType: .eraser, isActive: false, tapAction: {})
+    PenToolButton(penToolType: .eraser, isActive: false) {}
 
   }
   .padding()

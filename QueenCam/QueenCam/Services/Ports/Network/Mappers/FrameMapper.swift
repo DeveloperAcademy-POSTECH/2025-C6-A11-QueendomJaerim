@@ -14,7 +14,8 @@ struct FrameMapper {
       rect: CGRect(
         origin: GraphicMapper.convert(pointPayload: payload.origin),
         size: GraphicMapper.convert(sizePayload: payload.size)
-      )    )
+      )
+    )
   }
 
   static func convert(frame: Frame) -> FramePayload {

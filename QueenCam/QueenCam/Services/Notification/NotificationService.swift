@@ -11,15 +11,15 @@ import OSLog
 
 final class NotificationService: NotificationServiceProtocol {
   var currentNotification: DomainNotification? {
-    if let lastNotification { // 일반 알림이 지정되어있다면 반환
+    if let lastNotification {  // 일반 알림이 지정되어있다면 반환
       return lastNotification
     }
 
-    if let baseNotification { // 일반 알림 미지정일 때, 베이스 알림이 지정되어 있다면 반환
+    if let baseNotification {  // 일반 알림 미지정일 때, 베이스 알림이 지정되어 있다면 반환
       return baseNotification
     }
 
-    return nil // 둘 다 없다면 nil 반환
+    return nil  // 둘 다 없다면 nil 반환
   }
 
   // 베이스 알림
