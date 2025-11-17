@@ -8,7 +8,7 @@
 import Foundation
 
 extension NetworkService {
-  var versionCheckTimeout: TimeInterval { 2 }
+  var versionCheckTimeout: TimeInterval { 10 }
 
   private var version100: Int { // myVersion 이벤트를 1.0.0 이전에서는 지원하지 않음
     10_000_000
@@ -16,6 +16,8 @@ extension NetworkService {
 
   // MARK: 최소 버전 확인
   func handleMyVersionEvent(for counterpartVersionInfo: VersionExchangePayload) {
+    defer { versionChecked = true }
+
     let counterpartVersion = counterpartVersionInfo.version
     let counterpartRequestedMinimumVersion = counterpartVersionInfo.requiredMinimumVersion
 
@@ -43,6 +45,18 @@ extension NetworkService {
         최소 \(VersionUtils.getVersionString(from: myRequestingMinimumVersion)) 버전으로 앱을 업데이트 해주세요.
         """
       )
+      return
+    }
+  }
+
+  func handleVersionCheckTimer() {
+    defer {
+      self.versionCheckTimer?.invalidate()
+      self.versionCheckTimer = nil
+    }
+
+    guard versionChecked else {
+      self.stop(byUser: true, userReason: "친구 앱의 버전을 확인할 수 없습니다.\n친구 앱을 최신 버전으로 업데이트 해주세요.")
       return
     }
   }

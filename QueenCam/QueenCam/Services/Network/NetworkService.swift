@@ -125,6 +125,10 @@ final class NetworkService: NetworkServiceProtocol {
   
   // 연결 종료 이유 (사용자에게 알려야할 때)
   private(set) var lastStopReason: String?
+  
+  // Checking Version Timer
+  var versionCheckTimer: Timer?
+  var versionChecked: Bool = false
 
   private let logger = QueenLogger(category: "NetworkService")
 
@@ -241,7 +245,7 @@ extension NetworkService {
 
         // 헬스체크 타이머 시작 (viewer)
         healthCheckTimer = Timer.scheduledTimer(withTimeInterval: healthCheckPeriod, repeats: true) { [weak self] _ in
-          self?.handleTimer()
+          self?.handleHealthCheckTimer()
         }
       } else {
         networkState = .host(.publishing)
@@ -252,6 +256,11 @@ extension NetworkService {
           requiredMinimumVersion: VersionUtils.minimumVersionCompatibleWith
         )
         await networkManager.send(.myVersion(versionInfo), to: connectionDetail.connection)
+      }
+
+      // 버전 체크 타이머 시작
+      versionCheckTimer = Timer.scheduledTimer(withTimeInterval: versionCheckTimeout, repeats: false) { [weak self] _ in
+        self?.handleVersionCheckTimer()
       }
 
     case .performance(let device, let connectionDetail):
@@ -425,7 +434,7 @@ extension NetworkService {
   }
 
   /// 헬스 체크 타이머가 실행할 메서드
-  private func handleTimer() {
+  private func handleHealthCheckTimer() {
     if !healthCheckPending {  // 현재 요청해둔 헬스 체크가 있으면 건너 뛴다
       requestHealthCheck()
       // logger.debug("Requested health check")
