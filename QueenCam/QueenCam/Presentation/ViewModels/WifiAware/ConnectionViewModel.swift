@@ -73,6 +73,9 @@ final class ConnectionViewModel {
 
   /// Error
   private(set) var connectionError: Error?
+  
+  /// 연결 중단 이유
+  private(set) var lastStopReason: String?
 
   private let logger = QueenLogger(category: "ConnectionViewModel")
 
@@ -101,6 +104,10 @@ final class ConnectionViewModel {
           connectionLost = true
           reconnectingDeviceName = lastConnectedDevice?.name
           tryReconnect()
+        }
+        
+        if state == .host(.cancelled) || state == .viewer(.cancelled) {
+          lastStopReason = networkService.lastStopReason
         }
       }
       .store(in: &cancellables)
@@ -170,7 +177,7 @@ extension ConnectionViewModel {
 
   func connectButtonDidTap(for device: WAPairedDevice) {
     Task {
-      networkService.stop(byUser: true)
+      networkService.stop(byUser: true, userReason: nil)
 
       try await Task.sleep(for: .milliseconds(100))
 
@@ -209,12 +216,12 @@ extension ConnectionViewModel {
 
   func connectionViewDisappear() {
     if connections.isEmpty {  // 연결 중인 경우 연결 뷰에서 벗어나면 연결을 취소한다
-      networkService.stop(byUser: true)
+      networkService.stop(byUser: true, userReason: nil)
     }
   }
 
   func selectRole(for role: Role?) {
-    networkService.stop(byUser: true)
+    networkService.stop(byUser: true, userReason: nil)
     self.role = role
   }
 
@@ -236,7 +243,7 @@ extension ConnectionViewModel {
   }
 
   func reconnectCancelButtonDidTap() {
-    networkService.stop(byUser: true)
+    networkService.stop(byUser: true, userReason: nil)
     lastConnectedDevice = nil
     connectionLost = false
     reconnectingDeviceName = nil
@@ -244,11 +251,12 @@ extension ConnectionViewModel {
 
   func sessionFinishedOverlayCloseButtonDidTap() {
     needReportSessionFinished = false
+    lastStopReason = nil
     role = nil  // 정상 종료인 경우 역할 초기화
   }
 
   func errorConfirmedByUser() {
-    networkService.stop(byUser: true)
+    networkService.stop(byUser: true, userReason: nil)
     selectedPairedDevice = nil
     connectionError = nil
   }

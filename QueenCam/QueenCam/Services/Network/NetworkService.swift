@@ -122,6 +122,9 @@ final class NetworkService: NetworkServiceProtocol {
 
   // Reconnection
   @MainActor private var isReconnecting: Bool = false
+  
+  // 연결 종료 이유 (사용자에게 알려야할 때)
+  private(set) var lastStopReason: String?
 
   private let logger = QueenLogger(category: "NetworkService")
 
@@ -226,6 +229,14 @@ extension NetworkService {
         networkTask = nil
 
         await networkManager.send(.startSession, to: connectionDetail.connection)  // Wake-up message
+
+        // 버전 알림
+        let versionInfo = VersionExchangePayload(
+          version: VersionUtils.currentVersion,
+          requiredMinimumVersion: VersionUtils.minimumVersionCompatibleWith
+        )
+        await networkManager.send(.myVersion(versionInfo), to: connectionDetail.connection)
+
         networkState = .viewer(.connected)
 
         // 헬스체크 타이머 시작 (viewer)
@@ -234,6 +245,13 @@ extension NetworkService {
         }
       } else {
         networkState = .host(.publishing)
+
+        // 버전 알림
+        let versionInfo = VersionExchangePayload(
+          version: VersionUtils.currentVersion,
+          requiredMinimumVersion: VersionUtils.minimumVersionCompatibleWith
+        )
+        await networkManager.send(.myVersion(versionInfo), to: connectionDetail.connection)
       }
 
     case .performance(let device, let connectionDetail):
@@ -283,6 +301,10 @@ extension NetworkService {
       traceSessionStartEvent()
     }
 
+    if case .myVersion(let versionExchangePayload) = event {
+      handleMyVersionEvent(for: versionExchangePayload)
+    }
+
     networkEventSubject.send(event)
   }
 
@@ -321,7 +343,8 @@ extension NetworkService {
 
   func disconnect() {
     Task {
-      await send(for: .willDisconnect)
+      await self.send(for: .willDisconnect)
+
       try? await Task.sleep(for: .milliseconds(100))  // 상대가 연결 중단 이벤트를 처리할 수 있도록 조금 기다린다
       stop(byUser: true)
     }
@@ -354,9 +377,14 @@ extension NetworkService {
     }
   }
 
-  func stop(byUser: Bool) {
+  func stop(byUser: Bool, userReason: String? = nil) {
     stopMonitoring()
     networkTask?.cancel()
+
+    if let userReason {
+      lastStopReason = userReason
+    }
+
     Task {
       await self.connectionManager.stopAll()
 
