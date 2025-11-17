@@ -22,7 +22,7 @@ extension CameraView.CameraPreviewArea {
     }
     .opacity(isRemoteGuideHidden ? .zero : 1)
   }
-  
+
   /// 레퍼런스 확대되면 배경에 깔리는 디밍
   @ViewBuilder
   var largeReferenceImageDimmingLayer: some View {
@@ -35,7 +35,7 @@ extension CameraView.CameraPreviewArea {
         }
     }
   }
-  
+
   /// 렌즈 배율 조정
   var lensZoomLayer: some View {
     VStack {
@@ -57,14 +57,14 @@ extension CameraView.CameraPreviewArea {
       }
     }
   }
-  
+
   /// 카메라 바구니 토글 버튼과 눈까리 버튼
   var toggleButtonsLayer: some View {
     VStack {
       if currentMode == .photographer {
         HStack {
           Spacer()
-          
+
           // MARK: 카메라 컨트롤 바구니 토글 버튼
           CameraView.ToggleToolboxButton {
             withAnimation {
@@ -79,7 +79,7 @@ extension CameraView.CameraPreviewArea {
 
       HStack {
         Spacer()
-        
+
         // MARK: 눈까리 버튼
         GuidingToggleButton(
           role: currentRole,

@@ -50,7 +50,7 @@ extension CameraView.CameraPreviewArea {
       #endif
     }
   }
-  
+
   var magnificationGesture: some Gesture {
     MagnifyGesture()
       // 핀치를 하는 동안 계속 호출
