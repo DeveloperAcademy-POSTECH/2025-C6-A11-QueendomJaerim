@@ -62,20 +62,135 @@ extension CameraView.CameraBottomContainer: View {
   }
 
   var body: some View {
-    VStack(spacing: 24) {
+    VStack(spacing: 23) {
 
-      if let activeTool {
-        switch activeTool {
-        case .frame:
-          <#code#>
-        case .pen:
-          <#code#>
-        case .maginPen:
-          <#code#>
+      Group {
+        if let activeTool {
+          switch activeTool {
+          case .frame:
+            HStack(spacing: 20) {
+              GuidingButton(
+                role: currentRole,
+                isActive: isFrameActive,
+                isDisabeld: isRemoteGuideHidden,
+                tapAction: {
+                  guard !isRemoteGuideHidden else {
+                    frameViewModel.showGuidingDisabledToast()
+                    return
+                  }
+
+                  guidingToolToggle(.frame)
+
+                  if frameViewModel.isFrameEnabled {
+                    isRemoteGuideHidden = false
+                  }
+                },
+                guidingButtonType: .frame
+              )
+
+              Rectangle()
+                .fill(.gray900)
+                .frame(width: 1, height: 39)
+
+              Button(action: {
+                // FIXME: Edit모드 UI로 수정해야함
+                
+                frameViewModel.setFrame(isFrameActive)
+
+                if isFrameActive && frameViewModel.frames.isEmpty {
+                  frameViewModel.addFrame(at: CGPoint(x: 0.24, y: 0.15))
+                }
+              }) {
+                Image(systemName: "plus")
+                  .resizable()
+                  .scaledToFill()
+                  .frame(width: 19, height: 21)
+                  .foregroundStyle(frameViewModel.frames.isEmpty ? .offWhite : .gray600)
+                  .padding(.trailing, 8)
+              }
+              .disabled(!frameViewModel.frames.isEmpty)
+
+              Button(action: {
+                frameViewModel.deleteAll()
+              }) {
+                Image(systemName: "trash")
+                  .resizable()
+                  .scaledToFill()
+                  .frame(width: 19, height: 21)
+                  .foregroundStyle(frameViewModel.frames.isEmpty ? .gray600 : .offWhite)
+              }
+              .disabled(frameViewModel.frames.isEmpty)
+            }
+
+          case .pen:
+            HStack(spacing: 20) {
+              GuidingButton(
+                role: currentRole,
+                isActive: isPenActive,
+                isDisabeld: isRemoteGuideHidden,
+                tapAction: {
+                  guard !isRemoteGuideHidden else {
+                    penViewModel.showGuidingDisabledToast(type: .pen)
+                    return
+                  }
+
+                  penViewModel.showFirstToolToast(type: .pen)
+
+                  guidingToolToggle(.pen)
+                  if isPenActive {
+                    isRemoteGuideHidden = false
+                  }
+                },
+                guidingButtonType: .pen
+              )
+
+              Rectangle()
+                .fill(.gray900)
+                .frame(width: 1, height: 39)
+
+              // MARK: - 펜 툴바 Undo / Redo / clearAll
+              PenToolBar(penViewModel: penViewModel) { action in
+                switch action {
+                case .deleteAll:
+                  penViewModel.deleteAll()
+                  penViewModel.showEraseGuidingLineToast()
+                case .undo:
+                  penViewModel.undo()
+                case .redo:
+                  penViewModel.redo()
+                }
+              }
+            }
+
+          case .maginPen:
+            // 매직펜
+            GuidingButton(
+              role: currentRole,
+              isActive: isMagicPenActive,
+              isDisabeld: isRemoteGuideHidden,
+              tapAction: {
+                guard !isRemoteGuideHidden else {
+                  penViewModel.showGuidingDisabledToast(type: .magicPen)
+                  return
+                }
+
+                penViewModel.showFirstToolToast(type: .magicPen)
+
+                guidingToolToggle(.maginPen)
+                if isMagicPenActive {
+                  isRemoteGuideHidden = false
+                }
+              },
+              guidingButtonType: .magicPen
+            )
+          }
+        } else {
+          guidingTools
         }
-      } else {
-        guidingTools
       }
+      .padding(.horizontal, 24)
+      .padding(.vertical, 12)
+      .glassEffect(.clear, in: .rect(cornerRadius: 99))
 
       // 썸네일, 촬영 버튼, 따봉 or 셀카
       HStack {
@@ -88,6 +203,7 @@ extension CameraView.CameraBottomContainer: View {
       .padding(.bottom, 51)
       .padding(.horizontal, 36)
     }
+    .padding(.top, 22)
     .frame(maxWidth: .infinity, maxHeight: .infinity)
     .background(.black)
     .gesture(dragGesture)

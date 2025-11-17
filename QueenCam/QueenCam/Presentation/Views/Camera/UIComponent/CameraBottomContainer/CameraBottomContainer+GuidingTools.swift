@@ -3,7 +3,7 @@ import SwiftUI
 extension CameraView.CameraBottomContainer {
   var guidingTools: some View {
     // 가이딩
-    HStack(alignment: .center, spacing: 40) {
+    HStack(alignment: .center, spacing: 30) {
       // 프레임
       GuidingButton(
         role: currentRole,
@@ -16,11 +16,7 @@ extension CameraView.CameraBottomContainer {
           }
 
           guidingToolToggle(.frame)
-          frameViewModel.setFrame(isFrameActive)
 
-          if isFrameActive && frameViewModel.frames.isEmpty {
-            frameViewModel.addFrame(at: CGPoint(x: 0.24, y: 0.15))
-          }
           if frameViewModel.isFrameEnabled {
             isRemoteGuideHidden = false
           }
@@ -68,6 +64,5 @@ extension CameraView.CameraBottomContainer {
         guidingButtonType: .magicPen
       )
     }
-    .padding(.top, 32)
   }
 }
