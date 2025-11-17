@@ -12,6 +12,7 @@
 
 ### Changed
 
+- 가이드 툴 정책 개편에 따른 상태 수정
 
 ### Deprecated
 
