@@ -64,7 +64,18 @@ extension CameraView.CameraBottomContainer: View {
   var body: some View {
     VStack(spacing: 24) {
 
-      guidingTools
+      if let activeTool {
+        switch activeTool {
+        case .frame:
+          <#code#>
+        case .pen:
+          <#code#>
+        case .maginPen:
+          <#code#>
+        }
+      } else {
+        guidingTools
+      }
 
       // 썸네일, 촬영 버튼, 따봉 or 셀카
       HStack {
@@ -80,5 +91,6 @@ extension CameraView.CameraBottomContainer: View {
     .frame(maxWidth: .infinity, maxHeight: .infinity)
     .background(.black)
     .gesture(dragGesture)
+    .animation(.easeInOut, value: activeTool)
   }
 }
