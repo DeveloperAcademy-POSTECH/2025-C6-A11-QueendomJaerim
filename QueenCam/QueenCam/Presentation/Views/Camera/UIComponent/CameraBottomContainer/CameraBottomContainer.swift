@@ -11,9 +11,7 @@ extension CameraView {
     let referenceViewModel: ReferenceViewModel
     @Bindable var thumbsUpViewModel: ThumbsUpViewModel
 
-    @Binding var isActiveFrame: Bool
-    @Binding var isActivePen: Bool
-    @Binding var isActiveMagicPen: Bool
+    @Binding var activeTool: ActiveTool?
 
     @Binding var isShowShutterFlash: Bool
 
@@ -26,12 +24,26 @@ extension CameraView {
 
     // 캡처시 화면 깜빡임 액션관리
     let shutterActionEffect: () -> Void
+
+    let guidingToolToggle: (_ selectedTool: ActiveTool) -> Void
   }
 }
 
 extension CameraView.CameraBottomContainer {
   var currentMode: Role {
     self.currentRole ?? .photographer
+  }
+
+  var isFrameActive: Bool {
+    activeTool == .frame
+  }
+
+  var isPenActive: Bool {
+    activeTool == .pen
+  }
+
+  var isMagicPenActive: Bool {
+    activeTool == .maginPen
   }
 }
 

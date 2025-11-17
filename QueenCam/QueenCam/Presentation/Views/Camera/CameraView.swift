@@ -9,9 +9,8 @@ struct CameraView {
 
   @State private var isShowPhotoPicker = false
 
-  @State private var isActiveFrame: Bool = false
-  @State private var isActivePen: Bool = false
-  @State private var isActiveMagicPen: Bool = false
+  // MARK: 현재 활성화된 도구
+  @State private var activeTool: ActiveTool?
 
   @State private var isShowShutterFlash: Bool = false
 
@@ -139,7 +138,7 @@ extension CameraView: View {
   var body: some View {
     ZStack {
       Color.black.ignoresSafeArea()
-      
+
       VStack(spacing: .zero) {
         // 제일 위 툴바 부분
         TopToolBarView(
@@ -186,9 +185,7 @@ extension CameraView: View {
           frameViewModel: frameViewModel,
           referenceViewModel: referenceViewModel,
           thumbsUpViewModel: thumbsUpViewModel,
-          isActiveFrame: $isActiveFrame,
-          isActivePen: $isActivePen,
-          isActiveMagicPen: $isActiveMagicPen,
+          activeTool: $activeTool,
           isShowShutterFlash: $isShowShutterFlash,
           isShowCameraSettingTool: $isShowCameraSettingTool,
           isRemoteGuideHidden: $isRemoteGuideHidden,
@@ -206,15 +203,15 @@ extension CameraView: View {
           frameViewModel: frameViewModel,
           referenceViewModel: referenceViewModel,
           thumbsUpViewModel: thumbsUpViewModel,
-          isActiveFrame: $isActiveFrame,
-          isActivePen: $isActivePen,
-          isActiveMagicPen: $isActiveMagicPen,
+          activeTool: $activeTool,
           isShowShutterFlash: $isShowShutterFlash,
           isShowCameraSettingTool: $isShowCameraSettingTool,
           isRemoteGuideHidden: $isRemoteGuideHidden,
           isShowPhotoPicker: $isShowPhotoPicker,
           shutterActionEffect: flashScreen
-        )
+        ) { targetTool in
+          activeTool = activeTool == targetTool ? nil : targetTool
+        }
       }
     }
     // MARK: 카메라 세팅 툴
@@ -325,7 +322,7 @@ extension CameraView: View {
     // 프레임 토글 시 양쪽 모두 (비)활성화
     .onChange(of: frameViewModel.isFrameEnabled) { _, enabled in
       guard !isRemoteGuideHidden else { return }
-      isActiveFrame = enabled
+      activeTool = enabled ? .frame : nil
     }
     .onChange(of: isShowPhotoPicker) { _, isShow in
       cameraViewModel.managePhotosPickerToast(isShowPhotosPicker: isShow)

@@ -8,14 +8,26 @@
 import SwiftUI
 
 extension CameraView.CameraPreviewArea {
+  private var isFrameActive: Bool {
+    activeTool == .frame
+  }
+
+  private var isPenActive: Bool {
+    activeTool == .pen
+  }
+
+  private var isMagicPenActive: Bool {
+    activeTool == .maginPen
+  }
+
   /// 가이딩 도구들 오버레이
   var guidingLayer: some View {
     Group {
-      if isActiveFrame {
+      if isFrameActive {
         FrameEditorView(frameViewModel: frameViewModel, currentRole: currentMode)
       }
-      if isActivePen || isActiveMagicPen {
-        PenWriteView(penViewModel: penViewModel, isPen: isActivePen, isMagicPen: isActiveMagicPen, role: currentMode)
+      if isPenActive || isMagicPenActive {
+        PenWriteView(penViewModel: penViewModel, isPen: isPenActive, isMagicPen: isMagicPenActive, role: currentMode)
       } else {
         PenDisplayView(penViewModel: penViewModel)
       }
