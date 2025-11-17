@@ -2,7 +2,6 @@ import SwiftUI
 
 extension CameraView.CameraBottomContainer {
   var guidingTools: some View {
-    // 가이딩
     HStack(alignment: .center, spacing: 30) {
       // 프레임
       GuidingButton(

@@ -48,7 +48,6 @@ extension CameraView.CameraBottomContainer {
 }
 
 extension CameraView.CameraBottomContainer: View {
-
   var dragGesture: some Gesture {
     DragGesture(minimumDistance: 30)
       .onEnded { value in
@@ -65,6 +64,7 @@ extension CameraView.CameraBottomContainer: View {
     VStack(spacing: 23) {
 
       Group {
+        // 가이드를 선택했을때 그에 따른 상태 표현
         if let activeTool {
           switch activeTool {
           case .frame:
@@ -94,7 +94,7 @@ extension CameraView.CameraBottomContainer: View {
 
               Button(action: {
                 // FIXME: Edit모드 UI로 수정해야함
-                
+
                 frameViewModel.setFrame(isFrameActive)
 
                 if isFrameActive && frameViewModel.frames.isEmpty {
@@ -185,6 +185,7 @@ extension CameraView.CameraBottomContainer: View {
             )
           }
         } else {
+          // 가이드를 아무것도 선택하지 않았을때
           guidingTools
         }
       }

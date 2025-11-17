@@ -2,7 +2,9 @@ import SwiftUI
 
 extension CameraView.CameraBottomContainer {
   var thumbnailButton: some View {
-    Button(action: { isShowPhotoPicker.toggle() }) {
+    Button(action: {
+      isShowPhotoPicker.toggle()
+    }) {
       if let image = cameraViewModel.lastImage {
         Image(uiImage: image)
           .resizable()
