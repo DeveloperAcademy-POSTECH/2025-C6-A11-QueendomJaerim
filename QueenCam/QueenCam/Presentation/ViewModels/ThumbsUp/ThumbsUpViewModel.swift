@@ -3,7 +3,6 @@ import Foundation
 
 @Observable
 final class ThumbsUpViewModel {
-  private(set) var testString: String?
 
   // MARK: - 네트워크
   let networkService: NetworkServiceProtocol
