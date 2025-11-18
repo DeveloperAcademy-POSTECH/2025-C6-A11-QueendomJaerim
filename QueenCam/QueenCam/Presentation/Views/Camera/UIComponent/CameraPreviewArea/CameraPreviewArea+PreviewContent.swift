@@ -5,8 +5,8 @@
 //  Created by 임영택 on 11/16/25.
 //
 
-import SwiftUI
 import AVKit
+import SwiftUI
 
 extension CameraView.CameraPreviewArea {
   /// 프리뷰 컨텐트 영역. 작가(또는 역할 미선택)에게는 자신의 카메라 프리뷰가, 모델에게는 상대방의 카메라 프리뷰가 표시된다
@@ -28,7 +28,10 @@ extension CameraView.CameraPreviewArea {
           focusLocation = location
           cameraViewModel.setFocus(point: location)
         }
-        .gesture(magnificationGesture)
+        .gesture(
+          magnificationGesture,
+          including: activeTool == .frame ? .none : .all
+        )
         .overlay {  // 초점
           if isFocused {
             CameraView.FocusView(position: $focusLocation)
@@ -71,7 +74,7 @@ extension CameraView.CameraPreviewArea {
       .onEnded { _ in
         cameraViewModel.setZoom(factor: currentZoomFactor, ramp: true)
         previousMagnificationValue = 1.0
-
       }
+
   }
 }
