@@ -75,9 +75,6 @@ extension CameraView.CameraPreviewArea: View {
       // MARK: 카메라 프리뷰
       previewContent
 
-      // MARK: 레퍼런스 이미지가 isLarge 모드일 때 뒤에 깔리는 디밍
-      largeReferenceImageDimmingLayer
-
       // MARK: 그리드
       if cameraViewModel.isShowGrid {
         GridView()
@@ -92,6 +89,9 @@ extension CameraView.CameraPreviewArea: View {
       // MARK: 카메라 바구니 토글 버튼과 눈까리 버튼
       toggleButtonsLayer
 
+      // MARK: 레퍼런스 이미지가 isLarge 모드일 때 뒤에 깔리는 디밍
+      largeReferenceImageDimmingLayer
+      
       // MARK: 레퍼런스 이미지 뷰
       ReferenceView(referenceViewModel: referenceViewModel, isLarge: $isReferenceLarge)
         .frame(maxWidth: .infinity, maxHeight: .infinity)

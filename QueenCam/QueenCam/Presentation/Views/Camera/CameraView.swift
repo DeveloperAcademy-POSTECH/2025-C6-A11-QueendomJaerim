@@ -223,7 +223,7 @@ extension CameraView: View {
     // MARK: 카메라 세팅 툴
     .overlay {
       if isShowCameraSettingTool {
-        Color.red.opacity(0.1)
+        Color.black.opacity(0.1)
           .ignoresSafeArea()
           .gesture(
             DragGesture(minimumDistance: 30)
