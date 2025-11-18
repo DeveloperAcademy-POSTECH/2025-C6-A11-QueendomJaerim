@@ -38,7 +38,7 @@ extension SelectRoleView: View {
 
           VStack {
             Spacer()
-              .frame(height: 115)
+              .frame(height: DynamicScreenUtils.isShortScreen ? 100 : 115)
 
             header
 
@@ -47,7 +47,7 @@ extension SelectRoleView: View {
             roleDescriptions
 
             Spacer()
-              .frame(height: 90)
+              .frame(height: DynamicScreenUtils.isShortScreen ? 30 : 90)
 
             Button {
               if selectedRole != nil {

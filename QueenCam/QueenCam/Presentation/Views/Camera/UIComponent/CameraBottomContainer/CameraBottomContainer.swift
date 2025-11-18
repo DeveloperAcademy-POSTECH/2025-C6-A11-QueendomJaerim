@@ -26,6 +26,8 @@ extension CameraView {
     let shutterActionEffect: () -> Void
 
     let guidingToolToggle: (_ selectedTool: ActiveTool) -> Void
+    // 비율이 작은 기기를 위한 모드. true면 뷰 크기 조정
+    var isMinimize = false
   }
 }
 
@@ -204,10 +206,17 @@ extension CameraView.CameraBottomContainer: View {
       .padding(.bottom, 51)
       .padding(.horizontal, 36)
     }
-    .padding(.top, 22)
-    .frame(maxWidth: .infinity, maxHeight: .infinity)
+    .frame(maxWidth: .infinity, maxHeight: isMinimize ? 120 : .infinity)
     .background(.black)
     .gesture(dragGesture)
     .animation(.easeInOut, value: activeTool)
+  }
+}
+
+extension CameraView.CameraBottomContainer {
+  func minimize(_ activeMinimize: Bool) -> Self {
+    var copy = self
+    copy.isMinimize = activeMinimize
+    return copy
   }
 }

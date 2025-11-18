@@ -194,6 +194,7 @@ extension CameraView: View {
           reconnectCancelButtonDidTap: connectionViewModel.reconnectCancelButtonDidTap,
           shutterActionEffect: flashScreen
         )
+        .padding(DynamicScreenUtils.isShortScreen ? 32 : 0)
 
         CameraBottomContainer(
           currentRole: connectionViewModel.role,
@@ -212,6 +213,8 @@ extension CameraView: View {
         ) { targetTool in
           activeTool = activeTool == targetTool ? nil : targetTool
         }
+        )
+        .minimize(DynamicScreenUtils.isShortScreen)
       }
     }
     // MARK: 카메라 세팅 툴
