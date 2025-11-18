@@ -11,7 +11,7 @@ extension CameraView.CameraBottomContainer {
           Circle()
             .fill(.offWhite)
             .stroke(.gray900, lineWidth: 6)
-            .frame(width: 80, height: 80)
+            .frame(width: isMinimize ? 40 : 80, height: isMinimize ? 40 : 80)
         }
         .disabled(!cameraViewModel.isCaptureButtonEnabled)
 
@@ -25,12 +25,12 @@ extension CameraView.CameraBottomContainer {
 
           Circle()
             .fill(.gray900)
-            .frame(width: 48, height: 48)
+            .frame(width: isMinimize ? 24 : 48, height: isMinimize ? 24 : 48)
             .overlay {
               Image(systemName: "arrow.trianglehead.2.clockwise.rotate.90")
                 .resizable()
                 .aspectRatio(contentMode: .fit)
-                .frame(width: 26, height: 26)
+                .frame(width: isMinimize ? 13 : 26, height: isMinimize ? 13 : 26)
                 .foregroundStyle(.offWhite)
             }
         }

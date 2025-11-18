@@ -103,6 +103,22 @@ extension CameraView {
       }
     }
   }
+
+  /// 높이를 너비로 나누었을 때 이 값보다 작으면 뷰를 조정한다. iPad 11 인치 대응.
+  private var shortRatioThreshold: CGFloat {
+    2.0
+  }
+
+  /// 화면 비율이 짧은 비율인지 여부. 짧은 비율이면 뷰를 조정한다. iPad 11 인치 대응.
+  private var isShortScreen: Bool {
+    let scenes = UIApplication.shared.connectedScenes
+    let windowScene = scenes.first as? UIWindowScene
+
+    let screenHeight = windowScene?.screen.bounds.height ?? 0.0
+    let screenWidth = windowScene?.screen.bounds.width ?? 0.0
+
+    return screenHeight / screenWidth < shortRatioThreshold
+  }
 }
 
 extension CameraView: View {
@@ -139,7 +155,7 @@ extension CameraView: View {
   var body: some View {
     ZStack {
       Color.black.ignoresSafeArea()
-      
+
       VStack(spacing: .zero) {
         // 제일 위 툴바 부분
         TopToolBarView(
@@ -197,6 +213,7 @@ extension CameraView: View {
           reconnectCancelButtonDidTap: connectionViewModel.reconnectCancelButtonDidTap,
           shutterActionEffect: flashScreen
         )
+        .padding(isShortScreen ? 32 : 0)
 
         CameraBottomContainer(
           currentRole: connectionViewModel.role,
@@ -215,6 +232,7 @@ extension CameraView: View {
           isShowPhotoPicker: $isShowPhotoPicker,
           shutterActionEffect: flashScreen
         )
+        .minimize(isShortScreen)
       }
     }
     // MARK: 카메라 세팅 툴
