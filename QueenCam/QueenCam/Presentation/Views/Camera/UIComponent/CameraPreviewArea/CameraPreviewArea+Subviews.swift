@@ -31,7 +31,8 @@ extension CameraView.CameraPreviewArea {
           penViewModel: penViewModel,
           isPen: isPenActive,
           isMagicPen: isMagicPenActive,
-          role: currentMode
+          role: currentMode,
+          isZooming: isZooming
         )
         .gesture(magnificationGesture)
       } else {

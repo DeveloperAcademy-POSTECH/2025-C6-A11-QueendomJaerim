@@ -14,6 +14,9 @@ extension CameraView {
     // 현재 하나의 핀치 동작 내에서 이전 배율 값을 임시 저장 (변화량을 계산하기 위해)
     @State var previousMagnificationValue: CGFloat = 1.0
 
+    // 펜이 선택되었을 시 드래그와 핀치를 추적하기 위함
+    @State var isZooming: Bool = false
+
     let cameraViewModel: CameraViewModel
     let previewModel: PreviewModel
     let penViewModel: PenViewModel
