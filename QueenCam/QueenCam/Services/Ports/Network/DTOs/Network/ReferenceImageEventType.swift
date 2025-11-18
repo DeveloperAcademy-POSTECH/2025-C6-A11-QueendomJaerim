@@ -10,4 +10,5 @@ import Foundation
 enum ReferenceImageEventType: Codable, Sendable {
   case remove
   case register(imageData: Data)
+  case reset
 }

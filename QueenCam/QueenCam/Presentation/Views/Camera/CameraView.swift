@@ -91,7 +91,7 @@ extension CameraView {
     // 가이딩 초기화
     penViewModel.reset()
     frameViewModel.deleteAll()
-    referenceViewModel.onDelete()
+    referenceViewModel.onReset()
     connectionViewModel.swapRole()
     // 새 역할에 따라 캡쳐를 시작/중단한다
     if let newRole = connectionViewModel.role {
@@ -317,7 +317,7 @@ extension CameraView: View {
         // 가이딩 초기화
         penViewModel.reset()
         frameViewModel.deleteAll()
-        referenceViewModel.onDelete()
+        referenceViewModel.onReset()
       }
     }
     // 레퍼런스 삭제 시 PhotoPicker 선택도 초기화

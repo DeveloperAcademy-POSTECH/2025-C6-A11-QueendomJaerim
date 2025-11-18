@@ -88,18 +88,21 @@ final class ReferenceViewModel {
   }
 
   // MARK: - Reference 삭제
-  func onDelete() {  // 초기화
+  func onDelete() {  // 삭제
     image = nil
     state = .none
-
+    notificationService.registerNotification(.make(type: .deleteReference))
+    
     // Send to Network
     self.sendReferenceImageCommand(command: .remove)
   }
 
-  func showReferenceDeleteToast() {
-    notificationService.registerNotification(.make(type: .deleteReference))
+  func onReset(){ // 초기화(역할 바꾸기, 연결 종료)
+    image = nil
+    state = .none
+    
   }
-
+  
   func onRegister(uiImage: UIImage?) {
     guard let uiImage else { return }
     self.image = uiImage
@@ -151,6 +154,8 @@ extension ReferenceViewModel {
     case .remove:
       self.image = nil
       notificationService.registerNotification(.make(type: .peerDeleteReference))
+    case .reset:
+      self.image = nil
     }
   }
 }
@@ -167,8 +172,10 @@ extension ReferenceViewModel {
       } else {
         notificationService.registerNotification(.make(type: .registerFirstReference))
       }
-    } else {
+    } else if case .remove = command {
       sendReferenceImageRemovedEvent()
+    } else {
+      sendReferenceImageResetEvent()
     }
   }
 
@@ -190,9 +197,18 @@ extension ReferenceViewModel {
       await self.networkService.send(for: .referenceImage(.remove))
     }
   }
+  
+  private func sendReferenceImageResetEvent() {
+    Task.detached { [weak self] in
+      guard let self else { return }
+      await self.networkService.send(for: .referenceImage(.reset))
+    }
+  }
+
 }
 
 private enum ReferenceNetworkCommand {
   case remove
   case register(image: UIImage)
+  case reset
 }
