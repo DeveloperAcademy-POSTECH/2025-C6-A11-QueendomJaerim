@@ -89,26 +89,28 @@ extension CameraView.CameraPreviewArea {
 
       Spacer()
 
-      HStack {
-        Spacer()
+      if activeTool == nil {
+        HStack {
+          Spacer()
 
-        // MARK: 눈까리 버튼
-        GuidingToggleButton(
-          role: currentRole,
-          systemName: guideToggleImage,
-          isActive: !isRemoteGuideHidden
-        ) {
-          isRemoteGuideHidden.toggle()
-          if isRemoteGuideHidden {
-            frameViewModel.setFrame(false)
-          } else if !isRemoteGuideHidden && !frameViewModel.frames.isEmpty {
-            frameViewModel.setFrame(true)
+          // MARK: 눈까리 버튼
+          GuidingToggleButton(
+            role: currentRole,
+            systemName: guideToggleImage,
+            isActive: !isRemoteGuideHidden
+          ) {
+            isRemoteGuideHidden.toggle()
+            if isRemoteGuideHidden {
+              frameViewModel.setFrame(false)
+            } else if !isRemoteGuideHidden && !frameViewModel.frames.isEmpty {
+              frameViewModel.setFrame(true)
+            }
+
+            cameraViewModel.showGuidingToast(isRemoteGuideHidden: isRemoteGuideHidden)
           }
-
-          cameraViewModel.showGuidingToast(isRemoteGuideHidden: isRemoteGuideHidden)
         }
+        .padding(12)
       }
-      .padding(12)
     }
   }
 }
