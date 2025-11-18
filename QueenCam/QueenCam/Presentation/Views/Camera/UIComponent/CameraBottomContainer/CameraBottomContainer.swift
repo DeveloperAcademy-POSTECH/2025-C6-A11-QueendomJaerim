@@ -87,7 +87,7 @@ extension CameraView.CameraBottomContainer: View {
                     isRemoteGuideHidden = false
                   }
                 },
-                guidingButtonType: .frame
+                guidingButtonType: .frameChecked
               )
 
               Rectangle()
@@ -143,7 +143,7 @@ extension CameraView.CameraBottomContainer: View {
                     isRemoteGuideHidden = false
                   }
                 },
-                guidingButtonType: .pen
+                guidingButtonType: .penChecked
               )
 
               Rectangle()
@@ -183,7 +183,7 @@ extension CameraView.CameraBottomContainer: View {
                   isRemoteGuideHidden = false
                 }
               },
-              guidingButtonType: .magicPen
+              guidingButtonType: .magicPenChecked
             )
           }
         } else {
