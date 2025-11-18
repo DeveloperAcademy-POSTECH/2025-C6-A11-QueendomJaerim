@@ -15,6 +15,11 @@ struct GuidingButton {
   let isDisabeld: Bool
   let tapAction: () -> Void
   let guidingButtonType: GuidingButtonType
+
+  private let symbolHeight: CGFloat = 21
+  private let symbolPadding: CGFloat = 3
+  private let symbolLabelSpacing: CGFloat = 2
+  private let buttonPadding: CGFloat = 5
 }
 
 extension GuidingButton {
@@ -59,13 +64,13 @@ extension GuidingButton: View {
       switch self.role {
       case .model:
         Button(action: { tapAction() }) {
-          VStack(alignment: .center, spacing: 6) {
+          VStack(alignment: .center, spacing: symbolLabelSpacing) {
             Image(iconImageResource)
               .renderingMode(.template)
               .resizable()
               .scaledToFit()
-              .frame(width: 21, height: 21)
-              .padding(3)
+              .frame(height: symbolHeight)
+              .padding(symbolPadding)
 
             Text(title)
               .typo(.sfR10)
@@ -75,18 +80,18 @@ extension GuidingButton: View {
               ? (isActive ? .modelDisabled : .disabled)
               : (isActive ? .modelPrimary : .systemWhite)
           )
-          .padding(5)
+          .padding(buttonPadding)
         }
 
       case .photographer:
         Button(action: { tapAction() }) {
-          VStack(alignment: .center, spacing: 6) {
+          VStack(alignment: .center, spacing: symbolLabelSpacing) {
             Image(iconImageResource)
               .renderingMode(.template)
               .resizable()
               .scaledToFit()
-              .frame(width: 21, height: 21)
-              .padding(3)
+              .frame(height: symbolHeight)
+              .padding(symbolPadding)
 
             Text(title)
               .typo(.sfR10)
@@ -96,18 +101,18 @@ extension GuidingButton: View {
               ? (isActive ? .photographerDisabled : .disabled)
               : (isActive ? .photographerPrimary : .systemWhite)
           )
-          .padding(5)
+          .padding(buttonPadding)
         }
 
       case .none:
         Button(action: { tapAction() }) {
-          VStack(alignment: .center, spacing: 6) {
+          VStack(alignment: .center, spacing: symbolLabelSpacing) {
             Image(iconImageResource)
               .renderingMode(.template)
               .resizable()
               .scaledToFit()
-              .frame(width: 21, height: 21)
-              .padding(3)
+              .frame(height: symbolHeight)
+              .padding(symbolPadding)
 
             Text(title)
               .typo(.sfR10)
@@ -117,7 +122,7 @@ extension GuidingButton: View {
               ? (isActive ? .photographerDisabled : .disabled)
               : (isActive ? .photographerPrimary : .systemWhite)
           )
-          .padding(5)
+          .padding(buttonPadding)
         }
       }
     }
