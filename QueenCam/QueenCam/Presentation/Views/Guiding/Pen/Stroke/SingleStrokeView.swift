@@ -13,7 +13,7 @@ struct SingleStrokeView: View {
   let roleForTheme: Role?
   let geoSize: CGSize
   let stroke: Stroke
-  
+
   var body: some View {
     Canvas { context, _ in
       let outerColor = (stroke.author == .model) ? Color.modelPrimary : .photographerPrimary
@@ -32,4 +32,3 @@ struct SingleStrokeView: View {
     }
   }
 }
-

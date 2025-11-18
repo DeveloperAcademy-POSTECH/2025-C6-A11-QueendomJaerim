@@ -57,7 +57,7 @@ struct ReferenceView: View {
                 .onChanged { value in
                   referenceViewModel.dragChanged(value)
                 }
-                .onEnded { value in
+                .onEnded { _ in
                   referenceViewModel.dragEnded()
                 }
             )

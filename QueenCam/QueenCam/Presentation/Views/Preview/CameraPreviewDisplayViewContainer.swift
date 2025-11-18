@@ -6,9 +6,9 @@
 //
 
 import Combine
+import CoreMedia
 import Foundation
 import SwiftUI
-import CoreMedia
 
 struct CameraPreviewDisplayViewContainer: UIViewControllerRepresentable {
   var currentSampleBuffer: CMSampleBuffer?

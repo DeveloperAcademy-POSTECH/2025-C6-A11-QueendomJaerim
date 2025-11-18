@@ -22,7 +22,7 @@ struct MakeConnectionView {
   let errorWasConsumeByUser: () -> Void
   let changeRoleButtonDidTap: () -> Void
   let connectButtonDidTap: (WAPairedDevice) -> Void
-  
+
   @State private var errorAlertShowing: Bool = false
 
   private var myDeviceName: String {

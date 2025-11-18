@@ -52,7 +52,7 @@ final class PreviewModel {
 
   var lastReceivedCMSampleBuffer: CMSampleBuffer?
 
-  var lastReceivedTime: Date? = nil
+  var lastReceivedTime: Date?
 
   let imagePrecessingQueue = DispatchQueue(label: "com.queendom.QueenCam.imageProcessingQueue")
 
@@ -98,7 +98,7 @@ final class PreviewModel {
         self.lastReceivedCMSampleBuffer = decodedSampleBuffer
       }
     }
-    
+
     NotificationCenter.default.addObserver(
       self,
       selector: #selector(roleChangeNotificationHandler(notification:)),
@@ -139,7 +139,8 @@ final class PreviewModel {
 
   @objc private func roleChangeNotificationHandler(notification: Notification) {
     guard let userInfo = notification.userInfo,
-      let newRole = userInfo["newRole"] as? Role else { return }
+      let newRole = userInfo["newRole"] as? Role
+    else { return }
     handleRoleChanged(newRole: newRole)
   }
 

@@ -71,9 +71,8 @@ extension LensZoomTool: View {
     LensZoomTool(
       zoomScaleItemList: [0.5, 1, 2],
       currentZoomFactor: 1.23,
-      activeZoom: 1.0,
-      onZoomChange: { _ in }
-    )
+      activeZoom: 1.0
+    ) { _ in }
   }
 }
 

@@ -70,7 +70,7 @@ final class ConnectionViewModel {
 
   /// State Toast
   private let notificationService: NotificationServiceProtocol
-  
+
   /// Error
   private(set) var connectionError: Error?
 
@@ -139,7 +139,7 @@ final class ConnectionViewModel {
         self?.deviceReportsUpdated(reports: reportsByDevices)
       }
       .store(in: &cancellables)
-    
+
     networkService.lastErrorPublisher
       .receive(on: RunLoop.main)
       .compactMap { $0 }
@@ -190,7 +190,7 @@ extension ConnectionViewModel {
 
   func disconnectButtonDidTap() {
     networkService.disconnect()
-    role = nil // 정상 종료인 경우 역할 초기화
+    role = nil  // 정상 종료인 경우 역할 초기화
   }
 
   func viewDidAppearTask() async {
@@ -204,7 +204,7 @@ extension ConnectionViewModel {
   }
 
   func connectionViewAppear() {
-    selectedPairedDevice = nil // 연결에 앞서 선택된 페어링 디바이스를 초기화한다
+    selectedPairedDevice = nil  // 연결에 앞서 선택된 페어링 디바이스를 초기화한다
   }
 
   func connectionViewDisappear() {
@@ -244,9 +244,9 @@ extension ConnectionViewModel {
 
   func sessionFinishedOverlayCloseButtonDidTap() {
     needReportSessionFinished = false
-    role = nil // 정상 종료인 경우 역할 초기화
+    role = nil  // 정상 종료인 경우 역할 초기화
   }
-  
+
   func errorConfirmedByUser() {
     networkService.stop(byUser: true)
     selectedPairedDevice = nil
@@ -300,10 +300,11 @@ extension ConnectionViewModel {
     let newMyRole = receivedNewRoles.counterpartRole
 
     if let lastSwapRoleLWWRegister {
-      if receviedLwwRegister.timestamp > lastSwapRoleLWWRegister.timestamp { // 타임스탬프가 최근이면 채택
+      if receviedLwwRegister.timestamp > lastSwapRoleLWWRegister.timestamp {  // 타임스탬프가 최근이면 채택
         updateRole(with: newMyRole, lwwRegister: receviedLwwRegister)
       } else if receviedLwwRegister.timestamp == lastSwapRoleLWWRegister.timestamp,
-        receviedLwwRegister.actorId > lastSwapRoleLWWRegister.actorId { // 타임스탬프가 같으면 actorId가 앞에 있을 때 채택
+        receviedLwwRegister.actorId > lastSwapRoleLWWRegister.actorId
+      {  // 타임스탬프가 같으면 actorId가 앞에 있을 때 채택
         updateRole(with: newMyRole, lwwRegister: receviedLwwRegister)
       } else {
         logger.warning("Received swapping role request but I already have the latest value, skipping.")

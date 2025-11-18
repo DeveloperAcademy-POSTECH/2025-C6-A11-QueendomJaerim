@@ -14,7 +14,7 @@ extension Role {
     case .model: return "모델"
     }
   }
-  
+
   var userDescriptiopn: String {
     switch self {
     case .photographer: return "내 기기로 사진을 촬영해요.\n동시에 친구에게 화면을 실시간으로 공유합니다."

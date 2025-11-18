@@ -11,7 +11,7 @@ extension SelectRoleView {
   var individualSymbolOffset: CGFloat { 7.5 }
 
   var symbolsContainerOffset: CGFloat {  // 선택 시 가운데 정렬
-    guard !willShowLoadingAnimation else { return .zero } // 애니메이션 노출 전 원점으로 돌린다
+    guard !willShowLoadingAnimation else { return .zero }  // 애니메이션 노출 전 원점으로 돌린다
 
     if selectedRole == .model {
       return -80 + individualSymbolOffset
@@ -26,11 +26,11 @@ extension SelectRoleView {
   var header: some View {
     VStack(spacing: 18) {
       Text("역할을 선택해주세요")
-        .font(.pretendard(.medium, size: 20))
+        .font(DynamicScreenUtils.isShortScreen ? .pretendard(.medium, size: 18) : .pretendard(.medium, size: 20))
 
       Text("서로 다른 역할의 기기끼리만\n연결할 수 있어요")
         .multilineTextAlignment(.center)
-        .font(.pretendard(.medium, size: 15))
+        .font(DynamicScreenUtils.isShortScreen ? .pretendard(.medium, size: 12) : .pretendard(.medium, size: 15))
     }
     .foregroundStyle(selectedRole == nil ? .systemWhite : .gray400)
   }
@@ -72,7 +72,7 @@ extension SelectRoleView {
         }
         .typo(.sb20)
 
-        Text("\n") // invisible
+        Text("\n")  // invisible
           .typo(.sb15)
       }
       .foregroundStyle(.systemWhite)

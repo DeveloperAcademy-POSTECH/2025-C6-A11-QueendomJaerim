@@ -62,6 +62,6 @@ extension SessionFinishedOverlayView: View {
       }
     }
 
-    SessionFinishedOverlayView { }
+    SessionFinishedOverlayView {}
   }
 }

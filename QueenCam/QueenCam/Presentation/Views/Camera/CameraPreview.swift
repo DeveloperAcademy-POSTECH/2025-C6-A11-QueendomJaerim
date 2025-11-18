@@ -22,7 +22,8 @@ struct CameraPreview: UIViewRepresentable {
     }
 
     var videoPreviewLayer: AVCaptureVideoPreviewLayer {
-      return layer as! AVCaptureVideoPreviewLayer
+      // swiftlint:disable:next force_cast
+      layer as! AVCaptureVideoPreviewLayer
     }
   }
 }

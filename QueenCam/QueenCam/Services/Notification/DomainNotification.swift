@@ -29,7 +29,7 @@ struct DomainNotification {
   }
 }
 
-extension DomainNotification: Equatable { }
+extension DomainNotification: Equatable {}
 
 extension DomainNotification {
   func isType(of type: DomainNotification.DomainNotificationType) -> Bool {

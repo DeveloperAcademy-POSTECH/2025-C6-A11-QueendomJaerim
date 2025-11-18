@@ -23,6 +23,10 @@ final class PenViewModel {
   /// 세션 동안 내가 한 번이라도 그렸는지 여부
   var hasEverDrawn: Bool = false
 
+  // 가이드 최초 1회
+  private var hasShownPenToast = false
+  private var hasShownMagicPenToast: Bool = false
+
   // MARK: - 네트워크
   let networkService: NetworkServiceProtocol
   var cancellables: Set<AnyCancellable> = []
@@ -152,8 +156,10 @@ final class PenViewModel {
   func showFirstToolToast(type: GuidingType) {
     switch type {
     case .pen:
+      guard !hasShownPenToast else { return }
       notificationService.registerNotification(DomainNotification.make(type: .firstPenToolSelected))
     case .magicPen:
+      guard !hasShownMagicPenToast else { return }
       notificationService.registerNotification(DomainNotification.make(type: .firstMagicToolSelected))
     }
   }

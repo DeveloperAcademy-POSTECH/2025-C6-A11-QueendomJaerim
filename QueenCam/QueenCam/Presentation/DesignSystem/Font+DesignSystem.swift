@@ -81,7 +81,7 @@ enum TypographyStyle: CaseIterable {
   case sfM11
   case sfM12
   case sfSB15
-  
+
   var displayName: String {
     switch self {
     case .r12: return "R_12"
@@ -217,18 +217,18 @@ extension View {
       Text("타이포그라피 - \(style.displayName)")
         .typo(style)
         .border(.gray, width: 0.5)
-      
+
       Text("여왕처럼 생각하세요. 여왕은 실패를 두려워하지 않습니다. 실패는 위대함을 향한 또 하나의 디딤돌이니까요. - 오프라 윈프리")
         .typo(style)
         .border(.gray, width: 0.5)
-      
+
       Text("Think like a queen. A queen is not afraid to fail. Failure is another steppingstone to greatness. - Oprah Winfrey")
         .typo(style)
         .border(.gray, width: 0.5)
-      
+
       Divider()
     }
-    
+
     var body: some View {
       ScrollView {
         VStack(spacing: 12) {
@@ -240,6 +240,6 @@ extension View {
       }
     }
   }
-  
+
   return TypographyDemoPreviewContainer()
 }

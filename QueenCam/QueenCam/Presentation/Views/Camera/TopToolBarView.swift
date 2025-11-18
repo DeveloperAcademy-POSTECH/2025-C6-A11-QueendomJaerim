@@ -85,7 +85,7 @@ extension TopToolBarView: View {
       } connectedWithButtonDidTap: {
         //
       }
-      
+
       TopToolBarView(connectedDeviceName: "임영택의 iPhone 16", reconnectingDeviceName: nil) {
         //
       } backButtonDidTap: {

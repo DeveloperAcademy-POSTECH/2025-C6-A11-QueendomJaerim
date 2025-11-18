@@ -63,7 +63,7 @@ final class CameraViewModel {
     cameraManager.onReadinessState = { [weak self] readiness in
       self?.handleReadiness(readiness: readiness)
     }
-    
+
     cameraManager.onPhotoCapture = { [weak self] image in
       self?.lastImage = image
     }
@@ -205,7 +205,8 @@ final class CameraViewModel {
       notificationService.registerNotification(.make(type: .photosPickerShowing))
     } else {
       if let currentNotification = notificationService.currentNotification,
-        currentNotification.isType(of: .photosPickerShowing) {
+        currentNotification.isType(of: .photosPickerShowing)
+      {
         // 현재 표시되고 있는 토스트가 photosPickerShowing 타입이면 리셋
         notificationService.reset()
       }

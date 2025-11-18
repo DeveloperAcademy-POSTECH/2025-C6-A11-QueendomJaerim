@@ -5,9 +5,9 @@
 //  Created by 임영택 on 11/5/25.
 //
 
+import DeviceDiscoveryUI
 import SwiftUI
 import WiFiAware
-import DeviceDiscoveryUI
 
 extension MakeConnectionView {
   struct DeviceDiscoveryButton: View {

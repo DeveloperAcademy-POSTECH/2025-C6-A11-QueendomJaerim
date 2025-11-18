@@ -177,29 +177,29 @@ extension MakeConnectionView.PairedDevicesList: View {
         createTestDevice(id: 4, name: "페퍼폰")!,
         createTestDevice(id: 5, name: "차차폰")!,
         createTestDevice(id: 6, name: "섭섭폰")!,
-        createTestDevice(id: 7, name: "하워드폰")!,
+        createTestDevice(id: 7, name: "하워드폰")!
       ],
       isPairing: false,
       isConnected: false,
-      selectedDevice: nil,
-      connectButtonDidTap: { _ in }
-    )
+      selectedDevice: nil
+    ) { _ in }
   }
 }
 
 /// 프리뷰를 위한 테스트 데이터 팩토리
 private func createTestDevice(id: Int, name: String) -> WAPairedDevice? {
   // 테스트할 WAPairedDevice의 JSON 형태를 문자열로 정의합니다.
-  let deviceJSON = """
-      {
-        "id": \(id),
-        "name": "\(name)",
-        "pairingInfo": {
-          "pairingName": "\(name)",
-          "vendorName": "QueenDom",
-          "modelName": "TestModel-001"
-        }
+  let deviceJSON =
+    """
+    {
+      "id": \(id),
+      "name": "\(name)",
+      "pairingInfo": {
+        "pairingName": "\(name)",
+        "vendorName": "QueenDom",
+        "modelName": "TestModel-001"
       }
+    }
     """
 
   // JSON 문자열을 Data로 변환
