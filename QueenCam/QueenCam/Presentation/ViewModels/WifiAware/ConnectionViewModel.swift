@@ -205,6 +205,7 @@ extension ConnectionViewModel {
 
   func connectionViewAppear() {
     selectedPairedDevice = nil  // 연결에 앞서 선택된 페어링 디바이스를 초기화한다
+    connectionError = nil // 연결에 앞서 이전 오류를 초기화한다. 초기화하지 않으면 이전에 발생한 에러가 연결하기 뷰에 노출된다
   }
 
   func connectionViewDisappear() {

@@ -74,7 +74,11 @@ extension MakeConnectionView: View {
           }
         },
         message: {
-          Text("설정 앱에서 Wi-Fi 기능을 활성화하고 다시 시도해주세요.")
+          if lastConnectionError?.localizedDescription.isEmpty == false {
+            Text("설정 앱에서 Wi-Fi 기능을 활성화하고 다시 시도해주세요.")
+          } else {
+            Text("연결하던 중 오류가 발생했습니다. 문제가 반복되면 퀸덤 팀에 문의해주세요. \(lastConnectionError?.localizedDescription ?? "")")
+          }
         }
       )
     }
