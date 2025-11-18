@@ -116,22 +116,22 @@ extension DomainNotification {
       case .registerFirstReference:
         return .init(message: "친구에게도 참고 이미지가 공유되었어요", isImportant: false, showingTime: 2)
       case .peerRegisterFirstReference:
-        return .init(message: "친구가 참고 이미지를 등록했어요", isImportant: false, showingTime: 2)
+        return .init(message: "친구가 참고 이미지를 등록했어요.", isImportant: false, showingTime: 2)
       case .registerNewReference:
-        return .init(message: "새로운 참고 이미지를 등록했어요", isImportant: false, showingTime: 2)
+        return .init(message: "새로운 참고 이미지를 등록했어요.", isImportant: false, showingTime: 2)
       case .peerRegisterNewReference:
-        return .init(message: "친구가 새로운 참고 이미지를 등록했어요", isImportant: false, showingTime: 2)
+        return .init(message: "친구가 새로운 참고 이미지를 등록했어요.", isImportant: false, showingTime: 2)
       case .deleteReference:
-        return .init(message: "참고 이미지를 삭제했어요", isImportant: false, showingTime: 2)
+        return .init(message: "참고 이미지를 삭제했어요.", isImportant: false, showingTime: 2)
       case .peerDeleteReference:
-        return .init(message: "친구가 참고 이미지를 삭제했어요", isImportant: false, showingTime: 2)
+        return .init(message: "친구가 참고 이미지를 삭제했어요.", isImportant: false, showingTime: 2)
       case .photosPickerShowing:
         return .init(message: "함께 참고할 이미지를 등록할 수 있습니다.", isImportant: false, showingTime: nil)
       // 펜 + 매직펜
       case .firstPenToolSelected:
         return .init(message: "펜으로 가이드를 그립니다.", isImportant: false, showingTime: 2)
       case .penEraserSelected:
-        return .init(message: "깔끔하게 지웠어요", isImportant: false, showingTime: 2)
+        return .init(message: "깔끔하게 지웠어요.", isImportant: false, showingTime: 2)
       case .firstMagicToolSelected:
         return .init(message: "지우지 않아도 사라지는 펜입니다.", isImportant: false, showingTime: 2)
       // 프레임
@@ -144,7 +144,7 @@ extension DomainNotification {
       case .peerCloseFrameGuide:
         return .init(message: "친구가 프레임을 껐어요.", isImportant: false, showingTime: 2)
       case .peerFirstEditMode:
-        return .init(message: "친구가 프레임을 수정하고 있어요", isImportant: false, showingTime: 2)
+        return .init(message: "친구가 프레임을 수정하고 있어요.", isImportant: false, showingTime: 2)
       case .firstEditMode:
         return .init(message: "프레임의 비율을 조정합니다.", isImportant: false, showingTime: 2)
 
