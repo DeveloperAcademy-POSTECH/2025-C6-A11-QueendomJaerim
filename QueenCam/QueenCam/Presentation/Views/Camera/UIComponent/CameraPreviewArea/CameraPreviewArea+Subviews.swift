@@ -46,7 +46,7 @@ extension CameraView.CameraPreviewArea {
   @ViewBuilder
   var largeReferenceImageDimmingLayer: some View {
     if isReferenceLarge {  // 레퍼런스 확대 축소
-      Color.black.opacity(0.5)
+      Color.blue.opacity(0.5)
         .onTapGesture {
           withAnimation(.easeInOut(duration: 0.25)) {
             isReferenceLarge = false

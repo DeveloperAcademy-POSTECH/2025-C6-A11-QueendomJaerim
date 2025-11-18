@@ -7,7 +7,6 @@ extension CameraView {
   struct CameraPreviewArea {
     @State var isFocused = false
     @State var focusLocation: CGPoint = .zero
-    @State var isReferenceLarge: Bool = false  // 레퍼런스 확대 축소 프로퍼티
     @State var zoomScaleItemList: [CGFloat] = [0.5, 1, 2]
     // 현재 적용된 줌 배율 (카메라와 UI 상태 동기화용)
     @State var currentZoomFactor: CGFloat = 1.0
@@ -32,6 +31,7 @@ extension CameraView {
 
     /// 눈까리
     @Binding var isRemoteGuideHidden: Bool
+    @Binding var isReferenceLarge: Bool  // 레퍼런스 확대 축소 프로퍼티
 
     // connectionViewModel -> 프로퍼티 변환
     let currentRole: Role?

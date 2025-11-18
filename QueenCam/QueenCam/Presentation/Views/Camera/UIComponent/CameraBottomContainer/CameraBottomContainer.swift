@@ -21,6 +21,7 @@ extension CameraView {
     @Binding var isRemoteGuideHidden: Bool
 
     @Binding var isShowPhotoPicker: Bool
+    @Binding var isReferenceLarge: Bool  // 레퍼런스 확대 축소 프로퍼티
 
     // 캡처시 화면 깜빡임 액션관리
     let shutterActionEffect: () -> Void
@@ -57,6 +58,7 @@ extension CameraView.CameraBottomContainer: View {
         if value.translation.height < 0 {
           withAnimation {
             self.isShowCameraSettingTool = true
+            self.isReferenceLarge = false
           }
         }
       }
