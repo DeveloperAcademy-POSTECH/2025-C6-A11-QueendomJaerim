@@ -54,7 +54,7 @@ extension CameraView.CameraPreviewArea {
       Spacer()
       if !isFront {
         VStack(spacing: .zero) {
-          if currentMode == .photographer {
+          if currentMode == .photographer && activeTool != .frame {
             LensZoomTool(
               zoomScaleItemList: zoomScaleItemList,
               currentZoomFactor: currentZoomFactor,
