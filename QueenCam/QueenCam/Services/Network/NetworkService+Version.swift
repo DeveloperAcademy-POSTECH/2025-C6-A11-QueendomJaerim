@@ -10,10 +10,6 @@ import Foundation
 extension NetworkService {
   var versionCheckTimeout: TimeInterval { 10 }
 
-  private var version100: Int { // myVersion 이벤트를 1.0.0 이전에서는 지원하지 않음
-    10_000_000
-  }
-
   // MARK: 최소 버전 확인
   func handleMyVersionEvent(for counterpartVersionInfo: VersionExchangePayload) {
     defer { versionChecked = true }
