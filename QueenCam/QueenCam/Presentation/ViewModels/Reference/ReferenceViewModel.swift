@@ -14,7 +14,7 @@ import UIKit
 final class ReferenceViewModel {
   // MARK: - Properties
   private(set) var image: UIImage?  // 선택된 레퍼런스 사진
-  var state: ReferenceState = .open
+  var state: ReferenceState = .none
   let foldThreshold: CGFloat = -50
   var dragOffset: CGSize = .zero  // 드래그 중 임시편차
   var location: ReferenceLocation = .topLeft
@@ -90,17 +90,18 @@ final class ReferenceViewModel {
   // MARK: - Reference 삭제
   func onDelete() {  // 초기화
 
-    state = .delete
     image = nil
-    state = .open
+    state = .none
 
     self.sendReferenceImageCommand(command: .remove)
+    notificationService.registerNotification(.make(type: .deleteReference))
   }
 
   func onRegister(uiImage: UIImage?) {
     guard let uiImage else { return }
     self.image = uiImage
     self.sendReferenceImageCommand(command: .register(image: uiImage))
+    state = .open
   }
 }
 
@@ -163,7 +164,6 @@ extension ReferenceViewModel {
       sendReferenceImageRegisteredEvent(referenceImage: image)
     } else {
       sendReferenceImageRemovedEvent()
-      notificationService.registerNotification(.make(type: .deleteReference))
     }
   }
 

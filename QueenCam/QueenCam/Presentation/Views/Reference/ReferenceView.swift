@@ -62,7 +62,7 @@ struct ReferenceView: View {
                 }
             )
 
-          case .delete:  // 레퍼런스 삭제
+          case .none: // 레퍼런스가 존재 안함
             EmptyView()
           }
         }
