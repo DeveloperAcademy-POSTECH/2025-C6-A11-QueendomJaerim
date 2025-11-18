@@ -22,14 +22,14 @@ extension CameraView.CameraPreviewArea {
 
   /// 가이딩 도구들 오버레이
   var guidingLayer: some View {
-    Group {
-      if isFrameActive {
-        FrameEditorView(frameViewModel: frameViewModel, currentRole: currentMode)
-      }
+    ZStack {
       if isPenActive || isMagicPenActive {
         PenWriteView(penViewModel: penViewModel, isPen: isPenActive, isMagicPen: isMagicPenActive, role: currentMode)
       } else {
         PenDisplayView(penViewModel: penViewModel)
+      }
+      if isFrameActive {
+        FrameEditorView(frameViewModel: frameViewModel, currentRole: currentMode)
       }
     }
     .opacity(isRemoteGuideHidden ? .zero : 1)
