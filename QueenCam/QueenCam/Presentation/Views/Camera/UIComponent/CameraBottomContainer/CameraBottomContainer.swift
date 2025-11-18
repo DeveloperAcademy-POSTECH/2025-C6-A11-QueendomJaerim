@@ -206,6 +206,7 @@ extension CameraView.CameraBottomContainer: View {
       .padding(.bottom, 51)
       .padding(.horizontal, 36)
     }
+    .padding(.top, 22)
     .frame(maxWidth: .infinity, maxHeight: isMinimize ? 120 : .infinity)
     .background(.black)
     .gesture(dragGesture)
