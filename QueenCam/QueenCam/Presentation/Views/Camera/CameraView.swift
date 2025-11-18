@@ -139,7 +139,7 @@ extension CameraView: View {
   var body: some View {
     ZStack {
       Color.black.ignoresSafeArea()
-      
+
       VStack(spacing: .zero) {
         // 제일 위 툴바 부분
         TopToolBarView(
@@ -197,6 +197,7 @@ extension CameraView: View {
           reconnectCancelButtonDidTap: connectionViewModel.reconnectCancelButtonDidTap,
           shutterActionEffect: flashScreen
         )
+        .padding(DynamicScreenUtils.isShortScreen ? 32 : 0)
 
         CameraBottomContainer(
           currentRole: connectionViewModel.role,
@@ -215,6 +216,7 @@ extension CameraView: View {
           isShowPhotoPicker: $isShowPhotoPicker,
           shutterActionEffect: flashScreen
         )
+        .minimize(DynamicScreenUtils.isShortScreen)
       }
     }
     // MARK: 카메라 세팅 툴

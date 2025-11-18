@@ -35,6 +35,7 @@ extension ConnectionGuideView: View {
         Color.black.ignoresSafeArea()
 
         guidePages
+          .padding(.horizontal, DynamicScreenUtils.isShortScreen ? 48 : 0)
 
         footer
       }

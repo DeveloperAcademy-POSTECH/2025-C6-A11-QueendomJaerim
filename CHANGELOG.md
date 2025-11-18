@@ -12,6 +12,8 @@
 
 ### Changed
 
+- CameraView, ConnectionView를 iPad로 띄우면 레이아웃이 망가지는 문제
+
 
 ### Deprecated
 

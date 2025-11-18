@@ -26,6 +26,9 @@ extension CameraView {
 
     // 캡처시 화면 깜빡임 액션관리
     let shutterActionEffect: () -> Void
+
+    // 비율이 작은 기기를 위한 모드. true면 뷰 크기 조정
+    var isMinimize = false
   }
 }
 
@@ -65,8 +68,16 @@ extension CameraView.CameraBottomContainer: View {
       .padding(.bottom, 51)
       .padding(.horizontal, 36)
     }
-    .frame(maxWidth: .infinity, maxHeight: .infinity)
+    .frame(maxWidth: .infinity, maxHeight: isMinimize ? 120 : .infinity)
     .background(.black)
     .gesture(dragGesture)
+  }
+}
+
+extension CameraView.CameraBottomContainer {
+  func minimize(_ activeMinimize: Bool) -> Self {
+    var copy = self
+    copy.isMinimize = activeMinimize
+    return copy
   }
 }
