@@ -17,7 +17,7 @@ extension PenToolButton {
     case .undo:
       return "arrow.uturn.backward"
     case .eraser:
-      return "eraser"
+      return "trash"
     }
   }
 }
@@ -25,16 +25,11 @@ extension PenToolButton {
 extension PenToolButton: View {
   var body: some View {
     Button(action: tapAction) {
-      Circle()
-        .fill(.black.opacity(0.6))
-        .frame(width: 38, height: 38)
-        .overlay {
-          Image(systemName: iconName)
-            .resizable()
-            .aspectRatio(contentMode: .fill)
-            .frame(width: 20, height: 16)
-            .foregroundStyle(isActive ? .offWhite : .disabled)
-        }
+      Image(systemName: iconName)
+        .resizable()
+        .scaledToFill()
+        .frame(width: 21, height: 21)
+        .foregroundStyle(isActive ? .offWhite : .gray600)
     }
     .disabled(!isActive)
   }

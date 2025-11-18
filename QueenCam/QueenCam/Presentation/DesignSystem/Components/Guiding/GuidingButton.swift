@@ -44,60 +44,65 @@ extension GuidingButton: View {
       switch self.role {
       case .model:
         Button(action: { tapAction() }) {
-          VStack(alignment: .center, spacing: 8) {
+          VStack(alignment: .center, spacing: 6) {
             Image(iconName)
               .renderingMode(.template)
               .resizable()
               .scaledToFit()
-              .frame(width: 23, height: 22)
+              .frame(width: 21, height: 21)
+              .padding(3)
 
             Text(title)
-              .typo(.sfR11)
+              .typo(.sfR10)
           }
-
           .foregroundStyle(
             isDisabeld
               ? (isActive ? .modelDisabled : .disabled)
               : (isActive ? .modelPrimary : .systemWhite)
           )
+          .padding(5)
         }
 
       case .photographer:
         Button(action: { tapAction() }) {
-          VStack(alignment: .center, spacing: 8) {
+          VStack(alignment: .center, spacing: 6) {
             Image(iconName)
               .renderingMode(.template)
               .resizable()
               .scaledToFit()
-              .frame(width: 23, height: 22)
+              .frame(width: 21, height: 21)
+              .padding(3)
 
             Text(title)
-              .typo(.sfR11)
+              .typo(.sfR10)
           }
           .foregroundStyle(
             isDisabeld
               ? (isActive ? .photographerDisabled : .disabled)
               : (isActive ? .photographerPrimary : .systemWhite)
           )
+          .padding(5)
         }
 
       case .none:
         Button(action: { tapAction() }) {
-          VStack(alignment: .center, spacing: 8) {
+          VStack(alignment: .center, spacing: 6) {
             Image(iconName)
               .renderingMode(.template)
               .resizable()
               .scaledToFit()
-              .frame(width: 23, height: 22)
+              .frame(width: 21, height: 21)
+              .padding(3)
 
             Text(title)
-              .typo(.sfR11)
+              .typo(.sfR10)
           }
           .foregroundStyle(
             isDisabeld
               ? (isActive ? .photographerDisabled : .disabled)
               : (isActive ? .photographerPrimary : .systemWhite)
           )
+          .padding(5)
         }
       }
     }

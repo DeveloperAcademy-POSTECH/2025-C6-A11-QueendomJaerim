@@ -2,12 +2,11 @@ import SwiftUI
 
 extension CameraView.CameraBottomContainer {
   var guidingTools: some View {
-    // 가이딩
-    HStack(alignment: .center, spacing: 40) {
+    HStack(alignment: .center, spacing: 30) {
       // 프레임
       GuidingButton(
         role: currentRole,
-        isActive: isActiveFrame,
+        isActive: isFrameActive,
         isDisabeld: isRemoteGuideHidden,
         tapAction: {
           guard !isRemoteGuideHidden else {
@@ -15,12 +14,8 @@ extension CameraView.CameraBottomContainer {
             return
           }
 
-          isActiveFrame.toggle()
-          frameViewModel.setFrame(isActiveFrame)
+          guidingToolToggle(.frame)
 
-          if isActiveFrame && frameViewModel.frames.isEmpty {
-            frameViewModel.addFrame(at: CGPoint(x: 0.24, y: 0.15))
-          }
           if frameViewModel.isFrameEnabled {
             isRemoteGuideHidden = false
           }
@@ -30,7 +25,7 @@ extension CameraView.CameraBottomContainer {
       // 펜
       GuidingButton(
         role: currentRole,
-        isActive: isActivePen,
+        isActive: isPenActive,
         isDisabeld: isRemoteGuideHidden,
         tapAction: {
           guard !isRemoteGuideHidden else {
@@ -40,9 +35,8 @@ extension CameraView.CameraBottomContainer {
 
           penViewModel.showFirstToolToast(type: .pen)
 
-          isActivePen.toggle()
-          isActiveMagicPen = false
-          if isActivePen {
+          guidingToolToggle(.pen)
+          if isPenActive {
             isRemoteGuideHidden = false
           }
         },
@@ -51,7 +45,7 @@ extension CameraView.CameraBottomContainer {
       // 매직펜
       GuidingButton(
         role: currentRole,
-        isActive: isActiveMagicPen,
+        isActive: isMagicPenActive,
         isDisabeld: isRemoteGuideHidden,
         tapAction: {
           guard !isRemoteGuideHidden else {
@@ -61,15 +55,13 @@ extension CameraView.CameraBottomContainer {
 
           penViewModel.showFirstToolToast(type: .magicPen)
 
-          isActiveMagicPen.toggle()
-          isActivePen = false
-          if isActiveMagicPen {
+          guidingToolToggle(.maginPen)
+          if isMagicPenActive {
             isRemoteGuideHidden = false
           }
         },
         guidingButtonType: .magicPen
       )
     }
-    .padding(.top, 32)
   }
 }

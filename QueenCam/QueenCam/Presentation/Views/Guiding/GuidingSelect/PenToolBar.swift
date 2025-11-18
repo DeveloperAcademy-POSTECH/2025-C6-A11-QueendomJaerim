@@ -33,27 +33,25 @@ struct PenToolBar: View {
 
   var body: some View {
 
-    HStack {
-      VStack(alignment: .leading, spacing: 8) {
-        // 전체 삭제(내가 그린 것만 존재할 때 활성)
-        PenToolButton(
-          penToolType: .eraser,
-          isActive: isEraserActive
-        ) {
-          onAction(.deleteAll)
-        }
-
-        // 실행 취소(내가 그린 현재 strokes가 있거나, 내가 방금 전체삭제한 기록이 있으면 활성)
-        PenToolButton(
-          penToolType: .undo,
-          isActive: isUndoActive
-        ) {
-          onAction(.undo)
-        }
+    HStack(spacing: .zero) {
+      // 실행 취소(내가 그린 현재 strokes가 있거나, 내가 방금 전체삭제한 기록이 있으면 활성)
+      PenToolButton(
+        penToolType: .undo,
+        isActive: isUndoActive
+      ) {
+        onAction(.undo)
       }
-      Spacer()
+      .padding(.trailing, 26)
+      
+      
+      // 전체 삭제(내가 그린 것만 존재할 때 활성)
+      PenToolButton(
+        penToolType: .eraser,
+        isActive: isEraserActive
+      ) {
+        onAction(.deleteAll)
+      }
     }
-    .padding(12)
   }
 }
 

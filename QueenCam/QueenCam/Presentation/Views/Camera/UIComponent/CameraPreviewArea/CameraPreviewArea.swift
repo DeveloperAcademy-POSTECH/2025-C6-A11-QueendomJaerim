@@ -21,9 +21,7 @@ extension CameraView {
     let referenceViewModel: ReferenceViewModel
     @Bindable var thumbsUpViewModel: ThumbsUpViewModel
 
-    @Binding var isActiveFrame: Bool
-    @Binding var isActivePen: Bool
-    @Binding var isActiveMagicPen: Bool
+    @Binding var activeTool: ActiveTool?
 
     @Binding var isShowShutterFlash: Bool
 

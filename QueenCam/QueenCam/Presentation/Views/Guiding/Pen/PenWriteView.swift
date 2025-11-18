@@ -116,23 +116,6 @@ struct PenWriteView: View {
           }
       )
     }
-    .overlay(alignment: .bottomLeading) {
-      // 펜 모드일 때, 내가 한 번이라도 그린 적이 있으면 노출
-      if isPen && penViewModel.hasEverDrawn {
-        // MARK: - 펜 툴바 Undo / Redo / clearAll
-        PenToolBar(penViewModel: penViewModel) { action in
-          switch action {
-          case .deleteAll:
-            penViewModel.deleteAll()
-            penViewModel.showEraseGuidingLineToast()
-          case .undo:
-            penViewModel.undo()
-          case .redo:
-            penViewModel.redo()
-          }
-        }
-      }
-    }
   }
 }
 
