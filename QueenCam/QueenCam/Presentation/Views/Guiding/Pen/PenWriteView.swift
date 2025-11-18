@@ -9,13 +9,11 @@ import SwiftUI
 /// 펜 가이드라인 작성 뷰
 struct PenWriteView: View {
   var penViewModel: PenViewModel
-  var isPen: Bool
   var isMagicPen: Bool
   let role: Role?
 
-  init(penViewModel: PenViewModel, isPen: Bool, isMagicPen: Bool, role: Role?) {
+  init(penViewModel: PenViewModel, isMagicPen: Bool, role: Role?) {
     self.penViewModel = penViewModel
-    self.isPen = isPen
     self.isMagicPen = isMagicPen
     self.role = role
     self.penViewModel.currentRole = role

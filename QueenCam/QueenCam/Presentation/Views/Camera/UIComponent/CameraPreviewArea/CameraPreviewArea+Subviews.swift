@@ -27,7 +27,7 @@ extension CameraView.CameraPreviewArea {
         FrameEditorView(frameViewModel: frameViewModel, currentRole: currentMode)
       }
       if isPenActive || isMagicPenActive {
-        PenWriteView(penViewModel: penViewModel, isPen: isPenActive, isMagicPen: isMagicPenActive, role: currentMode)
+        PenWriteView(penViewModel: penViewModel, isMagicPen: isMagicPenActive, role: currentMode)
       } else {
         PenDisplayView(penViewModel: penViewModel)
       }
