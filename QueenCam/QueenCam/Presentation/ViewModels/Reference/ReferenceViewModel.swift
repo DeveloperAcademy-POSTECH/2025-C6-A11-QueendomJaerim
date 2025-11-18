@@ -89,19 +89,24 @@ final class ReferenceViewModel {
 
   // MARK: - Reference 삭제
   func onDelete() {  // 초기화
-
     image = nil
     state = .none
 
+    // Send to Network
     self.sendReferenceImageCommand(command: .remove)
+  }
+
+  func showReferenceDeleteToast() {
     notificationService.registerNotification(.make(type: .deleteReference))
   }
 
   func onRegister(uiImage: UIImage?) {
     guard let uiImage else { return }
     self.image = uiImage
-    self.sendReferenceImageCommand(command: .register(image: uiImage))
     state = .open
+
+    // Send to Network
+    self.sendReferenceImageCommand(command: .register(image: uiImage))
   }
 }
 
@@ -155,13 +160,13 @@ extension ReferenceViewModel {
   nonisolated var compressionQualityOfReferenceImage: CGFloat { 0.8 }
 
   private func sendReferenceImageCommand(command: ReferenceNetworkCommand) {
-    if hasReferenceImage {
-      notificationService.registerNotification(.make(type: .registerNewReference))
-    } else {
-      notificationService.registerNotification(.make(type: .registerFirstReference))
-    }
     if case .register(let image) = command {
       sendReferenceImageRegisteredEvent(referenceImage: image)
+      if hasReferenceImage {
+        notificationService.registerNotification(.make(type: .registerNewReference))
+      } else {
+        notificationService.registerNotification(.make(type: .registerFirstReference))
+      }
     } else {
       sendReferenceImageRemovedEvent()
     }

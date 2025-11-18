@@ -56,6 +56,7 @@ struct OpenView: View {
         // 레퍼런스 삭제 버튼
         Button {
           referenceViewModel.onDelete()
+          referenceViewModel.showReferenceDeleteToast() // 레퍼런스 삭제시 토스트 출력
           showDelete = false
           isLarge = false
         } label: {
