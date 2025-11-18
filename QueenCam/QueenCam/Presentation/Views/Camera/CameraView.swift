@@ -213,7 +213,6 @@ extension CameraView: View {
         ) { targetTool in
           activeTool = activeTool == targetTool ? nil : targetTool
         }
-        )
         .minimize(DynamicScreenUtils.isShortScreen)
       }
     }
