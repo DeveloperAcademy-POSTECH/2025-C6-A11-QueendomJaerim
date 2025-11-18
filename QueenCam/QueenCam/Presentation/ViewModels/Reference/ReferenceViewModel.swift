@@ -92,17 +92,19 @@ final class ReferenceViewModel {
     image = nil
     state = .none
     notificationService.registerNotification(.make(type: .deleteReference))
-    
+
     // Send to Network
     self.sendReferenceImageCommand(command: .remove)
   }
 
-  func onReset(){ // 초기화(역할 바꾸기, 연결 종료)
+  func onReset() {  // 초기화(역할 바꾸기, 연결 종료)
     image = nil
     state = .none
-    
+
+    // Send to Network
+    self.sendReferenceImageCommand(command: .reset)
   }
-  
+
   func onRegister(uiImage: UIImage?) {
     guard let uiImage else { return }
     self.image = uiImage
@@ -143,13 +145,14 @@ extension ReferenceViewModel {
   private func handleReferenceImageEvent(eventType: ReferenceImageEventType) {
     switch eventType {
     case .register(let imageData):
+      if let uiImage = UIImage(data: imageData) {
+        self.image = uiImage
+        self.state = .open
+      }
       if hasReferenceImage {
         notificationService.registerNotification(.make(type: .peerRegisterNewReference))
       } else {
         notificationService.registerNotification(.make(type: .peerRegisterFirstReference))
-      }
-      if let uiImage = UIImage(data: imageData) {
-        self.image = uiImage
       }
     case .remove:
       self.image = nil
@@ -186,7 +189,6 @@ extension ReferenceViewModel {
       else {
         return
       }
-
       await self.networkService.send(for: .referenceImage(.register(imageData: imageData)))
     }
   }
@@ -197,7 +199,7 @@ extension ReferenceViewModel {
       await self.networkService.send(for: .referenceImage(.remove))
     }
   }
-  
+
   private func sendReferenceImageResetEvent() {
     Task.detached { [weak self] in
       guard let self else { return }
