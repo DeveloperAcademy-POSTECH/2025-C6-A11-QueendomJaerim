@@ -66,125 +66,15 @@ extension CameraView.CameraBottomContainer: View {
     VStack(spacing: 23) {
 
       Group {
-        // 가이드를 선택했을때 그에 따른 상태 표현
+        // 가이드를 선택했을 때 나오는 툴 별 서브 툴바
         if let activeTool {
           switch activeTool {
           case .frame:
-            HStack(spacing: 20) {
-              GuidingButton(
-                role: currentRole,
-                isActive: isFrameActive,
-                isDisabeld: isRemoteGuideHidden,
-                tapAction: {
-                  guard !isRemoteGuideHidden else {
-                    frameViewModel.showGuidingDisabledToast()
-                    return
-                  }
-
-                  guidingToolToggle(.frame)
-
-                  if frameViewModel.isFrameEnabled {
-                    isRemoteGuideHidden = false
-                  }
-                },
-                guidingButtonType: .frameChecked
-              )
-
-              Rectangle()
-                .fill(.gray900)
-                .frame(width: 1, height: 39)
-
-              Button(action: {
-                // FIXME: Edit모드 UI로 수정해야함
-
-                frameViewModel.setFrame(isFrameActive)
-
-                if isFrameActive && frameViewModel.frames.isEmpty {
-                  frameViewModel.addFrame(at: CGPoint(x: 0.24, y: 0.15))
-                }
-              }) {
-                Image(systemName: "plus")
-                  .resizable()
-                  .scaledToFill()
-                  .frame(width: 19, height: 21)
-                  .foregroundStyle(frameViewModel.frames.isEmpty ? .offWhite : .gray600)
-                  .padding(.trailing, 8)
-              }
-              .disabled(!frameViewModel.frames.isEmpty)
-
-              Button(action: {
-                frameViewModel.deleteAll()
-              }) {
-                Image(systemName: "trash")
-                  .resizable()
-                  .scaledToFill()
-                  .frame(width: 19, height: 21)
-                  .foregroundStyle(frameViewModel.frames.isEmpty ? .gray600 : .offWhite)
-              }
-              .disabled(frameViewModel.frames.isEmpty)
-            }
-
+            frameSubToolBar
           case .pen:
-            HStack(spacing: 20) {
-              GuidingButton(
-                role: currentRole,
-                isActive: isPenActive,
-                isDisabeld: isRemoteGuideHidden,
-                tapAction: {
-                  guard !isRemoteGuideHidden else {
-                    penViewModel.showGuidingDisabledToast(type: .pen)
-                    return
-                  }
-
-                  penViewModel.showFirstToolToast(type: .pen)
-
-                  guidingToolToggle(.pen)
-                  if isPenActive {
-                    isRemoteGuideHidden = false
-                  }
-                },
-                guidingButtonType: .penChecked
-              )
-
-              Rectangle()
-                .fill(.gray900)
-                .frame(width: 1, height: 39)
-
-              // MARK: - 펜 툴바 Undo / Redo / clearAll
-              PenToolBar(penViewModel: penViewModel) { action in
-                switch action {
-                case .deleteAll:
-                  penViewModel.deleteAll()
-                  penViewModel.showEraseGuidingLineToast()
-                case .undo:
-                  penViewModel.undo()
-                case .redo:
-                  penViewModel.redo()
-                }
-              }
-            }
-
+            penSubToolBar
           case .maginPen:
-            // 매직펜
-            GuidingButton(
-              role: currentRole,
-              isActive: isMagicPenActive,
-              isDisabeld: isRemoteGuideHidden,
-              tapAction: {
-                guard !isRemoteGuideHidden else {
-                  penViewModel.showGuidingDisabledToast(type: .magicPen)
-                  return
-                }
-
-                penViewModel.showFirstToolToast(type: .magicPen)
-
-                guidingToolToggle(.maginPen)
-                if isMagicPenActive {
-                  isRemoteGuideHidden = false
-                }
-              },
-              guidingButtonType: .magicPenChecked
-            )
+            magicPenSubToolBar
           }
         } else {
           // 가이드를 아무것도 선택하지 않았을때
