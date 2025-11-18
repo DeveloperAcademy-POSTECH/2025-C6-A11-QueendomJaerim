@@ -60,11 +60,11 @@ final class PenViewModel {
   }
 
   /// 진행 중 스트로크의 포인트를 갱신 +  .replace 이벤트를 전송
-  func updateStroke(id: UUID, points: [CGPoint]) {
+  func updateStroke(id: UUID, points: [CGPoint], endDrawing: Date?) {
     guard let strokeIndex = strokes.firstIndex(where: { $0.id == id }) else { return }
     if strokes[strokeIndex].author != myRole { return }
     strokes[strokeIndex].points = points
-
+    strokes[strokeIndex].endDrawing = endDrawing
     // Send to network
     sendPenCommand(command: .replace(stroke: strokes[strokeIndex]))
   }

@@ -100,7 +100,7 @@ struct PenWriteView: View {
             if currentStrokeID == nil {
               currentStrokeID = penViewModel.add(initialPoints: tempPoints, isMagicPen: isMagicPen, author: author)
             } else if let id = currentStrokeID {
-              penViewModel.updateStroke(id: id, points: tempPoints)
+              penViewModel.updateStroke(id: id, points: tempPoints, endDrawing: nil)
             }
           }
           .onEnded { _ in
@@ -109,7 +109,7 @@ struct PenWriteView: View {
               currentStrokeID = nil
               return
             }
-            penViewModel.updateStroke(id: id, points: tempPoints)
+            penViewModel.updateStroke(id: id, points: tempPoints, endDrawing: Date())
             tempPoints.removeAll()
             currentStrokeID = nil
             penViewModel.redoStrokes.removeAll()
