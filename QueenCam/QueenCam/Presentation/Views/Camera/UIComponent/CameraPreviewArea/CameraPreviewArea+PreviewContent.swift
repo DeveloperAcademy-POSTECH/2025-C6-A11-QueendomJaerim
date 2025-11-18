@@ -58,8 +58,8 @@ extension CameraView.CameraPreviewArea {
     MagnifyGesture()
       // 핀치를 하는 동안 계속 호출
       .onChanged { value in
-        isZooming = true // 줌 시작
-        
+        isZooming = true  // 줌 시작
+
         // 이전 값 대비 상대적 변화량
         let delta = value.magnification / previousMagnificationValue
         // 다음 계산을 위해 현재 배율을 이전 값으로 저장
@@ -75,7 +75,7 @@ extension CameraView.CameraPreviewArea {
       // 핀치를 마쳤을때 한 번 호출될 로직
       .onEnded { _ in
         isZooming = false
-        
+
         cameraViewModel.setZoom(factor: currentZoomFactor, ramp: true)
         previousMagnificationValue = 1.0
       }

@@ -27,7 +27,7 @@ struct CameraView {
 
   /// 연결 플로우가 진행되는 ConnectionView를 띄울지 여부
   @State private var isShowConnectionView: Bool = false
-  
+
   @State var isReferenceLarge: Bool = false  // 레퍼런스 확대 축소 프로퍼티
 
   @Environment(\.displayScale) private var displayScale
@@ -301,7 +301,7 @@ extension CameraView: View {
           connectionViewModel.sessionFinishedOverlayCloseButtonDidTap()
         }
       }
-      
+
       if let lastStopReason = connectionViewModel.lastStopReason {
         SessionFinishedOverlayView(reason: LocalizedStringKey(lastStopReason)) {
           connectionViewModel.sessionFinishedOverlayCloseButtonDidTap()

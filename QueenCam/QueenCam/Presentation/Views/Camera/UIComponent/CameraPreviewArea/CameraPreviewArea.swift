@@ -91,7 +91,7 @@ extension CameraView.CameraPreviewArea: View {
 
       // MARK: 레퍼런스 이미지가 isLarge 모드일 때 뒤에 깔리는 디밍
       largeReferenceImageDimmingLayer
-      
+
       // MARK: 레퍼런스 이미지 뷰
       ReferenceView(referenceViewModel: referenceViewModel, isLarge: $isReferenceLarge)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
