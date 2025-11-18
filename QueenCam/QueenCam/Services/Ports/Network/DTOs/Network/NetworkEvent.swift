@@ -26,6 +26,9 @@ enum NetworkEvent: Sendable {
   /// 디버그용 핑 명령
   case ping(Date)
 
+  /// 현재 디바이스의 어플리케이션 버전 전송
+  case myVersion(VersionExchangePayload)
+
   // MARK: - Domain Level Events
 
   /// 프리뷰 프레임 (작가 -> 모델)

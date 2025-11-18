@@ -293,7 +293,13 @@ extension CameraView: View {
     .overlay {
       // 연결 종료 오버레이
       if connectionViewModel.needReportSessionFinished {
-        SessionFinishedOverlayView {
+        SessionFinishedOverlayView(reason: LocalizedStringKey("친구가 연결을 종료했어요.\n다시 시작하려면 재연결해주세요.")) {
+          connectionViewModel.sessionFinishedOverlayCloseButtonDidTap()
+        }
+      }
+      
+      if let lastStopReason = connectionViewModel.lastStopReason {
+        SessionFinishedOverlayView(reason: LocalizedStringKey(lastStopReason)) {
           connectionViewModel.sessionFinishedOverlayCloseButtonDidTap()
         }
       }

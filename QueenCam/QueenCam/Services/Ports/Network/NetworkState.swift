@@ -16,7 +16,7 @@ nonisolated enum HostState: Sendable {
 
 nonisolated enum ViewerState: Sendable {
   case stopped
-  case cancelled  // 유저가 연결을 취소함 (-> 곧 stopped 상태가 된다)
+  case cancelled // 유저가 연결을 취소함 (-> 곧 stopped 상태가 된다)
   case lost  // 연결이 유실됨 (-> 추가적인 액션을 필요로 한다)
   case browsing
   case connecting
