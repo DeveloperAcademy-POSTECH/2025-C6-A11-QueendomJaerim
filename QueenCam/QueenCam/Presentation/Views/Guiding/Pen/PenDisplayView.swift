@@ -24,10 +24,10 @@ struct PenDisplayView: View {
         let magicPenStrokes = penViewModel.strokes.filter {
           $0.points.count > 1 && $0.isMagicPen
         }
-        ForEach(normalStrokes, id: \.self) { stroke in
+        ForEach(normalStrokes, id: \.id) { stroke in
           SingleStrokeView(penViewModel: penViewModel, roleForTheme: stroke.author, geoSize: geo.size, stroke: stroke)
         }
-        ForEach(magicPenStrokes, id: \.self) { stroke in
+        ForEach(magicPenStrokes, id: \.id) { stroke in
           SingleMagicStrokeView(penViewModel: penViewModel, roleForTheme: stroke.author, geoSize: geo.size, stroke: stroke)
             .transition(.opacity)
         }

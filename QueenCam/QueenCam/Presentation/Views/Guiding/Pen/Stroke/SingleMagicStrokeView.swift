@@ -60,7 +60,8 @@ struct SingleMagicStrokeView: View {
       }
     }
     .opacity(opacity)
-    .onAppear {
+    .onChange(of: stroke.endDrawing, initial: false) { oldValue, newValue in
+      guard newValue != false else { return }
       DispatchQueue.main.asyncAfter(deadline: .now() + magicAfter) {
         withAnimation(.easeInOut(duration: fadeDuration)) {
           opacity = 0

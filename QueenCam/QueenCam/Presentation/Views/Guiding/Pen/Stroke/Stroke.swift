@@ -15,12 +15,15 @@ struct Stroke: Identifiable, Hashable, Equatable {
   var isMagicPen: Bool = false
   /// Stroke 생성자의 역할 - 역할 변경시 Reset 예정
   let author: Role
+  /// Stroke 그리기 종료 시점
+  var endDrawing: Bool = false
 
-  init(id: UUID = UUID(), points: [CGPoint] = [], isMagicPen: Bool, author: Role) {
+  init(id: UUID = UUID(), points: [CGPoint] = [], isMagicPen: Bool, author: Role, endDrawing: Bool) {
     self.id = id
     self.points = points
     self.isMagicPen = isMagicPen
     self.author = author
+    self.endDrawing = endDrawing
   }
 
   func absolutePoints(in size: CGSize) -> [CGPoint] {
