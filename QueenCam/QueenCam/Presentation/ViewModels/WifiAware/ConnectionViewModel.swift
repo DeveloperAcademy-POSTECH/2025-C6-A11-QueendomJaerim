@@ -236,6 +236,7 @@ extension ConnectionViewModel {
     lastSwapRoleLWWRegister = lwwValue
 
     self.role = role.counterpart
+    self.notificationService.registerNotification(.make(type: .swapRole))
 
     Task.detached {
       // 상대에게 지금 나의 현재 역할로 바꾸라고 요청한다
@@ -327,5 +328,7 @@ extension ConnectionViewModel {
     logger.debug("Role updated to \(newRole.displayName) (lwwRegister: \(lwwRegister)")
     self.role = newRole
     self.lastSwapRoleLWWRegister = lwwRegister
+    
+    self.notificationService.registerNotification(.make(type: .swapRole))
   }
 }
