@@ -10,11 +10,6 @@ extension CameraView.CameraBottomContainer {
         isActive: isFrameActive,
         isDisabeld: isRemoteGuideHidden,
         tapAction: {
-          guard !isRemoteGuideHidden else {
-            frameViewModel.showGuidingDisabledToast()
-            return
-          }
-
           guidingToolToggle(.frame)
 
           if frameViewModel.isFrameEnabled {
@@ -29,11 +24,6 @@ extension CameraView.CameraBottomContainer {
         isActive: isPenActive,
         isDisabeld: isRemoteGuideHidden,
         tapAction: {
-          guard !isRemoteGuideHidden else {
-            penViewModel.showGuidingDisabledToast(type: .pen)
-            return
-          }
-
           penViewModel.showFirstToolToast(type: .pen)
 
           guidingToolToggle(.pen)
@@ -49,10 +39,6 @@ extension CameraView.CameraBottomContainer {
         isActive: isMagicPenActive,
         isDisabeld: isRemoteGuideHidden,
         tapAction: {
-          guard !isRemoteGuideHidden else {
-            penViewModel.showGuidingDisabledToast(type: .magicPen)
-            return
-          }
 
           penViewModel.showFirstToolToast(type: .magicPen)
 
@@ -74,11 +60,6 @@ extension CameraView.CameraBottomContainer {
         isActive: isFrameActive,
         isDisabeld: isRemoteGuideHidden,
         tapAction: {
-          guard !isRemoteGuideHidden else {
-            frameViewModel.showGuidingDisabledToast()
-            return
-          }
-
           guidingToolToggle(.frame)
 
           if frameViewModel.isFrameEnabled {
@@ -129,11 +110,6 @@ extension CameraView.CameraBottomContainer {
         isActive: isPenActive,
         isDisabeld: isRemoteGuideHidden,
         tapAction: {
-          guard !isRemoteGuideHidden else {
-            penViewModel.showGuidingDisabledToast(type: .pen)
-            return
-          }
-
           penViewModel.showFirstToolToast(type: .pen)
 
           guidingToolToggle(.pen)
@@ -167,11 +143,6 @@ extension CameraView.CameraBottomContainer {
       isActive: isMagicPenActive,
       isDisabeld: isRemoteGuideHidden,
       tapAction: {
-        guard !isRemoteGuideHidden else {
-          penViewModel.showGuidingDisabledToast(type: .magicPen)
-          return
-        }
-
         penViewModel.showFirstToolToast(type: .magicPen)
 
         guidingToolToggle(.maginPen)
