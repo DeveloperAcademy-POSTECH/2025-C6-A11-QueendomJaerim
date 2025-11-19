@@ -102,7 +102,7 @@ struct OpenView: View {
 extension OpenView {
 
   // MARK: - User Intents
-  
+
   private func deleteReferenceConfirmButtonDidTap() {
     referenceViewModel.onDelete()
     showDelete = false
