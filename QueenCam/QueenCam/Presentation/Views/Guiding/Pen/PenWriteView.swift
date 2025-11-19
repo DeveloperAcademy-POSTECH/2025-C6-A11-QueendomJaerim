@@ -11,12 +11,14 @@ struct PenWriteView: View {
   var penViewModel: PenViewModel
   var isMagicPen: Bool
   let role: Role?
+  var isZooming: Bool
 
-  init(penViewModel: PenViewModel, isMagicPen: Bool, role: Role?) {
+  init(penViewModel: PenViewModel, isPen: Bool, isMagicPen: Bool, role: Role?, isZooming: Bool) {
     self.penViewModel = penViewModel
     self.isMagicPen = isMagicPen
     self.role = role
     self.penViewModel.currentRole = role
+    self.isZooming = isZooming
   }
 
   /// 현재 그리고 있는 Stroke의 좌표 (저장 전)
@@ -85,9 +87,18 @@ struct PenWriteView: View {
           }
         }
       }
+      .onChange(of: isZooming) { _, new in
+        if new {  // 줌이 시작되었다면
+          tempPoints.removeAll()  // 핀치 초반에 잘못 인식된 드래그 점들을 삭제
+          currentStrokeID = nil  // 현재 그리는 중이던 선 ID 초기화
+        }
+      }
       .gesture(
         DragGesture(minimumDistance: 0)
           .onChanged { value in
+            // 핀치로 줌이 아닐때만 드래그 실행
+            guard !isZooming else { return }
+
             let author = role ?? .photographer
             let relativePoint = CGPoint(
               x: geo.size.width > 0 ? value.location.x / geo.size.width : 0,
@@ -102,6 +113,13 @@ struct PenWriteView: View {
             }
           }
           .onEnded { _ in
+            // 줌 중이라면 종료 로직도 무시
+            guard !isZooming else {
+              tempPoints.removeAll()
+              currentStrokeID = nil
+              return
+            }
+
             guard let id = currentStrokeID, !tempPoints.isEmpty else {
               tempPoints.removeAll()
               currentStrokeID = nil

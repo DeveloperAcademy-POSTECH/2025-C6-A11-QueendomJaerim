@@ -28,6 +28,8 @@ struct CameraView {
   /// 연결 플로우가 진행되는 ConnectionView를 띄울지 여부
   @State private var isShowConnectionView: Bool = false
 
+  @State var isReferenceLarge: Bool = false  // 레퍼런스 확대 축소 프로퍼티
+
   @Environment(\.displayScale) private var displayScale
 
   let cameraViewModel: CameraViewModel
@@ -91,7 +93,7 @@ extension CameraView {
     // 가이딩 초기화
     penViewModel.reset()
     frameViewModel.deleteAll()
-    referenceViewModel.onDelete()
+    referenceViewModel.onReset()
     connectionViewModel.swapRole()
     // 새 역할에 따라 캡쳐를 시작/중단한다
     if let newRole = connectionViewModel.role {
@@ -189,6 +191,7 @@ extension CameraView: View {
           isShowShutterFlash: $isShowShutterFlash,
           isShowCameraSettingTool: $isShowCameraSettingTool,
           isRemoteGuideHidden: $isRemoteGuideHidden,
+          isReferenceLarge: $isReferenceLarge,
           currentRole: connectionViewModel.role,
           connectionLost: connectionViewModel.connectionLost,
           reconnectCancelButtonDidTap: connectionViewModel.reconnectCancelButtonDidTap,
@@ -209,6 +212,7 @@ extension CameraView: View {
           isShowCameraSettingTool: $isShowCameraSettingTool,
           isRemoteGuideHidden: $isRemoteGuideHidden,
           isShowPhotoPicker: $isShowPhotoPicker,
+          isReferenceLarge: $isReferenceLarge,
           shutterActionEffect: flashScreen
         ) { targetTool in
           activeTool = activeTool == targetTool ? nil : targetTool
@@ -297,7 +301,7 @@ extension CameraView: View {
           connectionViewModel.sessionFinishedOverlayCloseButtonDidTap()
         }
       }
-      
+
       if let lastStopReason = connectionViewModel.lastStopReason {
         SessionFinishedOverlayView(reason: LocalizedStringKey(lastStopReason)) {
           connectionViewModel.sessionFinishedOverlayCloseButtonDidTap()
@@ -317,7 +321,7 @@ extension CameraView: View {
         // 가이딩 초기화
         penViewModel.reset()
         frameViewModel.deleteAll()
-        referenceViewModel.onDelete()
+        referenceViewModel.onReset()
       }
     }
     // 레퍼런스 삭제 시 PhotoPicker 선택도 초기화
