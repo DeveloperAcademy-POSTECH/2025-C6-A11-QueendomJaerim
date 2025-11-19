@@ -31,10 +31,10 @@ struct PenWriteView: View {
   var body: some View {
     GeometryReader { geo in
       ZStack {
-        // MARK: - 저장된 Stroke
+        // MARK: - 세션전 저장된 Stroke + 세션 중 그리기 완료된 Stroke
         PenDisplayView(penViewModel: penViewModel)
 
-        // MARK: - 저장 안된, 현재 그리고 있는 Stroke
+        // MARK: - 현재 그리고 있는 Stroke
         let author = role ?? .photographer
         let outerColor = (author == .model) ? modelColor : photographerColor
         // 1) 일반펜

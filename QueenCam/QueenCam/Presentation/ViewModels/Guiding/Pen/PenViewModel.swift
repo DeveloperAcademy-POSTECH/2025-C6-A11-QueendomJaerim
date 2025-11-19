@@ -10,7 +10,9 @@ import SwiftUI
 
 @Observable
 final class PenViewModel {
-  /// 현재 그려진 모든 선(stroke)들
+  /// 이전 세션에 그려진 모든 선(stroke)들 - Undo 불가
+  var persistedStrokes: [Stroke] = []
+  /// 현재 세션 중 그려진 모든 선(stroke)들
   var strokes: [Stroke] = []
   /// 사용자가 Redo 했을때 되돌릴 수 있는 선(stroke)들
   var redoStrokes: [Stroke] = []
@@ -68,6 +70,13 @@ final class PenViewModel {
     // Send to network
     sendPenCommand(command: .replace(stroke: strokes[strokeIndex]))
   }
+  // MARK: 세션 종료 후 Stroke 저장
+  /// 펜 툴 해제(세션 종료) 시 본인 stroke를 strokes에서 persistedStrokes로 이관
+  func saveStroke() {
+    // strokes에 있는 본인 stroke 찾기
+    // 해당 stroke를 persistedStrokes로 amend
+    // 해당 stroke를 strokes에서 삭제(remove)
+  }
 
   // MARK: - 스트로크 삭제
   /// 펜 가이딩 개별 획(stroke)  삭제 - 매직펜
@@ -95,6 +104,7 @@ final class PenViewModel {
     strokes.removeAll { $0.author == myRole }
     redoStrokes.removeAll { $0.author == myRole }
 
+    //   Send to network
     for id in myIds {
       sendPenCommand(command: .remove(id: id))
     }

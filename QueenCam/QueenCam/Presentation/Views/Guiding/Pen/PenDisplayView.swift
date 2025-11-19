@@ -18,6 +18,22 @@ struct PenDisplayView: View {
   var body: some View {
     GeometryReader { geo in
       ZStack {
+        // MARK: - 세션 종료 persistedStrokes
+        let normalPersistedStrokes = penViewModel.persistedStrokes.filter {
+          $0.points.count > 1 && !$0.isMagicPen
+        }
+        let magicPenPersistedStrokes = penViewModel.strokes.filter {
+          $0.points.count > 1 && $0.isMagicPen
+        }
+        ForEach(normalPersistedStrokes, id: \.id) { stroke in
+          SingleStrokeView(penViewModel: penViewModel, roleForTheme: stroke.author, geoSize: geo.size, stroke: stroke)
+        }
+        ForEach(magicPenPersistedStrokes, id: \.id) { stroke in
+          SingleMagicStrokeView(penViewModel: penViewModel, roleForTheme: stroke.author, geoSize: geo.size, stroke: stroke)
+            .transition(.opacity)
+        }
+        
+        // MARK: - 세션 중 그리기 완료된 strokes
         let normalStrokes = penViewModel.strokes.filter {
           $0.points.count > 1 && !$0.isMagicPen
         }
