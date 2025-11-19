@@ -13,15 +13,24 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
   private var livePhotoMovieURL: URL?
 
   private var isLivePhoto: Bool = false
+  private var willCaptureLivePhoto: (() -> Void)?
 
-  init(isCameraPosition: AVCaptureDevice.Position, completion: @escaping (PhotoOuput?) -> Void) {
+  init(
+    isCameraPosition: AVCaptureDevice.Position,
+    willCaptureLivePhoto: (() -> Void)? = nil,
+    completion: @escaping (PhotoOuput?) -> Void
+  ) {
     self.isCameraPosition = isCameraPosition
+    self.willCaptureLivePhoto = willCaptureLivePhoto
     self.completion = completion
   }
 
   func photoOutput(_ output: AVCapturePhotoOutput, willBeginCaptureFor resolvedSettings: AVCaptureResolvedPhotoSettings) {
     isLivePhoto = (resolvedSettings.livePhotoMovieDimensions.width > 0 && resolvedSettings.livePhotoMovieDimensions.height > 0)
 
+    if isLivePhoto {
+      willCaptureLivePhoto?()
+    }
   }
 
   func photoOutput(

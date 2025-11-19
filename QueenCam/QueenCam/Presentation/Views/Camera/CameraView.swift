@@ -339,6 +339,11 @@ extension CameraView: View {
     .onChange(of: isShowPhotoPicker) { _, isShow in
       cameraViewModel.managePhotosPickerToast(isShowPhotosPicker: isShow)
     }
+    .onChange(of: cameraViewModel.isCapturingLivePhoto) { _, new in
+      if new {
+        cameraViewModel.showLivePhotoToast()
+      }
+    }
     .sheet(isPresented: $isShowLogExportingSheet) {
       LogExportingView()
     }
