@@ -134,6 +134,8 @@ final class PreviewModel {
           self?.handleReceivedFrame(framePayload)
         case .renderState(let state):
           self?.handleReceivedRenderStateReport(state)
+        case .previewRenderingMode(let renderingType):
+          self?.handleRenderingModeChanged(newMode: renderingType)
         default: break
         }
       }
@@ -169,6 +171,15 @@ final class PreviewModel {
     } else if newRole == .model {
       logger.info("stopped preview capture because the counterpart requested change role")
       self.stopCapture()
+    }
+  }
+
+  private func handleRenderingModeChanged(newMode: PreviewRenderingType) {
+    switch newMode {
+    case .front:
+      shouldInversePlayerHorizontally = true
+    case .rear:
+      shouldInversePlayerHorizontally = false
     }
   }
 }
