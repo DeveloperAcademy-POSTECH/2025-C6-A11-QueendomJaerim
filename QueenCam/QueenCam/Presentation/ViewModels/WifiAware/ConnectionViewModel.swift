@@ -222,6 +222,7 @@ extension ConnectionViewModel {
   }
 
   func selectRole(for role: Role?) {
+    selectedPairedDevice = nil
     networkService.stop(byUser: true, userReason: nil)
     self.role = role
   }
