@@ -16,9 +16,9 @@ struct Stroke: Identifiable, Hashable, Equatable {
   /// Stroke 생성자의 역할 - 역할 변경시 Reset 예정
   let author: Role
   /// 매직펜 그리기 종료 시점
-  var endDrawing: Date?
+  var endDrawing: Bool = false
 
-  init(id: UUID = UUID(), points: [CGPoint] = [], isMagicPen: Bool, author: Role, endDrawing: Date?) {
+  init(id: UUID = UUID(), points: [CGPoint] = [], isMagicPen: Bool, author: Role, endDrawing: Bool) {
     self.id = id
     self.points = points
     self.isMagicPen = isMagicPen

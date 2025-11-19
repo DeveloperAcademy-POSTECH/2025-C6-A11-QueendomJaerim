@@ -29,5 +29,5 @@ struct PenPayload: Codable, Sendable {
   /// 작성자 역할
   let author: Role
   /// 매직펜 그린 종료 시점
-  var endDrawing: Date?
+  var endDrawing: Bool
 }
