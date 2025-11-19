@@ -139,6 +139,9 @@ extension CameraView.CameraBottomContainer {
           guidingToolToggle(.pen)
           if isPenActive {
             isRemoteGuideHidden = false
+          } else {
+            // 펜툴 비활성화 시 세션 strokes들을 persistedStrokes에 저장
+            penViewModel.saveStroke()
           }
         },
         guidingButtonType: .penChecked

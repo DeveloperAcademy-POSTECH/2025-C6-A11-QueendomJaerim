@@ -71,8 +71,13 @@ final class PenViewModel {
   /// 펜 툴 해제(세션 종료) 시 본인 stroke를 strokes에서 persistedStrokes로 이관
   func saveStroke() {
     // strokes에 있는 본인 stroke 찾기
-    // 해당 stroke를 persistedStrokes로 amend
-    // 해당 stroke를 strokes에서 삭제(remove)
+    let myStrokes = strokes.filter { $0.author == myRole }
+    if !myStrokes.isEmpty {
+      // 해당 stroke를 persistedStrokes로 appmend
+      persistedStrokes.append(contentsOf: myStrokes)
+      // 해당 stroke를 strokes에서 삭제(remove)
+      strokes.removeAll { $0.author == myRole }
+    }
   }
 
   // MARK: - 스트로크 삭제
@@ -98,6 +103,7 @@ final class PenViewModel {
     let myIds = myStrokes.map(\.id)
 
     strokes.removeAll { $0.author == myRole }
+    persistedStrokes.removeAll { $0.author == myRole }
 
     //   Send to network
     for id in myIds {
