@@ -98,9 +98,13 @@ final class PenViewModel {
   func deleteAll() {
     // 내가 생성한 stroke 배열과 id 배열
     let myStrokes = strokes.filter { $0.author == myRole }
-    if !myStrokes.isEmpty { deleteStrokes.append(myStrokes) }
+    let myPersistedStrokes = persistedStrokes.filter {$0.author == myRole}
+    let allMyStrokes = myStrokes + myPersistedStrokes
+    if !allMyStrokes.isEmpty {
+      deleteStrokes.append(myStrokes) // 전체 삭제 이후, Undo는 현재 세션에 작업한 strokes만 포함
+    }
 
-    let myIds = myStrokes.map(\.id)
+    let myIds = allMyStrokes.map(\.id)
 
     strokes.removeAll { $0.author == myRole }
     persistedStrokes.removeAll { $0.author == myRole }
@@ -204,6 +208,7 @@ extension PenViewModel {
       }
     case .delete(let id):
       strokes.removeAll { $0.id == id }
+      persistedStrokes.removeAll { $0.id == id }
     case .reset:
       strokes.removeAll()
       hasEverDrawn = false
