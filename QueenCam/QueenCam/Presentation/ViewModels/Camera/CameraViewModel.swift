@@ -2,6 +2,7 @@ import AVFoundation
 import Combine
 import Foundation
 import Photos
+import SwiftUI
 import UIKit
 
 @Observable
@@ -28,6 +29,8 @@ final class CameraViewModel {
   var errorMessage = ""
 
   var isCaptureButtonEnabled: Bool = true
+
+  var isCapturingLivePhoto: Bool = false
 
   // MARK: Thumbnail
   private let cachingManager = PHCachingImageManager()
@@ -73,6 +76,16 @@ final class CameraViewModel {
       if position == .back {
         self?.selectedZoom = 1.0
       }
+    }
+
+    /// 라이브 포토이면 true
+    cameraManager.onWillCaptureLivePhoto = { [weak self] in
+      self?.isCapturingLivePhoto = true
+    }
+
+    /// 촬영이 끝나면 다시 리셋
+    cameraManager.onDidFinishCapture = { [weak self] in
+      self?.isCapturingLivePhoto = false
     }
   }
 
@@ -139,6 +152,10 @@ final class CameraViewModel {
     } catch {
       errorMessage = error.localizedDescription
     }
+  }
+
+  func showLivePhotoToast() {
+    notificationService.registerNotification(DomainNotification.make(type: .captureLivePhoto))
   }
 
   func switchFlashMode() {

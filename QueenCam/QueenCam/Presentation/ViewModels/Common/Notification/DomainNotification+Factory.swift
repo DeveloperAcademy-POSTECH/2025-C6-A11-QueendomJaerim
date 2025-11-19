@@ -79,6 +79,8 @@ extension DomainNotification {
     case firstMagicToolSelected
     /// Photos 진입 시. 바텀시트로 화면 반만 덮었을 때.
     case photosPickerShowing
+    /// 라이브 포토로 설정하고 촬영할 때
+    case captureLivePhoto
 
     var preset: Preset {
       switch self {
@@ -147,7 +149,8 @@ extension DomainNotification {
         return .init(message: "친구가 프레임을 수정하고 있어요.", isImportant: false, showingTime: 2)
       case .firstEditMode:
         return .init(message: "프레임의 비율을 조정합니다.", isImportant: false, showingTime: 2)
-
+      case .captureLivePhoto:
+        return .init(message: "LIVE", isImportant: true, showingTime: 2)
       }
     }
   }
