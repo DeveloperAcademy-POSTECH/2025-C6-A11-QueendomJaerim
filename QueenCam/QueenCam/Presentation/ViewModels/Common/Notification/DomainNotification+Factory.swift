@@ -81,6 +81,11 @@ extension DomainNotification {
     case photosPickerShowing
     /// 라이브 포토로 설정하고 촬영할 때
     case captureLivePhoto
+    
+    // 역할이 스위치되었을 때
+    case swapRole
+    /// 연결이 종료되었을 때
+    case disconnected
 
     var preset: Preset {
       switch self {
@@ -151,6 +156,11 @@ extension DomainNotification {
         return .init(message: "프레임의 비율을 조정합니다.", isImportant: false, showingTime: 2)
       case .captureLivePhoto:
         return .init(message: "LIVE", isImportant: true, showingTime: 2)
+      // 연결
+      case .swapRole:
+        return .init(message: "친구와 역할이 서로 바뀌었어요.", isImportant: false, showingTime: 2)
+      case .disconnected:
+        return .init(message: "연결이 종료되었어요.", isImportant: false, showingTime: 2)
       }
     }
   }

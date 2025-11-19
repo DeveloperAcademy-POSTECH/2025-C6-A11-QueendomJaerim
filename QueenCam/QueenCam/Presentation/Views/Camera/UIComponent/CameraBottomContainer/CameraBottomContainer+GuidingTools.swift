@@ -139,12 +139,15 @@ extension CameraView.CameraBottomContainer {
           guidingToolToggle(.pen)
           if isPenActive {
             isRemoteGuideHidden = false
+          } else {
+            // 펜툴 비활성화 시 세션 strokes들을 persistedStrokes에 저장
+            penViewModel.saveStroke()
           }
         },
         guidingButtonType: .penChecked
       )
     } commandButtons: {
-      // MARK: - 펜 툴바 Undo / Redo / clearAll
+      // MARK: - 펜 툴바 Undo / clearAll
       PenToolBar(penViewModel: penViewModel) { action in
         switch action {
         case .deleteAll:
@@ -152,8 +155,6 @@ extension CameraView.CameraBottomContainer {
           penViewModel.showEraseGuidingLineToast()
         case .undo:
           penViewModel.undo()
-        case .redo:
-          penViewModel.redo()
         }
       }
     }

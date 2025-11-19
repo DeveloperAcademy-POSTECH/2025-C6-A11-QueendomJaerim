@@ -4,6 +4,7 @@ extension CameraView.CameraBottomContainer {
   var thumbnailButton: some View {
     Button(action: {
       isShowPhotoPicker.toggle()
+      activeTool = nil
     }) {
       if let image = cameraViewModel.lastImage {
         Image(uiImage: image)

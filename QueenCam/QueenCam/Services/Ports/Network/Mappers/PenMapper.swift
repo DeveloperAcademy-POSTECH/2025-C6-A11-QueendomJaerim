@@ -13,7 +13,8 @@ struct PenMapper {
       id: payload.id,
       points: GraphicMapper.convert(pointsPayload: payload.points),
       isMagicPen: payload.isMagicPen,
-      author: payload.author
+      author: payload.author,
+      endDrawing: payload.endDrawing
     )
   }
 
@@ -22,7 +23,8 @@ struct PenMapper {
       id: stroke.id,
       points: GraphicMapper.convert(cgPoints: stroke.points),
       isMagicPen: stroke.isMagicPen,
-      author: stroke.author
+      author: stroke.author,
+      endDrawing: stroke.endDrawing
     )
   }
 }

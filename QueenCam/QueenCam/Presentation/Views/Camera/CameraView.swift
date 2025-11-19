@@ -28,6 +28,8 @@ struct CameraView {
   /// 연결 플로우가 진행되는 ConnectionView를 띄울지 여부
   @State private var isShowConnectionView: Bool = false
 
+  @State var isReferenceLarge: Bool = false  // 레퍼런스 확대 축소 프로퍼티
+
   @Environment(\.displayScale) private var displayScale
 
   let cameraViewModel: CameraViewModel
@@ -189,6 +191,7 @@ extension CameraView: View {
           isShowShutterFlash: $isShowShutterFlash,
           isShowCameraSettingTool: $isShowCameraSettingTool,
           isRemoteGuideHidden: $isRemoteGuideHidden,
+          isReferenceLarge: $isReferenceLarge,
           currentRole: connectionViewModel.role,
           connectionLost: connectionViewModel.connectionLost,
           reconnectCancelButtonDidTap: connectionViewModel.reconnectCancelButtonDidTap,
@@ -209,6 +212,7 @@ extension CameraView: View {
           isShowCameraSettingTool: $isShowCameraSettingTool,
           isRemoteGuideHidden: $isRemoteGuideHidden,
           isShowPhotoPicker: $isShowPhotoPicker,
+          isReferenceLarge: $isReferenceLarge,
           shutterActionEffect: flashScreen
         ) { targetTool in
           activeTool = activeTool == targetTool ? nil : targetTool

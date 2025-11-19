@@ -132,8 +132,7 @@ final class ConnectionViewModel {
         case .changeRole(let roles, let lwwValue):
           self?.handleReceivedRequestChangeRole(receivedNewRoles: roles, receviedLwwRegister: lwwValue)
         case .willDisconnect:
-          // 상대로부터 연결 종료 예정 통보를 받으면 세션 종료 오버레이 노출
-          self?.needReportSessionFinished = true
+          self?.handleReceivedWillDisconnect()
         default: break
         }
       }
@@ -198,6 +197,7 @@ extension ConnectionViewModel {
   func disconnectButtonDidTap() {
     networkService.disconnect()
     role = nil  // 정상 종료인 경우 역할 초기화
+    notificationService.registerNotification(.make(type: .disconnected))
   }
 
   func viewDidAppearTask() async {
@@ -236,6 +236,7 @@ extension ConnectionViewModel {
     lastSwapRoleLWWRegister = lwwValue
 
     self.role = role.counterpart
+    self.notificationService.registerNotification(.make(type: .swapRole))
 
     Task.detached {
       // 상대에게 지금 나의 현재 역할로 바꾸라고 요청한다
@@ -327,5 +328,13 @@ extension ConnectionViewModel {
     logger.debug("Role updated to \(newRole.displayName) (lwwRegister: \(lwwRegister)")
     self.role = newRole
     self.lastSwapRoleLWWRegister = lwwRegister
+
+    self.notificationService.registerNotification(.make(type: .swapRole))
+  }
+  
+  private func handleReceivedWillDisconnect() {
+    // 상대로부터 연결 종료 예정 통보를 받으면 세션 종료 오버레이 노출
+    needReportSessionFinished = true
+    notificationService.registerNotification(.make(type: .disconnected))
   }
 }

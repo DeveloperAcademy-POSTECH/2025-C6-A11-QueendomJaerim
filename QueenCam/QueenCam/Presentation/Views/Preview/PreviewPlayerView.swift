@@ -14,6 +14,7 @@ struct PreviewPlayerView: View {
   var body: some View {
     CameraPreviewDisplayViewContainer(
       currentSampleBuffer: previewModel.lastReceivedCMSampleBuffer,
+      isInversed: previewModel.shouldInversePlayerHorizontally,
       frameDidSkippedAction: {
         previewModel.frameDidSkipped()
       },

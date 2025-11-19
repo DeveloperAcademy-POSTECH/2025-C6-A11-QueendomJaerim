@@ -12,6 +12,13 @@ import UIKit
 final class CameraPreviewDisplayViewController: UIViewController {
   let displayView: SampleBufferDisplayView = .init()
 
+  /// 좌우 반전 여부
+  var isInversed: Bool = false {
+    didSet {
+      view.transform = getTransform(inverseHorizontally: isInversed)
+    }
+  }
+
   weak var delegate: CameraPreviewDisplayViewControllerDelegate?
 
   // MARK: - Config
@@ -27,7 +34,7 @@ final class CameraPreviewDisplayViewController: UIViewController {
       displayView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
     ])
 
-    view.transform = CGAffineTransformMakeRotation(rotateDegrees * .pi / 180)
+    view.transform = getTransform(inverseHorizontally: isInversed)
 
     displayView.onFrameRenderUnstably = { [weak self] in
       guard let self else { return }
@@ -42,6 +49,17 @@ final class CameraPreviewDisplayViewController: UIViewController {
 
   func renderFrame(sampleBuffer: CMSampleBuffer?) {
     displayView.renderFrame(sampleBuffer)
+  }
+
+  func getTransform(inverseHorizontally: Bool) -> CGAffineTransform {
+    let rotationTransform = CGAffineTransform(rotationAngle: rotateDegrees * .pi / 180)  // 회전 (무조건 적용)
+    let scaleTransform = CGAffineTransform(scaleX: -1, y: 1)  // 좌우 반전
+
+    if inverseHorizontally {
+      return rotationTransform.concatenating(scaleTransform)  // 회전 + 반전
+    }
+
+    return rotationTransform  // 회전만
   }
 }
 

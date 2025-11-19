@@ -14,19 +14,27 @@ struct PenToolBar: View {
   private var myRole: Role {
     penViewModel.currentRole ?? .photographer
   }
+  /// 사용자가 세션 이전에 작성한 strokes
+  private var myPersistedStrokes: [Stroke] {
+    penViewModel.persistedStrokes.filter { $0.author == myRole }
+  }
+  /// 사용자가 세션 중 작성한 strokes
   private var myStrokes: [Stroke] {
     penViewModel.strokes.filter { $0.author == myRole }
   }
+  /// 사용자가 해당 세션 중 삭제한 strokes
   private var myDeleteStrokes: [[Stroke]] {
     penViewModel.deleteStrokes
       .map { group in group.filter { $0.author == myRole } }
       .filter { !$0.isEmpty }
   }
 
-  // 버튼 활성 조건(내가 그린 것만 기준)
+  // 버튼 활성 조건(사용자가 그린 것만 기준)
+  /// Eraser 버튼 활성화 조건: 이전 세션 strokes가 남아있는 경우 + 현재 세션에 strokes가 남아있는 경우
   private var isEraserActive: Bool {
-    !myStrokes.isEmpty
+    !myStrokes.isEmpty || !myPersistedStrokes.isEmpty
   }
+  /// Undo 버튼 활성화 조건: 현재 세션 중에 저장된 strokes가 남아 있는 경우
   private var isUndoActive: Bool {
     !(myDeleteStrokes.isEmpty && myStrokes.isEmpty)
   }
@@ -42,8 +50,7 @@ struct PenToolBar: View {
         onAction(.undo)
       }
       .padding(.trailing, 26)
-      
-      
+
       // 전체 삭제(내가 그린 것만 존재할 때 활성)
       PenToolButton(
         penToolType: .eraser,
