@@ -24,7 +24,14 @@ extension CameraView.CameraPreviewArea {
   var guidingLayer: some View {
     ZStack {
       if isPenActive || isMagicPenActive {
-        PenWriteView(penViewModel: penViewModel, isPen: isPenActive, isMagicPen: isMagicPenActive, role: currentMode)
+        PenWriteView(
+          penViewModel: penViewModel,
+          isPen: isPenActive,
+          isMagicPen: isMagicPenActive,
+          role: currentMode,
+          isZooming: isZooming
+        )
+        .gesture(magnificationGesture)
       } else {
         PenDisplayView(penViewModel: penViewModel)
       }
@@ -54,7 +61,7 @@ extension CameraView.CameraPreviewArea {
       Spacer()
       if !isFront {
         VStack(spacing: .zero) {
-          if currentMode == .photographer {
+          if currentMode == .photographer && activeTool != .frame {
             LensZoomTool(
               zoomScaleItemList: zoomScaleItemList,
               currentZoomFactor: currentZoomFactor,
@@ -89,26 +96,28 @@ extension CameraView.CameraPreviewArea {
 
       Spacer()
 
-      HStack {
-        Spacer()
+      if activeTool == nil {
+        HStack {
+          Spacer()
 
-        // MARK: 눈까리 버튼
-        GuidingToggleButton(
-          role: currentRole,
-          systemName: guideToggleImage,
-          isActive: !isRemoteGuideHidden
-        ) {
-          isRemoteGuideHidden.toggle()
-          if isRemoteGuideHidden {
-            frameViewModel.setFrame(false)
-          } else if !isRemoteGuideHidden && !frameViewModel.frames.isEmpty {
-            frameViewModel.setFrame(true)
+          // MARK: 눈까리 버튼
+          GuidingToggleButton(
+            role: currentRole,
+            systemName: guideToggleImage,
+            isActive: !isRemoteGuideHidden
+          ) {
+            isRemoteGuideHidden.toggle()
+            if isRemoteGuideHidden {
+              frameViewModel.setFrame(false)
+            } else if !isRemoteGuideHidden && !frameViewModel.frames.isEmpty {
+              frameViewModel.setFrame(true)
+            }
+
+            cameraViewModel.showGuidingToast(isRemoteGuideHidden: isRemoteGuideHidden)
           }
-
-          cameraViewModel.showGuidingToast(isRemoteGuideHidden: isRemoteGuideHidden)
         }
+        .padding(12)
       }
-      .padding(12)
     }
   }
 }

@@ -42,8 +42,7 @@ struct PenToolBar: View {
         onAction(.undo)
       }
       .padding(.trailing, 26)
-      
-      
+
       // 전체 삭제(내가 그린 것만 존재할 때 활성)
       PenToolButton(
         penToolType: .eraser,
