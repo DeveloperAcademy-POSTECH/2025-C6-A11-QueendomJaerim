@@ -144,7 +144,7 @@ extension CameraView.CameraBottomContainer {
         guidingButtonType: .penChecked
       )
     } commandButtons: {
-      // MARK: - 펜 툴바 Undo / Redo / clearAll
+      // MARK: - 펜 툴바 Undo / clearAll
       PenToolBar(penViewModel: penViewModel) { action in
         switch action {
         case .deleteAll:
@@ -152,8 +152,6 @@ extension CameraView.CameraBottomContainer {
           penViewModel.showEraseGuidingLineToast()
         case .undo:
           penViewModel.undo()
-        case .redo:
-          penViewModel.redo()
         }
       }
     }

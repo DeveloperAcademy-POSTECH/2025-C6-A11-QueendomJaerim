@@ -128,7 +128,6 @@ struct PenWriteView: View {
             penViewModel.updateStroke(id: id, points: tempPoints, endDrawing: true)
             tempPoints.removeAll()
             currentStrokeID = nil
-            penViewModel.redoStrokes.removeAll()
           }
       )
     }

@@ -14,8 +14,6 @@ final class PenViewModel {
   var persistedStrokes: [Stroke] = []
   /// 현재 세션 중 그려진 모든 선(stroke)들
   var strokes: [Stroke] = []
-  /// 사용자가 Redo 했을때 되돌릴 수 있는 선(stroke)들
-  var redoStrokes: [Stroke] = []
   /// 사용자가 전체삭제 했던 선(stroke)들
   var deleteStrokes: [[Stroke]] = []
   /// 현재 사용자의 역할(모델, 작가, 미연결)
@@ -50,7 +48,6 @@ final class PenViewModel {
   func add(initialPoints: [CGPoint], isMagicPen: Bool, author: Role) -> UUID {
     let stroke = Stroke(points: initialPoints, isMagicPen: isMagicPen, author: author, endDrawing: false)
     strokes.append(stroke)
-    redoStrokes.removeAll()
 
     if author == myRole && hasEverDrawn == false {
       hasEverDrawn = true
@@ -87,7 +84,6 @@ final class PenViewModel {
     else { return }
 
     strokes.removeAll { $0.id == id }
-    redoStrokes.removeAll { $0.id == id }
 
     // Send to network
     sendPenCommand(command: .remove(id: id))
@@ -102,7 +98,6 @@ final class PenViewModel {
     let myIds = myStrokes.map(\.id)
 
     strokes.removeAll { $0.author == myRole }
-    redoStrokes.removeAll { $0.author == myRole }
 
     //   Send to network
     for id in myIds {
@@ -113,7 +108,6 @@ final class PenViewModel {
   /// 펜 가이딩 초기화
   func reset() {
     strokes.removeAll()
-    redoStrokes.removeAll()
     hasEverDrawn = false
 
     // Send to network
@@ -132,20 +126,9 @@ final class PenViewModel {
     guard let index = strokes.lastIndex(where: { $0.author == myRole }) else { return }
 
     let last = strokes.remove(at: index)
-    redoStrokes.append(last)
 
     // Send to network
     sendPenCommand(command: .remove(id: last.id))
-  }
-
-  func redo() {
-    guard let index = redoStrokes.lastIndex(where: { $0.author == myRole }) else { return }
-
-    let redoStroke = redoStrokes.remove(at: index)
-    strokes.append(redoStroke)
-
-    // Send to network
-    sendPenCommand(command: .add(stroke: redoStroke))
   }
 
   // MARK: - 토스트
@@ -215,10 +198,8 @@ extension PenViewModel {
       }
     case .delete(let id):
       strokes.removeAll { $0.id == id }
-      redoStrokes.removeAll { $0.id == id }
     case .reset:
       strokes.removeAll()
-      redoStrokes.removeAll()
       hasEverDrawn = false
     }
   }
