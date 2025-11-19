@@ -82,6 +82,8 @@ extension DomainNotification {
     
     // 역할이 스위치되었을 때
     case swapRole
+    /// 연결이 종료되었을 때
+    case disconnected
 
     var preset: Preset {
       switch self {
@@ -153,6 +155,8 @@ extension DomainNotification {
       // 연결
       case .swapRole:
         return .init(message: "친구와 역할이 서로 바뀌었어요.", isImportant: false, showingTime: 2)
+      case .disconnected:
+        return .init(message: "연결이 종료되었어요.", isImportant: false, showingTime: 2)
       }
     }
   }
