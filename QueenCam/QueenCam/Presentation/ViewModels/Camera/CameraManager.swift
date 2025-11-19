@@ -325,6 +325,7 @@ extension CameraManager {
           DispatchQueue.main.async {
             self.onTapCameraSwitch?(self.position)
           }
+
           continuation.resume()
 
         } catch {
@@ -334,6 +335,9 @@ extension CameraManager {
 
       }
     }
+
+    // 촬영 모드가 변경되었음을 상대에게 알린다
+    await networkService.send(for: .previewRenderingMode(position == .back ? .rear : .front))
   }
 }
 

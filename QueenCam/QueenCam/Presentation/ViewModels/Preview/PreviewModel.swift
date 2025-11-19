@@ -66,6 +66,9 @@ final class PreviewModel {
       }
     }
   }
+  
+  /// 좌우 반전 여부. 셀피 모드면 반전 필요.
+  var shouldInversePlayerHorizontally: Bool = false
 
   // MARK: - 네트워크 관련 프로퍼티
   /// 현재 네트워크가 연결되어 전송 가능함
@@ -131,6 +134,8 @@ final class PreviewModel {
           self?.handleReceivedFrame(framePayload)
         case .renderState(let state):
           self?.handleReceivedRenderStateReport(state)
+        case .previewRenderingMode(let renderingType):
+          self?.handleRenderingModeChanged(newMode: renderingType)
         default: break
         }
       }
@@ -166,6 +171,15 @@ final class PreviewModel {
     } else if newRole == .model {
       logger.info("stopped preview capture because the counterpart requested change role")
       self.stopCapture()
+    }
+  }
+
+  private func handleRenderingModeChanged(newMode: PreviewRenderingType) {
+    switch newMode {
+    case .front:
+      shouldInversePlayerHorizontally = true
+    case .rear:
+      shouldInversePlayerHorizontally = false
     }
   }
 }
