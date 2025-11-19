@@ -40,7 +40,7 @@ struct ReferenceView: View {
                       referenceViewModel.dragEnded()
                     }
                     // corner 위치 이동 판정
-                    referenceViewModel.updateLocation(end: value.predictedEndLocation, size: geo.size)
+                    referenceViewModel.updateLocation(end: value.predictedEndLocation, size: geo.size, isLarge: isLarge)
                   }
               )
           case .close:  // 레퍼런스 Off

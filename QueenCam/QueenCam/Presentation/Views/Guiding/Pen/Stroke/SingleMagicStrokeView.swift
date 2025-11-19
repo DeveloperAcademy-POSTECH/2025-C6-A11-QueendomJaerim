@@ -70,5 +70,6 @@ struct SingleMagicStrokeView: View {
         }
       }
     }
+    .animation(.easeInOut(duration: 0.3), value: penViewModel.strokes)  // 사라짐 애니메이션
   }
 }

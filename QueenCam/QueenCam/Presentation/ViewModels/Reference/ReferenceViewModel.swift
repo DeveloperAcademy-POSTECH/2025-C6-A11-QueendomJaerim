@@ -13,7 +13,8 @@ import UIKit
 @Observable
 final class ReferenceViewModel {
   // MARK: - Properties
-  private(set) var image: UIImage?  // 선택된 레퍼런스 사진
+  /// 선택된 레퍼런스 사진
+  private(set) var image: UIImage?  
   var state: ReferenceState = .none
   let foldThreshold: CGFloat = -50
   var dragOffset: CGSize = .zero  // 드래그 중 임시편차
@@ -79,10 +80,13 @@ final class ReferenceViewModel {
   }
 
   // MARK: - DRAG(for location change)
-  func updateLocation(end: CGPoint, size: CGSize) {
+  func updateLocation(end: CGPoint, size: CGSize, isLarge: Bool) {
     let newLocation = ReferenceLocation.corner(point: end, size: size)
     withAnimation(.snappy) {
-      location = newLocation
+      // 레퍼런스가 확대되었을때, corner 이동 금지
+      if !isLarge {
+        location = newLocation
+      }
       dragOffset = .zero
     }
   }
