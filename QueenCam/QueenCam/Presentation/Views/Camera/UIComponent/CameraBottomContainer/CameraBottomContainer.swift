@@ -106,6 +106,9 @@ extension CameraView.CameraBottomContainer: View {
     // 툴 사용중 레퍼런스 확대시 가이드 툴 해제
     .onChange(of: isReferenceLarge) { _, new in
       guard new else { return }
+      if activeTool == .pen {
+        penViewModel.saveStroke()
+      }
       activeTool = nil
     }
     // 확대 상태에서 툴 사용 시도시 레퍼런스 축소
