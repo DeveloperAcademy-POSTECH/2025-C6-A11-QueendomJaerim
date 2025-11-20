@@ -80,7 +80,6 @@ extension CameraView.CameraBottomContainer {
           }
 
           guidingToolToggle(.frame)
-
           if frameViewModel.isFrameEnabled {
             isRemoteGuideHidden = false
           }

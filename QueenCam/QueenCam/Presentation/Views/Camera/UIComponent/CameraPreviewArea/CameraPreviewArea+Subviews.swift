@@ -37,6 +37,8 @@ extension CameraView.CameraPreviewArea {
       }
       if isFrameActive {
         FrameEditorView(frameViewModel: frameViewModel, currentRole: currentMode)
+      } else {
+        FrameDisplayView(frameViewModel: frameViewModel)
       }
     }
     .opacity(isRemoteGuideHidden ? .zero : 1)
