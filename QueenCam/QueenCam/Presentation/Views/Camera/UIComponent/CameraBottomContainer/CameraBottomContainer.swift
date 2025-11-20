@@ -103,6 +103,18 @@ extension CameraView.CameraBottomContainer: View {
     .background(.black)
     .gesture(dragGesture)
     .animation(.easeInOut, value: activeTool)
+    // 툴 사용중 레퍼런스 확대시 가이드 툴 해제
+    .onChange(of: isReferenceLarge) { _, new in
+      guard new else { return }
+      activeTool = nil
+    }
+    // 확대 상태에서 툴 사용 시도시 레퍼런스 축소
+    .onChange(of: activeTool) { _, new in
+      guard new != nil else { return }
+      withAnimation(.easeInOut(duration: 0.25)) {
+        isReferenceLarge = false
+      }
+    }
   }
 }
 
