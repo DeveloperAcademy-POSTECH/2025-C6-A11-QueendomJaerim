@@ -153,9 +153,11 @@ final class PenViewModel {
     case .pen:
       guard !hasShownPenToast else { return }
       notificationService.registerNotification(DomainNotification.make(type: .firstPenToolSelected))
+      hasShownPenToast = true
     case .magicPen:
       guard !hasShownMagicPenToast else { return }
       notificationService.registerNotification(DomainNotification.make(type: .firstMagicToolSelected))
+      hasShownMagicPenToast = true
     }
   }
   // 지우개로 펜 가이드라인 지울때마다의 토스트

@@ -24,7 +24,6 @@ extension CameraView.CameraBottomContainer {
         isActive: isPenActive,
         isDisabeld: isRemoteGuideHidden,
         tapAction: {
-          // FIXME: - 최초 한번만 노출로 변경
           penViewModel.showFirstToolToast(type: .pen)
           guidingToolToggle(.pen)
           if isPenActive {
@@ -39,7 +38,6 @@ extension CameraView.CameraBottomContainer {
         isActive: isMagicPenActive,
         isDisabeld: isRemoteGuideHidden,
         tapAction: {
-          // FIXME: - 최초 한번만 노출로 변경
           penViewModel.showFirstToolToast(type: .magicPen)
           guidingToolToggle(.maginPen)
           if isMagicPenActive {
