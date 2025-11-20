@@ -61,7 +61,12 @@ extension DomainNotification {
     case deleteReference
     /// 상대가 레퍼런스 삭제시
     case peerDeleteReference
-
+    /// 프레임툴 사용 중, 레퍼런스 확대
+    case frameReferenceLarge
+    /// 펜툴 사용 중, 레퍼런스 확대
+    case penReferenceLarge
+    /// 매직펜툴 사용 중, 레퍼런스 확대
+    case magicPenReferenceLarge
     /// 펜툴을 처음 선택한 경우 (최초 1회)
     case firstPenToolSelected
     /// 펜의 지우개를 사용할 때
@@ -73,7 +78,7 @@ extension DomainNotification {
     /// 라이브 포토로 설정하고 촬영할 때
     case captureLivePhoto
     
-    // 역할이 스위치되었을 때
+    /// 역할이 스위치되었을 때
     case swapRole
     /// 연결이 종료되었을 때
     case disconnected
@@ -113,6 +118,13 @@ extension DomainNotification {
         return .init(message: "친구가 참고 이미지를 삭제했어요.", isImportant: false, showingTime: 2)
       case .photosPickerShowing:
         return .init(message: "함께 참고할 이미지를 등록할 수 있습니다.", isImportant: false, showingTime: nil)
+      case .frameReferenceLarge:
+        return .init(message: "참고 이미지를 확대하면 툴이 해제됩니다.", isImportant: false, showingTime: 2)
+      case .penReferenceLarge:
+        return .init(message: "참고 이미지를 확대하면 툴이 해제됩니다.", isImportant: false, showingTime: 2)
+      case .magicPenReferenceLarge:
+        return .init(message: "참고 이미지를 확대하면 툴이 해제됩니다.", isImportant: false, showingTime: 2)
+      
       // 펜 + 매직펜
       case .firstPenToolSelected:
         return .init(message: "펜으로 가이드를 그립니다.", isImportant: false, showingTime: 2)

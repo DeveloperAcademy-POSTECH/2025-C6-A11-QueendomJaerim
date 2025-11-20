@@ -103,6 +103,7 @@ extension CameraView.CameraBottomContainer: View {
     .background(.black)
     .gesture(dragGesture)
     .animation(.easeInOut, value: activeTool)
+    //FIXME: - 툴 사용 중, 레퍼런스 확대 토스트 추가
   }
 }
 
