@@ -87,7 +87,7 @@ struct FrameView: View {
         .position(x: x, y: y)
         .gesture(  // 프레임 이동
           // 현재 상대방이 수정 중이 아님 + 비율 조정 상태 아님
-          canInteract && !isSelected
+          canInteract && isSelected
             ? DragGesture(minimumDistance: 2)
               .onChanged { value in
                 if frameMove == nil { frameMove = frame.rect }
@@ -112,7 +112,7 @@ struct FrameView: View {
         )
         .simultaneousGesture(  // 프레임 확대 및 축소
           // 현재 상대방이 수정 중이 아님 + 비율 조정 상태 아님
-          canInteract && !isSelected
+          canInteract && isSelected
             ? MagnifyGesture()
               .onChanged { value in
                 if frameScale == nil { frameScale = frame.rect }
@@ -143,14 +143,17 @@ struct FrameView: View {
           ZStack {
             Rectangle()
               .fill(Color.black.opacity(0.5))
+              .allowsHitTesting(false)
 
             // 프레임 영역을 제외
             Rectangle()
               .frame(width: width + 1, height: height + 1)
               .position(x: x, y: y)
               .blendMode(.destinationOut)
+              .allowsHitTesting(false)
           }
           .compositingGroup()
+          .allowsHitTesting(false)
           .frame(width: geo.size.width, height: geo.size.height)
         }
         // 3x3 그리드
