@@ -15,6 +15,8 @@ struct FrameView: View {
   var isSelected: Bool
   /// 현재 사용자 역할(모델, 작가)
   var currentRole: Role?
+  /// 프레임에 대한 제스쳐 활성화 가능 여부
+  var canInteract: Bool { frameViewModel.canInteract }
 
   /// 이동 drag 제스쳐 시작할때의 초기 프레임
   @State private var frameMove: CGRect?
@@ -25,11 +27,6 @@ struct FrameView: View {
 
   /// 현재 제스처 소유 여부
   @State private var didAcquireInteraction: Bool = false
-  /// 제스쳐 활성화 가능 여부
-  private var canInteract: Bool {
-    let myRole = frameViewModel.currentRole ?? .photographer
-    return frameViewModel.isFrameEnabled && (frameViewModel.interactingRole == nil || frameViewModel.interactingRole == myRole)
-  }
 
   // 현재 토스트 근황
   @State private var hasShownRatioEditToast: Bool = false

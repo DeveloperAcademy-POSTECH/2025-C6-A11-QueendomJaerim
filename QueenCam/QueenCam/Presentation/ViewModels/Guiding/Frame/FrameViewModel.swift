@@ -39,6 +39,12 @@ final class FrameViewModel {
   }
   /// 컨테이너 크기
   var containerSize: CGSize?
+  
+  /// 제스쳐 활성화 가능 여부
+   var canInteract: Bool {
+    let myRole = currentRole ?? .photographer
+    return isFrameEnabled && (interactingRole == nil || interactingRole == myRole)
+  }
 
   // MARK: - 네트워크
   let networkService: NetworkServiceProtocol
