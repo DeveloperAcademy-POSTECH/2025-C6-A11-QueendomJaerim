@@ -9,18 +9,19 @@ import SwiftUI
 /// 프레임의 결과만 보여주는 뷰(읽기 전용)
 struct FrameDisplayView: View {
   var frameViewModel: FrameViewModel
-  /// 프레임에 대한 제스쳐 활성화 가능 여부
-  var canInteract: Bool { frameViewModel.canInteract }
-  
+  var currentRole: Role?
+
   var body: some View {
-    /// 프레임 내부 및 스트로크(테두리) 색상
+    // 프레임이 켜져 있고, 프레임 소유자가 나와 다르면 나는 비활성(=상대가 소유 중)
+    let disabledByPeer = frameViewModel.isFrameEnabled && frameViewModel.frameOwnerRole != currentRole
+
+    // 프레임 내부 및 스트로크(테두리) 색상
     let frameColor: AnyShapeStyle = {
-      switch (canInteract) {
-      // 현재 프레임을 수정중인 경우
-      case (false):
-        return AnyShapeStyle(.disabled)
-      // 프레임이 수정중이 아닌 경우
-      case (true):
+      if disabledByPeer {
+        // 상대가 소유 중(내 버튼이 비활성)일 때: 흰색
+        return AnyShapeStyle(.offWhite)
+      } else {
+        // 내가 소유자이거나, 소유자 없음/꺼짐: 그라디언트
         return AnyShapeStyle(
           LinearGradient(
             stops: [
