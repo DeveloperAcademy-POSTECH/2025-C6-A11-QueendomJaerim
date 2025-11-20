@@ -154,11 +154,11 @@ final class PenViewModel {
     switch type {
     case .pen:
       guard !hasShownPenReferenceLargeToast else { return }
-      notificationService.registerNotification(DomainNotification.make(type: .penReferenceLarge))
+      notificationService.registerNotification(DomainNotification.make(type: .toolUsingEnlargeReference))
       hasShownPenReferenceLargeToast = true
     case .magicPen:
       guard !hasShownMagicPenReferenceLargeToast else { return }
-      notificationService.registerNotification(DomainNotification.make(type: .magicPenReferenceLarge))
+      notificationService.registerNotification(DomainNotification.make(type: .toolUsingEnlargeReference))
       hasShownMagicPenReferenceLargeToast = true
     }
   }
