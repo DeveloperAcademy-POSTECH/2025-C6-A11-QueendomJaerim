@@ -14,7 +14,10 @@ extension CameraView.CameraBottomContainer {
             frameViewModel.showGuidingDisabledToast()
             return
           }
-
+          // 프레임이 존재하면, isSelected = true
+          if !frameViewModel.frames.isEmpty {
+            frameViewModel.selectedFrameID = frameViewModel.frames.first!.id 
+          } // 프레임이 존재안하면, subToolBar에서 프레임 추가하고 isSelected=true
           guidingToolToggle(.frame)
 
           if frameViewModel.isFrameEnabled {
@@ -53,7 +56,6 @@ extension CameraView.CameraBottomContainer {
             penViewModel.showGuidingDisabledToast(type: .magicPen)
             return
           }
-
           penViewModel.showFirstToolToast(type: .magicPen)
 
           guidingToolToggle(.maginPen)
@@ -65,7 +67,7 @@ extension CameraView.CameraBottomContainer {
       )
     }
   }
-  
+
   /// 프레임을 선택했을 때 나오는 프레임 서브 툴바
   var frameSubToolBar: some View {
     SubToolBar {
@@ -78,7 +80,8 @@ extension CameraView.CameraBottomContainer {
             frameViewModel.showGuidingDisabledToast()
             return
           }
-
+          // 펜툴을 해제하면 isSelected = false
+          frameViewModel.selectedFrameID = nil
           guidingToolToggle(.frame)
           if frameViewModel.isFrameEnabled {
             isRemoteGuideHidden = false
