@@ -29,6 +29,9 @@ final class ReferenceViewModel {
   }
   /// 현재 레퍼런스 토스트 존재 여부
   var hasReferenceToast: Bool = false
+  
+  /// 레퍼런스 최초 등록 여부
+  private var firstRegisterReference: Bool = false
 
   // MARK: - Network
   let networkService: NetworkServiceProtocol
@@ -46,6 +49,10 @@ final class ReferenceViewModel {
     self.hasReferenceToast = (notificationService.currentNotification != nil)
 
     bind()
+  }
+  /// 레퍼런스 최초 등록 시 나타나는 토스트
+  func showFirstReferenceRegisterToast(){
+    
   }
 
   // MARK: - DRAG(for fold/unfold)
@@ -174,10 +181,11 @@ extension ReferenceViewModel {
   private func sendReferenceImageCommand(command: ReferenceNetworkCommand) {
     if case .register(let image) = command {
       sendReferenceImageRegisteredEvent(referenceImage: image)
-      if hasReferenceImage {
-        notificationService.registerNotification(.make(type: .registerNewReference))
-      } else {
+      if !firstRegisterReference {
         notificationService.registerNotification(.make(type: .registerFirstReference))
+        firstRegisterReference = true
+      } else {
+        notificationService.registerNotification(.make(type: .registerNewReference))
       }
     } else if case .remove = command {
       sendReferenceImageRemovedEvent()
