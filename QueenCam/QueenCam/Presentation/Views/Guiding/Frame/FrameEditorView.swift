@@ -31,9 +31,6 @@ struct FrameEditorView: View {
           )
         }
         .contentShape(Rectangle())
-        .onTapGesture {
-          frameViewModel.selectFrame(nil)
-        }
       }
     }
   }

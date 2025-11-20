@@ -85,17 +85,6 @@ struct FrameView: View {
             .opacity(0.15)
         }
         .position(x: x, y: y)
-        .onTapGesture {
-          if frameViewModel.isSelected(frame.id) {
-            frameViewModel.selectFrame(nil)
-          } else {
-            frameViewModel.selectFrame(frame.id)
-            if !hasShownRatioEditToast {
-              frameViewModel.myFrameGuidingToast(type: .ratioEdit)
-              hasShownRatioEditToast = true
-            }
-          }
-        }
         .gesture(  // 프레임 이동
           // 현재 상대방이 수정 중이 아님 + 비율 조정 상태 아님
           canInteract && !isSelected

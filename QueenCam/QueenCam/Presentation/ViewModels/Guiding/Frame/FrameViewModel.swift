@@ -84,6 +84,7 @@ final class FrameViewModel {
     let rect = CGRect(origin: .init(x: newX, y: newY), size: size)
     let frame = Frame(rect: rect)
     frames.append(frame)
+    selectedFrameID = frame.id
 
     // Send to network
     sendFrameCommand(command: .add(frame: frame))
