@@ -19,6 +19,8 @@ final class FrameViewModel {
 
   /// 프레임 토글 여부
   var isFrameEnabled: Bool = false
+  /// 프레임의 현재 소유자
+  var frameOwnerRole: Role?
   /// 프레임 현재 수정 중 여부
   var isInteracting: Bool = false
   /// 프레임을 현재 수정 중인 역할(작가, 모델)
@@ -74,12 +76,13 @@ final class FrameViewModel {
   }
 
   // MARK: - 프레임 활성화 토글 + 네트워크
-  func setFrame(_ enabled: Bool) {
+  func setFrame(_ enabled: Bool, _ currentRole: Role?) {
     // 로컬 상태 갱신
     isFrameEnabled = enabled
+    frameOwnerRole = currentRole
 
     // Send to network
-    sendFrameEnabled(enabled)
+    sendFrameEnabled(enabled, currentRole)
   }
 
   // MARK: - 프레임 추가
@@ -256,8 +259,11 @@ extension FrameViewModel {
         case .frameUpdated(let eventType):
           self.handleFrameEvent(eventType: eventType)
 
-        case .frameEnabled(let enabled):
+        case .frameEnabled(let enabled, let currentRole):
           self.isFrameEnabled = enabled
+          self.frameOwnerRole = currentRole
+
+          // 토스트
           if !hasShownPeerCreateToast {
             peerFrameGuidingToast(type: .create)
             hasShownPeerCreateToast = true
@@ -334,10 +340,10 @@ extension FrameViewModel {
   }
 
   /// 프레임 토글 상태 전송
-  private func sendFrameEnabled(_ enabled: Bool) {
+  private func sendFrameEnabled(_ enabled: Bool, _ currentRole: Role?) {
     Task.detached { [weak self] in
       guard let self else { return }
-      await self.networkService.send(for: .frameEnabled(enabled))
+      await self.networkService.send(for: .frameEnabled(enabled, currentRole))
     }
   }
 

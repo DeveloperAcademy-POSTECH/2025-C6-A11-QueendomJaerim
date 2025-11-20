@@ -331,10 +331,23 @@ extension CameraView: View {
         selectedImageID = nil
       }
     }
+//    // 프레임 토글 시 양쪽 모두 (비)활성화
+//    .onChange(of: frameViewModel.isFrameEnabled) { _, enabled in
+//      guard !isRemoteGuideHidden else { return }
+//      activeTool = enabled ? .frame : nil
+//    }
     // 프레임 토글 시 양쪽 모두 (비)활성화
     .onChange(of: frameViewModel.isFrameEnabled) { _, enabled in
-      guard !isRemoteGuideHidden else { return }
-      activeTool = enabled ? .frame : nil
+      // 상대편 UI 자동 동기화 방지: 소유자일 때만 내 activeTool을 변경
+      if enabled {
+        if frameViewModel.frameOwnerRole == connectionViewModel.role {
+          activeTool = .frame
+        }
+      } else {
+        if frameViewModel.frameOwnerRole == connectionViewModel.role {
+          activeTool = nil
+        }
+      }
     }
     .onChange(of: isShowPhotoPicker) { _, isShow in
       cameraViewModel.managePhotosPickerToast(isShowPhotosPicker: isShow)
