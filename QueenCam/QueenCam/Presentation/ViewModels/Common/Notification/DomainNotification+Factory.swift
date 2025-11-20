@@ -61,11 +61,11 @@ extension DomainNotification {
     case deleteReference
     /// 상대가 레퍼런스 삭제시
     case peerDeleteReference
-    /// 프레임툴 사용 중, 레퍼런스 확대
+    /// 프레임툴 사용 중, 레퍼런스 확대 (최초 1회)
     case frameReferenceLarge
-    /// 펜툴 사용 중, 레퍼런스 확대
+    /// 펜툴 사용 중, 레퍼런스 확대 (최초 1회)
     case penReferenceLarge
-    /// 매직펜툴 사용 중, 레퍼런스 확대
+    /// 매직펜툴 사용 중, 레퍼런스 확대 (최초 1회)
     case magicPenReferenceLarge
     /// 펜툴을 처음 선택한 경우 (최초 1회)
     case firstPenToolSelected

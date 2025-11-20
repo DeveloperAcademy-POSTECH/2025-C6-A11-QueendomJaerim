@@ -103,12 +103,17 @@ extension CameraView.CameraBottomContainer: View {
     .background(.black)
     .gesture(dragGesture)
     .animation(.easeInOut, value: activeTool)
-    //FIXME: - 툴 사용 중, 레퍼런스 확대 토스트 추가
     // 툴 사용중 레퍼런스 확대시 가이드 툴 해제
     .onChange(of: isReferenceLarge) { _, new in
       guard new else { return }
+      // FIXME: - 툴 사용 중,레퍼런스 확대 토스트 추가
       if activeTool == .pen {
         penViewModel.saveStroke()
+        penViewModel.showToolReferenceLargeToast(type: .pen)
+      } else if activeTool == .maginPen {
+        penViewModel.showToolReferenceLargeToast(type: .magicPen)
+      } else if activeTool == .frame {
+        
       }
       activeTool = nil
     }

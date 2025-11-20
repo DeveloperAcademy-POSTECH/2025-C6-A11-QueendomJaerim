@@ -24,8 +24,11 @@ final class PenViewModel {
   var hasEverDrawn: Bool = false
 
   // 가이드 최초 1회
-  private var hasShownPenToast = false
+  private var hasShownPenToast: Bool = false
   private var hasShownMagicPenToast: Bool = false
+  // 가이드 사용시 레퍼런스 확대 최초 1회
+  private var hasShownPenReferenceLargeToast: Bool = false
+  private var hasShownMagicPenReferenceLargeToast: Bool = false
 
   // MARK: - 네트워크
   let networkService: NetworkServiceProtocol
@@ -146,7 +149,19 @@ final class PenViewModel {
     case pen
     case magicPen
   }
-
+  // 툴 사용 중 레퍼런스 확대 - 최초 1회
+  func showToolReferenceLargeToast(type: GuidingType) {
+    switch type {
+    case .pen:
+      guard !hasShownPenReferenceLargeToast else { return }
+      notificationService.registerNotification(DomainNotification.make(type: .penReferenceLarge))
+      hasShownPenReferenceLargeToast = true
+    case .magicPen:
+      guard !hasShownMagicPenReferenceLargeToast else { return }
+      notificationService.registerNotification(DomainNotification.make(type: .magicPenReferenceLarge))
+      hasShownMagicPenReferenceLargeToast = true
+    }
+  }
   // 처음으로 펜+ 매직펜 툴 선택 할때 토스트
   func showFirstToolToast(type: GuidingType) {
     switch type {
