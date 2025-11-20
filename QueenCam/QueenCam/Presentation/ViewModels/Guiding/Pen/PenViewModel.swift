@@ -147,7 +147,7 @@ final class PenViewModel {
     case magicPen
   }
 
-  // 처음으로 툴 선택 할때 토스트
+  // 처음으로 펜+ 매직펜 툴 선택 할때 토스트
   func showFirstToolToast(type: GuidingType) {
     switch type {
     case .pen:
