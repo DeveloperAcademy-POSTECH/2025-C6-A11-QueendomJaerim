@@ -109,7 +109,6 @@ extension CameraView.CameraPreviewArea {
             isActive: !isRemoteGuideHidden
           ) {
             isRemoteGuideHidden.toggle()
-            cameraViewModel.showGuidingToast(isRemoteGuideHidden: isRemoteGuideHidden)
           }
         }
         .padding(12)
