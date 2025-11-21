@@ -8,7 +8,7 @@ extension CameraView.CameraBottomContainer {
       GuidingButton(
         role: currentRole,
         isActive: isFrameActive,
-        isDisabeld: isRemoteGuideHidden,
+        isDisabled: isRemoteGuideHidden,
         tapAction: {
           guidingToolToggle(.frame)
 
@@ -22,7 +22,7 @@ extension CameraView.CameraBottomContainer {
       GuidingButton(
         role: currentRole,
         isActive: isPenActive,
-        isDisabeld: isRemoteGuideHidden,
+        isDisabled: isRemoteGuideHidden,
         tapAction: {
           penViewModel.showFirstToolToast(type: .pen)
           guidingToolToggle(.pen)
@@ -36,7 +36,7 @@ extension CameraView.CameraBottomContainer {
       GuidingButton(
         role: currentRole,
         isActive: isMagicPenActive,
-        isDisabeld: isRemoteGuideHidden,
+        isDisabled: isRemoteGuideHidden,
         tapAction: {
           penViewModel.showFirstToolToast(type: .magicPen)
           guidingToolToggle(.maginPen)
@@ -55,7 +55,7 @@ extension CameraView.CameraBottomContainer {
       GuidingButton(
         role: currentRole,
         isActive: isFrameActive,
-        isDisabeld: isRemoteGuideHidden,
+        isDisabled: isRemoteGuideHidden,
         tapAction: {
           guidingToolToggle(.frame)
 
@@ -105,7 +105,7 @@ extension CameraView.CameraBottomContainer {
       GuidingButton(
         role: currentRole,
         isActive: isPenActive,
-        isDisabeld: isRemoteGuideHidden,
+        isDisabled: isRemoteGuideHidden,
         tapAction: {
           guidingToolToggle(.pen)
           if isPenActive {
@@ -136,7 +136,7 @@ extension CameraView.CameraBottomContainer {
     GuidingButton(
       role: currentRole,
       isActive: isMagicPenActive,
-      isDisabeld: isRemoteGuideHidden,
+      isDisabled: isRemoteGuideHidden,
       tapAction: {
         guidingToolToggle(.maginPen)
         if isMagicPenActive {
