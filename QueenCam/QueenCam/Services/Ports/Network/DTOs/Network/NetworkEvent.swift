@@ -52,9 +52,6 @@ enum NetworkEvent: Sendable {
   /// 프레임 (비)활성화
   case frameEnabled(Bool, Role?)
 
-  /// 프레임 수정 시작 및 종료
-  case frameInteracting(role: Role, isInteracting: Bool)
-
   /// 펜 이벤트
   case penUpdated(PenEventType)
 

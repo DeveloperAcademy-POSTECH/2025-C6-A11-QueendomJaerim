@@ -66,47 +66,35 @@ struct FrameView: View {
         }
         .position(x: x, y: y)
         .gesture(  // 프레임 이동
-            DragGesture(minimumDistance: 2)
-              .onChanged { value in
-                if frameMove == nil { frameMove = frame.rect }
-                if didAcquireInteraction == false {
-                  acquireInteraction()
-                }
-                guard let start = frameMove else { return }
-                frameViewModel.moveFrame(
-                  id: frame.id,
-                  start: start,
-                  translation: value.translation,
-                  container: containerSize
-                )
-              }
-              .onEnded { _ in
-                frameMove = nil
-                if didAcquireInteraction {
-                  releaseInteraction()
-                }
-              }
+          DragGesture(minimumDistance: 2)
+            .onChanged { value in
+              if frameMove == nil { frameMove = frame.rect }
+              guard let start = frameMove else { return }
+              frameViewModel.moveFrame(
+                id: frame.id,
+                start: start,
+                translation: value.translation,
+                container: containerSize
+              )
+            }
+            .onEnded { _ in
+              frameMove = nil
+            }
         )
         .simultaneousGesture(  // 프레임 확대 및 축소
-            MagnifyGesture()
-              .onChanged { value in
-                if frameScale == nil { frameScale = frame.rect }
-                if didAcquireInteraction == false {
-                  acquireInteraction()
-                }
-                guard let start = frameScale else { return }
-                frameViewModel.resizeFrame(
-                  id: frame.id,
-                  start: start,
-                  scale: value.magnification
-                )
-              }
-              .onEnded { _ in
-                frameScale = nil
-                if didAcquireInteraction {
-                  releaseInteraction()
-                }
-              }
+          MagnifyGesture()
+            .onChanged { value in
+              if frameScale == nil { frameScale = frame.rect }
+              guard let start = frameScale else { return }
+              frameViewModel.resizeFrame(
+                id: frame.id,
+                start: start,
+                scale: value.magnification
+              )
+            }
+            .onEnded { _ in
+              frameScale = nil
+            }
         )
 
       // Dimming+ 3x3 그리드 표시 + Corner 핸들
@@ -165,27 +153,21 @@ struct FrameView: View {
             )
             .position(cornerPosition(for: corner))
             .gesture(
-                DragGesture(minimumDistance: 0)
-                  .onChanged { value in
-                    if cornerScale == nil { cornerScale = frame.rect }
-                    if didAcquireInteraction == false {
-                      acquireInteraction()
-                    }
-                    guard let start = cornerScale else { return }
-                    frameViewModel.resizeCorner(
-                      id: frame.id,
-                      corner: corner,
-                      start: start,
-                      translation: value.translation,
-                      container: containerSize
-                    )
-                  }
-                  .onEnded { _ in
-                    cornerScale = nil
-                    if didAcquireInteraction {
-                      releaseInteraction()
-                    }
-                  }
+              DragGesture(minimumDistance: 0)
+                .onChanged { value in
+                  if cornerScale == nil { cornerScale = frame.rect }
+                  guard let start = cornerScale else { return }
+                  frameViewModel.resizeCorner(
+                    id: frame.id,
+                    corner: corner,
+                    start: start,
+                    translation: value.translation,
+                    container: containerSize
+                  )
+                }
+                .onEnded { _ in
+                  cornerScale = nil
+                }
             )
         }
       }
@@ -208,21 +190,6 @@ struct FrameView: View {
     case .bottomRight:
       return CGPoint(x: rect.maxX * containerSize.width, y: rect.maxY * containerSize.height)
     }
-  }
-
-  /// 제스쳐 소유권 획득
-  private func acquireInteraction() {
-    didAcquireInteraction = true
-    frameViewModel.isInteracting = true
-    frameViewModel.interactingRole = frameViewModel.currentRole ?? .photographer
-    frameViewModel.sendFrameInteracting(true)
-  }
-  /// 제스쳐 소유권 해제
-  private func releaseInteraction() {
-    didAcquireInteraction = false
-    frameViewModel.isInteracting = false
-    frameViewModel.interactingRole = nil
-    frameViewModel.sendFrameInteracting(false)
   }
 
   // MARK: Life Cycle
