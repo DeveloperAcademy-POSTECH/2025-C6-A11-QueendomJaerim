@@ -23,7 +23,7 @@ struct GuidingButton {
 }
 
 extension GuidingButton {
-  private var title: String {
+  private var title: LocalizedStringKey {
     switch guidingButtonType {
     case .frame:
       "프레임"

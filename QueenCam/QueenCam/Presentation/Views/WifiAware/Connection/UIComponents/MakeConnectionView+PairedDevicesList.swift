@@ -124,7 +124,7 @@ extension MakeConnectionView.PairedDevicesList: View {
   }
 
   func pairedDeviceRowView(for device: WAPairedDevice) -> some View {
-    let controlsContainerWidth: CGFloat = 57
+    let controlsContainerWidth: CGFloat = LocaleUtils.currentLocale == .korean ? 57 : 100
     let controlsContainerHeight: CGFloat = 33
 
     return HStack(alignment: .center) {

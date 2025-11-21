@@ -1,0 +1,10 @@
+/* 
+  InfoPlist.strings
+  QueenCam
+
+  Created by 임영택 on 11/21/25.
+  
+*/
+
+"CFBundleDisplayName" = "찍자";
+"CFBundleName" = "찍자";
