@@ -68,7 +68,14 @@
       }
     },
     "LIVE" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LIVE"
+          }
+        }
+      }
     },
     "LIVE 끔" : {
       "localizations" : {
@@ -232,7 +239,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Take a photo with my phone.\nYou will share your screen with your friend in real time."
+            "value" : "Take a photo with my phone.\nYou will share your screen."
           }
         }
       }
@@ -252,7 +259,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Become the model of your photos.\nYou can see yourself being photographed in real time."
+            "value" : "Become the model of your photos.\nYou can see yourself being photographed."
           }
         }
       }
@@ -646,7 +653,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "An error occurred during the connection. If the problem persists, please contact the Queendom team."
+            "value" : "An error occurred during the connection. If the problem persists, please contact the Queendom team. %@"
           }
         }
       }
@@ -729,7 +736,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Please allow access to the camera and microphone for ZZikZZa."
+            "value" : "Please allow access\nto the camera and microphone for ZZikZZa."
           }
         }
       }
@@ -1077,7 +1084,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "You are in **Model** mode"
+            "value" : "**Model** mode"
           }
         }
       }
@@ -1087,7 +1094,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "You are in **Photograph** mode"
+            "value" : "**Photograph** mode"
           }
         }
       }
