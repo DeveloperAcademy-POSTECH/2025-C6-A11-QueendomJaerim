@@ -15,8 +15,6 @@ struct FrameView: View {
   var isSelected: Bool
   /// 현재 사용자 역할(모델, 작가)
   var currentRole: Role?
-  /// 프레임에 대한 제스쳐 활성화 가능 여부
-  var canInteract: Bool { frameViewModel.canInteract }
 
   /// 이동 drag 제스쳐 시작할때의 초기 프레임
   @State private var frameMove: CGRect?
@@ -40,30 +38,15 @@ struct FrameView: View {
 
     /// 프레임 내부 및 스트로크(테두리) 색상
     let frameColor: AnyShapeStyle = {
-      switch (isSelected, canInteract, currentRole) {
-      // 모델이 현재 프레임의 비율을 수정하고 있는 경우
-      case (true, true, .some(.model)):
+      switch (isSelected, currentRole) {
+      // 모델이 현재 프레임 제어 모드에 있는 경우
+      case (true, .some(.model)):
         return AnyShapeStyle(.modelPrimary)
-      // 작가가 현재 프레임의 비율을 수정하고 있는 경우
-      case (true, true, .some(.photographer)):
+      // 작가가 현재 프레임 제어 모드인 경우
+      case (true, .some(.photographer)):
         return AnyShapeStyle(.photographerPrimary)
-      // 현재 내가 프레임을 수정하고 있지 않는 경우
-      case (_, false, _):
-        return AnyShapeStyle(.offWhite)
-      // 현재 내가 드래그 중인 경우
-      case (false, true, _):
-        return AnyShapeStyle(
-          LinearGradient(
-            stops: [
-              Gradient.Stop(color: .modelPrimary, location: 0.00),
-              Gradient.Stop(color: .photographerPrimary, location: 1.00)
-            ],
-            startPoint: UnitPoint(x: 0.01, y: 0),
-            endPoint: UnitPoint(x: 0.99, y: 1)
-          )
-        )
       default:
-        return AnyShapeStyle(.modelPrimary)
+        return AnyShapeStyle(.disabled)
       }
     }()
 
@@ -83,9 +66,7 @@ struct FrameView: View {
         }
         .position(x: x, y: y)
         .gesture(  // 프레임 이동
-          // 현재 상대방이 수정 중이 아님 + 비율 조정 상태 아님
-          canInteract && isSelected
-            ? DragGesture(minimumDistance: 2)
+            DragGesture(minimumDistance: 2)
               .onChanged { value in
                 if frameMove == nil { frameMove = frame.rect }
                 if didAcquireInteraction == false {
@@ -105,12 +86,9 @@ struct FrameView: View {
                   releaseInteraction()
                 }
               }
-            : nil
         )
         .simultaneousGesture(  // 프레임 확대 및 축소
-          // 현재 상대방이 수정 중이 아님 + 비율 조정 상태 아님
-          canInteract && isSelected
-            ? MagnifyGesture()
+            MagnifyGesture()
               .onChanged { value in
                 if frameScale == nil { frameScale = frame.rect }
                 if didAcquireInteraction == false {
@@ -129,12 +107,11 @@ struct FrameView: View {
                   releaseInteraction()
                 }
               }
-            : nil
         )
 
       // Dimming+ 3x3 그리드 표시 + Corner 핸들
-      // 현재 상대방이 수정 중이 아님 + 비율 조정 상태임
-      if canInteract && isSelected {
+      // 사용자가 프레임 제어 모드에 있는 경우
+      if isSelected {
         // Dimming 효과
         GeometryReader { geo in
           ZStack {
@@ -188,9 +165,7 @@ struct FrameView: View {
             )
             .position(cornerPosition(for: corner))
             .gesture(
-              // 현재 상대방이 수정 중 아님
-              canInteract
-                ? DragGesture(minimumDistance: 0)
+                DragGesture(minimumDistance: 0)
                   .onChanged { value in
                     if cornerScale == nil { cornerScale = frame.rect }
                     if didAcquireInteraction == false {
@@ -211,7 +186,6 @@ struct FrameView: View {
                       releaseInteraction()
                     }
                   }
-                : nil
             )
         }
       }
