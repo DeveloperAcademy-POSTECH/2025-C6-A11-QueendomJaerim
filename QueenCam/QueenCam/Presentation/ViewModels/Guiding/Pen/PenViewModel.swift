@@ -67,16 +67,24 @@ final class PenViewModel {
     // Send to network
     sendPenCommand(command: .replace(stroke: strokes[strokeIndex]))
   }
-  // MARK: 세션 종료 후 Stroke 저장
+  // MARK: - 세션 종료 후 Stroke 저장
   /// 펜 툴 해제(세션 종료) 시 본인 stroke를 strokes에서 persistedStrokes로 이관
   func saveStroke() {
     // strokes에 있는 본인 stroke 찾기
     let myStrokes = strokes.filter { $0.author == myRole }
     if !myStrokes.isEmpty {
-      // 해당 stroke를 persistedStrokes로 appmend
+      // 해당 stroke를 persistedStrokes로 append
       persistedStrokes.append(contentsOf: myStrokes)
       // 해당 stroke를 strokes에서 삭제(remove)
       strokes.removeAll { $0.author == myRole }
+    }
+    // deleteStrokes에 있는 본인 stroke 찾기 => 전체 삭제
+    let myDeleteStrokes = deleteStrokes.flatMap { $0 }.filter { $0.author == myRole }
+    if !myDeleteStrokes.isEmpty {
+      // 해당 stroke를 deleteStrokes에서 삭제 - 복구 불가
+      for i in deleteStrokes.indices {
+        deleteStrokes[i].removeAll { $0.author == myRole }
+      }
     }
   }
 
@@ -98,10 +106,11 @@ final class PenViewModel {
   func deleteAll() {
     // 내가 생성한 stroke 배열과 id 배열
     let myStrokes = strokes.filter { $0.author == myRole }
-    let myPersistedStrokes = persistedStrokes.filter {$0.author == myRole}
+    let myPersistedStrokes = persistedStrokes.filter { $0.author == myRole }
     let allMyStrokes = myStrokes + myPersistedStrokes
+
     if !allMyStrokes.isEmpty {
-      deleteStrokes.append(myStrokes) // 전체 삭제 이후, Undo는 현재 세션에 작업한 strokes만 포함
+      deleteStrokes.append(myStrokes)  // 전체 삭제 이후, Undo는 현재 세션에 작업한 strokes만 포함
     }
 
     let myIds = allMyStrokes.map(\.id)
