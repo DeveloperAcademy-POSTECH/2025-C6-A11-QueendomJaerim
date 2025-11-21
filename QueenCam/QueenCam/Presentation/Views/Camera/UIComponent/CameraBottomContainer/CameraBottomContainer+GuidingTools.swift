@@ -9,7 +9,7 @@ extension CameraView.CameraBottomContainer {
       GuidingButton(
         role: currentRole,
         isActive: isFrameActive,
-        isDisabeld: isRemoteGuideHidden || disabledByPeer, // 상대가 소유 중이면 시각적으로도 비활성
+        isDisabled: isRemoteGuideHidden || disabledByPeer, // 상대가 소유 중이면 시각적으로도 비활성
         tapAction: {
           guard !isRemoteGuideHidden else {
             frameViewModel.showGuidingDisabledToast()
@@ -83,7 +83,7 @@ extension CameraView.CameraBottomContainer {
       GuidingButton(
         role: currentRole,
         isActive: isFrameActive,
-        isDisabeld: isRemoteGuideHidden || disabledByPeer,
+        isDisabled: isRemoteGuideHidden || disabledByPeer,
         tapAction: {
           guard !isRemoteGuideHidden else {
             frameViewModel.showGuidingDisabledToast()
