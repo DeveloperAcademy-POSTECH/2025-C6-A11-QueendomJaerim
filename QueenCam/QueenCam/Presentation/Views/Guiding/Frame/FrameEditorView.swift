@@ -20,6 +20,10 @@ struct FrameEditorView: View {
 
   var body: some View {
     ZStack {
+      // 프레임이 존재하지 않을때, Dimming 효과 주기
+      if frameViewModel.frames.isEmpty {
+        Color.black.opacity(0.5)
+      }
       GeometryReader { geo in
         ForEach(frameViewModel.frames) { frame in
           FrameView(
