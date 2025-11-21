@@ -155,7 +155,7 @@ extension ReferenceViewModel {
         self.image = uiImage
         self.state = .open
       }
-      if !firstRegisterReference {
+      if !firstRegisterReference && networkService.mode != nil {
         notificationService.registerNotification(.make(type: .peerRegisterFirstReference))
         firstRegisterReference = true
       } else {
@@ -177,7 +177,7 @@ extension ReferenceViewModel {
   private func sendReferenceImageCommand(command: ReferenceNetworkCommand) {
     if case .register(let image) = command {
       sendReferenceImageRegisteredEvent(referenceImage: image)
-      if !firstRegisterReference {
+      if !firstRegisterReference && networkService.mode != nil {
         notificationService.registerNotification(.make(type: .registerFirstReference))
         firstRegisterReference = true
       } else {
