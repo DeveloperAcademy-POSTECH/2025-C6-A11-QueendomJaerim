@@ -109,12 +109,9 @@ extension CameraView.CameraPreviewArea {
             isActive: !isRemoteGuideHidden
           ) {
             isRemoteGuideHidden.toggle()
-            if isRemoteGuideHidden {
+            if isRemoteGuideHidden { // 가이드 숨김
               frameViewModel.setFrame(false, nil)
-            } else if !isRemoteGuideHidden && !frameViewModel.frames.isEmpty {
-              frameViewModel.setFrame(true, nil) // FIXME: - nil 값들 재고려해야 함
             }
-
             cameraViewModel.showGuidingToast(isRemoteGuideHidden: isRemoteGuideHidden)
           }
         }
