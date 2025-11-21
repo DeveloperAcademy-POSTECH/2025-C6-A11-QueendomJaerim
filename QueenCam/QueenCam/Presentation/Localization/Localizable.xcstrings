@@ -138,7 +138,14 @@
       }
     },
     "가이드 프레임을 생성했어요." : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guide frame created"
+          }
+        }
+      }
     },
     "가이딩 비디오를 불러오는 중 문제가 발생했습니다." : {
       "localizations" : {
@@ -245,7 +252,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Registration"
+            "value" : "Register"
           }
         }
       }
@@ -381,7 +388,14 @@
       }
     },
     "역할이 선택되지 않았습니다" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No role selected"
+          }
+        }
+      }
     },
     "연결" : {
       "localizations" : {
@@ -554,7 +568,14 @@
       }
     },
     "참고 이미지를 삭제했어요." : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove the reference image"
+          }
+        }
+      }
     },
     "참고 이미지를 확대하면 툴이 해제됩니다." : {
       "localizations" : {
@@ -667,7 +688,14 @@
       }
     },
     "친구가 프레임을 삭제했어요." : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Friend removed the frame"
+          }
+        }
+      }
     },
     "친구가 프레임을 수정하고 있어요." : {
       "localizations" : {
