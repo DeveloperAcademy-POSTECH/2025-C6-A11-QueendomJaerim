@@ -9,6 +9,26 @@
 
 ### Added
 
+
+### Changed
+
+
+### Deprecated
+
+
+### Removed
+
+
+### Fixed
+
+
+### Security
+
+
+## [1.1.0] (2025-11-21)
+
+### Added
+
 - 연결 후 버전 체크
 - 라이브 포토로 설정하고 촬영시 시각적 표현 제공
 - 역할 바꾸기 토스트 추가
@@ -31,8 +51,6 @@
 - 레퍼런스 확대 상태에 따른 가이딩툴 초기화
 - 프레임 2.0 기능 및 디자인 구현
 
-### Deprecated
-
 
 ### Removed
 - 프레임 수정 시작 및 종료를 알려주는 frameInteracting 네트워크 이벤트 삭제
@@ -47,8 +65,6 @@
 - 레퍼런스를 빠르게 탭하여 삭제 버튼이 노출되는 문제 해결
 - 기기 연결하기 뷰에서, 연결 중 역할 바꾸기 버튼을 누르면 컨트롤이 사라지는 문제
 - 펜툴 해제시 stroke 쓰레기통 비우기
-
-### Security
 
 ## [1.0.2] (2025-11-18)
 
@@ -251,6 +267,7 @@
 - Wi-Fi Aware 연결 후, 라이브 포토 촬영 시 앱이 크래시되는 문제
 - 레퍼런스 삭제 후 재등록에 관한 상태 초기화 문제
 
+[1.1.0]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.0.2...v1.1.0
 [1.0.2]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v0.3.3...v1.0.0
