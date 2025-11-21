@@ -44,9 +44,9 @@ final class FrameViewModel {
 
   // MARK: - Toast
   let notificationService: NotificationServiceProtocol
+  private var hasShownCreateToast: Bool = false
   private var hasShownPeerCreateToast: Bool = false
   private var hasShownPeerEditToast: Bool = false
-  private var hasShownPeerRatioEditToast: Bool = false
   private var hasShownPeerDeleteToast: Bool = false
 
   init(
@@ -201,35 +201,31 @@ final class FrameViewModel {
 
   // MARK: - Toast
   enum FrameToastEventType {
+    /// 프레임 생성
     case create
+    /// 프레임 삭제
     case delete
+    /// 프레임 제어 모드 진입
     case edit
-    case ratioEdit
   }
   // 상대가 이벤트를 한 경우
   func peerFrameGuidingToast(type: FrameToastEventType) {
     switch type {
     case .create:
-      notificationService.registerNotification(DomainNotification.make(type: .peerCreateFrameGuide))
-    case .delete:
-      notificationService.registerNotification(DomainNotification.make(type: .peerCloseFrameGuide))
+      return notificationService.registerNotification(DomainNotification.make(type: .peerCreatedFrameGuide))
     case .edit:
-      notificationService.registerNotification(DomainNotification.make(type: .peerEditingFrameGuide))
-    case .ratioEdit:
-      notificationService.registerNotification(DomainNotification.make(type: .peerFirstEditMode))
+      return notificationService.registerNotification(DomainNotification.make(type: .peerEditingFrameGuide))
+    case .delete:
+      return notificationService.registerNotification(DomainNotification.make(type: .peerDeletedFrameGuide))
     }
   }
   // 사용자(본인)가 이벤트를 한 경우
   func myFrameGuidingToast(type: FrameToastEventType) {
     switch type {
     case .create:
-      notificationService.registerNotification(DomainNotification.make(type: .sharingFrameGuideStarted))
-    case .delete:
+      notificationService.registerNotification(DomainNotification.make(type: .createdFrameGuide))
+    default:
       return
-    case .edit:
-      return
-    case .ratioEdit:
-    return
     }
   }
 }
@@ -246,20 +242,12 @@ extension FrameViewModel {
         case .frameUpdated(let eventType):
           self.handleFrameEvent(eventType: eventType)
 
-        case .frameEnabled(let enabled, let currentRole):
+        case .frameEnabled(let enabled, let role):
           self.isFrameEnabled = enabled
-          self.frameOwnerRole = currentRole
-
-          // 토스트
-          if !hasShownPeerCreateToast {
-            peerFrameGuidingToast(type: .create)
-            hasShownPeerCreateToast = true
-          }
-          if !hasShownPeerDeleteToast {
-            peerFrameGuidingToast(type: .delete)
-            hasShownPeerDeleteToast = true
-          }
-
+          self.frameOwnerRole = role
+          guard isFrameEnabled, frameOwnerRole != currentRole, !frames.isEmpty else { return }
+          peerFrameGuidingToast(type: .edit)
+    
         default:
           break
         }
@@ -271,7 +259,11 @@ extension FrameViewModel {
     switch eventType {
     case .add(let framePayload):
       let frame = FrameMapper.convert(payload: framePayload)
-
+      // 상대방이 프레임을 생성한 경우의 토스트
+      if !hasShownPeerCreateToast && networkService.mode != nil {
+        peerFrameGuidingToast(type: .create)
+        hasShownPeerCreateToast = true
+      }
       if !frames.contains(where: { $0.id == frame.id }) {
         frames.append(frame)
       }
@@ -286,7 +278,13 @@ extension FrameViewModel {
         return frame
       }
     case .deleteAll:
+      // 상대방이 프레임을 삭제한 경우의 토스트
+      if !hasShownPeerDeleteToast && networkService.mode != nil {
+        peerFrameGuidingToast(type: .delete)
+        hasShownPeerDeleteToast = true
+      }
       frames.removeAll()
+
     }
   }
 }
@@ -298,6 +296,10 @@ extension FrameViewModel {
 
     switch command {
     case .add(let frame):
+      if !hasShownCreateToast && networkService.mode != nil {
+        myFrameGuidingToast(type: .create)
+        hasShownCreateToast = true
+      }
       sendingEventType = .add(FrameMapper.convert(frame: frame))
     case .move(let frame):
       sendingEventType = .replace(FrameMapper.convert(frame: frame))
