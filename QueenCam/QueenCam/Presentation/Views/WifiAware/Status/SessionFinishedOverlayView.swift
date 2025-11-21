@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct SessionFinishedOverlayView {
+  let reason: LocalizedStringKey
   let didCancelButtonTap: () -> Void
 
   private let backgroundColor = Color.black.opacity(0.7)
@@ -16,7 +17,7 @@ struct SessionFinishedOverlayView {
 extension SessionFinishedOverlayView: View {
   var body: some View {
     VStack {
-      Text("친구가 연결을 종료했어요.\n다시 시작하려면 재연결해주세요.")
+      Text(reason)
         .foregroundStyle(.offWhite)
         .multilineTextAlignment(.center)
         .typo(.m15)
@@ -62,6 +63,6 @@ extension SessionFinishedOverlayView: View {
       }
     }
 
-    SessionFinishedOverlayView {}
+    SessionFinishedOverlayView(reason: "친구가 연결을 종료했어요.\n다시 시작하려면 재연결해주세요.") {}
   }
 }

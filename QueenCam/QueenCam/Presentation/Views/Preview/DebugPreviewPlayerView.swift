@@ -17,6 +17,7 @@ struct DebugPreviewPlayerView: View {
     ZStack {
       CameraPreviewDisplayViewContainer(
         currentSampleBuffer: previewModel.lastReceivedCMSampleBuffer,
+        isInversed: previewModel.shouldInversePlayerHorizontally,
         frameDidSkippedAction: {
           previewModel.frameDidSkipped()
         },

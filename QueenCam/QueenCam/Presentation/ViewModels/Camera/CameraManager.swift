@@ -33,6 +33,9 @@ final class CameraManager: NSObject {
 
   private var inTrackingCameraDelegate: [Int64: CameraDelegate] = [:]
 
+  // 라이브 포토에 대한 컴플리션
+  var onWillCaptureLivePhoto: (() -> Void)?
+  var onDidFinishCapture: (() -> Void)?
   var onPhotoCapture: ((UIImage) -> Void)?
   var onTapCameraSwitch: ((AVCaptureDevice.Position) -> Void)?
 
@@ -119,7 +122,11 @@ final class CameraManager: NSObject {
       let uniqueID = photoSettings.uniqueID
 
       // 2
-      let delegate = CameraDelegate(isCameraPosition: self.position) { [weak self] photoOutput in
+      let delegate = CameraDelegate(
+        isCameraPosition: self.position,
+        willCaptureLivePhoto: { [weak self] in
+          self?.onWillCaptureLivePhoto?()
+        }) { [weak self] photoOutput in
         guard let self else { return }
 
         // 5
@@ -127,7 +134,12 @@ final class CameraManager: NSObject {
           self.inTrackingCameraDelegate.removeValue(forKey: uniqueID)
         }
 
-        guard let photoOutput else { return }
+        guard let photoOutput else {
+          DispatchQueue.main.async {
+            self.onDidFinishCapture?()
+          }
+          return
+        }
 
         // 6
         DispatchQueue.main.async {
@@ -137,6 +149,7 @@ final class CameraManager: NSObject {
           case .livePhoto(let thumbnail, let imageData, let videoData):
             self.onPhotoCapture?(thumbnail)
           }
+          self.onDidFinishCapture?()
         }
 
         self.sendPhoto(photoOutput)
@@ -325,6 +338,7 @@ extension CameraManager {
           DispatchQueue.main.async {
             self.onTapCameraSwitch?(self.position)
           }
+
           continuation.resume()
 
         } catch {
@@ -334,6 +348,9 @@ extension CameraManager {
 
       }
     }
+
+    // 촬영 모드가 변경되었음을 상대에게 알린다
+    await networkService.send(for: .previewRenderingMode(position == .back ? .rear : .front))
   }
 }
 

@@ -73,6 +73,9 @@ final class ConnectionViewModel {
 
   /// Error
   private(set) var connectionError: Error?
+  
+  /// 연결 중단 이유
+  private(set) var lastStopReason: String?
 
   private let logger = QueenLogger(category: "ConnectionViewModel")
 
@@ -102,6 +105,10 @@ final class ConnectionViewModel {
           reconnectingDeviceName = lastConnectedDevice?.name
           tryReconnect()
         }
+        
+        if state == .host(.cancelled) || state == .viewer(.cancelled) {
+          lastStopReason = networkService.lastStopReason
+        }
       }
       .store(in: &cancellables)
 
@@ -125,8 +132,7 @@ final class ConnectionViewModel {
         case .changeRole(let roles, let lwwValue):
           self?.handleReceivedRequestChangeRole(receivedNewRoles: roles, receviedLwwRegister: lwwValue)
         case .willDisconnect:
-          // 상대로부터 연결 종료 예정 통보를 받으면 세션 종료 오버레이 노출
-          self?.needReportSessionFinished = true
+          self?.handleReceivedWillDisconnect()
         default: break
         }
       }
@@ -170,7 +176,7 @@ extension ConnectionViewModel {
 
   func connectButtonDidTap(for device: WAPairedDevice) {
     Task {
-      networkService.stop(byUser: true)
+      networkService.stop(byUser: true, userReason: nil)
 
       try await Task.sleep(for: .milliseconds(100))
 
@@ -191,6 +197,7 @@ extension ConnectionViewModel {
   func disconnectButtonDidTap() {
     networkService.disconnect()
     role = nil  // 정상 종료인 경우 역할 초기화
+    notificationService.registerNotification(.make(type: .disconnected))
   }
 
   func viewDidAppearTask() async {
@@ -205,16 +212,18 @@ extension ConnectionViewModel {
 
   func connectionViewAppear() {
     selectedPairedDevice = nil  // 연결에 앞서 선택된 페어링 디바이스를 초기화한다
+    connectionError = nil // 연결에 앞서 이전 오류를 초기화한다. 초기화하지 않으면 이전에 발생한 에러가 연결하기 뷰에 노출된다
   }
 
   func connectionViewDisappear() {
     if connections.isEmpty {  // 연결 중인 경우 연결 뷰에서 벗어나면 연결을 취소한다
-      networkService.stop(byUser: true)
+      networkService.stop(byUser: true, userReason: nil)
     }
   }
 
   func selectRole(for role: Role?) {
-    networkService.stop(byUser: true)
+    selectedPairedDevice = nil
+    networkService.stop(byUser: true, userReason: nil)
     self.role = role
   }
 
@@ -228,6 +237,7 @@ extension ConnectionViewModel {
     lastSwapRoleLWWRegister = lwwValue
 
     self.role = role.counterpart
+    self.notificationService.registerNotification(.make(type: .swapRole))
 
     Task.detached {
       // 상대에게 지금 나의 현재 역할로 바꾸라고 요청한다
@@ -236,7 +246,7 @@ extension ConnectionViewModel {
   }
 
   func reconnectCancelButtonDidTap() {
-    networkService.stop(byUser: true)
+    networkService.stop(byUser: true, userReason: nil)
     lastConnectedDevice = nil
     connectionLost = false
     reconnectingDeviceName = nil
@@ -244,11 +254,12 @@ extension ConnectionViewModel {
 
   func sessionFinishedOverlayCloseButtonDidTap() {
     needReportSessionFinished = false
+    lastStopReason = nil
     role = nil  // 정상 종료인 경우 역할 초기화
   }
 
   func errorConfirmedByUser() {
-    networkService.stop(byUser: true)
+    networkService.stop(byUser: true, userReason: nil)
     selectedPairedDevice = nil
     connectionError = nil
   }
@@ -318,5 +329,13 @@ extension ConnectionViewModel {
     logger.debug("Role updated to \(newRole.displayName) (lwwRegister: \(lwwRegister)")
     self.role = newRole
     self.lastSwapRoleLWWRegister = lwwRegister
+
+    self.notificationService.registerNotification(.make(type: .swapRole))
+  }
+  
+  private func handleReceivedWillDisconnect() {
+    // 상대로부터 연결 종료 예정 통보를 받으면 세션 종료 오버레이 노출
+    needReportSessionFinished = true
+    notificationService.registerNotification(.make(type: .disconnected))
   }
 }

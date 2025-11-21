@@ -8,16 +8,37 @@
 import SwiftUI
 
 extension CameraView.CameraPreviewArea {
+  private var isFrameActive: Bool {
+    activeTool == .frame
+  }
+
+  private var isPenActive: Bool {
+    activeTool == .pen
+  }
+
+  private var isMagicPenActive: Bool {
+    activeTool == .maginPen
+  }
+
   /// 가이딩 도구들 오버레이
   var guidingLayer: some View {
-    Group {
-      if isActiveFrame {
-        FrameEditorView(frameViewModel: frameViewModel, currentRole: currentMode)
-      }
-      if isActivePen || isActiveMagicPen {
-        PenWriteView(penViewModel: penViewModel, isPen: isActivePen, isMagicPen: isActiveMagicPen, role: currentMode)
+    ZStack {
+      if isPenActive || isMagicPenActive {
+        PenWriteView(
+          penViewModel: penViewModel,
+          isPen: isPenActive,
+          isMagicPen: isMagicPenActive,
+          role: currentMode,
+          isZooming: isZooming
+        )
+        .gesture(magnificationGesture)
       } else {
         PenDisplayView(penViewModel: penViewModel)
+      }
+      if isFrameActive {
+        FrameEditorView(frameViewModel: frameViewModel, currentRole: currentMode)
+      } else {
+        FrameDisplayView(frameViewModel: frameViewModel)
       }
     }
     .opacity(isRemoteGuideHidden ? .zero : 1)
@@ -42,7 +63,7 @@ extension CameraView.CameraPreviewArea {
       Spacer()
       if !isFront {
         VStack(spacing: .zero) {
-          if currentMode == .photographer {
+          if currentMode == .photographer && activeTool != .frame {
             LensZoomTool(
               zoomScaleItemList: zoomScaleItemList,
               currentZoomFactor: currentZoomFactor,
@@ -77,26 +98,21 @@ extension CameraView.CameraPreviewArea {
 
       Spacer()
 
-      HStack {
-        Spacer()
+      if activeTool == nil {
+        HStack {
+          Spacer()
 
-        // MARK: 눈까리 버튼
-        GuidingToggleButton(
-          role: currentRole,
-          systemName: guideToggleImage,
-          isActive: !isRemoteGuideHidden
-        ) {
-          isRemoteGuideHidden.toggle()
-          if isRemoteGuideHidden {
-            frameViewModel.setFrame(false)
-          } else if !isRemoteGuideHidden && !frameViewModel.frames.isEmpty {
-            frameViewModel.setFrame(true)
+          // MARK: 눈까리 버튼
+          GuidingToggleButton(
+            role: currentRole,
+            systemName: guideToggleImage,
+            isActive: !isRemoteGuideHidden
+          ) {
+            isRemoteGuideHidden.toggle()
           }
-
-          cameraViewModel.showGuidingToast(isRemoteGuideHidden: isRemoteGuideHidden)
         }
+        .padding(12)
       }
-      .padding(12)
     }
   }
 }

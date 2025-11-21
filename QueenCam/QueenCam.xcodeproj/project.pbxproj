@@ -462,7 +462,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 12;
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = D22ZM93S77;
 				ENABLE_PREVIEWS = YES;
@@ -472,9 +472,9 @@
 				INFOPLIST_KEY_CFBundleDisplayName = "찍자";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.photography";
-				INFOPLIST_KEY_NSCameraUsageDescription = "찍자 서비스 이용을 위해 카메라 사용 권한이 필요합니다. 실시간 촬영 화면 공유, 사진 촬영 및 저장 기능을 위해 카메라를 사용합니다.";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "찍자 서비스 이용을 위해 마이크 사용 권한이 필요합니다. 라이브 포토 촬영 시 동영상과 함께 음성을 녹음하기 위해 마이크를 사용합니다.";
-				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "찍자 서비스 이용을 위해 사진 보관함 접근 권한이 필요합니다. 촬영한 사진 저장 및 불러오기, 레퍼런스 사진 등록 기능을 위해 사용자의 사진 라이브러리에 접근합니다.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "실시간 촬영 화면 공유, 사진 촬영 및 저장 기능을 위해 카메라를 사용합니다.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "라이브 포토 촬영 시 동영상과 함께 음성을 녹음하기 위해 마이크를 사용합니다.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "촬영한 사진 저장 및 불러오기, 레퍼런스 사진 등록 기능을 위해 사용자의 사진 라이브러리에 접근합니다.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -485,7 +485,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.2;
+				MARKETING_VERSION = 1.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.queendom.QueenCam;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -512,7 +512,7 @@
 				CODE_SIGN_ENTITLEMENTS = QueenCam/QueenCam.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 12;
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = D22ZM93S77;
 				ENABLE_PREVIEWS = YES;
@@ -522,9 +522,9 @@
 				INFOPLIST_KEY_CFBundleDisplayName = "찍자";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.photography";
-				INFOPLIST_KEY_NSCameraUsageDescription = "찍자 서비스 이용을 위해 카메라 사용 권한이 필요합니다. 실시간 촬영 화면 공유, 사진 촬영 및 저장 기능을 위해 카메라를 사용합니다.";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "찍자 서비스 이용을 위해 마이크 사용 권한이 필요합니다. 라이브 포토 촬영 시 동영상과 함께 음성을 녹음하기 위해 마이크를 사용합니다.";
-				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "찍자 서비스 이용을 위해 사진 보관함 접근 권한이 필요합니다. 촬영한 사진 저장 및 불러오기, 레퍼런스 사진 등록 기능을 위해 사용자의 사진 라이브러리에 접근합니다.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "실시간 촬영 화면 공유, 사진 촬영 및 저장 기능을 위해 카메라를 사용합니다.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "라이브 포토 촬영 시 동영상과 함께 음성을 녹음하기 위해 마이크를 사용합니다.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "촬영한 사진 저장 및 불러오기, 레퍼런스 사진 등록 기능을 위해 사용자의 사진 라이브러리에 접근합니다.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -535,7 +535,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.2;
+				MARKETING_VERSION = 1.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.queendom.QueenCam;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

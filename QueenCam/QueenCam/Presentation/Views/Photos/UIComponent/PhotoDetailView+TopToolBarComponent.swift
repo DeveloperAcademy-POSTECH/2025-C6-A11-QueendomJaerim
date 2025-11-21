@@ -34,7 +34,8 @@ extension PhotoDetailView.TopToolBarComponent: View {
           Text("등록")
             .font(Font.custom("SF Pro", size: 15))
             .foregroundStyle(isActive ? .offWhite : .disabled)
-            .frame(width: 60, height: 40)
+            .padding(.horizontal, 16)
+            .frame(height: 40)
             .glassEffect(.clear, in: .capsule)
         }
         .disabled(!isActive)

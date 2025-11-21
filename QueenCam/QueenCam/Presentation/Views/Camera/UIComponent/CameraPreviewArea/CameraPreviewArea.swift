@@ -7,12 +7,14 @@ extension CameraView {
   struct CameraPreviewArea {
     @State var isFocused = false
     @State var focusLocation: CGPoint = .zero
-    @State var isReferenceLarge: Bool = false  // 레퍼런스 확대 축소 프로퍼티
     @State var zoomScaleItemList: [CGFloat] = [0.5, 1, 2]
     // 현재 적용된 줌 배율 (카메라와 UI 상태 동기화용)
     @State var currentZoomFactor: CGFloat = 1.0
     // 현재 하나의 핀치 동작 내에서 이전 배율 값을 임시 저장 (변화량을 계산하기 위해)
     @State var previousMagnificationValue: CGFloat = 1.0
+
+    // 펜이 선택되었을 시 드래그와 핀치를 추적하기 위함
+    @State var isZooming: Bool = false
 
     let cameraViewModel: CameraViewModel
     let previewModel: PreviewModel
@@ -21,9 +23,7 @@ extension CameraView {
     let referenceViewModel: ReferenceViewModel
     @Bindable var thumbsUpViewModel: ThumbsUpViewModel
 
-    @Binding var isActiveFrame: Bool
-    @Binding var isActivePen: Bool
-    @Binding var isActiveMagicPen: Bool
+    @Binding var activeTool: ActiveTool?
 
     @Binding var isShowShutterFlash: Bool
 
@@ -31,6 +31,7 @@ extension CameraView {
 
     /// 눈까리
     @Binding var isRemoteGuideHidden: Bool
+    @Binding var isReferenceLarge: Bool  // 레퍼런스 확대 축소 프로퍼티
 
     // connectionViewModel -> 프로퍼티 변환
     let currentRole: Role?
@@ -74,9 +75,6 @@ extension CameraView.CameraPreviewArea: View {
       // MARK: 카메라 프리뷰
       previewContent
 
-      // MARK: 레퍼런스 이미지가 isLarge 모드일 때 뒤에 깔리는 디밍
-      largeReferenceImageDimmingLayer
-
       // MARK: 그리드
       if cameraViewModel.isShowGrid {
         GridView()
@@ -90,6 +88,9 @@ extension CameraView.CameraPreviewArea: View {
 
       // MARK: 카메라 바구니 토글 버튼과 눈까리 버튼
       toggleButtonsLayer
+
+      // MARK: 레퍼런스 이미지가 isLarge 모드일 때 뒤에 깔리는 디밍
+      largeReferenceImageDimmingLayer
 
       // MARK: 레퍼런스 이미지 뷰
       ReferenceView(referenceViewModel: referenceViewModel, isLarge: $isReferenceLarge)

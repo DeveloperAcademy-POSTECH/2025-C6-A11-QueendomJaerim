@@ -9,9 +9,8 @@ struct CameraView {
 
   @State private var isShowPhotoPicker = false
 
-  @State private var isActiveFrame: Bool = false
-  @State private var isActivePen: Bool = false
-  @State private var isActiveMagicPen: Bool = false
+  // MARK: 현재 활성화된 도구
+  @State private var activeTool: ActiveTool?
 
   @State private var isShowShutterFlash: Bool = false
 
@@ -28,6 +27,8 @@ struct CameraView {
 
   /// 연결 플로우가 진행되는 ConnectionView를 띄울지 여부
   @State private var isShowConnectionView: Bool = false
+
+  @State var isReferenceLarge: Bool = false  // 레퍼런스 확대 축소 프로퍼티
 
   @Environment(\.displayScale) private var displayScale
 
@@ -92,7 +93,7 @@ extension CameraView {
     // 가이딩 초기화
     penViewModel.reset()
     frameViewModel.deleteAll()
-    referenceViewModel.onDelete()
+    referenceViewModel.onReset()
     connectionViewModel.swapRole()
     // 새 역할에 따라 캡쳐를 시작/중단한다
     if let newRole = connectionViewModel.role {
@@ -186,12 +187,11 @@ extension CameraView: View {
           frameViewModel: frameViewModel,
           referenceViewModel: referenceViewModel,
           thumbsUpViewModel: thumbsUpViewModel,
-          isActiveFrame: $isActiveFrame,
-          isActivePen: $isActivePen,
-          isActiveMagicPen: $isActiveMagicPen,
+          activeTool: $activeTool,
           isShowShutterFlash: $isShowShutterFlash,
           isShowCameraSettingTool: $isShowCameraSettingTool,
           isRemoteGuideHidden: $isRemoteGuideHidden,
+          isReferenceLarge: $isReferenceLarge,
           currentRole: connectionViewModel.role,
           connectionLost: connectionViewModel.connectionLost,
           reconnectCancelButtonDidTap: connectionViewModel.reconnectCancelButtonDidTap,
@@ -207,15 +207,16 @@ extension CameraView: View {
           frameViewModel: frameViewModel,
           referenceViewModel: referenceViewModel,
           thumbsUpViewModel: thumbsUpViewModel,
-          isActiveFrame: $isActiveFrame,
-          isActivePen: $isActivePen,
-          isActiveMagicPen: $isActiveMagicPen,
+          activeTool: $activeTool,
           isShowShutterFlash: $isShowShutterFlash,
           isShowCameraSettingTool: $isShowCameraSettingTool,
           isRemoteGuideHidden: $isRemoteGuideHidden,
           isShowPhotoPicker: $isShowPhotoPicker,
+          isReferenceLarge: $isReferenceLarge,
           shutterActionEffect: flashScreen
-        )
+        ) { targetTool in
+          activeTool = activeTool == targetTool ? nil : targetTool
+        }
         .minimize(DynamicScreenUtils.isShortScreen)
       }
     }
@@ -296,7 +297,13 @@ extension CameraView: View {
     .overlay {
       // 연결 종료 오버레이
       if connectionViewModel.needReportSessionFinished {
-        SessionFinishedOverlayView {
+        SessionFinishedOverlayView(reason: LocalizedStringKey("친구가 연결을 종료했어요.\n다시 시작하려면 재연결해주세요.")) {
+          connectionViewModel.sessionFinishedOverlayCloseButtonDidTap()
+        }
+      }
+
+      if let lastStopReason = connectionViewModel.lastStopReason {
+        SessionFinishedOverlayView(reason: LocalizedStringKey(lastStopReason)) {
           connectionViewModel.sessionFinishedOverlayCloseButtonDidTap()
         }
       }
@@ -314,7 +321,7 @@ extension CameraView: View {
         // 가이딩 초기화
         penViewModel.reset()
         frameViewModel.deleteAll()
-        referenceViewModel.onDelete()
+        referenceViewModel.onReset()
       }
     }
     // 레퍼런스 삭제 시 PhotoPicker 선택도 초기화
@@ -326,11 +333,24 @@ extension CameraView: View {
     }
     // 프레임 토글 시 양쪽 모두 (비)활성화
     .onChange(of: frameViewModel.isFrameEnabled) { _, enabled in
-      guard !isRemoteGuideHidden else { return }
-      isActiveFrame = enabled
+      // 상대편 UI 자동 동기화 방지: 소유자일 때만 내 activeTool을 변경
+      if enabled {
+        if frameViewModel.frameOwnerRole == connectionViewModel.role {
+          activeTool = .frame
+        }
+      } else {
+        if frameViewModel.frameOwnerRole == connectionViewModel.role {
+          activeTool = nil
+        }
+      }
     }
     .onChange(of: isShowPhotoPicker) { _, isShow in
       cameraViewModel.managePhotosPickerToast(isShowPhotosPicker: isShow)
+    }
+    .onChange(of: cameraViewModel.isCapturingLivePhoto) { _, new in
+      if new {
+        cameraViewModel.showLivePhotoToast()
+      }
     }
     .sheet(isPresented: $isShowLogExportingSheet) {
       LogExportingView()

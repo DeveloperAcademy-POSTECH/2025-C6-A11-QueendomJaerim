@@ -11,6 +11,7 @@ import SwiftUI
 struct OpenView: View {
   var referenceViewModel: ReferenceViewModel
   @State private var showDelete: Bool = false
+  @State private var showDeleteConfirmAlert: Bool = false
   @Binding var isLarge: Bool
   private let enlargeDuration: Double = 0.25
   private let shrinkDuration: Double = 0.25
@@ -55,9 +56,7 @@ struct OpenView: View {
       if showDelete && (referenceViewModel.image != nil) {
         // 레퍼런스 삭제 버튼
         Button {
-          referenceViewModel.onDelete()
-          showDelete = false
-          isLarge = false
+          showDeleteConfirmAlert = true
         } label: {
           ReferenceDeleteButton()
             .scaleEffect(showDelete ? 1.0 : 0.5)
@@ -71,6 +70,7 @@ struct OpenView: View {
       if newValue {
         DispatchQueue.main.asyncAfter(deadline: .now() + enlargeDuration * 0.6) {
           withAnimation(.easeOut(duration: 0.09)) {
+            guard isLarge else { return }
             showDelete = true
           }
         }
@@ -78,5 +78,35 @@ struct OpenView: View {
         showDelete = false
       }
     }
+    .alert(
+      "참고 이미지를 삭제합니다.",
+      isPresented: $showDeleteConfirmAlert,
+      actions: {
+        Button(role: .destructive) {
+          deleteReferenceConfirmButtonDidTap()
+        } label: {
+          Text("삭제")
+        }
+
+        Button(role: .cancel) {
+        } label: {
+          Text("취소")
+        }
+      },
+      message: {
+        Text("친구의 기기에 올라간 참고 이미지도 함께 삭제됩니다.")
+      }
+    )
+  }
+}
+
+extension OpenView {
+
+  // MARK: - User Intents
+
+  private func deleteReferenceConfirmButtonDidTap() {
+    referenceViewModel.onDelete()
+    showDelete = false
+    isLarge = false
   }
 }

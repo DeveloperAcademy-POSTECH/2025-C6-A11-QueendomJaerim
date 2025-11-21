@@ -10,10 +10,10 @@ import SwiftUI
 
 @Observable
 final class PenViewModel {
-  /// 현재 그려진 모든 선(stroke)들
+  /// 이전 세션에 그려진 모든 선(stroke)들 - Undo 불가
+  var persistedStrokes: [Stroke] = []
+  /// 현재 세션 중 그려진 모든 선(stroke)들
   var strokes: [Stroke] = []
-  /// 사용자가 Redo 했을때 되돌릴 수 있는 선(stroke)들
-  var redoStrokes: [Stroke] = []
   /// 사용자가 전체삭제 했던 선(stroke)들
   var deleteStrokes: [[Stroke]] = []
   /// 현재 사용자의 역할(모델, 작가, 미연결)
@@ -24,8 +24,11 @@ final class PenViewModel {
   var hasEverDrawn: Bool = false
 
   // 가이드 최초 1회
-  private var hasShownPenToast = false
+  private var hasShownPenToast: Bool = false
   private var hasShownMagicPenToast: Bool = false
+  // 가이드 사용시 레퍼런스 확대 최초 1회
+  private var hasShownPenReferenceLargeToast: Bool = false
+  private var hasShownMagicPenReferenceLargeToast: Bool = false
 
   // MARK: - 네트워크
   let networkService: NetworkServiceProtocol
@@ -46,9 +49,8 @@ final class PenViewModel {
 
   // MARK: - 드로잉 시작/진행 업데이트
   func add(initialPoints: [CGPoint], isMagicPen: Bool, author: Role) -> UUID {
-    let stroke = Stroke(points: initialPoints, isMagicPen: isMagicPen, author: author)
+    let stroke = Stroke(points: initialPoints, isMagicPen: isMagicPen, author: author, endDrawing: false)
     strokes.append(stroke)
-    redoStrokes.removeAll()
 
     if author == myRole && hasEverDrawn == false {
       hasEverDrawn = true
@@ -60,13 +62,33 @@ final class PenViewModel {
   }
 
   /// 진행 중 스트로크의 포인트를 갱신 +  .replace 이벤트를 전송
-  func updateStroke(id: UUID, points: [CGPoint]) {
+  func updateStroke(id: UUID, points: [CGPoint], endDrawing: Bool) {
     guard let strokeIndex = strokes.firstIndex(where: { $0.id == id }) else { return }
     if strokes[strokeIndex].author != myRole { return }
     strokes[strokeIndex].points = points
-
+    strokes[strokeIndex].endDrawing = endDrawing
     // Send to network
     sendPenCommand(command: .replace(stroke: strokes[strokeIndex]))
+  }
+  // MARK: - 세션 종료 후 Stroke 저장
+  /// 펜 툴 해제(세션 종료) 시 본인 stroke를 strokes에서 persistedStrokes로 이관
+  func saveStroke() {
+    // strokes에 있는 본인 stroke 찾기
+    let myStrokes = strokes.filter { $0.author == myRole }
+    if !myStrokes.isEmpty {
+      // 해당 stroke를 persistedStrokes로 append
+      persistedStrokes.append(contentsOf: myStrokes)
+      // 해당 stroke를 strokes에서 삭제(remove)
+      strokes.removeAll { $0.author == myRole }
+    }
+    // deleteStrokes에 있는 본인 stroke 찾기 => 전체 삭제
+    let myDeleteStrokes = deleteStrokes.flatMap { $0 }.filter { $0.author == myRole }
+    if !myDeleteStrokes.isEmpty {
+      // 해당 stroke를 deleteStrokes에서 삭제 - 복구 불가
+      for i in deleteStrokes.indices {
+        deleteStrokes[i].removeAll { $0.author == myRole }
+      }
+    }
   }
 
   // MARK: - 스트로크 삭제
@@ -78,7 +100,6 @@ final class PenViewModel {
     else { return }
 
     strokes.removeAll { $0.id == id }
-    redoStrokes.removeAll { $0.id == id }
 
     // Send to network
     sendPenCommand(command: .remove(id: id))
@@ -88,13 +109,19 @@ final class PenViewModel {
   func deleteAll() {
     // 내가 생성한 stroke 배열과 id 배열
     let myStrokes = strokes.filter { $0.author == myRole }
-    if !myStrokes.isEmpty { deleteStrokes.append(myStrokes) }
+    let myPersistedStrokes = persistedStrokes.filter { $0.author == myRole }
+    let allMyStrokes = myStrokes + myPersistedStrokes
 
-    let myIds = myStrokes.map(\.id)
+    if !allMyStrokes.isEmpty {
+      deleteStrokes.append(myStrokes)  // 전체 삭제 이후, Undo는 현재 세션에 작업한 strokes만 포함
+    }
+
+    let myIds = allMyStrokes.map(\.id)
 
     strokes.removeAll { $0.author == myRole }
-    redoStrokes.removeAll { $0.author == myRole }
+    persistedStrokes.removeAll { $0.author == myRole }
 
+    //   Send to network
     for id in myIds {
       sendPenCommand(command: .remove(id: id))
     }
@@ -103,7 +130,6 @@ final class PenViewModel {
   /// 펜 가이딩 초기화
   func reset() {
     strokes.removeAll()
-    redoStrokes.removeAll()
     hasEverDrawn = false
 
     // Send to network
@@ -122,20 +148,9 @@ final class PenViewModel {
     guard let index = strokes.lastIndex(where: { $0.author == myRole }) else { return }
 
     let last = strokes.remove(at: index)
-    redoStrokes.append(last)
 
     // Send to network
     sendPenCommand(command: .remove(id: last.id))
-  }
-
-  func redo() {
-    guard let index = redoStrokes.lastIndex(where: { $0.author == myRole }) else { return }
-
-    let redoStroke = redoStrokes.remove(at: index)
-    strokes.append(redoStroke)
-
-    // Send to network
-    sendPenCommand(command: .add(stroke: redoStroke))
   }
 
   // MARK: - 토스트
@@ -143,24 +158,30 @@ final class PenViewModel {
     case pen
     case magicPen
   }
-  // 가이드 숨김 토글 관련 토스트
-  func showGuidingDisabledToast(type: GuidingType) {
+  // 툴 사용 중 레퍼런스 확대 - 최초 1회
+  func showToolReferenceLargeToast(type: GuidingType) {
     switch type {
     case .pen:
-      notificationService.registerNotification(DomainNotification.make(type: .turnOnGuidingFirstWithPen))
+      guard !hasShownPenReferenceLargeToast else { return }
+      notificationService.registerNotification(DomainNotification.make(type: .toolUsingEnlargeReference))
+      hasShownPenReferenceLargeToast = true
     case .magicPen:
-      notificationService.registerNotification(DomainNotification.make(type: .turnOnGuidingFirstWithMagicPen))
+      guard !hasShownMagicPenReferenceLargeToast else { return }
+      notificationService.registerNotification(DomainNotification.make(type: .toolUsingEnlargeReference))
+      hasShownMagicPenReferenceLargeToast = true
     }
   }
-  // 처음으로 툴 선택 할때 토스트
+  // 처음으로 펜+ 매직펜 툴 선택 할때 토스트
   func showFirstToolToast(type: GuidingType) {
     switch type {
     case .pen:
       guard !hasShownPenToast else { return }
       notificationService.registerNotification(DomainNotification.make(type: .firstPenToolSelected))
+      hasShownPenToast = true
     case .magicPen:
       guard !hasShownMagicPenToast else { return }
       notificationService.registerNotification(DomainNotification.make(type: .firstMagicToolSelected))
+      hasShownMagicPenToast = true
     }
   }
   // 지우개로 펜 가이드라인 지울때마다의 토스트
@@ -205,10 +226,9 @@ extension PenViewModel {
       }
     case .delete(let id):
       strokes.removeAll { $0.id == id }
-      redoStrokes.removeAll { $0.id == id }
+      persistedStrokes.removeAll { $0.id == id }
     case .reset:
       strokes.removeAll()
-      redoStrokes.removeAll()
       hasEverDrawn = false
     }
   }

@@ -6,6 +6,8 @@
 	<string>AppIcon</string>
 	<key>FirebaseAppDelegateProxyEnabled</key>
 	<false/>
+	<key>QueenCamCompatibleMinimumVersion</key>
+	<string>1.1.0</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Pretendard-Medium.ttf</string>

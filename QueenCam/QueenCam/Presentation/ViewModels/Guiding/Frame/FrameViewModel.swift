@@ -19,10 +19,8 @@ final class FrameViewModel {
 
   /// 프레임 토글 여부
   var isFrameEnabled: Bool = false
-  /// 프레임 현재 수정 중 여부
-  var isInteracting: Bool = false
-  /// 프레임을 현재 수정 중인 역할(작가, 모델)
-  var interactingRole: Role?
+  /// 프레임의 현재 소유자
+  var frameOwnerRole: Role?
   /// 수정 및 선택한 프레임의 식별자
   var selectedFrameID: UUID?
   /// 최대 허용 프레임 갯수
@@ -46,9 +44,9 @@ final class FrameViewModel {
 
   // MARK: - Toast
   let notificationService: NotificationServiceProtocol
+  private var hasShownCreateToast: Bool = false
   private var hasShownPeerCreateToast: Bool = false
   private var hasShownPeerEditToast: Bool = false
-  private var hasShownPeerRatioEditToast: Bool = false
   private var hasShownPeerDeleteToast: Bool = false
 
   init(
@@ -68,12 +66,13 @@ final class FrameViewModel {
   }
 
   // MARK: - 프레임 활성화 토글 + 네트워크
-  func setFrame(_ enabled: Bool) {
+  func setFrame(_ enabled: Bool, _ currentRole: Role?) {
     // 로컬 상태 갱신
     isFrameEnabled = enabled
+    frameOwnerRole = currentRole
 
     // Send to network
-    sendFrameEnabled(enabled)
+    sendFrameEnabled(enabled, currentRole)
   }
 
   // MARK: - 프레임 추가
@@ -84,6 +83,7 @@ final class FrameViewModel {
     let rect = CGRect(origin: .init(x: newX, y: newY), size: size)
     let frame = Frame(rect: rect)
     frames.append(frame)
+    selectedFrameID = frame.id
 
     // Send to network
     sendFrameCommand(command: .add(frame: frame))
@@ -200,39 +200,32 @@ final class FrameViewModel {
   }
 
   // MARK: - Toast
-  func showGuidingDisabledToast() {
-    notificationService.registerNotification(DomainNotification.make(type: .turnOnGuidingFirstWithFrame))
-  }
   enum FrameToastEventType {
+    /// 프레임 생성
     case create
+    /// 프레임 삭제
     case delete
+    /// 프레임 제어 모드 진입
     case edit
-    case ratioEdit
   }
   // 상대가 이벤트를 한 경우
   func peerFrameGuidingToast(type: FrameToastEventType) {
     switch type {
     case .create:
-      notificationService.registerNotification(DomainNotification.make(type: .peerCreateFrameGuide))
-    case .delete:
-      notificationService.registerNotification(DomainNotification.make(type: .peerCloseFrameGuide))
+      return notificationService.registerNotification(DomainNotification.make(type: .peerCreatedFrameGuide))
     case .edit:
-      notificationService.registerNotification(DomainNotification.make(type: .peerEditingFrameGuide))
-    case .ratioEdit:
-      notificationService.registerNotification(DomainNotification.make(type: .peerFirstEditMode))
+      return notificationService.registerNotification(DomainNotification.make(type: .peerEditingFrameGuide))
+    case .delete:
+      return notificationService.registerNotification(DomainNotification.make(type: .peerDeletedFrameGuide))
     }
   }
   // 사용자(본인)가 이벤트를 한 경우
   func myFrameGuidingToast(type: FrameToastEventType) {
     switch type {
     case .create:
-      notificationService.registerNotification(DomainNotification.make(type: .sharingFrameGuideStarted))
-    case .delete:
-      notificationService.registerNotification(DomainNotification.make(type: .closeFrameGuide))
-    case .edit:
+      notificationService.registerNotification(DomainNotification.make(type: .createdFrameGuide))
+    default:
       return
-    case .ratioEdit:
-      notificationService.registerNotification(DomainNotification.make(type: .firstEditMode))
     }
   }
 }
@@ -249,30 +242,12 @@ extension FrameViewModel {
         case .frameUpdated(let eventType):
           self.handleFrameEvent(eventType: eventType)
 
-        case .frameEnabled(let enabled):
+        case .frameEnabled(let enabled, let role):
           self.isFrameEnabled = enabled
-          if !hasShownPeerCreateToast {
-            peerFrameGuidingToast(type: .create)
-            hasShownPeerCreateToast = true
-          }
-          if !hasShownPeerDeleteToast {
-            peerFrameGuidingToast(type: .delete)
-            hasShownPeerDeleteToast = true
-          }
-
-        case .frameInteracting(let role, let interacting):
-          if interacting {
-            self.isInteracting = true
-            self.interactingRole = role
-            if !hasShownPeerEditToast {
-              peerFrameGuidingToast(type: .edit)
-              hasShownPeerEditToast = true
-            }
-          } else {
-            self.isInteracting = false
-            self.interactingRole = nil
-          }
-
+          self.frameOwnerRole = role
+          guard isFrameEnabled, frameOwnerRole != currentRole, !frames.isEmpty else { return }
+          peerFrameGuidingToast(type: .edit)
+    
         default:
           break
         }
@@ -284,7 +259,11 @@ extension FrameViewModel {
     switch eventType {
     case .add(let framePayload):
       let frame = FrameMapper.convert(payload: framePayload)
-
+      // 상대방이 프레임을 생성한 경우의 토스트
+      if !hasShownPeerCreateToast && networkService.mode != nil {
+        peerFrameGuidingToast(type: .create)
+        hasShownPeerCreateToast = true
+      }
       if !frames.contains(where: { $0.id == frame.id }) {
         frames.append(frame)
       }
@@ -299,7 +278,13 @@ extension FrameViewModel {
         return frame
       }
     case .deleteAll:
+      // 상대방이 프레임을 삭제한 경우의 토스트
+      if !hasShownPeerDeleteToast && networkService.mode != nil {
+        peerFrameGuidingToast(type: .delete)
+        hasShownPeerDeleteToast = true
+      }
       frames.removeAll()
+
     }
   }
 }
@@ -311,6 +296,10 @@ extension FrameViewModel {
 
     switch command {
     case .add(let frame):
+      if !hasShownCreateToast && networkService.mode != nil {
+        myFrameGuidingToast(type: .create)
+        hasShownCreateToast = true
+      }
       sendingEventType = .add(FrameMapper.convert(frame: frame))
     case .move(let frame):
       sendingEventType = .replace(FrameMapper.convert(frame: frame))
@@ -327,19 +316,10 @@ extension FrameViewModel {
   }
 
   /// 프레임 토글 상태 전송
-  private func sendFrameEnabled(_ enabled: Bool) {
+  private func sendFrameEnabled(_ enabled: Bool, _ currentRole: Role?) {
     Task.detached { [weak self] in
       guard let self else { return }
-      await self.networkService.send(for: .frameEnabled(enabled))
-    }
-  }
-
-  /// 프레임 상호작용(제스처) 시작/종료 전송
-  func sendFrameInteracting(_ interacting: Bool) {
-    let myRole = currentRole ?? .photographer
-    Task.detached { [weak self] in
-      guard let self else { return }
-      await self.networkService.send(for: .frameInteracting(role: myRole, isInteracting: interacting))
+      await self.networkService.send(for: .frameEnabled(enabled, currentRole))
     }
   }
 }

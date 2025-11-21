@@ -32,6 +32,9 @@ protocol NetworkServiceProtocol: AnyObject {
 
   /// 기기별 퍼포먼스 레포트를 방출하는 퍼블리셔입니다.
   var deviceReportsPublisher: AnyPublisher<[WAPairedDevice: WAPerformanceReport], Never> { get }
+  
+  /// 마지막 종료 이유 (사용자에게 알려야할 때 할당)
+  var lastStopReason: String? { get }
 
   // MARK: - Methods
   /// 네트워크 서비스를 시작합니다.
@@ -41,7 +44,7 @@ protocol NetworkServiceProtocol: AnyObject {
   func reconnect(for device: WAPairedDevice)
 
   /// 네트워크 서비스를 중지합니다.
-  func stop(byUser: Bool)
+  func stop(byUser: Bool, userReason: String?)
 
   /// 사용자 요청으로 네트워크 연결을 중단합니다.
   func disconnect()

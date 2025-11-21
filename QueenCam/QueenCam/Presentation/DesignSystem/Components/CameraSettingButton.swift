@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct CameraSettingButton {
-  let title: String
+  let title: LocalizedStringKey
   let systemName: String
   let isActive: Bool
   let tapAction: () -> Void

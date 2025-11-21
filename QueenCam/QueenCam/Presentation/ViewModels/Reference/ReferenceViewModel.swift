@@ -13,8 +13,9 @@ import UIKit
 @Observable
 final class ReferenceViewModel {
   // MARK: - Properties
-  private(set) var image: UIImage?  // 선택된 레퍼런스 사진
-  var state: ReferenceState = .open
+  /// 선택된 레퍼런스 사진
+  private(set) var image: UIImage?
+  var state: ReferenceState = .none
   let foldThreshold: CGFloat = -50
   var dragOffset: CGSize = .zero  // 드래그 중 임시편차
   var location: ReferenceLocation = .topLeft
@@ -28,6 +29,9 @@ final class ReferenceViewModel {
   }
   /// 현재 레퍼런스 토스트 존재 여부
   var hasReferenceToast: Bool = false
+
+  /// 레퍼런스 최초 등록 여부
+  private var firstRegisterReference: Bool = false
 
   // MARK: - Network
   let networkService: NetworkServiceProtocol
@@ -46,7 +50,6 @@ final class ReferenceViewModel {
 
     bind()
   }
-
   // MARK: - DRAG(for fold/unfold)
   func dragChanged(_ value: DragGesture.Value) {
     let x = value.translation.width
@@ -79,27 +82,41 @@ final class ReferenceViewModel {
   }
 
   // MARK: - DRAG(for location change)
-  func updateLocation(end: CGPoint, size: CGSize) {
+  func updateLocation(end: CGPoint, size: CGSize, isLarge: Bool) {
     let newLocation = ReferenceLocation.corner(point: end, size: size)
     withAnimation(.snappy) {
-      location = newLocation
+      // 레퍼런스가 확대되었을때, corner 이동 금지
+      if !isLarge {
+        location = newLocation
+      }
       dragOffset = .zero
     }
   }
 
   // MARK: - Reference 삭제
-  func onDelete() {  // 초기화
-
-    state = .delete
+  func onDelete() {  // 삭제
     image = nil
-    state = .open
+    state = .none
+    notificationService.registerNotification(.make(type: .deleteReference))
 
+    // Send to Network
     self.sendReferenceImageCommand(command: .remove)
+  }
+
+  func onReset() {  // 초기화(역할 바꾸기, 연결 종료)
+    image = nil
+    state = .none
+
+    // Send to Network
+    self.sendReferenceImageCommand(command: .reset)
   }
 
   func onRegister(uiImage: UIImage?) {
     guard let uiImage else { return }
     self.image = uiImage
+    state = .open
+
+    // Send to Network
     self.sendReferenceImageCommand(command: .register(image: uiImage))
   }
 }
@@ -134,17 +151,21 @@ extension ReferenceViewModel {
   private func handleReferenceImageEvent(eventType: ReferenceImageEventType) {
     switch eventType {
     case .register(let imageData):
-      if hasReferenceImage {
-        notificationService.registerNotification(.make(type: .peerRegisterNewReference))
-      } else {
-        notificationService.registerNotification(.make(type: .peerRegisterFirstReference))
-      }
       if let uiImage = UIImage(data: imageData) {
         self.image = uiImage
+        self.state = .open
+      }
+      if !firstRegisterReference && networkService.mode != nil {
+        notificationService.registerNotification(.make(type: .peerRegisterFirstReference))
+        firstRegisterReference = true
+      } else {
+        notificationService.registerNotification(.make(type: .peerRegisterNewReference))
       }
     case .remove:
       self.image = nil
       notificationService.registerNotification(.make(type: .peerDeleteReference))
+    case .reset:
+      self.image = nil
     }
   }
 }
@@ -154,16 +175,18 @@ extension ReferenceViewModel {
   nonisolated var compressionQualityOfReferenceImage: CGFloat { 0.8 }
 
   private func sendReferenceImageCommand(command: ReferenceNetworkCommand) {
-    if hasReferenceImage {
-      notificationService.registerNotification(.make(type: .registerNewReference))
-    } else {
-      notificationService.registerNotification(.make(type: .registerFirstReference))
-    }
     if case .register(let image) = command {
       sendReferenceImageRegisteredEvent(referenceImage: image)
-    } else {
+      if !firstRegisterReference && networkService.mode != nil {
+        notificationService.registerNotification(.make(type: .registerFirstReference))
+        firstRegisterReference = true
+      } else {
+        notificationService.registerNotification(.make(type: .registerNewReference))
+      }
+    } else if case .remove = command {
       sendReferenceImageRemovedEvent()
-      notificationService.registerNotification(.make(type: .deleteReference))
+    } else {
+      sendReferenceImageResetEvent()
     }
   }
 
@@ -174,7 +197,6 @@ extension ReferenceViewModel {
       else {
         return
       }
-
       await self.networkService.send(for: .referenceImage(.register(imageData: imageData)))
     }
   }
@@ -185,9 +207,18 @@ extension ReferenceViewModel {
       await self.networkService.send(for: .referenceImage(.remove))
     }
   }
+
+  private func sendReferenceImageResetEvent() {
+    Task.detached { [weak self] in
+      guard let self else { return }
+      await self.networkService.send(for: .referenceImage(.reset))
+    }
+  }
+
 }
 
 private enum ReferenceNetworkCommand {
   case remove
   case register(image: UIImage)
+  case reset
 }

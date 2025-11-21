@@ -26,10 +26,16 @@ enum NetworkEvent: Sendable {
   /// 디버그용 핑 명령
   case ping(Date)
 
+  /// 현재 디바이스의 어플리케이션 버전 전송
+  case myVersion(VersionExchangePayload)
+
   // MARK: - Domain Level Events
 
   /// 프리뷰 프레임 (작가 -> 모델)
   case previewFrame(VideoFramePayload)
+
+  /// 프리뷰 렌더링 모드 (후면/전면)
+  case previewRenderingMode(PreviewRenderingType)
 
   /// 렌더링 상태 (모델 -> 작가)
   case renderState(RenderingState)
@@ -44,10 +50,7 @@ enum NetworkEvent: Sendable {
   case frameUpdated(FrameEventType)
 
   /// 프레임 (비)활성화
-  case frameEnabled(Bool)
-
-  /// 프레임 수정 시작 및 종료
-  case frameInteracting(role: Role, isInteracting: Bool)
+  case frameEnabled(Bool, Role?)
 
   /// 펜 이벤트
   case penUpdated(PenEventType)
