@@ -11,10 +11,6 @@ extension CameraView.CameraBottomContainer {
         isActive: isFrameActive,
         isDisabled: isRemoteGuideHidden || disabledByPeer, // 상대가 소유 중이면 시각적으로도 비활성
         tapAction: {
-          guard !isRemoteGuideHidden else {
-            frameViewModel.showGuidingDisabledToast()
-            return
-          }
           // 현재 프레임 소유권 전송 (내가 소유자로 설정)
           frameViewModel.setFrame(true, currentRole)
 
@@ -38,13 +34,7 @@ extension CameraView.CameraBottomContainer {
         isActive: isPenActive,
         isDisabled: isRemoteGuideHidden,
         tapAction: {
-          guard !isRemoteGuideHidden else {
-            penViewModel.showGuidingDisabledToast(type: .pen)
-            return
-          }
-
           penViewModel.showFirstToolToast(type: .pen)
-
           guidingToolToggle(.pen)
           if isPenActive {
             isRemoteGuideHidden = false
@@ -58,12 +48,8 @@ extension CameraView.CameraBottomContainer {
         isActive: isMagicPenActive,
         isDisabled: isRemoteGuideHidden,
         tapAction: {
-          guard !isRemoteGuideHidden else {
-            penViewModel.showGuidingDisabledToast(type: .magicPen)
-            return
-          }
+          
           penViewModel.showFirstToolToast(type: .magicPen)
-
           guidingToolToggle(.maginPen)
           if isMagicPenActive {
             isRemoteGuideHidden = false
@@ -85,10 +71,6 @@ extension CameraView.CameraBottomContainer {
         isActive: isFrameActive,
         isDisabled: isRemoteGuideHidden || disabledByPeer,
         tapAction: {
-          guard !isRemoteGuideHidden else {
-            frameViewModel.showGuidingDisabledToast()
-            return
-          }
           guidingToolToggle(.frame)
           if frameViewModel.isFrameEnabled {
             isRemoteGuideHidden = false
@@ -141,13 +123,6 @@ extension CameraView.CameraBottomContainer {
         isActive: isPenActive,
         isDisabled: isRemoteGuideHidden,
         tapAction: {
-          guard !isRemoteGuideHidden else {
-            penViewModel.showGuidingDisabledToast(type: .pen)
-            return
-          }
-
-          penViewModel.showFirstToolToast(type: .pen)
-
           guidingToolToggle(.pen)
           if isPenActive {
             isRemoteGuideHidden = false
@@ -179,13 +154,6 @@ extension CameraView.CameraBottomContainer {
       isActive: isMagicPenActive,
       isDisabled: isRemoteGuideHidden,
       tapAction: {
-        guard !isRemoteGuideHidden else {
-          penViewModel.showGuidingDisabledToast(type: .magicPen)
-          return
-        }
-
-        penViewModel.showFirstToolToast(type: .magicPen)
-
         guidingToolToggle(.maginPen)
         if isMagicPenActive {
           isRemoteGuideHidden = false

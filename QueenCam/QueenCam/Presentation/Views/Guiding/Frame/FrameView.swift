@@ -105,14 +105,12 @@ struct FrameView: View {
           ZStack {
             Rectangle()
               .fill(Color.black.opacity(0.5))
-              .allowsHitTesting(false)
 
             // 프레임 영역을 제외
             Rectangle()
               .frame(width: width + 1, height: height + 1)
               .position(x: x, y: y)
               .blendMode(.destinationOut)
-              .allowsHitTesting(false)
           }
           .compositingGroup()
           .allowsHitTesting(false)

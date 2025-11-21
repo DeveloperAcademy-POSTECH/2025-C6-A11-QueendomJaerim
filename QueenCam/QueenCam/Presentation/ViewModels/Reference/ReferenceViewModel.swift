@@ -14,7 +14,7 @@ import UIKit
 final class ReferenceViewModel {
   // MARK: - Properties
   /// 선택된 레퍼런스 사진
-  private(set) var image: UIImage?  
+  private(set) var image: UIImage?
   var state: ReferenceState = .none
   let foldThreshold: CGFloat = -50
   var dragOffset: CGSize = .zero  // 드래그 중 임시편차
@@ -29,6 +29,9 @@ final class ReferenceViewModel {
   }
   /// 현재 레퍼런스 토스트 존재 여부
   var hasReferenceToast: Bool = false
+
+  /// 레퍼런스 최초 등록 여부
+  private var firstRegisterReference: Bool = false
 
   // MARK: - Network
   let networkService: NetworkServiceProtocol
@@ -47,7 +50,6 @@ final class ReferenceViewModel {
 
     bind()
   }
-
   // MARK: - DRAG(for fold/unfold)
   func dragChanged(_ value: DragGesture.Value) {
     let x = value.translation.width
@@ -153,10 +155,11 @@ extension ReferenceViewModel {
         self.image = uiImage
         self.state = .open
       }
-      if hasReferenceImage {
-        notificationService.registerNotification(.make(type: .peerRegisterNewReference))
-      } else {
+      if !firstRegisterReference && networkService.mode != nil {
         notificationService.registerNotification(.make(type: .peerRegisterFirstReference))
+        firstRegisterReference = true
+      } else {
+        notificationService.registerNotification(.make(type: .peerRegisterNewReference))
       }
     case .remove:
       self.image = nil
@@ -174,10 +177,11 @@ extension ReferenceViewModel {
   private func sendReferenceImageCommand(command: ReferenceNetworkCommand) {
     if case .register(let image) = command {
       sendReferenceImageRegisteredEvent(referenceImage: image)
-      if hasReferenceImage {
-        notificationService.registerNotification(.make(type: .registerNewReference))
-      } else {
+      if !firstRegisterReference && networkService.mode != nil {
         notificationService.registerNotification(.make(type: .registerFirstReference))
+        firstRegisterReference = true
+      } else {
+        notificationService.registerNotification(.make(type: .registerNewReference))
       }
     } else if case .remove = command {
       sendReferenceImageRemovedEvent()

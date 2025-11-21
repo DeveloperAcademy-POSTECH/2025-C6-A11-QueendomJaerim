@@ -24,8 +24,11 @@ final class PenViewModel {
   var hasEverDrawn: Bool = false
 
   // 가이드 최초 1회
-  private var hasShownPenToast = false
+  private var hasShownPenToast: Bool = false
   private var hasShownMagicPenToast: Bool = false
+  // 가이드 사용시 레퍼런스 확대 최초 1회
+  private var hasShownPenReferenceLargeToast: Bool = false
+  private var hasShownMagicPenReferenceLargeToast: Bool = false
 
   // MARK: - 네트워크
   let networkService: NetworkServiceProtocol
@@ -67,16 +70,24 @@ final class PenViewModel {
     // Send to network
     sendPenCommand(command: .replace(stroke: strokes[strokeIndex]))
   }
-  // MARK: 세션 종료 후 Stroke 저장
+  // MARK: - 세션 종료 후 Stroke 저장
   /// 펜 툴 해제(세션 종료) 시 본인 stroke를 strokes에서 persistedStrokes로 이관
   func saveStroke() {
     // strokes에 있는 본인 stroke 찾기
     let myStrokes = strokes.filter { $0.author == myRole }
     if !myStrokes.isEmpty {
-      // 해당 stroke를 persistedStrokes로 appmend
+      // 해당 stroke를 persistedStrokes로 append
       persistedStrokes.append(contentsOf: myStrokes)
       // 해당 stroke를 strokes에서 삭제(remove)
       strokes.removeAll { $0.author == myRole }
+    }
+    // deleteStrokes에 있는 본인 stroke 찾기 => 전체 삭제
+    let myDeleteStrokes = deleteStrokes.flatMap { $0 }.filter { $0.author == myRole }
+    if !myDeleteStrokes.isEmpty {
+      // 해당 stroke를 deleteStrokes에서 삭제 - 복구 불가
+      for i in deleteStrokes.indices {
+        deleteStrokes[i].removeAll { $0.author == myRole }
+      }
     }
   }
 
@@ -98,10 +109,11 @@ final class PenViewModel {
   func deleteAll() {
     // 내가 생성한 stroke 배열과 id 배열
     let myStrokes = strokes.filter { $0.author == myRole }
-    let myPersistedStrokes = persistedStrokes.filter {$0.author == myRole}
+    let myPersistedStrokes = persistedStrokes.filter { $0.author == myRole }
     let allMyStrokes = myStrokes + myPersistedStrokes
+
     if !allMyStrokes.isEmpty {
-      deleteStrokes.append(myStrokes) // 전체 삭제 이후, Undo는 현재 세션에 작업한 strokes만 포함
+      deleteStrokes.append(myStrokes)  // 전체 삭제 이후, Undo는 현재 세션에 작업한 strokes만 포함
     }
 
     let myIds = allMyStrokes.map(\.id)
@@ -146,24 +158,30 @@ final class PenViewModel {
     case pen
     case magicPen
   }
-  // 가이드 숨김 토글 관련 토스트
-  func showGuidingDisabledToast(type: GuidingType) {
+  // 툴 사용 중 레퍼런스 확대 - 최초 1회
+  func showToolReferenceLargeToast(type: GuidingType) {
     switch type {
     case .pen:
-      notificationService.registerNotification(DomainNotification.make(type: .turnOnGuidingFirstWithPen))
+      guard !hasShownPenReferenceLargeToast else { return }
+      notificationService.registerNotification(DomainNotification.make(type: .toolUsingEnlargeReference))
+      hasShownPenReferenceLargeToast = true
     case .magicPen:
-      notificationService.registerNotification(DomainNotification.make(type: .turnOnGuidingFirstWithMagicPen))
+      guard !hasShownMagicPenReferenceLargeToast else { return }
+      notificationService.registerNotification(DomainNotification.make(type: .toolUsingEnlargeReference))
+      hasShownMagicPenReferenceLargeToast = true
     }
   }
-  // 처음으로 툴 선택 할때 토스트
+  // 처음으로 펜+ 매직펜 툴 선택 할때 토스트
   func showFirstToolToast(type: GuidingType) {
     switch type {
     case .pen:
       guard !hasShownPenToast else { return }
       notificationService.registerNotification(DomainNotification.make(type: .firstPenToolSelected))
+      hasShownPenToast = true
     case .magicPen:
       guard !hasShownMagicPenToast else { return }
       notificationService.registerNotification(DomainNotification.make(type: .firstMagicToolSelected))
+      hasShownMagicPenToast = true
     }
   }
   // 지우개로 펜 가이드라인 지울때마다의 토스트
