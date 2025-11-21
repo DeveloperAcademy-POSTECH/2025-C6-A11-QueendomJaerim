@@ -208,22 +208,13 @@ final class FrameViewModel {
   }
   // 상대가 이벤트를 한 경우
   func peerFrameGuidingToast(type: FrameToastEventType) {
-    switch type {
-    case .create:
-      notificationService.registerNotification(DomainNotification.make(type: .peerCreateFrameGuide))
-    case .delete:
-      notificationService.registerNotification(DomainNotification.make(type: .peerCloseFrameGuide))
-    case .edit:
-      notificationService.registerNotification(DomainNotification.make(type: .peerEditingFrameGuide))
-    case .ratioEdit:
-      notificationService.registerNotification(DomainNotification.make(type: .peerFirstEditMode))
-    }
+    
   }
   // 사용자(본인)가 이벤트를 한 경우
   func myFrameGuidingToast(type: FrameToastEventType) {
     switch type {
     case .create:
-      notificationService.registerNotification(DomainNotification.make(type: .sharingFrameGuideStarted))
+      return
     case .delete:
       return
     case .edit:
