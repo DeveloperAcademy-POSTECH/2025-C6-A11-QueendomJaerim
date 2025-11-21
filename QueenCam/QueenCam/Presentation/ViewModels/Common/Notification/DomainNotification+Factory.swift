@@ -90,13 +90,13 @@ extension DomainNotification {
         return .init(message: "참고 이미지를 확대하면 툴이 해제됩니다.", isImportant: false, showingTime: 2)
       // 프레임
       case .createdFrameGuide:
-        return .init(message: "가이드 프레임을 생성했어요.", isImportant: true, showingTime: 1)
+        return .init(message: "가이드 프레임을 생성했어요.", isImportant: false, showingTime: 1)
       case .peerCreatedFrameGuide:
-        return .init(message: "친구가 가이드 프레임을 생성했어요.", isImportant: true, showingTime: 1)
+        return .init(message: "친구가 가이드 프레임을 생성했어요.", isImportant: false, showingTime: 1)
       case .peerEditingFrameGuide:
-        return .init(message: "친구가 프레임을 수정하고 있어요.", isImportant: true, showingTime: 1)
+        return .init(message: "친구가 프레임을 수정하고 있어요.", isImportant: false, showingTime: 1)
       case .peerDeletedFrameGuide:
-        return .init(message: "친구가 프레임을 삭제했어요.", isImportant: true, showingTime: 1)
+        return .init(message: "친구가 프레임을 삭제했어요.", isImportant: false, showingTime: 1)
       // 레퍼런스
       case .registerFirstReference:
         return .init(message: "친구에게도 참고 이미지가 공유되었어요", isImportant: false, showingTime: 2)
