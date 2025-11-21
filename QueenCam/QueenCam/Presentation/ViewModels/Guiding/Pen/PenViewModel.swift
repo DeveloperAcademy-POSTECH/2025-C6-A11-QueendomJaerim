@@ -24,8 +24,11 @@ final class PenViewModel {
   var hasEverDrawn: Bool = false
 
   // 가이드 최초 1회
-  private var hasShownPenToast = false
+  private var hasShownPenToast: Bool = false
   private var hasShownMagicPenToast: Bool = false
+  // 가이드 사용시 레퍼런스 확대 최초 1회
+  private var hasShownPenReferenceLargeToast: Bool = false
+  private var hasShownMagicPenReferenceLargeToast: Bool = false
 
   // MARK: - 네트워크
   let networkService: NetworkServiceProtocol
@@ -155,24 +158,30 @@ final class PenViewModel {
     case pen
     case magicPen
   }
-  // 가이드 숨김 토글 관련 토스트
-  func showGuidingDisabledToast(type: GuidingType) {
+  // 툴 사용 중 레퍼런스 확대 - 최초 1회
+  func showToolReferenceLargeToast(type: GuidingType) {
     switch type {
     case .pen:
-      notificationService.registerNotification(DomainNotification.make(type: .turnOnGuidingFirstWithPen))
+      guard !hasShownPenReferenceLargeToast else { return }
+      notificationService.registerNotification(DomainNotification.make(type: .toolUsingEnlargeReference))
+      hasShownPenReferenceLargeToast = true
     case .magicPen:
-      notificationService.registerNotification(DomainNotification.make(type: .turnOnGuidingFirstWithMagicPen))
+      guard !hasShownMagicPenReferenceLargeToast else { return }
+      notificationService.registerNotification(DomainNotification.make(type: .toolUsingEnlargeReference))
+      hasShownMagicPenReferenceLargeToast = true
     }
   }
-  // 처음으로 툴 선택 할때 토스트
+  // 처음으로 펜+ 매직펜 툴 선택 할때 토스트
   func showFirstToolToast(type: GuidingType) {
     switch type {
     case .pen:
       guard !hasShownPenToast else { return }
       notificationService.registerNotification(DomainNotification.make(type: .firstPenToolSelected))
+      hasShownPenToast = true
     case .magicPen:
       guard !hasShownMagicPenToast else { return }
       notificationService.registerNotification(DomainNotification.make(type: .firstMagicToolSelected))
+      hasShownMagicPenToast = true
     }
   }
   // 지우개로 펜 가이드라인 지울때마다의 토스트

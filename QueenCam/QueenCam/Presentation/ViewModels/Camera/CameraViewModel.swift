@@ -209,14 +209,6 @@ final class CameraViewModel {
     await fetchThumbnail(scale: scale)
   }
 
-  func showGuidingToast(isRemoteGuideHidden: Bool) {
-    if isRemoteGuideHidden {
-      notificationService.registerNotification(.make(type: .turnOffGuiding))
-    } else {
-      notificationService.registerNotification(.make(type: .turnOnGuiding))
-    }
-  }
-
   func managePhotosPickerToast(isShowPhotosPicker: Bool) {
     if isShowPhotosPicker {
       notificationService.registerNotification(.make(type: .photosPickerShowing))

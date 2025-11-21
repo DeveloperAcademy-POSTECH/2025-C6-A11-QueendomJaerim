@@ -112,8 +112,6 @@ extension CameraView.CameraPreviewArea {
             } else if !isRemoteGuideHidden && !frameViewModel.frames.isEmpty {
               frameViewModel.setFrame(true)
             }
-
-            cameraViewModel.showGuidingToast(isRemoteGuideHidden: isRemoteGuideHidden)
           }
         }
         .padding(12)
