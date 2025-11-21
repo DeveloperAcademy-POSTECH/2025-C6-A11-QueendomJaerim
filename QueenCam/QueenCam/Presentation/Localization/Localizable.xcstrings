@@ -164,6 +164,16 @@
         }
       }
     },
+    "그리드" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GRID"
+          }
+        }
+      }
+    },
     "그리드 비활성화" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -217,12 +227,32 @@
         }
       }
     },
+    "내 기기로 사진을 촬영해요.\n동시에 친구에게 화면을 실시간으로 공유합니다." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Take a photo with my phone.\nYou will share your screen with your friend in real time."
+          }
+        }
+      }
+    },
     "내 기기로 찍고 있어요" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Take a photo with my phone"
+          }
+        }
+      }
+    },
+    "내가 사진 속 주인공이에요.\n카메라 속 내 모습을 실시간으로 볼 수 있어요." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Become the model of your photos.\nYou can see yourself being photographed in real time."
           }
         }
       }
@@ -309,12 +339,21 @@
         }
       }
     },
-    "모델" : {
-      "extractionState" : "stale",
+    "매직펜" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "Magic Pen"
+          }
+        }
+      }
+    },
+    "모델" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "Model"
           }
         }
@@ -729,12 +768,11 @@
       }
     },
     "촬영" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Photographer"
+            "value" : "Photograph"
           }
         }
       }
@@ -954,12 +992,42 @@
         }
       }
     },
+    "펜" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pen"
+          }
+        }
+      }
+    },
     "펜으로 가이드를 그립니다." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Draw the guide with a pen"
+          }
+        }
+      }
+    },
+    "프레임" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Frame"
+          }
+        }
+      }
+    },
+    "플래시" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "FLASH"
           }
         }
       }
