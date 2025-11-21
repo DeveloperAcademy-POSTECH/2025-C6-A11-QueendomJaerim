@@ -35,32 +35,23 @@ extension DomainNotification {
     case sharingFrameGuideStarted
     case counterpartEditingFrameGuide
     case myEditingFrameGuide
-    case turnOnGuidingFirstWithFrame
-    case turnOnGuidingFirstWithPen
-    case turnOnGuidingFirstWithMagicPen
-    case turnOffGuiding
-    case turnOnGuiding
     /// 상대가 프레임을 수정하고 있을 때 (최초 1회)
     case peerEditingFrameGuide
     /// 상대가 가이드 프레임을 생성했을 때 (최초 1회)
     case peerCreateFrameGuide
-    /// 사용자가 가이드 프레임을 껐을 때 (최초 1회)
-    case closeFrameGuide
     /// 상대가 가이드 프레임을 껐을 때 (최초 1회)
     case peerCloseFrameGuide
     /// 상대가 프레임 수정 모드에 돌입 했을 때 (최초 1회)
     case peerFirstEditMode
-    /// 사용자가 프레임 수정 모드에 돌입 했을 때 (최초 1회)
-    case firstEditMode
 
     /// 상대가 가이드 프레임을 생성했을 때 (최초 1회)
     /// 사용자가 가이드 프레임을 껐을 때 (최초 1회)
     /// 상대가 가이드 프레임을 껐을 때 (최초 1회)
     /// 상대가 프레임 수정 모드에 돌입 했을 때 (최초 1회)
     /// 사용자가 프레임 수정 모드에 돌입 했을 때 (최초 1회)
-    /// 레퍼런스가 없는 상황에서,  사용자가 새로운 레퍼런스를 등록했을 때
+    /// 레퍼런스가 없는 상황에서,  사용자가 새로운 레퍼런스를 등록했을 때 (최초 1회)
     case registerFirstReference
-    /// 레퍼런스가 없는 상황에서, 상대가 새로운 레퍼런스를 등록했을 때
+    /// 레퍼런스가 없는 상황에서, 상대가 새로운 레퍼런스를 등록했을 때 (최초1회)
     case peerRegisterFirstReference
     /// 레퍼런스가 있는 상황에서 사용자가 새로운 레퍼런스 등록했을 때
     case registerNewReference
@@ -70,7 +61,8 @@ extension DomainNotification {
     case deleteReference
     /// 상대가 레퍼런스 삭제시
     case peerDeleteReference
-
+    /// 가이드툴 사용 중, 레퍼런스 확대 (최초 1회)
+    case toolUsingEnlargeReference
     /// 펜툴을 처음 선택한 경우 (최초 1회)
     case firstPenToolSelected
     /// 펜의 지우개를 사용할 때
@@ -81,8 +73,7 @@ extension DomainNotification {
     case photosPickerShowing
     /// 라이브 포토로 설정하고 촬영할 때
     case captureLivePhoto
-    
-    // 역할이 스위치되었을 때
+    /// 역할이 스위치되었을 때
     case swapRole
     /// 연결이 종료되었을 때
     case disconnected
@@ -107,18 +98,8 @@ extension DomainNotification {
         return .init(message: "상대가 프레임을 수정중입니다.", isImportant: false, showingTime: 2)
       case .myEditingFrameGuide:
         return .init(message: "내가 그린 가이드를 공유합니다.", isImportant: false, showingTime: 2)
-      case .turnOnGuidingFirstWithFrame:
-        return .init(message: "프레임을 사용하려면 먼저 눈을 켜주세요.", isImportant: false, showingTime: 2)
-
-      case .turnOnGuidingFirstWithPen:
-        return .init(message: "펜을 사용하려면 먼저 눈을 켜주세요.", isImportant: false, showingTime: 2)
-
-      case .turnOnGuidingFirstWithMagicPen:
-        return .init(message: "매직펜을 사용하려면 먼저 눈을 켜주세요.", isImportant: false, showingTime: 2)
-      case .turnOffGuiding:
-        return .init(message: "모든 가이드를 숨깁니다.", isImportant: false, showingTime: 2)
-      case .turnOnGuiding:
-        return .init(message: "가이드가 보여집니다.", isImportant: false, showingTime: 2)
+      case .toolUsingEnlargeReference:
+        return .init(message: "참고 이미지를 확대하면 툴이 해제됩니다.", isImportant: false, showingTime: 2)
       // 레퍼런스
       case .registerFirstReference:
         return .init(message: "친구에게도 참고 이미지가 공유되었어요", isImportant: false, showingTime: 2)
@@ -146,14 +127,10 @@ extension DomainNotification {
         return .init(message: "친구가 프레임을 수정하고 있어요.", isImportant: false, showingTime: 2)
       case .peerCreateFrameGuide:
         return .init(message: "친구가 가이드 프레임을 생성했어요.", isImportant: false, showingTime: 2)
-      case .closeFrameGuide:
-        return .init(message: "친구에게도 프레임이 꺼집니다.", isImportant: false, showingTime: 2)
       case .peerCloseFrameGuide:
         return .init(message: "친구가 프레임을 껐어요.", isImportant: false, showingTime: 2)
       case .peerFirstEditMode:
         return .init(message: "친구가 프레임을 수정하고 있어요.", isImportant: false, showingTime: 2)
-      case .firstEditMode:
-        return .init(message: "프레임의 비율을 조정합니다.", isImportant: false, showingTime: 2)
       case .captureLivePhoto:
         return .init(message: "LIVE", isImportant: true, showingTime: 2)
       // 연결

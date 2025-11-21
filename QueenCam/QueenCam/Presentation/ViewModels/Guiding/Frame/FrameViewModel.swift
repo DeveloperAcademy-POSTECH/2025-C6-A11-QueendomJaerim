@@ -200,9 +200,6 @@ final class FrameViewModel {
   }
 
   // MARK: - Toast
-  func showGuidingDisabledToast() {
-    notificationService.registerNotification(DomainNotification.make(type: .turnOnGuidingFirstWithFrame))
-  }
   enum FrameToastEventType {
     case create
     case delete
@@ -228,11 +225,11 @@ final class FrameViewModel {
     case .create:
       notificationService.registerNotification(DomainNotification.make(type: .sharingFrameGuideStarted))
     case .delete:
-      notificationService.registerNotification(DomainNotification.make(type: .closeFrameGuide))
+      return
     case .edit:
       return
     case .ratioEdit:
-      notificationService.registerNotification(DomainNotification.make(type: .firstEditMode))
+    return
     }
   }
 }

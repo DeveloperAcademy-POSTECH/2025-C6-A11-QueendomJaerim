@@ -38,13 +38,7 @@ extension CameraView.CameraBottomContainer {
         isActive: isPenActive,
         isDisabled: isRemoteGuideHidden,
         tapAction: {
-          guard !isRemoteGuideHidden else {
-            penViewModel.showGuidingDisabledToast(type: .pen)
-            return
-          }
-
           penViewModel.showFirstToolToast(type: .pen)
-
           guidingToolToggle(.pen)
           if isPenActive {
             isRemoteGuideHidden = false
@@ -63,7 +57,6 @@ extension CameraView.CameraBottomContainer {
             return
           }
           penViewModel.showFirstToolToast(type: .magicPen)
-
           guidingToolToggle(.maginPen)
           if isMagicPenActive {
             isRemoteGuideHidden = false
@@ -141,13 +134,6 @@ extension CameraView.CameraBottomContainer {
         isActive: isPenActive,
         isDisabled: isRemoteGuideHidden,
         tapAction: {
-          guard !isRemoteGuideHidden else {
-            penViewModel.showGuidingDisabledToast(type: .pen)
-            return
-          }
-
-          penViewModel.showFirstToolToast(type: .pen)
-
           guidingToolToggle(.pen)
           if isPenActive {
             isRemoteGuideHidden = false
@@ -179,13 +165,6 @@ extension CameraView.CameraBottomContainer {
       isActive: isMagicPenActive,
       isDisabled: isRemoteGuideHidden,
       tapAction: {
-        guard !isRemoteGuideHidden else {
-          penViewModel.showGuidingDisabledToast(type: .magicPen)
-          return
-        }
-
-        penViewModel.showFirstToolToast(type: .magicPen)
-
         guidingToolToggle(.maginPen)
         if isMagicPenActive {
           isRemoteGuideHidden = false
