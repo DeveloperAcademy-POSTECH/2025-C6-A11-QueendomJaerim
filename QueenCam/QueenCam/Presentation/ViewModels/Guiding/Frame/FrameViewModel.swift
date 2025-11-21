@@ -19,10 +19,8 @@ final class FrameViewModel {
 
   /// 프레임 토글 여부
   var isFrameEnabled: Bool = false
-  /// 프레임 현재 수정 중 여부
-  var isInteracting: Bool = false
-  /// 프레임을 현재 수정 중인 역할(작가, 모델)
-  var interactingRole: Role?
+  /// 프레임의 현재 소유자
+  var frameOwnerRole: Role?
   /// 수정 및 선택한 프레임의 식별자
   var selectedFrameID: UUID?
   /// 최대 허용 프레임 갯수
@@ -68,12 +66,13 @@ final class FrameViewModel {
   }
 
   // MARK: - 프레임 활성화 토글 + 네트워크
-  func setFrame(_ enabled: Bool) {
+  func setFrame(_ enabled: Bool, _ currentRole: Role?) {
     // 로컬 상태 갱신
     isFrameEnabled = enabled
+    frameOwnerRole = currentRole
 
     // Send to network
-    sendFrameEnabled(enabled)
+    sendFrameEnabled(enabled, currentRole)
   }
 
   // MARK: - 프레임 추가
@@ -84,6 +83,7 @@ final class FrameViewModel {
     let rect = CGRect(origin: .init(x: newX, y: newY), size: size)
     let frame = Frame(rect: rect)
     frames.append(frame)
+    selectedFrameID = frame.id
 
     // Send to network
     sendFrameCommand(command: .add(frame: frame))
@@ -246,8 +246,11 @@ extension FrameViewModel {
         case .frameUpdated(let eventType):
           self.handleFrameEvent(eventType: eventType)
 
-        case .frameEnabled(let enabled):
+        case .frameEnabled(let enabled, let currentRole):
           self.isFrameEnabled = enabled
+          self.frameOwnerRole = currentRole
+
+          // 토스트
           if !hasShownPeerCreateToast {
             peerFrameGuidingToast(type: .create)
             hasShownPeerCreateToast = true
@@ -255,19 +258,6 @@ extension FrameViewModel {
           if !hasShownPeerDeleteToast {
             peerFrameGuidingToast(type: .delete)
             hasShownPeerDeleteToast = true
-          }
-
-        case .frameInteracting(let role, let interacting):
-          if interacting {
-            self.isInteracting = true
-            self.interactingRole = role
-            if !hasShownPeerEditToast {
-              peerFrameGuidingToast(type: .edit)
-              hasShownPeerEditToast = true
-            }
-          } else {
-            self.isInteracting = false
-            self.interactingRole = nil
           }
 
         default:
@@ -324,19 +314,10 @@ extension FrameViewModel {
   }
 
   /// 프레임 토글 상태 전송
-  private func sendFrameEnabled(_ enabled: Bool) {
+  private func sendFrameEnabled(_ enabled: Bool, _ currentRole: Role?) {
     Task.detached { [weak self] in
       guard let self else { return }
-      await self.networkService.send(for: .frameEnabled(enabled))
-    }
-  }
-
-  /// 프레임 상호작용(제스처) 시작/종료 전송
-  func sendFrameInteracting(_ interacting: Bool) {
-    let myRole = currentRole ?? .photographer
-    Task.detached { [weak self] in
-      guard let self else { return }
-      await self.networkService.send(for: .frameInteracting(role: myRole, isInteracting: interacting))
+      await self.networkService.send(for: .frameEnabled(enabled, currentRole))
     }
   }
 }

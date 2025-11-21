@@ -37,6 +37,8 @@ extension CameraView.CameraPreviewArea {
       }
       if isFrameActive {
         FrameEditorView(frameViewModel: frameViewModel, currentRole: currentMode)
+      } else {
+        FrameDisplayView(frameViewModel: frameViewModel)
       }
     }
     .opacity(isRemoteGuideHidden ? .zero : 1)
@@ -107,11 +109,6 @@ extension CameraView.CameraPreviewArea {
             isActive: !isRemoteGuideHidden
           ) {
             isRemoteGuideHidden.toggle()
-            if isRemoteGuideHidden {
-              frameViewModel.setFrame(false)
-            } else if !isRemoteGuideHidden && !frameViewModel.frames.isEmpty {
-              frameViewModel.setFrame(true)
-            }
           }
         }
         .padding(12)

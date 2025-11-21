@@ -20,6 +20,10 @@ struct FrameEditorView: View {
 
   var body: some View {
     ZStack {
+      // 프레임이 존재하지 않을때, Dimming 효과 주기
+      if frameViewModel.frames.isEmpty {
+        Color.black.opacity(0.5)
+      }
       GeometryReader { geo in
         ForEach(frameViewModel.frames) { frame in
           FrameView(
@@ -31,42 +35,7 @@ struct FrameEditorView: View {
           )
         }
         .contentShape(Rectangle())
-        .onTapGesture {
-          frameViewModel.selectFrame(nil)
-        }
       }
-
-      // MARK: - 프레임의 Toolbar(추가,삭제)
-      //      VStack {
-      //        Spacer()
-      //        HStack(spacing: 28) {
-      //          Button {
-      //            frameViewModel.addFrame(at: CGPoint(x: 0.3, y: 0.4))
-      //          } label: {
-      //            Image(systemName: "plus")
-      //              .font(.system(size: 25, weight: .semibold))
-      //              .foregroundStyle(.black)
-      //              .frame(width: 60, height: 60)
-      //              .background(.ultraThinMaterial)
-      //              .clipShape(Circle())
-      //              .shadow(color: .black.opacity(0.2), radius: 5, x: 0, y: 2)
-      //          }
-      //          .disabled(frameViewModel.frames.count >= frameViewModel.maxFrames)
-      //
-      //          Button {
-      //            frameViewModel.deleteAll()
-      //          } label: {
-      //            Image(systemName: "xmark")
-      //              .font(.system(size: 25, weight: .semibold))
-      //              .foregroundStyle(.black)
-      //              .frame(width: 60, height: 60)
-      //              .background(.ultraThinMaterial)
-      //              .clipShape(Circle())
-      //              .shadow(color: .black.opacity(0.2), radius: 5, x: 0, y: 2)
-      //          }
-      //        }
-      //        .padding(.bottom, 30)
-      //      }
     }
   }
 }
