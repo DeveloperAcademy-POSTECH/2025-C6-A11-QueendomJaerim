@@ -245,12 +245,9 @@ extension FrameViewModel {
         case .frameEnabled(let enabled, let role):
           self.isFrameEnabled = enabled
           self.frameOwnerRole = role
-          print("isFrameEnable: \(enabled), frameOwnerRole: \(currentRole)")
-          if (isFrameEnabled == true && frameOwnerRole != currentRole) {
-            if !frames.isEmpty {
-              peerFrameGuidingToast(type: .edit)
-            }
-          }
+          guard isFrameEnabled, frameOwnerRole != currentRole, !frames.isEmpty else { return }
+          peerFrameGuidingToast(type: .edit)
+    
         default:
           break
         }
