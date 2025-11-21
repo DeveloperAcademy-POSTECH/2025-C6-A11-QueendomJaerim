@@ -7,6 +7,36 @@
     "\n" : {
 
     },
+    "‘주변 기기 찾기’" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "‘Find Nearby Devices’"
+          }
+        }
+      }
+    },
+    "‘주변 기기 찾기’를 시작하고\n잠시 기다려주세요." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start with ‘Find Nearby Devices’\nand wait a moment."
+          }
+        }
+      }
+    },
+    "‘주변 기기 찾기’를 시작해\n친구에게 페어링을 요청해주세요." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start with ‘Find Nearby Devices’ \nand ask your friend to pair with you."
+          }
+        }
+      }
+    },
     "%@" : {
       "localizations" : {
         "en" : {
@@ -23,6 +53,16 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$lld / %2$lld"
+          }
+        }
+      }
+    },
+    "6자리 코드가 나오면\n친구에게 코드를 알려주세요." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Once the 6-digit code appears, \nshare it with your freind."
           }
         }
       }
@@ -605,6 +645,16 @@
         }
       }
     },
+    "이 화면이 뜨면 등록 완료에요.\n창을 닫으면 연결 준비 완료!" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When this screen appears,\nclose the window and connect!"
+          }
+        }
+      }
+    },
     "잘못된 범위" : {
       "localizations" : {
         "en" : {
@@ -668,6 +718,16 @@
         }
       }
     },
+    "창을 닫으면" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "close the window"
+          }
+        }
+      }
+    },
     "촬영" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -726,6 +786,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Friend uploaded a new reference image"
+          }
+        }
+      }
+    },
+    "친구가 알려주는\n6자리 코드를 입력해주세요." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter the 6-digit code\nprovided by your friend."
           }
         }
       }
@@ -850,6 +920,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Camera access permission"
+          }
+        }
+      }
+    },
+    "코드를 알려주세요." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "share it with your freind."
+          }
+        }
+      }
+    },
+    "코드를 입력" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter"
+          }
+        }
+      }
+    },
+    "페어링을 요청" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "pair"
           }
         }
       }
