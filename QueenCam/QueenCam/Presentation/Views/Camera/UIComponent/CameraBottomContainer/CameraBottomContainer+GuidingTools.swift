@@ -36,7 +36,7 @@ extension CameraView.CameraBottomContainer {
       GuidingButton(
         role: currentRole,
         isActive: isPenActive,
-        isDisabeld: isRemoteGuideHidden,
+        isDisabled: isRemoteGuideHidden,
         tapAction: {
           guard !isRemoteGuideHidden else {
             penViewModel.showGuidingDisabledToast(type: .pen)
@@ -56,7 +56,7 @@ extension CameraView.CameraBottomContainer {
       GuidingButton(
         role: currentRole,
         isActive: isMagicPenActive,
-        isDisabeld: isRemoteGuideHidden,
+        isDisabled: isRemoteGuideHidden,
         tapAction: {
           guard !isRemoteGuideHidden else {
             penViewModel.showGuidingDisabledToast(type: .magicPen)
@@ -139,7 +139,7 @@ extension CameraView.CameraBottomContainer {
       GuidingButton(
         role: currentRole,
         isActive: isPenActive,
-        isDisabeld: isRemoteGuideHidden,
+        isDisabled: isRemoteGuideHidden,
         tapAction: {
           guard !isRemoteGuideHidden else {
             penViewModel.showGuidingDisabledToast(type: .pen)
@@ -177,7 +177,7 @@ extension CameraView.CameraBottomContainer {
     GuidingButton(
       role: currentRole,
       isActive: isMagicPenActive,
-      isDisabeld: isRemoteGuideHidden,
+      isDisabled: isRemoteGuideHidden,
       tapAction: {
         guard !isRemoteGuideHidden else {
           penViewModel.showGuidingDisabledToast(type: .magicPen)
