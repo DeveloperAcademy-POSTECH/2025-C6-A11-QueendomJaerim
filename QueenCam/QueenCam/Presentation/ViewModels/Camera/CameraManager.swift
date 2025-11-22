@@ -205,6 +205,15 @@ extension CameraManager {
       do {
         try device.lockForConfiguration()
         device.videoZoomFactor = 1.0 / device.displayVideoZoomFactorMultiplier
+        
+        // 렌즈 전환 제어 설정
+        if device.activePrimaryConstituentDeviceSwitchingBehavior != .unsupported {
+          device.setPrimaryConstituentDeviceSwitchingBehavior(
+            .restricted,
+            restrictedSwitchingBehaviorConditions: .videoZoomChanged
+          )
+          logger.info(" Lens switching restricted to zoom changes only")
+        }
 
         device.unlockForConfiguration()
 
