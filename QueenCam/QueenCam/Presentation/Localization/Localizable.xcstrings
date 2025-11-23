@@ -262,7 +262,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Registered Friend"
+            "value" : "Registered Friends"
           }
         }
       }
@@ -662,7 +662,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Your friend has disconnected. Please reconnect to start again."
+            "value" : "Your friend has disconnected.\nPlease reconnect to start again."
           }
         }
       }
@@ -797,22 +797,22 @@
         }
       }
     },
-    "펜" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pen"
-          }
-        }
-      }
-    },
     "페어링을 요청" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "pair"
+          }
+        }
+      }
+    },
+    "펜" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pen"
           }
         }
       }
