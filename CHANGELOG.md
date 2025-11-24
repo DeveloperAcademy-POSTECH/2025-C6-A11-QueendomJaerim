@@ -12,6 +12,7 @@
 
 ### Changed
 
+- 일부 영문 번역 수정
 
 ### Deprecated
 
