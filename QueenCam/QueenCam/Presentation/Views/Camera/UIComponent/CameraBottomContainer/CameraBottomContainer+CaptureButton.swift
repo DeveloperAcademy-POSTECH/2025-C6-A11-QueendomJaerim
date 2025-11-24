@@ -41,6 +41,12 @@ extension CameraView.CameraBottomContainer {
             }
         }
       } else {
+        Circle()
+          .fill(.clear)
+          .frame(width: isMinimize ? 40 : 80, height: isMinimize ? 40 : 80)
+
+        Spacer()
+
         ThumbsUpButton {
           thumbsUpViewModel.userTriggerThumbsUp()
         }
@@ -60,6 +66,10 @@ extension CameraView.CameraBottomContainer {
         .fill(.offWhite)
         .frame(width: 68, height: 68)
     }
+    
+    Circle()
+      .fill(.blue.opacity(0.3))
+      .frame(width: 80, height: 80)
   }
   .frame(width: 300, height: 300)
   .background(.black)
