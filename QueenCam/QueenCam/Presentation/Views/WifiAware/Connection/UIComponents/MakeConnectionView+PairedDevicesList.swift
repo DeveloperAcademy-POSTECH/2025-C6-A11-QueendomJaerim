@@ -64,8 +64,8 @@ extension MakeConnectionView.PairedDevicesList: View {
                 pairedDeviceRowView(for: device)
               }
             }
-            .padding(.leading, 8)
-            .padding(.trailing, 4)
+            .padding(.leading, 4)
+            .padding(.trailing, 2)
 
             // 페어링 기기 수 조건에 따라 앞 혹은 뒤에 Spacer
             if pairedDevices.count < devicesCountsThreshold2 {
