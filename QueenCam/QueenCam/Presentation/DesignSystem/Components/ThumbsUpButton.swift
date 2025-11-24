@@ -14,7 +14,7 @@ extension ThumbsUpButton: View {
           Image(systemName: "hand.thumbsup")
             .resizable()
             .aspectRatio(contentMode: .fit)
-            .frame(width: 29, height: 29)
+            .frame(width: 24, height: 24)
             .foregroundStyle(.offWhite)
         }
     }
