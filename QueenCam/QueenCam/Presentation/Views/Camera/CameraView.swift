@@ -160,6 +160,7 @@ extension CameraView: View {
           }
         )
         .padding()
+        .padding(.top, 12)
         .alert(
           "연결을 종료합니다.",
           isPresented: $isShowDisconnectAlert,
