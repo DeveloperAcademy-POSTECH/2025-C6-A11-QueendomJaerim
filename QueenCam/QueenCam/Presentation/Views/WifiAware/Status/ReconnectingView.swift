@@ -21,7 +21,7 @@ extension ReconnectingView: View {
         .frame(width: progressViewSize, height: progressViewSize)
         .padding(.bottom, 24)
 
-      Text("연결 상태가 좋지 않아,\n다시 연결하고 있어요")
+      Text("연결 상태가 좋지 않아,\n다시 연결하고 있어요.")
         .foregroundStyle(.offWhite)
         .typo(.m15)
         .multilineTextAlignment(.center)
