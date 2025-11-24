@@ -105,12 +105,14 @@ extension MakeConnectionView {
     NavigationStack {
       VStack(spacing: 0) {
         ToolBar(role: role, changeRoleButtonDidTap: changeRoleButtonDidTap)
+          .padding(.horizontal, 20)
 
         Spacer()
           .frame(height: 20)
 
         // MARK: - 주변 기기 찾기 버튼
         DeviceDiscoveryButton(role: role, photographerTheme: photographerTheme, modelTheme: modelTheme)
+          .padding(.horizontal, 16) // 다른 컨트롤과 좌우 패딩이 다름
 
         Spacer()
           .frame(height: 40)
@@ -124,9 +126,9 @@ extension MakeConnectionView {
           connectButtonDidTap: connectButtonDidTap
         )
         .frame(maxHeight: .infinity, alignment: .top)
+        .padding(.horizontal, 20)
       }
       .padding(.top, 14)
-      .padding(.horizontal, 16)
       .ignoresSafeArea(edges: .bottom)
     }
     .navigationBarTitleDisplayMode(.inline)  // LargeTitle 때문에 레이아웃 깨지는 문제 수정
@@ -138,7 +140,7 @@ extension MakeConnectionView {
       }
 
       ToolbarItem(placement: .principal) {
-        Text("기기 연결하기")
+        Text("친구와 연결하기")
           .foregroundStyle(.offWhite)
       }
 

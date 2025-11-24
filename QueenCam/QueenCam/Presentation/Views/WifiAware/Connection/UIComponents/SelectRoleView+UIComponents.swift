@@ -10,6 +10,8 @@ import SwiftUI
 extension SelectRoleView {
   var individualSymbolOffset: CGFloat { 7.5 }
 
+  var fixedLabelSpacing: CGFloat { 115 } // 시각적 균형을 위한 "촬영" - "모델" 레이블 고정 간격
+
   var symbolsContainerOffset: CGFloat {  // 선택 시 가운데 정렬
     guard !willShowLoadingAnimation else { return .zero }  // 애니메이션 노출 전 원점으로 돌린다
 
@@ -26,11 +28,11 @@ extension SelectRoleView {
   var header: some View {
     VStack(spacing: 18) {
       Text("역할을 선택해주세요")
-        .font(DynamicScreenUtils.isShortScreen ? .pretendard(.medium, size: 18) : .pretendard(.medium, size: 20))
+        .typo(DynamicScreenUtils.isShortScreen ? .sb17 : .sb20)
 
       Text("서로 다른 역할의 기기끼리만\n연결할 수 있어요")
         .multilineTextAlignment(.center)
-        .font(DynamicScreenUtils.isShortScreen ? .pretendard(.medium, size: 12) : .pretendard(.medium, size: 15))
+        .typo(DynamicScreenUtils.isShortScreen ? .m13 : .m15)
     }
     .foregroundStyle(selectedRole == nil ? .systemWhite : .gray400)
   }
@@ -59,18 +61,34 @@ extension SelectRoleView {
   var roleDescriptions: some View {
     if selectedRole == nil {
       VStack(spacing: 15) {
-        HStack {
-          Spacer()
+        if LocaleUtils.currentLocale == .korean {
+          HStack {
+            Spacer()
 
-          Text(Role.photographer.displayName)
+            Text(Role.photographer.displayName)
 
-          Spacer()
+            Spacer()
+              .frame(width: fixedLabelSpacing)
 
-          Text(Role.model.displayName)
+            Text(Role.model.displayName)
 
-          Spacer()
+            Spacer()
+          }
+          .typo(.sb20)
+        } else {
+          HStack {
+            Spacer()
+
+            Text(Role.photographer.displayName)
+
+            Spacer()
+
+            Text(Role.model.displayName)
+
+            Spacer()
+          }
+          .typo(.sb20)
         }
-        .typo(.sb20)
 
         Text("\n")  // invisible
           .typo(.sb15)
