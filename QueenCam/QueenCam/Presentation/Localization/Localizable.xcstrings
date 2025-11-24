@@ -737,6 +737,16 @@
         }
       }
     },
+    "친구와 연결하기" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connect with your friend"
+          }
+        }
+      }
+    },
     "친구와 연결하기 위해 먼저\n‘주변 기기 찾기’를 통해 친구를 등록해주세요." : {
       "localizations" : {
         "en" : {
