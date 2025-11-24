@@ -33,6 +33,7 @@ extension LensZoomTool: View {
             .overlay {
               Text(displayText(for: item))
                 .font(Font.custom("SF Compact Rounded", size: 15))
+                .fontDesign(.rounded)
                 .foregroundStyle(item == activeZoom ? Color.MiscellaneousWindowControlsMinimize : .offWhite)
                 .shadow(color: Color(UIColor(red: 0, green: 0, blue: 0, alpha: 0.75)), radius: 5)
             }
