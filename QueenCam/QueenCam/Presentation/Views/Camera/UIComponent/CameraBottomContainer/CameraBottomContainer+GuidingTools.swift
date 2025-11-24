@@ -26,6 +26,7 @@ extension CameraView.CameraBottomContainer {
         },
         guidingButtonType: .frame
       )
+      .matchedGeometryEffect(id: "frameButton", in: toggledToolNamespace)
       .disabled(disabledByPeer)
 
       // 펜
@@ -42,13 +43,15 @@ extension CameraView.CameraBottomContainer {
         },
         guidingButtonType: .pen
       )
+      .matchedGeometryEffect(id: "penButton", in: toggledToolNamespace)
+
       // 매직펜
       GuidingButton(
         role: currentRole,
         isActive: isMagicPenActive,
         isDisabled: isRemoteGuideHidden,
         tapAction: {
-          
+
           penViewModel.showFirstToolToast(type: .magicPen)
           guidingToolToggle(.maginPen)
           if isMagicPenActive {
@@ -57,6 +60,7 @@ extension CameraView.CameraBottomContainer {
         },
         guidingButtonType: .magicPen
       )
+      .matchedGeometryEffect(id: "magicPenButton", in: toggledToolNamespace)
     }
   }
 
@@ -81,6 +85,7 @@ extension CameraView.CameraBottomContainer {
         },
         guidingButtonType: .frameChecked
       )
+      .matchedGeometryEffect(id: "frameButton", in: toggledToolNamespace)
     } commandButtons: {
       // 프레임 추가
       Button(action: {
@@ -91,10 +96,8 @@ extension CameraView.CameraBottomContainer {
         }
       }) {
         Image(systemName: "plus")
-          .resizable()
-          .scaledToFill()
           .font(.system(size: 18, weight: .light))
-          .frame(width: 19, height: 21)
+          .frame(height: 21)
           .foregroundStyle(frameViewModel.frames.isEmpty ? .offWhite : .gray600)
           .padding(.trailing, 8)
       }
@@ -105,10 +108,8 @@ extension CameraView.CameraBottomContainer {
         frameViewModel.deleteAll()
       }) {
         Image(systemName: "trash")
-          .resizable()
-          .scaledToFill()
           .font(.system(size: 18, weight: .light))
-          .frame(width: 19, height: 21)
+          .frame(height: 21)
           .foregroundStyle(frameViewModel.frames.isEmpty ? .gray600 : .offWhite)
       }
       .disabled(frameViewModel.frames.isEmpty)
@@ -133,6 +134,7 @@ extension CameraView.CameraBottomContainer {
         },
         guidingButtonType: .penChecked
       )
+      .matchedGeometryEffect(id: "penButton", in: toggledToolNamespace)
     } commandButtons: {
       // MARK: - 펜 툴바 Undo / clearAll
       PenToolBar(penViewModel: penViewModel) { action in
@@ -161,6 +163,7 @@ extension CameraView.CameraBottomContainer {
       },
       guidingButtonType: .magicPenChecked
     )
+    .matchedGeometryEffect(id: "magicPenButton", in: toggledToolNamespace)
   }
 }
 

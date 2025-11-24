@@ -42,6 +42,9 @@ final class CameraManager: NSObject {
   // 카메라 촬영이 준비되는 상태 추적
   var onReadinessState: ((AVCapturePhotoOutput.CaptureReadiness) -> Void)?
 
+  // 렌즈 변경 상태를 관찰하기 위한 옵저버
+  private var lensChangeObserver: NSKeyValueObservation?
+
   init(previewCaptureService: PreviewCaptureService, networkService: NetworkServiceProtocol) {
     self.previewCaptureService = previewCaptureService
     self.networkService = networkService
@@ -126,7 +129,8 @@ final class CameraManager: NSObject {
         isCameraPosition: self.position,
         willCaptureLivePhoto: { [weak self] in
           self?.onWillCaptureLivePhoto?()
-        }) { [weak self] photoOutput in
+        }
+      ) { [weak self] photoOutput in
         guard let self else { return }
 
         // 5
@@ -201,8 +205,22 @@ extension CameraManager {
       do {
         try device.lockForConfiguration()
         device.videoZoomFactor = 1.0 / device.displayVideoZoomFactorMultiplier
+        
+        // 렌즈 전환 제어 설정
+        if device.activePrimaryConstituentDeviceSwitchingBehavior != .unsupported {
+          device.setPrimaryConstituentDeviceSwitchingBehavior(
+            .restricted,
+            restrictedSwitchingBehaviorConditions: .videoZoomChanged
+          )
+          logger.info(" Lens switching restricted to zoom changes only")
+        }
+
         device.unlockForConfiguration()
-        logger.info("Initial zoom factor set to 1.0")
+
+        // 렌즈 관찰
+        observeLensChange(for: device)
+
+        logger.info("Initial zoom: \(device.videoZoomFactor)x")
       } catch {
         logger.error("Failed to set initial zoom")
         throw error
@@ -211,6 +229,21 @@ extension CameraManager {
     } else {
       logger.error("Couldn't add video device input to the session.")
       return
+    }
+  }
+
+  // 렌즈 변경을 실시간으로 추적하는 메서드
+  private func observeLensChange(for device: AVCaptureDevice) {
+    lensChangeObserver?.invalidate()
+
+    lensChangeObserver = device.observe(
+      \.activePrimaryConstituent,
+      options: [.new]
+    ) { [weak self] device, _ in
+      guard let self else { return }
+
+      let lens = device.activePrimaryConstituent?.localizedName ?? "Unknown"
+      self.logger.info("Lens Switch \(lens)")
     }
   }
 
@@ -301,7 +334,7 @@ extension CameraManager {
 
         device.unlockForConfiguration()
 
-        logger.info("Zoom scale set to \(zoomFactor)")
+        logger.info("Zoom scale set to \(String(format: "%.1f", factor))x")
 
       } catch {
         logger.error("Failed to configure zoom: \(error.localizedDescription)")

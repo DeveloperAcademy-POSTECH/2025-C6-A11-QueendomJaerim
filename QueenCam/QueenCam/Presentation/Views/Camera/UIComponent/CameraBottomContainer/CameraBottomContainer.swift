@@ -29,6 +29,9 @@ extension CameraView {
     let guidingToolToggle: (_ selectedTool: ActiveTool) -> Void
     // 비율이 작은 기기를 위한 모드. true면 뷰 크기 조정
     var isMinimize = false
+    
+    // 도구 버튼 토글 애니메이션을 위한 네임스페이스
+    @Namespace var toggledToolNamespace
   }
 }
 
@@ -65,7 +68,7 @@ extension CameraView.CameraBottomContainer: View {
   }
 
   var body: some View {
-    VStack(spacing: 23) {
+    VStack(spacing: 20) {
 
       Group {
         // 가이드를 선택했을 때 나오는 툴 별 서브 툴바
@@ -98,7 +101,7 @@ extension CameraView.CameraBottomContainer: View {
       .padding(.bottom, 51)
       .padding(.horizontal, 36)
     }
-    .padding(.top, 22)
+    .padding(.top, 19)
     .frame(maxWidth: .infinity, maxHeight: isMinimize ? 120 : .infinity)
     .background(.black)
     .gesture(dragGesture)
