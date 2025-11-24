@@ -12,8 +12,7 @@ extension ThumbsUpButton: View {
         .frame(width: 48, height: 48)
         .overlay {
           Image(systemName: "hand.thumbsup")
-            .resizable()
-            .aspectRatio(contentMode: .fit)
+            .font(Font.custom("SF Pro", size: 24))
             .frame(width: 29, height: 29)
             .foregroundStyle(.offWhite)
         }
