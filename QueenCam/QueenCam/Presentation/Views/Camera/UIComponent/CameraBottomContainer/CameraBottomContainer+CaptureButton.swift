@@ -17,7 +17,6 @@ extension CameraView.CameraBottomContainer {
               .fill(.offWhite)
               .frame(width: isMinimize ? 28 : 68, height: isMinimize ? 28 : 68)
           }
-          // 터치 영역 보정을 위해 투명 배경을 주고 싶다면 여기에 .contentShape(Circle()) 추가
         }
         .disabled(!cameraViewModel.isCaptureButtonEnabled)
 
