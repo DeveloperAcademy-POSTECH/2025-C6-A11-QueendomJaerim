@@ -160,7 +160,7 @@ extension CameraView: View {
           }
         )
         .padding()
-        .padding(.top, 12)
+//        .padding(.top, 12)
         .alert(
           "연결을 종료합니다.",
           isPresented: $isShowDisconnectAlert,
@@ -220,6 +220,7 @@ extension CameraView: View {
         }
         .minimize(DynamicScreenUtils.isShortScreen)
       }
+      .padding(.top, 5)
     }
     // MARK: 카메라 세팅 툴
     .overlay {
