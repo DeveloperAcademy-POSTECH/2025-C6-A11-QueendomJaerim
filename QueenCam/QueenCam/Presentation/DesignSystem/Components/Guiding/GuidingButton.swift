@@ -17,9 +17,7 @@ struct GuidingButton {
   let guidingButtonType: GuidingButtonType
 
   private let symbolHeight: CGFloat = 21
-  private let symbolPadding: CGFloat = 3
-  private let symbolLabelSpacing: CGFloat = 2
-  private let buttonPadding: CGFloat = 5
+  private let symbolLabelSpacing: CGFloat = 6
 }
 
 extension GuidingButton {
@@ -70,7 +68,6 @@ extension GuidingButton: View {
               .resizable()
               .scaledToFit()
               .frame(height: symbolHeight)
-              .padding(symbolPadding)
 
             Text(title)
               .typo(.sfR10)
@@ -80,7 +77,6 @@ extension GuidingButton: View {
               ? (isActive ? .modelDisabled : .disabled)
               : (isActive ? .modelPrimary : .systemWhite)
           )
-          .padding(buttonPadding)
         }
 
       case .photographer:
@@ -91,7 +87,6 @@ extension GuidingButton: View {
               .resizable()
               .scaledToFit()
               .frame(height: symbolHeight)
-              .padding(symbolPadding)
 
             Text(title)
               .typo(.sfR10)
@@ -101,7 +96,6 @@ extension GuidingButton: View {
               ? (isActive ? .photographerDisabled : .disabled)
               : (isActive ? .photographerPrimary : .systemWhite)
           )
-          .padding(buttonPadding)
         }
 
       case .none:
@@ -112,7 +106,6 @@ extension GuidingButton: View {
               .resizable()
               .scaledToFit()
               .frame(height: symbolHeight)
-              .padding(symbolPadding)
 
             Text(title)
               .typo(.sfR10)
@@ -122,7 +115,6 @@ extension GuidingButton: View {
               ? (isActive ? .photographerDisabled : .disabled)
               : (isActive ? .photographerPrimary : .systemWhite)
           )
-          .padding(buttonPadding)
         }
       }
     }
