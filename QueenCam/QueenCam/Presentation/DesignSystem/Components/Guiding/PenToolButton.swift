@@ -26,9 +26,8 @@ extension PenToolButton: View {
   var body: some View {
     Button(action: tapAction) {
       Image(systemName: iconName)
-        .resizable()
-        .scaledToFill()
-        .frame(width: 21, height: 21)
+        .font(.system(size: 18, weight: .light))
+        .frame(height: 21)
         .foregroundStyle(isActive ? .offWhite : .gray600)
     }
     .disabled(!isActive)

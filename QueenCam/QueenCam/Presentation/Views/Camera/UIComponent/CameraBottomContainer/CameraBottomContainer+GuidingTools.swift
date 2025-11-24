@@ -96,10 +96,8 @@ extension CameraView.CameraBottomContainer {
         }
       }) {
         Image(systemName: "plus")
-          .resizable()
-          .scaledToFill()
           .font(.system(size: 18, weight: .light))
-          .frame(width: 19, height: 21)
+          .frame(height: 21)
           .foregroundStyle(frameViewModel.frames.isEmpty ? .offWhite : .gray600)
           .padding(.trailing, 8)
       }
@@ -110,10 +108,8 @@ extension CameraView.CameraBottomContainer {
         frameViewModel.deleteAll()
       }) {
         Image(systemName: "trash")
-          .resizable()
-          .scaledToFill()
           .font(.system(size: 18, weight: .light))
-          .frame(width: 19, height: 21)
+          .frame(height: 21)
           .foregroundStyle(frameViewModel.frames.isEmpty ? .gray600 : .offWhite)
       }
       .disabled(frameViewModel.frames.isEmpty)
