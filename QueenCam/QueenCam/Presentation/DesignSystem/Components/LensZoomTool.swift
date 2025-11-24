@@ -24,7 +24,7 @@ extension LensZoomTool {
 extension LensZoomTool: View {
 
   var body: some View {
-    HStack(alignment: .center, spacing: 4) {
+    HStack(alignment: .center, spacing: 2) {
       ForEach(zoomScaleItemList, id: \.self) { item in
         Button(action: { onZoomChange(item) }) {
           Circle()
