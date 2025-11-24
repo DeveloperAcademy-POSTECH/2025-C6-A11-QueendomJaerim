@@ -29,6 +29,9 @@ extension CameraView {
     let guidingToolToggle: (_ selectedTool: ActiveTool) -> Void
     // 비율이 작은 기기를 위한 모드. true면 뷰 크기 조정
     var isMinimize = false
+    
+    // 도구 버튼 토글 애니메이션을 위한 네임스페이스
+    @Namespace var toggledToolNamespace
   }
 }
 
