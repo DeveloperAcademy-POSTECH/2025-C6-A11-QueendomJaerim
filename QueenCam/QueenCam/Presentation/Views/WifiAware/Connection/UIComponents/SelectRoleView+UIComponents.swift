@@ -26,11 +26,11 @@ extension SelectRoleView {
   var header: some View {
     VStack(spacing: 18) {
       Text("역할을 선택해주세요")
-        .font(DynamicScreenUtils.isShortScreen ? .pretendard(.medium, size: 18) : .pretendard(.medium, size: 20))
+        .typo(DynamicScreenUtils.isShortScreen ? .sb17 : .sb20)
 
       Text("서로 다른 역할의 기기끼리만\n연결할 수 있어요")
         .multilineTextAlignment(.center)
-        .font(DynamicScreenUtils.isShortScreen ? .pretendard(.medium, size: 12) : .pretendard(.medium, size: 15))
+        .typo(DynamicScreenUtils.isShortScreen ? .m13 : .m15)
     }
     .foregroundStyle(selectedRole == nil ? .systemWhite : .gray400)
   }
