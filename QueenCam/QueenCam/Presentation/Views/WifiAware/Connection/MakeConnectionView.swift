@@ -138,7 +138,7 @@ extension MakeConnectionView {
       }
 
       ToolbarItem(placement: .principal) {
-        Text("기기 연결하기")
+        Text("친구와 연결하기")
           .foregroundStyle(.offWhite)
       }
 
