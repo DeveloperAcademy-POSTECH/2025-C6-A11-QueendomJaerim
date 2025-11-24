@@ -9,7 +9,7 @@ import SwiftUI
 
 extension SelectRoleView {
   var individualSymbolOffset: CGFloat { 7.5 }
-  
+
   var fixedLabelSpacing: CGFloat { 115 } // 시각적 균형을 위한 "촬영" - "모델" 레이블 고정 간격
 
   var symbolsContainerOffset: CGFloat {  // 선택 시 가운데 정렬
@@ -61,19 +61,34 @@ extension SelectRoleView {
   var roleDescriptions: some View {
     if selectedRole == nil {
       VStack(spacing: 15) {
-        HStack {
-          Spacer()
+        if LocaleUtils.currentLocale == .korean {
+          HStack {
+            Spacer()
 
-          Text(Role.photographer.displayName)
+            Text(Role.photographer.displayName)
 
-          Spacer()
-            .frame(width: fixedLabelSpacing)
+            Spacer()
+              .frame(width: fixedLabelSpacing)
 
-          Text(Role.model.displayName)
+            Text(Role.model.displayName)
 
-          Spacer()
+            Spacer()
+          }
+          .typo(.sb20)
+        } else {
+          HStack {
+            Spacer()
+
+            Text(Role.photographer.displayName)
+
+            Spacer()
+
+            Text(Role.model.displayName)
+
+            Spacer()
+          }
+          .typo(.sb20)
         }
-        .typo(.sb20)
 
         Text("\n")  // invisible
           .typo(.sb15)
