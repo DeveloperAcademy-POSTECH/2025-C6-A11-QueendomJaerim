@@ -49,7 +49,7 @@ extension ConnectionView: View {
     .onChange(of: viewModel.connections) { _, newValue in  // 연결 완료
       if !newValue.isEmpty {
         isConnected = true
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
           dismiss()
         }
       }
