@@ -8,10 +8,16 @@ extension CameraView.CameraBottomContainer {
           shutterActionEffect()
           cameraViewModel.capturePhoto()
         }) {
-          Circle()
-            .fill(.offWhite)
-            .stroke(.gray900, lineWidth: 6)
-            .frame(width: isMinimize ? 40 : 80, height: isMinimize ? 40 : 80)
+          ZStack {
+            Circle()
+              .fill(.gray900)
+              .frame(width: isMinimize ? 40 : 80, height: isMinimize ? 40 : 80)
+
+            Circle()
+              .fill(.offWhite)
+              .frame(width: isMinimize ? 28 : 68, height: isMinimize ? 28 : 68)
+          }
+          // 터치 영역 보정을 위해 투명 배경을 주고 싶다면 여기에 .contentShape(Circle()) 추가
         }
         .disabled(!cameraViewModel.isCaptureButtonEnabled)
 
@@ -41,4 +47,20 @@ extension CameraView.CameraBottomContainer {
       }
     }
   }
+}
+
+#Preview {
+  VStack {
+    ZStack {
+      Circle()
+        .fill(.gray900)
+        .frame(width: 80, height: 80)
+
+      Circle()
+        .fill(.offWhite)
+        .frame(width: 68, height: 68)
+    }
+  }
+  .frame(width: 300, height: 300)
+  .background(.black)
 }
