@@ -32,13 +32,21 @@ extension SelectRoleView: View {
         TransitionAnimationView {
           self.loadingAnimationDidComplete = true
         }
+        .ignoresSafeArea() // 화면 전체 높이를 기준으로 중앙 세로 정렬되어야 함
       } else {
         ZStack {
-          roleSelectButtons  // 애니메이션 연결을 위해 화면 세로 가운데 정렬
-
+          // MARK: ZZ 버튼
           VStack {
             Spacer()
-              .frame(height: DynamicScreenUtils.isShortScreen ? 100 : 115)
+            roleSelectButtons
+            Spacer()
+          }
+            .ignoresSafeArea() // 화면 전체 높이를 기준으로 중앙 세로 정렬되어야 함
+
+          // MARK: 그 외 레이블과 버튼
+          VStack {
+            Spacer()
+              .frame(height: DynamicScreenUtils.isShortScreen ? 60 : 77)
 
             header
 
@@ -47,7 +55,7 @@ extension SelectRoleView: View {
             roleDescriptions
 
             Spacer()
-              .frame(height: DynamicScreenUtils.isShortScreen ? 30 : 90)
+              .frame(height: DynamicScreenUtils.isShortScreen ? 30 : 126)
 
             Button {
               if selectedRole != nil {
