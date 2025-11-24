@@ -9,6 +9,8 @@ import SwiftUI
 
 extension SelectRoleView {
   var individualSymbolOffset: CGFloat { 7.5 }
+  
+  var fixedLabelSpacing: CGFloat { 115 } // 시각적 균형을 위한 "촬영" - "모델" 레이블 고정 간격
 
   var symbolsContainerOffset: CGFloat {  // 선택 시 가운데 정렬
     guard !willShowLoadingAnimation else { return .zero }  // 애니메이션 노출 전 원점으로 돌린다
@@ -65,6 +67,7 @@ extension SelectRoleView {
           Text(Role.photographer.displayName)
 
           Spacer()
+            .frame(width: fixedLabelSpacing)
 
           Text(Role.model.displayName)
 
