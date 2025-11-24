@@ -38,6 +38,14 @@ struct OpenView: View {
               return isLarge ? baseHeight * 2 : baseHeight
             }
           }()
+          // 레퍼런스 뒷 배경: Shadow 효과 있음
+          RoundedRectangle(cornerRadius: 24)
+            .fill(.black.opacity(0.08))
+            .frame(width: width, height: height, alignment: .center)
+            .blur(radius: 20)
+            .blur(radius: 40)
+        
+          // 레퍼런스 이미지
           Image(uiImage: image)
             .resizable()
             .scaledToFill()
