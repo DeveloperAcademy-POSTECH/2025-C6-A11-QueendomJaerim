@@ -92,8 +92,10 @@ extension CameraManager {
 extension CameraManager {
   /// 이미지를 전송한다.
   func sendPhoto(_ photoOutput: PhotoOuput) {
-    guard networkService.networkState == .host(.publishing) else {
-      logger.warning("The client has a viewer role or is not publishing. Skipping sending photo.")
+    let isConnected = networkService.networkState == .host(.publishing)
+      || networkService.networkState == .viewer(.connected)
+    guard isConnected else {
+      logger.warning("The client is not connected. Skipping sending photo.")
       return
     }
 
