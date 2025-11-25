@@ -198,7 +198,7 @@ extension CameraView: View {
           reconnectCancelButtonDidTap: connectionViewModel.reconnectCancelButtonDidTap,
           shutterActionEffect: flashScreen
         )
-        .padding(DynamicScreenUtils.isShortScreen ? 32 : 0)
+        .padding(DynamicModelUtils.isiPad ? 32 : 0)
 
         CameraBottomContainer(
           currentRole: connectionViewModel.role,
@@ -218,7 +218,7 @@ extension CameraView: View {
         ) { targetTool in
           activeTool = activeTool == targetTool ? nil : targetTool
         }
-        .minimize(DynamicScreenUtils.isShortScreen)
+        .minimize(DynamicModelUtils.isiPad)
       }
       .padding(.top, 5)
     }
