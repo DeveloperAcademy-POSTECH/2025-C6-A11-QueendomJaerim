@@ -407,7 +407,7 @@
         }
       }
     },
-    "연결 상태가 좋지 않아,\n다시 연결하고 있어요" : {
+    "연결 상태가 좋지 않아,\n다시 연결하고 있어요." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -807,22 +807,22 @@
         }
       }
     },
-    "페어링을 요청" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "pair"
-          }
-        }
-      }
-    },
     "펜" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pen"
+          }
+        }
+      }
+    },
+    "페어링을 요청" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "pair"
           }
         }
       }
