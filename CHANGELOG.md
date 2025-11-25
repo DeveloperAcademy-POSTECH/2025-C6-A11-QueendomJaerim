@@ -21,6 +21,7 @@
 
 ### Fixed
 
+- 가끔 iPhone에서 iPad용으로 조정된 뷰가 노출되는 문제
 
 ### Security
 

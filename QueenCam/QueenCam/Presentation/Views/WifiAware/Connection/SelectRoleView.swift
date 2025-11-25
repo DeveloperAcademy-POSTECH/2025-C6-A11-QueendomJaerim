@@ -46,7 +46,7 @@ extension SelectRoleView: View {
           // MARK: 그 외 레이블과 버튼
           VStack {
             Spacer()
-              .frame(height: DynamicScreenUtils.isShortScreen ? 60 : 77)
+              .frame(height: DynamicModelUtils.isiPad ? 60 : 77)
 
             header
 
@@ -55,7 +55,7 @@ extension SelectRoleView: View {
             roleDescriptions
 
             Spacer()
-              .frame(height: DynamicScreenUtils.isShortScreen ? 30 : 126)
+              .frame(height: DynamicModelUtils.isiPad ? 30 : 126)
 
             Button {
               if selectedRole != nil {
