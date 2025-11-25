@@ -12,6 +12,7 @@
 
 ### Changed
 
+- 연결 및 페어링 가이딩 동영상 수정
 
 ### Deprecated
 
