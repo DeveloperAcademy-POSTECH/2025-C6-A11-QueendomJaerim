@@ -102,7 +102,7 @@ extension CameraView.CameraBottomContainer: View {
       .padding(.horizontal, 36)
     }
     .padding(.top, 19)
-    .frame(maxWidth: .infinity, maxHeight: isMinimize ? 120 : .infinity)
+    .frame(maxWidth: isMinimize ? 300 : .infinity, maxHeight: isMinimize ? 120 : .infinity)
     .background(.black)
     .gesture(dragGesture)
     .animation(.easeInOut, value: activeTool)

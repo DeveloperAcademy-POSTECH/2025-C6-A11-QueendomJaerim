@@ -25,6 +25,30 @@
 ### Security
 
 
+## [1.1.2] (2025-11-25)
+
+### Added
+
+- 재연결 관련 누락된 영어 번역 추가
+
+### Changed
+
+- 연결 및 페어링 가이딩 동영상 수정
+
+### Deprecated
+
+
+### Removed
+
+
+### Fixed
+
+- 가끔 iPhone에서 iPad용으로 조정된 뷰가 노출되는 문제
+- 모델로 연결을 시작한 뒤, 작가로 역할을 바꿨을 때 촬영된 이미지를 전송하지 못하는 문제
+
+### Security
+
+
 ## [1.1.1] (2025-11-25)
 
 ### Changed
@@ -283,6 +307,7 @@
 - Wi-Fi Aware 연결 후, 라이브 포토 촬영 시 앱이 크래시되는 문제
 - 레퍼런스 삭제 후 재등록에 관한 상태 초기화 문제
 
+[1.1.2]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.0.2...v1.1.0
 [1.0.2]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.0.1...v1.0.2
