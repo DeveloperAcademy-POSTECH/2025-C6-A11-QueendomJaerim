@@ -112,14 +112,11 @@ final class CameraManager: NSObject {
       }
 
       photoSettings.isAutoRedEyeReductionEnabled = true
-      photoSettings.photoQualityPrioritization = .speed
+      photoSettings.photoQualityPrioritization = .quality
 
       if self.isLivePhotoOn, self.photoOutput.isLivePhotoCaptureEnabled {
         photoSettings.livePhotoMovieFileURL = URL.movieFileURL
       }
-
-      logger.info("Capture -> photoOutput.isLivePhotoCaptureSupported: \(photoOutput.isLivePhotoCaptureSupported)")
-      logger.info("Capture -> photoOutput.isLivePhotoCaptureEnabled: \(photoOutput.isLivePhotoCaptureEnabled)")
 
       // 1
       let uniqueID = photoSettings.uniqueID
@@ -205,7 +202,7 @@ extension CameraManager {
       do {
         try device.lockForConfiguration()
         device.videoZoomFactor = 1.0 / device.displayVideoZoomFactorMultiplier
-        
+
         // 렌즈 전환 제어 설정
         if device.activePrimaryConstituentDeviceSwitchingBehavior != .unsupported {
           device.setPrimaryConstituentDeviceSwitchingBehavior(
@@ -286,7 +283,7 @@ extension CameraManager {
 
     photoOutput.publisher(for: \.captureReadiness)
       .sink { [weak self] readiness in
-        self?.logger.info("📷 Capture readiness: \(readiness)")
+        self?.logger.info("Capture readiness: \(readiness)")
 
         DispatchQueue.main.async { [weak self] in
           self?.onReadinessState?(readiness)

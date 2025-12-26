@@ -25,6 +25,19 @@ struct PhotoLibraryHelpers {
     }
   }
 
+  static func saveProxyToPhotoLibrary(_ imageData: Data) {
+    PHPhotoLibrary.shared().performChanges({
+      let creationRequest = PHAssetCreationRequest.forAsset()
+      creationRequest.addResource(with: .photoProxy, data: imageData, options: nil)
+    }) { success, error in
+      if success {
+        self.logger.info("Proxy data saved successfully.")
+      } else if let error {
+        self.logger.error("Failed to save Proxy data: \(error.localizedDescription)")
+      }
+    }
+  }
+
   static func saveLivePhotoToPhotosLibrary(stillImageData: Data, livePhotoMovieURL: URL) {
     PHPhotoLibrary.shared().performChanges({
       let creationRequest = PHAssetCreationRequest.forAsset()

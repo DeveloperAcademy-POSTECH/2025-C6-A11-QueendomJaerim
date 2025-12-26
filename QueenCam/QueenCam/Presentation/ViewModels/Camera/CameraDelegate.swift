@@ -40,13 +40,23 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
   ) {
     guard error == nil else {
       logger.error("Deferred Photo Proxy Error: \(error)")
+      completion(nil)
       return
     }
 
-    guard deferredPhotoProxy != nil else {
+    guard let deferredPhotoProxy,
+      let imageData = deferredPhotoProxy.fileDataRepresentation()
+
+    else {
+      logger.error("Deferred proxy is nil or no data")
+      completion(nil)
       return
     }
-    logger.info("Deffer processing started")
+    
+    logger.info("Deferred processing started.")
+    PhotoLibraryHelpers.saveProxyToPhotoLibrary(imageData)
+    completion(.basicPhoto(thumbnail: UIImage(data: imageData) ?? .init(), imageData: imageData))
+
   }
 
   func photoOutput(
@@ -90,13 +100,17 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
 
     guard error == nil else {
       logger.error("Error capturing Live Photo movie: \(error)")
+      completion(nil)
       return
     }
 
     guard let lastStillImageData = lastStillImageData,
       let lastThumbnailImage = lastThumbnailImage,
       let movieData = try? Data(contentsOf: outputFileURL)
-    else { return }
+    else {
+      completion(nil)
+      return
+    }
 
     PhotoLibraryHelpers.saveLivePhotoToPhotosLibrary(
       stillImageData: lastStillImageData,
