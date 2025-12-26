@@ -113,6 +113,7 @@ final class CameraManager: NSObject {
 
       photoSettings.isAutoRedEyeReductionEnabled = true
       photoSettings.photoQualityPrioritization = .quality
+      photoSettings.maxPhotoDimensions = photoOutput.maxPhotoDimensions
 
       if self.isLivePhotoOn, self.photoOutput.isLivePhotoCaptureEnabled {
         photoSettings.livePhotoMovieFileURL = URL.movieFileURL
@@ -279,6 +280,22 @@ extension CameraManager {
 
     if photoOutput.isAutoDeferredPhotoDeliverySupported {
       photoOutput.isAutoDeferredPhotoDeliveryEnabled = true
+    }
+
+    if let device = videoDeviceInput?.device {
+      let supportedDimensions = device.activeFormat.supportedMaxPhotoDimensions
+
+      // 지원 해상도 리스트
+      let dimensionsLog =
+        supportedDimensions
+        .map { "\($0.width)x\($0.height)" }
+        .joined(separator: ", ")
+      logger.info("Supported Dimensions: [\(dimensionsLog)]")
+
+      // 지원 하는 해상도에서 가장 큰 것으로 설정
+      if let maxDimension = supportedDimensions.max(by: { $0.width * $0.height < $1.width * $1.height }) {
+        photoOutput.maxPhotoDimensions = maxDimension
+      }
     }
 
     photoOutput.publisher(for: \.captureReadiness)
