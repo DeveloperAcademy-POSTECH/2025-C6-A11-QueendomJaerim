@@ -10,6 +10,7 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
   private let completion: ((PhotoOuput?) -> Void)
   private var lastThumbnailImage: UIImage?
   private var lastStillImageData: Data?
+  private var deferredPhotoProxyData: Data?
   private var livePhotoMovieURL: URL?
 
   private var isLivePhoto: Bool = false
@@ -46,17 +47,30 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
 
     guard let deferredPhotoProxy,
       let imageData = deferredPhotoProxy.fileDataRepresentation()
-
     else {
       logger.error("Deferred proxy is nil or no data")
       completion(nil)
       return
     }
-    
-    logger.info("Deferred processing started.")
-    PhotoLibraryHelpers.saveProxyToPhotoLibrary(imageData)
-    completion(.basicPhoto(thumbnail: UIImage(data: imageData) ?? .init(), imageData: imageData))
 
+    if isLivePhoto {
+      self.deferredPhotoProxyData = imageData
+      if let livePhotoMovieURL = self.livePhotoMovieURL,
+        let movieData = try? Data(contentsOf: livePhotoMovieURL),
+        let thumbnail = UIImage(data: imageData)
+      {
+        logger.info("Live Photo: Saving deferred live photo (Proxy delegate).")
+        PhotoLibraryHelpers.saveDeferredLivePhotoToPhotosLibrary(
+          proxyData: imageData,
+          livePhotoMovieURL: livePhotoMovieURL
+        )
+
+        completion(.livePhoto(thumbnail: thumbnail, imageData: imageData, videoData: movieData))
+      }
+    } else {
+      PhotoLibraryHelpers.saveProxyToPhotoLibrary(imageData)
+      completion(.basicPhoto(thumbnail: UIImage(data: imageData) ?? .init(), imageData: imageData))
+    }
   }
 
   func photoOutput(
@@ -86,7 +100,6 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
       PhotoLibraryHelpers.saveToPhotoLibrary(image)
       completion(.basicPhoto(thumbnail: image, imageData: imageData))
     }
-
   }
 
   func photoOutput(
@@ -104,19 +117,34 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
       return
     }
 
-    guard let lastStillImageData = lastStillImageData,
-      let lastThumbnailImage = lastThumbnailImage,
-      let movieData = try? Data(contentsOf: outputFileURL)
-    else {
-      completion(nil)
+    self.livePhotoMovieURL = outputFileURL
+
+    // 지연 처리된 라이브 포토
+    if let deferredPhotoProxyData = self.deferredPhotoProxyData,
+      let movieData = try? Data(contentsOf: outputFileURL),
+      let thumbnail = UIImage(data: deferredPhotoProxyData)
+    {
+      logger.info("Live Photo: Saving deferred live photo (Movie delegate).")
+      PhotoLibraryHelpers.saveDeferredLivePhotoToPhotosLibrary(
+        proxyData: deferredPhotoProxyData,
+        livePhotoMovieURL: outputFileURL
+      )
+      completion(.livePhoto(thumbnail: thumbnail, imageData: deferredPhotoProxyData, videoData: movieData))
       return
     }
 
-    PhotoLibraryHelpers.saveLivePhotoToPhotosLibrary(
-      stillImageData: lastStillImageData,
-      livePhotoMovieURL: outputFileURL
-    )
-
-    completion(.livePhoto(thumbnail: lastThumbnailImage, imageData: lastStillImageData, videoData: movieData))
+    // 일반 라이브 포토
+    if let lastStillImageData = self.lastStillImageData,
+      let lastThumbnailImage = self.lastThumbnailImage,
+      let movieData = try? Data(contentsOf: outputFileURL)
+    {
+      logger.info("Live Photo: Saving standard live photo (Movie delegate).")
+      PhotoLibraryHelpers.saveLivePhotoToPhotosLibrary(
+        stillImageData: lastStillImageData,
+        livePhotoMovieURL: outputFileURL
+      )
+      completion(.livePhoto(thumbnail: lastThumbnailImage, imageData: lastStillImageData, videoData: movieData))
+      return
+    }
   }
 }

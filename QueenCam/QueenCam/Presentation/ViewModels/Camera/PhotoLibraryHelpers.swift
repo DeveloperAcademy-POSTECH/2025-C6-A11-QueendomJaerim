@@ -56,4 +56,23 @@ struct PhotoLibraryHelpers {
       }
     }
   }
+
+  static func saveDeferredLivePhotoToPhotosLibrary(proxyData: Data, livePhotoMovieURL: URL) {
+    PHPhotoLibrary.shared().performChanges({
+      let creationRequest = PHAssetCreationRequest.forAsset()
+
+      creationRequest.addResource(with: .photoProxy, data: proxyData, options: nil)
+
+      let options = PHAssetResourceCreationOptions()
+      options.shouldMoveFile = true
+      creationRequest.addResource(with: .pairedVideo, fileURL: livePhotoMovieURL, options: options)
+
+    }) { success, error in
+      if success {
+        self.logger.info("Deferred Live Photo saved successfully.")
+      } else if let error {
+        self.logger.error("Failed to save Deferred Live Photo: \(error.localizedDescription)")
+      }
+    }
+  }
 }
