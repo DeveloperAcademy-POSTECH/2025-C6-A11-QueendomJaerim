@@ -13,14 +13,15 @@ import UIKit
 struct PhotoLibraryHelpers {
   static let logger = QueenLogger(category: "PhotoLiberaryHelpers")
 
-  static func saveToPhotoLibrary(_ image: UIImage) {
-    PHPhotoLibrary.shared().performChanges {
-      PHAssetChangeRequest.creationRequestForAsset(from: image)
-    } completionHandler: { success, error in
+  static func saveToPhotoLibrary(_ imageData: Data) {
+    PHPhotoLibrary.shared().performChanges({
+      let creationRequest = PHAssetCreationRequest.forAsset()
+      creationRequest.addResource(with: .photo, data: imageData, options: nil)
+    }) { success, error in
       if success {
-        self.logger.info("Image saved to gallery.")
-      } else if error != nil {
-        self.logger.error("Error saving image to gallery")
+        self.logger.info("Image data saved successfully.")
+      } else if let error {
+        self.logger.error("Failed to save Image data: \(error.localizedDescription)")
       }
     }
   }

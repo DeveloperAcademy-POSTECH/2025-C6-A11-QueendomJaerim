@@ -97,7 +97,7 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
     lastStillImageData = imageData
 
     if !isLivePhoto {
-      PhotoLibraryHelpers.saveToPhotoLibrary(image)
+      PhotoLibraryHelpers.saveToPhotoLibrary(imageData)
       completion(.basicPhoto(thumbnail: image, imageData: imageData))
     }
   }
