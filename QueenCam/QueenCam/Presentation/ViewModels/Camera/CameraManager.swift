@@ -284,17 +284,18 @@ extension CameraManager {
 
     if let device = videoDeviceInput?.device {
       let supportedDimensions = device.activeFormat.supportedMaxPhotoDimensions
-
-      // 지원 해상도 리스트
-      let dimensionsLog =
-        supportedDimensions
-        .map { "\($0.width)x\($0.height)" }
-        .joined(separator: ", ")
-      logger.info("Supported Dimensions: [\(dimensionsLog)]")
-
-      // 지원 하는 해상도에서 가장 큰 것으로 설정
-      if let maxDimension = supportedDimensions.max(by: { $0.width * $0.height < $1.width * $1.height }) {
-        photoOutput.maxPhotoDimensions = maxDimension
+      
+      // 24MP 해상도 검색 (23MP ~ 26MP 범위)
+      let preferred24MP = supportedDimensions.first { dimension in
+        let pixels = dimension.width * dimension.height
+        return (23_000_000...26_000_000).contains(pixels)
+      }
+      
+      // 24MP 우선 선택, 없으면 최대 해상도 선택
+      if let selectedDimension = preferred24MP ?? supportedDimensions.max(by: { $0.width * $0.height < $1.width * $1.height }) {
+        photoOutput.maxPhotoDimensions = selectedDimension
+        let mpCount = Double(selectedDimension.width * selectedDimension.height) / 1_000_000.0
+        logger.info("Selected Dimensions: \(selectedDimension.width)x\(selectedDimension.height) (\(mpCount)MP)")
       }
     }
 
