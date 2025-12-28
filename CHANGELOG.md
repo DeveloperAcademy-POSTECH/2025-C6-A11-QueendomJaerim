@@ -12,6 +12,7 @@
 
 ### Changed
 
+- 사진 화질 개선
 
 ### Deprecated
 

@@ -77,8 +77,8 @@ extension CameraManager {
   }
 
   private func handleBasicPhotoEvent(photoData: Data) {
+    PhotoLibraryHelpers.saveToPhotoLibrary(photoData)
     if let image = UIImage(data: photoData) {
-      PhotoLibraryHelpers.saveToPhotoLibrary(image)
       DispatchQueue.main.async {
         self.onPhotoCapture?(image)
       }
