@@ -52,7 +52,10 @@ extension SelectRoleView: View {
 
             Spacer()  // 가운데에는 역할 선택 버튼이 들어가야하므로 비어둔다
 
-            roleDescriptions
+            RoleDescriptionView(
+              role: selectedRole,
+              roleSelected: didRoleSelect
+            )
 
             Spacer()
               .frame(height: DynamicModelUtils.isiPad ? 30 : 126)
