@@ -67,6 +67,7 @@ extension PhotoDetailView.ItemComponent {
     options.isNetworkAccessAllowed = true
     options.deliveryMode = .opportunistic
     options.resizeMode = .none
+    options.allowSecondaryDegradedImage = true
 
     manager.requestImage(
       for: asset,

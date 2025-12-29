@@ -130,6 +130,7 @@ final class PenViewModel {
   /// 펜 가이딩 초기화
   func reset() {
     strokes.removeAll()
+    persistedStrokes.removeAll()
     hasEverDrawn = false
 
     // Send to network

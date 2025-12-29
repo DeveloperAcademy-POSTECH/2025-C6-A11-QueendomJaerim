@@ -10,6 +10,12 @@
 
 &nbsp;
 
+<a href="https://apps.apple.com/kr/app/%EC%B0%8D%EC%9E%90-zzikzza/id6754213712">
+  <img src="./Documents/Attachments/download-on-appstore.svg" >
+</a>
+
+&nbsp;
+
 찍자 ZZikZZa는 찍는 사람의 촬영 화면을 찍히는 사람이 자신의 휴대폰에서 실시간으로 함께 보고 시각적 가이드를 공유해, 더 원활하고 정확한 소통을 돕는 카메라 앱입니다.
 
 <!--

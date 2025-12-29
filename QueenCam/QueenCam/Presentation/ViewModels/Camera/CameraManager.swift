@@ -112,14 +112,12 @@ final class CameraManager: NSObject {
       }
 
       photoSettings.isAutoRedEyeReductionEnabled = true
-      photoSettings.photoQualityPrioritization = .speed
+      photoSettings.photoQualityPrioritization = .quality
+      photoSettings.maxPhotoDimensions = photoOutput.maxPhotoDimensions
 
       if self.isLivePhotoOn, self.photoOutput.isLivePhotoCaptureEnabled {
         photoSettings.livePhotoMovieFileURL = URL.movieFileURL
       }
-
-      logger.info("Capture -> photoOutput.isLivePhotoCaptureSupported: \(photoOutput.isLivePhotoCaptureSupported)")
-      logger.info("Capture -> photoOutput.isLivePhotoCaptureEnabled: \(photoOutput.isLivePhotoCaptureEnabled)")
 
       // 1
       let uniqueID = photoSettings.uniqueID
@@ -205,7 +203,7 @@ extension CameraManager {
       do {
         try device.lockForConfiguration()
         device.videoZoomFactor = 1.0 / device.displayVideoZoomFactorMultiplier
-        
+
         // 렌즈 전환 제어 설정
         if device.activePrimaryConstituentDeviceSwitchingBehavior != .unsupported {
           device.setPrimaryConstituentDeviceSwitchingBehavior(
@@ -284,9 +282,26 @@ extension CameraManager {
       photoOutput.isAutoDeferredPhotoDeliveryEnabled = true
     }
 
+    if let device = videoDeviceInput?.device {
+      let supportedDimensions = device.activeFormat.supportedMaxPhotoDimensions
+      
+      // 24MP 해상도 검색 (23MP ~ 26MP 범위)
+      let preferred24MP = supportedDimensions.first { dimension in
+        let pixels = dimension.width * dimension.height
+        return (23_000_000...26_000_000).contains(pixels)
+      }
+      
+      // 24MP 우선 선택, 없으면 최대 해상도 선택
+      if let selectedDimension = preferred24MP ?? supportedDimensions.max(by: { $0.width * $0.height < $1.width * $1.height }) {
+        photoOutput.maxPhotoDimensions = selectedDimension
+        let mpCount = Double(selectedDimension.width * selectedDimension.height) / 1_000_000.0
+        logger.info("Selected Dimensions: \(selectedDimension.width)x\(selectedDimension.height) (\(mpCount)MP)")
+      }
+    }
+
     photoOutput.publisher(for: \.captureReadiness)
       .sink { [weak self] readiness in
-        self?.logger.info("📷 Capture readiness: \(readiness)")
+        self?.logger.info("Capture readiness: \(readiness)")
 
         DispatchQueue.main.async { [weak self] in
           self?.onReadinessState?(readiness)
