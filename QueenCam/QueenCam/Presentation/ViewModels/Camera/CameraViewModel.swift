@@ -276,6 +276,7 @@ extension CameraViewModel {
     let options = PHImageRequestOptions()
     options.deliveryMode = .highQualityFormat
     options.resizeMode = .exact
+    options.allowSecondaryDegradedImage = true
     options.isNetworkAccessAllowed = true
 
     cachingManager.requestImage(

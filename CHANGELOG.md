@@ -9,9 +9,25 @@
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [1.1.3] - 2025-12-29
+
+### Added
+
+- 역할 선택 시, 텍스트 레이블도 선택 가능하도록 구현
 
 ### Changed
 
+- 사진 화질 개선
 
 ### Deprecated
 
@@ -20,7 +36,7 @@
 
 
 ### Fixed
-
+- 역할 바꾸기 시 펜 가이드라인 초기화 오류 수정
 
 ### Security
 
@@ -307,6 +323,8 @@
 - Wi-Fi Aware 연결 후, 라이브 포토 촬영 시 앱이 크래시되는 문제
 - 레퍼런스 삭제 후 재등록에 관한 상태 초기화 문제
 
+[Unreleased]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.3...HEAD
+[1.1.3]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.2...v1.1.3
 [1.1.2]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.0.2...v1.1.0
@@ -320,4 +338,3 @@
 [0.2.0]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v0.0.1...v0.1.0
 [0.0.1]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/releases/tag/v0.0.1
-[unreleased]: hhttps://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim

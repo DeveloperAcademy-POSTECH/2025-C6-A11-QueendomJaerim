@@ -24,6 +24,7 @@ extension ThumbnailView {
     let options = PHImageRequestOptions()
     options.deliveryMode = .highQualityFormat
     options.resizeMode = .exact
+    options.allowSecondaryDegradedImage = true
     options.isNetworkAccessAllowed = true
 
     manager.requestImage(
@@ -39,6 +40,7 @@ extension ThumbnailView {
   private func requestFullResolutionImage() {
     let options = PHImageRequestOptions()
     options.deliveryMode = .highQualityFormat
+    options.allowSecondaryDegradedImage = true
     options.resizeMode = .none
     options.isNetworkAccessAllowed = true
 
