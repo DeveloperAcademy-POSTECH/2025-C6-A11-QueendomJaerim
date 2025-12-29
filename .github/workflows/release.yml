@@ -1,0 +1,137 @@
+name: Release
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  release:
+    if: |
+      !github.event.issue.pull_request && 
+      startsWith(github.event.issue.title, '🎤 [Release]') &&
+      startsWith(github.event.comment.body, '/start') &&
+      contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association)
+    
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Parse Version
+        id: parse_version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # 1. 버전 파싱
+          RAW_VERSION=$(echo "${{ github.event.comment.body }}" | awk '{print $2}')
+          
+          # 2. 버전 누락 체크
+          if [ -z "$RAW_VERSION" ]; then
+            echo "VERSION_MISSING=true" >> $GITHUB_ENV
+            exit 1
+          fi
+          
+          # 3. 환경 변수 설정
+          STRIPPED_VERSION=$(echo $RAW_VERSION | sed 's/^v//')
+          echo "RAW_VERSION=$RAW_VERSION" >> $GITHUB_ENV
+          echo "STRIPPED_VERSION=$STRIPPED_VERSION" >> $GITHUB_ENV
+
+          # 4. 시작 코멘트 남기기 (버전이 있을 때만 실행됨)
+          gh issue comment ${{ github.event.issue.number }} --body "🚀 **릴리즈 작업이 시작되었습니다. ($RAW_VERSION)**"
+
+      - name: Git Config Setup
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Process Release and Direct Merge
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          RAW_VER=${{ env.RAW_VERSION }}
+          STRIP_VER=${{ env.STRIPPED_VERSION }}
+          RELEASE_BRANCH="release/$RAW_VER"
+          XCODE_PROJ_PATH="QueenCam/QueenCam.xcodeproj/project.pbxproj"
+          TODAY=$(date +'%Y-%m-%d')
+          REPO_URL="https://github.com/${{ github.repository }}"
+
+          # 1. 이전 버전 추출
+          LAST_VERSION_STRIP=$(grep -oE '^## \[[0-9]+\.[0-9]+\.[0-9]+\]' CHANGELOG.md | head -n 1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+          LAST_VERSION_TAG="v$LAST_VERSION_STRIP"
+
+          git checkout develop
+          git checkout -b $RELEASE_BRANCH
+
+          # 2. Xcode Version & Build 업데이트
+          sed -i "s/MARKETING_VERSION = .*/MARKETING_VERSION = $STRIP_VER;/g" $XCODE_PROJ_PATH
+          OLD_BUILD_NUMBER=$(grep -m 1 "CURRENT_PROJECT_VERSION =" $XCODE_PROJ_PATH | sed -E 's/.*=[[:space:]]*([0-9]+);/\1/')
+          NEW_BUILD_NUMBER=$((OLD_BUILD_NUMBER + 1))
+          sed -i "s/CURRENT_PROJECT_VERSION = .*/CURRENT_PROJECT_VERSION = $NEW_BUILD_NUMBER;/g" $XCODE_PROJ_PATH
+          
+          git add .
+          git commit -m "[Chore] release: $RAW_VER 빌드 넘버 증가 ($NEW_BUILD_NUMBER)"
+
+          # 3. CHANGELOG 업데이트 시작
+          
+          # 3-1. 기존 [Unreleased] 헤더를 현재 버전으로 교체
+          sed -i "s/.*## \[Unreleased\]/## [$STRIP_VER] - $TODAY/" CHANGELOG.md
+          
+          # 3-2. 새로운 [Unreleased] 템플릿 삽입
+          printf "\n## [Unreleased]\n\n### Added\n\n### Changed\n\n### Deprecated\n\n### Removed\n\n### Fixed\n\n### Security\n" > unreleased_tmp.txt
+          
+          # 'r' 명령어를 통해 지정한 위치 '뒤'에 파일 내용을 읽어온다
+          sed -i "/기준으로 수행한다\./r unreleased_tmp.txt" CHANGELOG.md
+          rm unreleased_tmp.txt
+          
+          # 3-3. 하단 링크 섹션 업데이트
+          NEW_DIFF_LINK="[$STRIP_VER]: $REPO_URL/compare/$LAST_VERSION_TAG...$RAW_VER"
+          NEW_UNRELEASED_LINK="[Unreleased]: $REPO_URL/compare/$RAW_VER...HEAD"
+          
+          # 기존 [Unreleased] 링크 삭제 (중복 방지)
+          sed -i "/^\[Unreleased\]:/d" CHANGELOG.md
+          
+          # 링크 추가
+          sed -i "0,/^\[.*\]:/{s|^\[.*\]:|$NEW_DIFF_LINK\n&|}" CHANGELOG.md
+          sed -i "0,/^\[.*\]:/{s|^\[.*\]:|$NEW_UNRELEASED_LINK\n&|}" CHANGELOG.md
+
+          git add CHANGELOG.md
+          git commit -m "[Docs] release: $RAW_VER CHANGELOG.md"
+
+          # 4. 브랜치 병합 및 푸시
+          git push origin $RELEASE_BRANCH
+          git checkout main
+          git merge --no-ff $RELEASE_BRANCH -m "Merge release branch $RELEASE_BRANCH into main"
+          git tag -a "$RAW_VER" -m "Release $RAW_VER"
+          git checkout develop
+          git merge --no-ff $RELEASE_BRANCH -m "Merge release branch $RELEASE_BRANCH back to develop"
+
+          git push origin main develop --tags
+          git branch -d $RELEASE_BRANCH
+
+      - name: Post Failure Comment
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "${{ env.VERSION_MISSING }}" == "true" ]; then
+            gh issue comment ${{ github.event.issue.number }} --body "❌ **버전을 입력하지 않았습니다.** \`/start v1.2.3\` 과 같은 형식으로 입력해 주세요."
+          else
+            gh issue comment ${{ github.event.issue.number }} --body "❌ **릴리즈 작업 도중 오류가 발생했습니다. (${{ env.RAW_VERSION }})**
+            
+            Actions 탭에서 상세 로그를 확인해 주세요."
+          fi
+
+      - name: Post Success Comment
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue comment ${{ github.event.issue.number }} --body "✅ **릴리즈 작업이 성공적으로 완료되었습니다! (${{ env.RAW_VERSION }})**
+          
+          - **App Version:** ${{ env.STRIPPED_VERSION }}"
