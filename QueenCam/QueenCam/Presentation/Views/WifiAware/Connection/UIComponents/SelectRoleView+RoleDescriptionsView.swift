@@ -1,5 +1,5 @@
 //
-//  SelectRoleView+RoleDescriptionView.swift
+//  SelectRoleView+RoleDescriptionsView.swift
 //  QueenCam
 //
 //  Created by 임영택 on 11/9/25.
@@ -8,7 +8,7 @@
 import SwiftUI
 
 extension SelectRoleView {
-  struct RoleDescriptionView {
+  struct RoleDescriptionsView {
     /// 선택된 역할. 선택되지 않았으면 nil
     let role: Role?
 
@@ -30,7 +30,7 @@ extension SelectRoleView {
   }
 }
 
-extension SelectRoleView.RoleDescriptionView: View {
+extension SelectRoleView.RoleDescriptionsView: View {
   var body: some View {
     VStack(spacing: 15) {
       if let role {
@@ -47,7 +47,7 @@ extension SelectRoleView.RoleDescriptionView: View {
   }
 }
 
-extension SelectRoleView.RoleDescriptionView {
+extension SelectRoleView.RoleDescriptionsView {
   private struct SelectedRoleDescription: View {
     let displayName: String
     let description: String
@@ -68,7 +68,7 @@ extension SelectRoleView.RoleDescriptionView {
   }
 }
 
-extension SelectRoleView.RoleDescriptionView {
+extension SelectRoleView.RoleDescriptionsView {
   private struct RoleDescriptions: View {
     /// 레이블 간의 간격을 고정할지 설정한다. True면 고정한다.
     /// 영어 로케일의 경우 간격을 주면 레이아웃이 깨지므로 불가피하게 false로 지정한다.
@@ -116,7 +116,7 @@ extension SelectRoleView.RoleDescriptionView {
 #Preview {
   @Previewable @State var selectedRole: Role?
 
-  SelectRoleView.RoleDescriptionView(role: selectedRole) { role in
+  SelectRoleView.RoleDescriptionsView(role: selectedRole) { role in
     if role == selectedRole {
       selectedRole = nil
     } else {
