@@ -197,6 +197,9 @@ extension ConnectionViewModel {
   func disconnectButtonDidTap() {
     networkService.disconnect()
     role = nil  // 정상 종료인 경우 역할 초기화
+    lastConnectedDevice = nil // 재연결 관련 상태 초기화
+    connectionLost = false
+    reconnectingDeviceName = nil
     notificationService.registerNotification(.make(type: .disconnected))
   }
 
