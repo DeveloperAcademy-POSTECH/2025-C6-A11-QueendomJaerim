@@ -287,9 +287,11 @@ extension CameraView: View {
         isShowPhotoPicker = false
       }
       .presentationDetents([.medium, .large])
+      .dynamicTypeSize(.medium) // FIXME: Dynamic Type 정책 결정 후 수정
     }
     .fullScreenCover(isPresented: $isShowConnectionView) {
       ConnectionView(viewModel: connectionViewModel, previewStreamingViewModel: previewModel)
+        .dynamicTypeSize(.medium) // FIXME: Dynamic Type 정책 결정 후 수정
     }
     .onChange(of: connectionViewModel.connections) { oldValue, newValue in
       if !newValue.isEmpty && newValue.count > oldValue.count && connectionViewModel.role == .photographer {

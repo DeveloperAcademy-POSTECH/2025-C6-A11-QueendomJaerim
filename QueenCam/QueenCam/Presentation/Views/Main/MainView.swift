@@ -44,6 +44,7 @@ struct MainView: View {
       frameViewModel: frameViewModel,
       thumbsUpViewModel: thumbsUpViewModel
     )
+    .dynamicTypeSize(.medium) // FIXME: Dynamic Type 정책 결정 후 수정
     #if DEBUG
     .alert(
       "Ping 메시지 도착",

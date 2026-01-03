@@ -11,6 +11,8 @@
 
 ### Changed
 
+- Dynamic Type을 일시적으로 지원하지 않음
+
 ### Deprecated
 
 ### Removed
