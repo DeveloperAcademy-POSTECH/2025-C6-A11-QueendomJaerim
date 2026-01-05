@@ -51,6 +51,7 @@ actor WAPairedDevicesRepository {
   }
 
   func save(for device: ExtendedWAPairedDevice) {
-    self.connectedDevices[device.id] = device
+    connectedDevices[device.id] = device
+    allDevicesContinuation.yield(Array(connectedDevices.values))
   }
 }

@@ -14,7 +14,8 @@ final class DependencyContainer {
   lazy var networkManager: NetworkManagerProtocol = NetworkManager(connectionManager: connectionManager)
   lazy var networkService: NetworkServiceProtocol = NetworkService(
     networkManager: networkManager,
-    connectionManager: connectionManager
+    connectionManager: connectionManager,
+    waPairedDevicesRepository: waPairedDevicesRepository
   )
 
   lazy var previewCaptureService = PreviewCaptureService()
@@ -22,7 +23,7 @@ final class DependencyContainer {
   lazy var cameraSettingServcice: CameraSettingsServiceProtocol = CameraSettingsService()
 
   lazy var notificationService: NotificationService = NotificationService()
-  
+
   lazy var waPairedDevicesRepository: WAPairedDevicesRepository = WAPairedDevicesRepository()
 
   // lazy면 NotificaitonCenter 기반 이벤트 로깅이 작동하지 않을 수 있음

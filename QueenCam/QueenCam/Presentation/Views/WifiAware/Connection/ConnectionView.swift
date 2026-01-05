@@ -124,14 +124,14 @@ extension ConnectionView {
 #Preview {
   struct ConnectionViewPeviewContainer: View {
     @State var viewModel: ConnectionViewModel = .init(
-      networkService: NetworkService(),
+      networkService: NetworkService(waPairedDevicesRepository: WAPairedDevicesRepository()),
       notificationService: NotificationService(),
       waPairedDevicesRepository: WAPairedDevicesRepository()
     )
 
     @State var previewModel: PreviewModel = .init(
       previewCaptureService: PreviewCaptureService(),
-      networkService: NetworkService()
+      networkService: NetworkService(waPairedDevicesRepository: WAPairedDevicesRepository())
     )
 
     var body: some View {

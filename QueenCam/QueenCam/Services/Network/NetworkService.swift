@@ -129,14 +129,17 @@ final class NetworkService: NetworkServiceProtocol {
   // Checking Version Timer
   var versionCheckTimer: Timer?
   var versionChecked: Bool = false
+  
+  private let waPairedDevicesRepository: WAPairedDevicesRepository
 
   private let logger = QueenLogger(category: "NetworkService")
 
-  init() {
+  init(waPairedDevicesRepository: WAPairedDevicesRepository) {
     let connectionManager = ConnectionManager()
     let networkManager = NetworkManager(connectionManager: connectionManager)
     self.connectionManager = connectionManager
     self.networkManager = networkManager
+    self.waPairedDevicesRepository = waPairedDevicesRepository
 
     eventHandlerTasks.append(setupEventHandler(for: networkManager.localEvents))
     eventHandlerTasks.append(setupEventHandler(for: networkManager.networkEvents))
@@ -144,9 +147,14 @@ final class NetworkService: NetworkServiceProtocol {
     eventHandlerTasks.append(setupEventHandler(for: connectionManager.networkEvents))
   }
 
-  init(networkManager: NetworkManagerProtocol, connectionManager: ConnectionManagerProtocol) {
+  init(
+    networkManager: NetworkManagerProtocol,
+    connectionManager: ConnectionManagerProtocol,
+    waPairedDevicesRepository: WAPairedDevicesRepository
+  ) {
     self.networkManager = networkManager
     self.connectionManager = connectionManager
+    self.waPairedDevicesRepository = waPairedDevicesRepository
 
     eventHandlerTasks.append(setupEventHandler(for: networkManager.localEvents))
     eventHandlerTasks.append(setupEventHandler(for: networkManager.networkEvents))
@@ -256,6 +264,11 @@ extension NetworkService {
           requiredMinimumVersion: VersionUtils.minimumVersionCompatibleWith
         )
         await networkManager.send(.myVersion(versionInfo), to: connectionDetail.connection)
+      }
+      
+      // 최근 연결 기록 저장
+      if let connectedDevice = deviceConnections.keys.first {
+        await waPairedDevicesRepository.save(for: .init(device: connectedDevice, lastConnectedAt: Date()))
       }
 
       // 버전 체크 타이머 시작
