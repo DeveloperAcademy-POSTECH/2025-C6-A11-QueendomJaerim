@@ -24,7 +24,7 @@ final class ConnectionViewModel {
       }
     }
   }
-  private(set) var pairedDevices: [WAPairedDevice] = []
+  private(set) var pairedDevices: [ExtendedWAPairedDevice] = []
   private(set) var selectedPairedDevice: WAPairedDevice?
 
   var networkState: NetworkState? {
@@ -63,6 +63,8 @@ final class ConnectionViewModel {
 
   private let networkService: NetworkServiceProtocol
   private var cancellables: Set<AnyCancellable> = []
+  
+  private let waPairedDevicesRepository: WAPairedDevicesRepository
 
   var isConnecting: Bool {
     !(networkState == nil || networkState == .host(.stopped) || networkState == .viewer(.stopped))
@@ -79,9 +81,14 @@ final class ConnectionViewModel {
 
   private let logger = QueenLogger(category: "ConnectionViewModel")
 
-  init(networkService: NetworkServiceProtocol, notificationService: NotificationServiceProtocol) {
+  init(
+    networkService: NetworkServiceProtocol,
+    notificationService: NotificationServiceProtocol,
+    waPairedDevicesRepository: WAPairedDevicesRepository
+  ) {
     self.networkService = networkService
     self.notificationService = notificationService
+    self.waPairedDevicesRepository = waPairedDevicesRepository
     bind()
 
     // @Observable ViewModel은 두 번 초기화될 수 있음
@@ -157,10 +164,9 @@ final class ConnectionViewModel {
 
   private func updatePairedDevices() async {
     do {
-      for try await updatedDeviceList in WAPairedDevice.allDevices {
-        let devices = Array(updatedDeviceList.values)
-        self.pairedDevices = devices
-        logger.info("pairedDevices updated.\n\(devices)")
+      for try await updatedDeviceList in waPairedDevicesRepository.allDevices {
+        self.pairedDevices = updatedDeviceList
+        logger.info("pairedDevices updated.\n\(updatedDeviceList)")
       }
     } catch {
       logger.error("Failed to get paired devices: \(error)")

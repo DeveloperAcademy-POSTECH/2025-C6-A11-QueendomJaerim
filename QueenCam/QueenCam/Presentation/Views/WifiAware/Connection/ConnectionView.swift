@@ -125,7 +125,8 @@ extension ConnectionView {
   struct ConnectionViewPeviewContainer: View {
     @State var viewModel: ConnectionViewModel = .init(
       networkService: NetworkService(),
-      notificationService: NotificationService()
+      notificationService: NotificationService(),
+      waPairedDevicesRepository: WAPairedDevicesRepository()
     )
 
     @State var previewModel: PreviewModel = .init(

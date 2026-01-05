@@ -10,7 +10,7 @@ import WiFiAware
 
 extension MakeConnectionView {
   struct PairedDevicesList {
-    let pairedDevices: [WAPairedDevice]
+    let pairedDevices: [ExtendedWAPairedDevice]
     let isPairing: Bool
     let isConnected: Bool
     /// 특정 디바이스가 선택된 디바이스인지 여부를 반환하는 클로져.. true를 반환하면 프로그레스 뷰를 해당 디바이스 옆에 띄운다.
@@ -124,12 +124,16 @@ extension MakeConnectionView.PairedDevicesList: View {
       )
   }
 
-  func pairedDeviceRowView(for device: WAPairedDevice) -> some View {
+  func pairedDeviceRowView(for deviceInfo: ExtendedWAPairedDevice) -> some View {
     let controlsContainerWidth: CGFloat = LocaleUtils.currentLocale == .korean ? 57 : 100
     let controlsContainerHeight: CGFloat = 33
 
     return HStack(alignment: .center) {
-      Text(device.pairingInfo?.pairingName ?? "알 수 없는 이름")
+      Text(deviceInfo.device.pairingInfo?.pairingName ?? "알 수 없는 이름")
+        .typo(.m18)
+        .foregroundStyle(.offWhite)
+
+      Text(deviceInfo.lastConnectedAt?.formatted(date: .numeric, time: .shortened) ?? "")
         .typo(.m18)
         .foregroundStyle(.offWhite)
 
@@ -137,7 +141,7 @@ extension MakeConnectionView.PairedDevicesList: View {
 
       // 프로그레스 뷰 + 연결 버튼
       VStack(alignment: .center, spacing: 0) {  // 정렬을 위한 컨테이너
-        if device == selectedDevice {
+        if deviceInfo.device == selectedDevice {
           if isConnected {
             connectCompleteSymbol
           }
@@ -149,7 +153,7 @@ extension MakeConnectionView.PairedDevicesList: View {
           }
         } else {
           Button {
-            connectButtonDidTap(device)
+            connectButtonDidTap(deviceInfo.device)
           } label: {
             Text("연결")
               .typo(.m14)
@@ -171,14 +175,14 @@ extension MakeConnectionView.PairedDevicesList: View {
 
     MakeConnectionView.PairedDevicesList(
       pairedDevices: [
-        createTestDevice(id: 0, name: "임영폰")!,
-        createTestDevice(id: 1, name: "루크폰")!,
-        createTestDevice(id: 2, name: "보타폰")!,
-        createTestDevice(id: 3, name: "요시폰")!,
-        createTestDevice(id: 4, name: "페퍼폰")!,
-        createTestDevice(id: 5, name: "차차폰")!,
-        createTestDevice(id: 6, name: "섭섭폰")!,
-        createTestDevice(id: 7, name: "하워드폰")!
+        .init(device: createTestDevice(id: 0, name: "임영폰")!, lastConnectedAt: Date()),
+        .init(device: createTestDevice(id: 1, name: "루크폰")!, lastConnectedAt: nil),
+        .init(device: createTestDevice(id: 2, name: "보타폰")!, lastConnectedAt: nil),
+        .init(device: createTestDevice(id: 3, name: "요시폰")!, lastConnectedAt: nil),
+        .init(device: createTestDevice(id: 4, name: "페퍼폰")!, lastConnectedAt: nil),
+        .init(device: createTestDevice(id: 5, name: "차차폰")!, lastConnectedAt: nil),
+        .init(device: createTestDevice(id: 6, name: "섭섭폰")!, lastConnectedAt: nil),
+        .init(device: createTestDevice(id: 7, name: "하워드폰")!, lastConnectedAt: nil)
       ],
       isPairing: false,
       isConnected: false,
