@@ -24,7 +24,9 @@ final class ConnectionViewModel {
       }
     }
   }
-  private(set) var pairedDevices: [WAPairedDevice] = []
+  private var pairedDevicesLoaded: Bool = false
+  private var previousPairedDevices: [WAPairedDevice] = []
+  private(set) var pairedDevices: [ExtendedWAPairedDevice] = []
   private(set) var selectedPairedDevice: WAPairedDevice?
 
   var networkState: NetworkState? {
@@ -159,8 +161,21 @@ final class ConnectionViewModel {
     do {
       for try await updatedDeviceList in WAPairedDevice.allDevices {
         let devices = Array(updatedDeviceList.values)
-        self.pairedDevices = devices
+        self.previousPairedDevices = self.pairedDevices.map { $0.device }
+        self.pairedDevices = devices.map { device in
+          // 이번이 최초 로드인 경우 new 플래그를 수정하지 않음
+          if !pairedDevicesLoaded {
+            return .init(device: device, isNew: false)
+          }
+          
+          if self.previousPairedDevices.contains(device) {
+            return .init(device: device, isNew: false)
+          } else {
+            return .init(device: device, isNew: true)
+          }
+        }
         logger.info("pairedDevices updated.\n\(devices)")
+        pairedDevicesLoaded = true
       }
     } catch {
       logger.error("Failed to get paired devices: \(error)")
@@ -339,4 +354,12 @@ extension ConnectionViewModel {
     needReportSessionFinished = true
     notificationService.registerNotification(.make(type: .disconnected))
   }
+}
+
+struct ExtendedWAPairedDevice: Identifiable {
+  var id: UInt64 {
+    device.id
+  }
+  let device: WAPairedDevice
+  let isNew: Bool
 }
