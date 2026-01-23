@@ -16,8 +16,6 @@ final class CameraViewModel {
   var isPhotosPermissionGranted = false
   var isMicPermissionGranted = false
 
-  var lastImage: UIImage?
-
   var selectedZoom: CGFloat = 1.0
 
   var isLivePhotoOn: Bool
@@ -68,7 +66,7 @@ final class CameraViewModel {
     }
 
     cameraManager.onPhotoCapture = { [weak self] image in
-      self?.lastImage = image
+      self?.thumbnailImage = image
     }
 
     cameraManager.onTapCameraSwitch = { [weak self] position in

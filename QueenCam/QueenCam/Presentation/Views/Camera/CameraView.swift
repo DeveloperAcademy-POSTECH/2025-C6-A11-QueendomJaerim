@@ -160,7 +160,7 @@ extension CameraView: View {
           }
         )
         .padding()
-//        .padding(.top, 12)
+        //        .padding(.top, 12)
         .alert(
           "연결을 종료합니다.",
           isPresented: $isShowDisconnectAlert,
@@ -287,11 +287,11 @@ extension CameraView: View {
         isShowPhotoPicker = false
       }
       .presentationDetents([.medium, .large])
-      .dynamicTypeSize(.medium) // FIXME: Dynamic Type 정책 결정 후 수정
+      .dynamicTypeSize(.medium)  // FIXME: Dynamic Type 정책 결정 후 수정
     }
     .fullScreenCover(isPresented: $isShowConnectionView) {
       ConnectionView(viewModel: connectionViewModel, previewStreamingViewModel: previewModel)
-        .dynamicTypeSize(.medium) // FIXME: Dynamic Type 정책 결정 후 수정
+        .dynamicTypeSize(.medium)  // FIXME: Dynamic Type 정책 결정 후 수정
     }
     .onChange(of: connectionViewModel.connections) { oldValue, newValue in
       if !newValue.isEmpty && newValue.count > oldValue.count && connectionViewModel.role == .photographer {
