@@ -7,7 +7,7 @@ import UIKit
 
 @Observable
 @MainActor
-final class CameraViewModel {
+final class CameraViewModel: NSObject {
   let cameraManager: CameraManager
   let networkService: NetworkServiceProtocol
   let cameraSettingsService: CameraSettingsServiceProtocol
@@ -33,6 +33,7 @@ final class CameraViewModel {
   // MARK: Thumbnail
   private let cachingManager = PHCachingImageManager()
   var thumbnailImage: UIImage?
+  private var lastScale: CGFloat = 1.0
 
   private let logger = QueenLogger(category: "CameraViewModel")
 
@@ -57,6 +58,8 @@ final class CameraViewModel {
     self.isFlashMode = cameraSettingsService.flashMode
 
     self.notificationService = notificationService
+
+    super.init()
 
     cameraManager.isLivePhotoOn = isLivePhotoOn
     cameraManager.flashMode = isFlashMode.convertAVCaptureDeviceFlashMode
@@ -85,6 +88,12 @@ final class CameraViewModel {
     cameraManager.onDidFinishCapture = { [weak self] in
       self?.isCapturingLivePhoto = false
     }
+
+    PHPhotoLibrary.shared().register(self)
+  }
+
+  deinit {
+    PHPhotoLibrary.shared().unregisterChangeObserver(self)
   }
 
   func checkPermissions() async {
@@ -197,6 +206,7 @@ final class CameraViewModel {
   }
 
   func loadThumbnail(scale: CGFloat) async {
+    self.lastScale = scale 
     let status = await PHPhotoLibrary.requestAuthorization(for: .readWrite)
 
     guard status == .authorized || status == .limited else {
@@ -286,6 +296,14 @@ extension CameraViewModel {
       if let result {
         self.thumbnailImage = result
       }
+    }
+  }
+}
+
+extension CameraViewModel: PHPhotoLibraryChangeObserver {
+  nonisolated func photoLibraryDidChange(_ changeInstance: PHChange) {
+    Task { @MainActor in
+      await self.fetchThumbnail(scale: self.lastScale)
     }
   }
 }
