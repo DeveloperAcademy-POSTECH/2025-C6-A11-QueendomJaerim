@@ -35,6 +35,10 @@ struct WifiAwareGuide {
         color: .photographerPrimary
       ),
       video: .photographerGuide2
+    ),
+    .init(
+      message: AttributedString("언제든지 􀁜 버튼으로\n페어링하는 법을 다시 볼 수 있어요."),
+      video: .photographerGuide3
     )
   ]
 
@@ -66,6 +70,10 @@ struct WifiAwareGuide {
         color: .modelPrimary
       ),
       video: .modelGuide2
+    ),
+    .init(
+      message: AttributedString("언제든지 􀁜 버튼으로\n페어링하는 법을 다시 볼 수 있어요."),
+      video: .modelGuide3
     )
   ]
 }
