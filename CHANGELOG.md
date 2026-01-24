@@ -11,6 +11,8 @@
 
 ### Changed
 
+- Transcoding 모듈의 버전을 명시 (1.0.1)
+
 ### Deprecated
 
 ### Removed
