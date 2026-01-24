@@ -7,39 +7,40 @@ import UIKit
 
 @Observable
 @MainActor
-final class CameraViewModel: NSObject {
+final class CameraViewModel {
   let cameraManager: CameraManager
   let networkService: NetworkServiceProtocol
   let cameraSettingsService: CameraSettingsServiceProtocol
-
+  
   var isCameraPermissionGranted = false
   var isPhotosPermissionGranted = false
   var isMicPermissionGranted = false
-
+  
   var selectedZoom: CGFloat = 1.0
-
+  
   var isLivePhotoOn: Bool
   var isShowGrid: Bool
   var isFlashMode: FlashMode
-
+  
   var cameraPostion: AVCaptureDevice.Position?
-
+  
   var errorMessage = ""
-
+  
   var isCaptureButtonEnabled: Bool = true
-
+  
   var isCapturingLivePhoto: Bool = false
-
+  
   // MARK: Thumbnail
-  private let cachingManager = PHCachingImageManager()
   var thumbnailImage: UIImage?
-  private var lastScale: CGFloat = 1.0
+  private let photosLibraryObserver = PhotosLibraryObserver()
+  private var displayScale: CGFloat = 1.0
 
+  
   private let logger = QueenLogger(category: "CameraViewModel")
-
+  
   // MARK: State Toast
   private let notificationService: NotificationServiceProtocol
-
+  
   init(
     previewCaptureService: PreviewCaptureService,
     networkService: NetworkServiceProtocol,
@@ -52,50 +53,48 @@ final class CameraViewModel: NSObject {
       previewCaptureService: previewCaptureService,
       networkService: networkService
     )
-
+    
     self.isLivePhotoOn = cameraSettingsService.livePhotoOn
     self.isShowGrid = cameraSettingsService.gridOn
     self.isFlashMode = cameraSettingsService.flashMode
-
+    
     self.notificationService = notificationService
-
-    super.init()
-
+ 
     cameraManager.isLivePhotoOn = isLivePhotoOn
     cameraManager.flashMode = isFlashMode.convertAVCaptureDeviceFlashMode
-
+    
     cameraManager.onReadinessState = { [weak self] readiness in
       self?.handleReadiness(readiness: readiness)
     }
-
+    
     cameraManager.onPhotoCapture = { [weak self] image in
       self?.thumbnailImage = image
     }
-
+    
     cameraManager.onTapCameraSwitch = { [weak self] position in
       self?.cameraPostion = position
       if position == .back {
         self?.selectedZoom = 1.0
       }
     }
-
-    /// 라이브 포토이면 true
+    
     cameraManager.onWillCaptureLivePhoto = { [weak self] in
       self?.isCapturingLivePhoto = true
     }
-
-    /// 촬영이 끝나면 다시 리셋
+    
     cameraManager.onDidFinishCapture = { [weak self] in
       self?.isCapturingLivePhoto = false
     }
-
-    PHPhotoLibrary.shared().register(self)
+    
+    photosLibraryObserver.onUpdate = { [weak self] image in
+       self?.thumbnailImage = image
+     }
+     
+    photosLibraryObserver.getCurrentScale = { [weak self] in
+      self?.displayScale ?? 1.0
+     }
   }
-
-  deinit {
-    PHPhotoLibrary.shared().unregisterChangeObserver(self)
-  }
-
+  
   func checkPermissions() async {
     let cameraGranted: Bool
     switch AVCaptureDevice.authorizationStatus(for: .video) {
@@ -106,7 +105,7 @@ final class CameraViewModel: NSObject {
     default:
       cameraGranted = false
     }
-
+    
     let audioGranted: Bool
     switch AVCaptureDevice.authorizationStatus(for: .audio) {
     case .notDetermined:
@@ -116,7 +115,7 @@ final class CameraViewModel: NSObject {
     default:
       audioGranted = false
     }
-
+    
     let photoGranted: Bool
     switch PHPhotoLibrary.authorizationStatus(for: .readWrite) {
     case .notDetermined:
@@ -127,7 +126,7 @@ final class CameraViewModel: NSObject {
     default:
       photoGranted = false
     }
-
+    
     if cameraGranted && audioGranted {
       isCameraPermissionGranted = true
       isMicPermissionGranted = true
@@ -135,24 +134,24 @@ final class CameraViewModel: NSObject {
       try? await cameraManager.configureSession()
     }
   }
-
+  
   func stopSession() {
     cameraManager.stopSession()
   }
-
+  
   func capturePhoto() {
     traceShutterPressedEvent()
     cameraManager.capturePhoto()
   }
-
+  
   func setZoom(factor: CGFloat, ramp: Bool) {
     if ramp {
       selectedZoom = factor
     }
-
+    
     cameraManager.setZoomScale(factor: factor, ramp: ramp)
   }
-
+  
   func switchCamera() async {
     do {
       try await cameraManager.switchCamera()
@@ -160,11 +159,11 @@ final class CameraViewModel: NSObject {
       errorMessage = error.localizedDescription
     }
   }
-
+  
   func showLivePhotoToast() {
     notificationService.registerNotification(DomainNotification.make(type: .captureLivePhoto))
   }
-
+  
   func switchFlashMode() {
     switch isFlashMode {
     case .off:
@@ -177,11 +176,11 @@ final class CameraViewModel: NSObject {
       isFlashMode = .off
       notificationService.registerNotification(DomainNotification.make(type: .flashOff))
     }
-
+    
     cameraSettingsService.flashMode = isFlashMode
     cameraManager.flashMode = isFlashMode.convertAVCaptureDeviceFlashMode
   }
-
+  
   func switchLivePhoto() {
     switch isLivePhotoOn {
     case true:
@@ -191,40 +190,31 @@ final class CameraViewModel: NSObject {
       isLivePhotoOn = true
       notificationService.registerNotification(DomainNotification.make(type: .liveOn))
     }
-
+    
     cameraSettingsService.livePhotoOn = isLivePhotoOn
     cameraManager.isLivePhotoOn = isLivePhotoOn
   }
-
+  
   func setFocus(point: CGPoint) {
     cameraManager.focusAndExpose(at: point)
   }
-
+  
   func switchGrid() {
     isShowGrid.toggle()
     cameraSettingsService.gridOn = isShowGrid
   }
-
+  
   func loadThumbnail(scale: CGFloat) async {
-    self.lastScale = scale 
-    let status = await PHPhotoLibrary.requestAuthorization(for: .readWrite)
-
-    guard status == .authorized || status == .limited else {
-      logger.debug("사진 접근 권한 거부")
-      return
-    }
-
-    await fetchThumbnail(scale: scale)
+    await photosLibraryObserver.loadThumbnail(scale: scale)
   }
-
+  
   func managePhotosPickerToast(isShowPhotosPicker: Bool) {
     if isShowPhotosPicker {
       notificationService.registerNotification(.make(type: .photosPickerShowing))
     } else {
       if let currentNotification = notificationService.currentNotification,
-        currentNotification.isType(of: .photosPickerShowing)
+         currentNotification.isType(of: .photosPickerShowing)
       {
-        // 현재 표시되고 있는 토스트가 photosPickerShowing 타입이면 리셋
         notificationService.reset()
       }
     }
@@ -232,78 +222,20 @@ final class CameraViewModel: NSObject {
 }
 
 extension CameraViewModel {
-
   private func handleReadiness(readiness: AVCapturePhotoOutput.CaptureReadiness) {
     switch readiness {
-    // 세션이 실행 중이 아닐 때
     case .sessionNotRunning:
       isCaptureButtonEnabled = false
-
-    // 촬영 준비 완료 (가장 중요)
-    // 플래시도 충전되어 있고, 이전 작업 처리도 모두 끝났습니다.
     case .ready:
       isCaptureButtonEnabled = true
-
-    // 일시적으로 준비 안 됨
-    // 시스템이 다음 캡처를 받을 수 없는 '일시적인' 상태입니다.
     case .notReadyMomentarily:
       isCaptureButtonEnabled = false
-
-    // 캡처 대기 중
     case .notReadyWaitingForCapture:
       isCaptureButtonEnabled = false
-
-    // 처리 대기 중
-    // 시스템이 '이전 캡처'를 아직 처리 중인 상태입니다.
     case .notReadyWaitingForProcessing:
       isCaptureButtonEnabled = false
-
     @unknown default:
       isCaptureButtonEnabled = false
-    }
-  }
-
-  private func fetchThumbnail(scale: CGFloat) async {
-    let fetchOptions = PHFetchOptions()
-    fetchOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
-    fetchOptions.fetchLimit = 1  // 한개만 요청
-
-    let result = PHAsset.fetchAssets(with: .image, options: fetchOptions)
-
-    guard let asset = result.firstObject else {
-      logger.debug("가져올 사진 없음")
-      return
-    }
-
-    // 이미지 생성
-    await requestThumbnailImage(asset: asset, scale: scale)
-  }
-
-  private func requestThumbnailImage(asset: PHAsset, scale: CGFloat) async {
-    let targetSize = CGSize(width: 48 * scale, height: 48 * scale)
-    let options = PHImageRequestOptions()
-    options.deliveryMode = .highQualityFormat
-    options.resizeMode = .exact
-    options.allowSecondaryDegradedImage = true
-    options.isNetworkAccessAllowed = true
-
-    cachingManager.requestImage(
-      for: asset,
-      targetSize: targetSize,
-      contentMode: .aspectFill,
-      options: options
-    ) { result, _ in
-      if let result {
-        self.thumbnailImage = result
-      }
-    }
-  }
-}
-
-extension CameraViewModel: PHPhotoLibraryChangeObserver {
-  nonisolated func photoLibraryDidChange(_ changeInstance: PHChange) {
-    Task { @MainActor in
-      await self.fetchThumbnail(scale: self.lastScale)
     }
   }
 }
