@@ -133,7 +133,10 @@ extension WifiAwareGuide {
     }
 
     guard
-      let image = UIImage(systemName: imageName)?
+      let image = UIImage(
+        systemName: imageName,
+        withConfiguration: UIImage.SymbolConfiguration(pointSize: style.uiFont.pointSize, weight: .medium)
+      )?
         .withTintColor(foregroundColor, renderingMode: .alwaysOriginal)
     else {
       return original
@@ -143,9 +146,6 @@ extension WifiAwareGuide {
 
     let attachment = NSTextAttachment()
     attachment.image = image
-
-    // 수직 정렬 맞추기
-    attachment.bounds = CGRect(x: 0, y: -2, width: image.size.width, height: image.size.height)
 
     let imageString = NSAttributedString(
       attachment: attachment,
