@@ -11,6 +11,9 @@ import SwiftUI
 struct ConnectionGuidePage: View {
   let guide: WifiAwareGuide
 
+  let mediumTypography = TypographyStyle.m22
+  let boldTypography = TypographyStyle.b22
+
   var body: some View {
     VStack(spacing: 0) {
       GuideViewPlayerView(guideVideo: guide.video)
@@ -18,10 +21,18 @@ struct ConnectionGuidePage: View {
       Spacer()
         .frame(height: 60)
 
-      Text("\(guide.message)")
-        .multilineTextAlignment(.center)
-        .typo(.m22)
-        .foregroundStyle(.systemWhite)
+      AttributedContentsView(attributedContents: guide.message) { style in
+        switch style {
+        case .highlighted:
+          return .init(font: boldTypography.font, foregroundColor: guide.type == .model ? .modelPrimary : .photographerPrimary)
+        case .normal:
+          return .init(font: mediumTypography.font, foregroundColor: .systemWhite)
+        }
+      }
+      .multilineTextAlignment(.center)
+      .kerning(mediumTypography.letterSpacing)
+      .lineSpacing(mediumTypography.lineSpacing)
+      .padding(.vertical, mediumTypography.verticalPadding)
     }
   }
 }

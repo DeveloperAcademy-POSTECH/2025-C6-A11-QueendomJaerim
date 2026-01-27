@@ -194,6 +194,14 @@ enum TypographyStyle: CaseIterable {
     default: return 0
     }
   }
+
+  var lineSpacing: CGFloat {
+    lineHeight - uiFont.lineHeight
+  }
+
+  var verticalPadding: CGFloat {
+    (lineHeight - uiFont.lineHeight) / 2
+  }
 }
 
 /// ref: https://stackoverflow.com/a/64652348
@@ -204,8 +212,8 @@ struct TypographyModifier: ViewModifier {
     content
       .font(Font(style.uiFont))
       .kerning(style.letterSpacing)
-      .lineSpacing(style.lineHeight - style.uiFont.lineHeight)
-      .padding(.vertical, (style.lineHeight - style.uiFont.lineHeight) / 2)
+      .lineSpacing(style.lineSpacing)
+      .padding(.vertical, style.verticalPadding)
   }
 }
 

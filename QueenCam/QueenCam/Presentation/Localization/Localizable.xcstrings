@@ -7,7 +7,17 @@
     "\n" : {
 
     },
+    " 버튼으로\n페어링하는 법을 다시 볼 수 있어요." : {
+
+    },
+    " 연결 준비 완료!" : {
+
+    },
+    "'주변 기기 찾기'" : {
+
+    },
     "‘주변 기기 찾기’" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -18,6 +28,7 @@
       }
     },
     "‘주변 기기 찾기’를 시작하고\n잠시 기다려주세요." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -28,6 +39,7 @@
       }
     },
     "‘주변 기기 찾기’를 시작해\n친구에게 페어링을 요청해주세요." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -57,7 +69,11 @@
         }
       }
     },
+    "6자리 코드가 나오면\n친구에게 " : {
+
+    },
     "6자리 코드가 나오면\n친구에게 코드를 알려주세요." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -158,6 +174,7 @@
       }
     },
     "건너뛰기" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -287,6 +304,12 @@
         }
       }
     },
+    "를 시작하고\n잠시 기다려주세요." : {
+
+    },
+    "를 시작해\n친구에게 " : {
+
+    },
     "매직펜" : {
       "localizations" : {
         "en" : {
@@ -366,6 +389,9 @@
           }
         }
       }
+    },
+    "언제든지 " : {
+
     },
     "역할 바꾸기" : {
       "localizations" : {
@@ -507,7 +533,11 @@
         }
       }
     },
+    "이 화면이 뜨면 등록 완료에요.\n" : {
+
+    },
     "이 화면이 뜨면 등록 완료에요.\n창을 닫으면 연결 준비 완료!" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -647,7 +677,11 @@
         }
       }
     },
+    "친구가 알려주는\n6자리 " : {
+
+    },
     "친구가 알려주는\n6자리 코드를 입력해주세요." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -807,22 +841,22 @@
         }
       }
     },
-    "펜" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pen"
-          }
-        }
-      }
-    },
     "페어링을 요청" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "pair"
+          }
+        }
+      }
+    },
+    "펜" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pen"
           }
         }
       }
@@ -896,6 +930,9 @@
           }
         }
       }
+    },
+    "해주세요." : {
+
     },
     "현재 **모델 모드** 입니다." : {
       "localizations" : {
