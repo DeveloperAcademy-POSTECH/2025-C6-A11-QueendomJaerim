@@ -94,28 +94,7 @@ extension WifiAwareGuide {
     style: TypographyStyle = .m22,
     align: NSTextAlignment = .center
   ) -> NSAttributedString {
-    let uiFont = style.uiFont
-    let lineHeight = style.lineHeight
-    let letterSpacing = style.letterSpacing
-
-    // 1. Paragraph Style
-    let paragraphStyle = NSMutableParagraphStyle()
-    paragraphStyle.minimumLineHeight = lineHeight
-    paragraphStyle.maximumLineHeight = lineHeight
-    paragraphStyle.alignment = align
-
-    // 2. 수직 중앙 정렬을 위한 Baseline Offset
-    // (전체 줄 높이 - 폰트 자체의 높이) / 2 만큼 텍스트를 위로 올림
-    let baselineOffset = (lineHeight - uiFont.lineHeight) / 2
-
-    let attributes: [NSAttributedString.Key: Any] = [
-      .font: uiFont,
-      .kern: letterSpacing,
-      .paragraphStyle: paragraphStyle,
-      .baselineOffset: baselineOffset
-    ]
-
-    return NSAttributedString(string: text, attributes: attributes)
+    NSAttributedString(string: text, attributes: makeBaseAttributes(style: style, align: align))
   }
 
   private static func highlighted(
@@ -132,22 +111,8 @@ extension WifiAwareGuide {
 
     let copy = NSMutableAttributedString(attributedString: original)
 
-    let uiFont = style.uiFont
-    let lineHeight = style.lineHeight
-    let letterSpacing = style.letterSpacing
-    let baselineOffset = (lineHeight - uiFont.lineHeight) / 2
-    let paragraphStyle = NSMutableParagraphStyle()
-    paragraphStyle.minimumLineHeight = lineHeight
-    paragraphStyle.maximumLineHeight = lineHeight
-    paragraphStyle.alignment = align
-
-    let attributes: [NSAttributedString.Key: Any] = [
-      .font: uiFont,
-      .kern: letterSpacing,
-      .baselineOffset: baselineOffset,
-      .paragraphStyle: paragraphStyle,
-      .foregroundColor: color
-    ]
+    var attributes = makeBaseAttributes(style: style, align: align)
+    attributes[.foregroundColor] = color
 
     copy.setAttributes(attributes, range: highlightedRange)
 
@@ -182,24 +147,35 @@ extension WifiAwareGuide {
     // 수직 정렬 맞추기
     attachment.bounds = CGRect(x: 0, y: -2, width: image.size.width, height: image.size.height)
 
+    let imageString = NSAttributedString(
+      attachment: attachment,
+      attributes: makeBaseAttributes(style: style, align: align)
+    )
+    copy.replaceCharacters(in: range, with: imageString)
+
+    return copy
+  }
+
+  private static func makeBaseAttributes(style: TypographyStyle, align: NSTextAlignment) -> [NSAttributedString.Key: Any] {
     let uiFont = style.uiFont
     let lineHeight = style.lineHeight
     let letterSpacing = style.letterSpacing
-    let baselineOffset = (lineHeight - uiFont.lineHeight) / 2
+
+    // 1. Paragraph Style
     let paragraphStyle = NSMutableParagraphStyle()
     paragraphStyle.minimumLineHeight = lineHeight
     paragraphStyle.maximumLineHeight = lineHeight
     paragraphStyle.alignment = align
 
-    let attributes: [NSAttributedString.Key: Any] = [
+    // 2. 수직 중앙 정렬을 위한 Baseline Offset
+    // (전체 줄 높이 - 폰트 자체의 높이) / 2 만큼 텍스트를 위로 올림
+    let baselineOffset = (lineHeight - uiFont.lineHeight) / 2
+
+    return [
       .font: uiFont,
       .kern: letterSpacing,
-      .baselineOffset: baselineOffset,
-      .paragraphStyle: paragraphStyle
+      .paragraphStyle: paragraphStyle,
+      .baselineOffset: baselineOffset
     ]
-    let imageString = NSAttributedString(attachment: attachment, attributes: attributes)
-    copy.replaceCharacters(in: range, with: imageString)
-
-    return copy
   }
 }
