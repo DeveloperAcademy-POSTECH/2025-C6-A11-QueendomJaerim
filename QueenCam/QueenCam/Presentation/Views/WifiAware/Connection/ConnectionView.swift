@@ -11,7 +11,8 @@ import WiFiAware
 
 struct ConnectionView {
   @Environment(\.dismiss) var dismiss
-  var viewModel: ConnectionViewModel
+  var connectionViewModel: ConnectionViewModel
+  var guideViewModel: ConnectionGuideViewModel
   var previewStreamingViewModel: PreviewModel
 
   /// 사용자가 선택중인 역할 (아직 확정된 것은 아님)
@@ -27,7 +28,7 @@ struct ConnectionView {
 extension ConnectionView: View {
   var body: some View {
     NavigationStack {
-      if viewModel.role != nil {
+      if connectionViewModel.role != nil {
         makeConnectionView
       } else {
         if shouldGuideShow && activeRole != nil {
@@ -38,15 +39,15 @@ extension ConnectionView: View {
       }
     }
     .task {
-      await viewModel.viewDidAppearTask()
+      await connectionViewModel.viewDidAppearTask()
     }
     .onAppear {
-      viewModel.connectionViewAppear()
+      connectionViewModel.connectionViewAppear()
     }
     .onDisappear {
-      viewModel.connectionViewDisappear()
+      connectionViewModel.connectionViewDisappear()
     }
-    .onChange(of: viewModel.connections) { _, newValue in  // 연결 완료
+    .onChange(of: connectionViewModel.connections) { _, newValue in  // 연결 완료
       if !newValue.isEmpty {
         isConnected = true
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
@@ -62,25 +63,25 @@ extension ConnectionView {
 
   @ViewBuilder
   var makeConnectionView: some View {
-    if let selectedRole = viewModel.role {
+    if let selectedRole = connectionViewModel.role {
       MakeConnectionView(
         role: selectedRole,
-        networkState: viewModel.networkState,
-        selectedPairedDevice: viewModel.selectedPairedDevice,
-        pairedDevices: viewModel.pairedDevices,
+        networkState: connectionViewModel.networkState,
+        selectedPairedDevice: connectionViewModel.selectedPairedDevice,
+        pairedDevices: connectionViewModel.pairedDevices,
         isConnected: isConnected,
-        lastConnectionError: viewModel.connectionError,
+        lastConnectionError: connectionViewModel.connectionError,
         errorWasConsumeByUser: {
-          viewModel.errorConfirmedByUser()
+          connectionViewModel.errorConfirmedByUser()
         },
         changeRoleButtonDidTap: {
-          viewModel.selectRole(for: selectedRole.counterpart)
+          connectionViewModel.selectRole(for: selectedRole.counterpart)
         },
         connectButtonDidTap: { device in
-          viewModel.connectButtonDidTap(for: device)
+          connectionViewModel.connectButtonDidTap(for: device)
         },
         stopConnectingButtonDidTap: {
-          viewModel.stopConnectingButtonDidTap()
+          connectionViewModel.stopConnectingButtonDidTap()
         }
       )
     } else {  // should not reach
@@ -95,11 +96,12 @@ extension ConnectionView {
         role: activeRole,
         didGuideComplete: {
           shouldGuideShow = false
-          viewModel.selectRole(for: activeRole)  // 가이드가 끝나면 역할 확정
+          connectionViewModel.selectRole(for: activeRole)  // 가이드가 끝나면 역할 확정
+          guideViewModel.onboardingDidFinish()
         },
         backButtonDidTap: {
           shouldGuideShow = false
-          viewModel.selectRole(for: nil)
+          connectionViewModel.selectRole(for: nil)
         }
       )
     } else {
@@ -118,7 +120,12 @@ extension ConnectionView {
         }
       },
       didRoleSubmit: {
-        shouldGuideShow = true  // 역할 선택 버튼을 누르면 가이드를 보여줌
+        if guideViewModel.shouldShowConnectionGuide {
+          shouldGuideShow = true  // 역할 선택 버튼을 누르면 가이드를 보여줌
+        } else {
+          // 이미 가이드를 본 경우 바로 역할 선택
+          connectionViewModel.selectRole(for: activeRole)
+        }
       }
     )
   }
@@ -131,13 +138,21 @@ extension ConnectionView {
       notificationService: NotificationService()
     )
 
+    @State var connectionGuideViewModel: ConnectionGuideViewModel = .init(
+      onboardingSettingService: OnboardingSettingService()
+    )
+
     @State var previewModel: PreviewModel = .init(
       previewCaptureService: PreviewCaptureService(),
       networkService: NetworkService()
     )
 
     var body: some View {
-      ConnectionView(viewModel: viewModel, previewStreamingViewModel: previewModel)
+      ConnectionView(
+        connectionViewModel: viewModel,
+        guideViewModel: connectionGuideViewModel,
+        previewStreamingViewModel: previewModel
+      )
         .onAppear {
           viewModel.selectRole(for: nil)
         }
