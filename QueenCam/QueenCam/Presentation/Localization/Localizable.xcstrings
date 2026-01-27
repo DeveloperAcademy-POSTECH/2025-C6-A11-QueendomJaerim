@@ -158,6 +158,7 @@
       }
     },
     "건너뛰기" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
