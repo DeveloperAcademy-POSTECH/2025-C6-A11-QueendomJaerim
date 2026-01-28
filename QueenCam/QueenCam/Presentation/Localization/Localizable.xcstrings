@@ -157,17 +157,6 @@
         }
       }
     },
-    "건너뛰기" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Skip"
-          }
-        }
-      }
-    },
     "그리드" : {
       "localizations" : {
         "en" : {
