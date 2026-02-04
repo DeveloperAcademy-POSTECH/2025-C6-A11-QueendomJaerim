@@ -16,6 +16,7 @@ extension MakeConnectionView {
     /// 특정 디바이스가 선택된 디바이스인지 여부를 반환하는 클로져.. true를 반환하면 프로그레스 뷰를 해당 디바이스 옆에 띄운다.
     let selectedDevice: WAPairedDevice?
     let connectButtonDidTap: (WAPairedDevice) -> Void
+    let stopConnectingButtonDidTap: () -> Void
 
     // MARK: Colors
     let titleLabelForegroundColor = Color(red: 0xD4 / 255, green: 0xD4 / 255, blue: 0xD4 / 255)
@@ -146,6 +147,7 @@ extension MakeConnectionView.PairedDevicesList: View {
             ProgressView()
               .tint(.offWhite)
               .frame(width: controlsContainerHeight, height: controlsContainerHeight)
+              .onTapGesture(perform: stopConnectingButtonDidTap)
           }
         } else {
           Button {
@@ -182,8 +184,10 @@ extension MakeConnectionView.PairedDevicesList: View {
       ],
       isPairing: false,
       isConnected: false,
-      selectedDevice: nil
-    ) { _ in }
+      selectedDevice: nil,
+      connectButtonDidTap: { _ in },
+      stopConnectingButtonDidTap: { }
+    )
   }
 }
 

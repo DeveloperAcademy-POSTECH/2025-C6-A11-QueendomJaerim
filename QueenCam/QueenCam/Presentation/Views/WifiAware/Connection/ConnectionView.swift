@@ -78,6 +78,9 @@ extension ConnectionView {
         },
         connectButtonDidTap: { device in
           viewModel.connectButtonDidTap(for: device)
+        },
+        stopConnectingButtonDidTap: {
+          viewModel.stopConnectingButtonDidTap()
         }
       )
     } else {  // should not reach
