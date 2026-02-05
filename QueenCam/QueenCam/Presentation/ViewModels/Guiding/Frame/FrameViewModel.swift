@@ -72,8 +72,6 @@ final class FrameViewModel {
     sendFrameEnabled(enabled, currentRole)
   }
 
-  // 작가(결정권자)가 승인 후, 작가에게 전달
-  
   // MARK: - 프레임 추가
   func addFrame(at origin: CGPoint, size: CGSize = .init(width: frameWidth, height: frameHeight)) {
     guard frames.count < maxFrames else { return }
@@ -241,13 +239,33 @@ extension FrameViewModel {
         case .frameUpdated(let eventType):
           self.handleFrameEvent(eventType: eventType)
 
-          // FIXME: 프레임 동시성 문제 발생
-//        case .frameEnabled(let enabled, let role):
-//          self.isFrameEnabled = enabled
-//          self.frameOwnerRole = role
-//          guard isFrameEnabled, frameOwnerRole != currentRole, !frames.isEmpty else { return }
-//          peerFrameGuidingToast(type: .edit)
-    
+        // FIXME: 프레임 동시성 문제 발생
+        case .frameEnabled(let enabled, let role):
+          let isPhotographer = (currentRole == .photographer)
+
+          if isPhotographer {
+            // 프레임의 활성화/비활성 요청
+            let isActivationRequest = enabled && self.frameOwnerRole == nil
+            let isDeactivationRequest = !enabled && self.frameOwnerRole != nil
+
+            if isActivationRequest || isDeactivationRequest {
+              self.isFrameEnabled = enabled
+              self.frameOwnerRole = enabled ? role : nil
+              // 작가와 모델에게 최종 승인 결과 전송
+              Task.detached { [weak self] in
+                guard let self else { return }
+                await self.networkService.send(for: .frameEnabled(enabled, role))
+              }
+            }
+            return
+          }
+          // 작가와 모델은 승인된 결과를 반영
+          self.isFrameEnabled = enabled
+          self.frameOwnerRole = enabled ? role : nil
+
+          guard isFrameEnabled, frameOwnerRole != currentRole, !frames.isEmpty else { return }
+          peerFrameGuidingToast(type: .edit)
+
         default:
           break
         }
@@ -316,7 +334,6 @@ extension FrameViewModel {
   }
 
   /// 프레임 토글 상태 전송
-  // FIXME: - 프레임 동시성 문제 발생
   private func sendFrameEnabled(_ enabled: Bool, _ currentRole: Role?) {
     Task.detached { [weak self] in
       guard let self else { return }
