@@ -6,32 +6,34 @@ import WiFiAware
 struct CameraView {
   @State private var selectedImage: UIImage?
   @State private var selectedImageID: String?
-
+  
   @State private var isShowPhotoPicker = false
-
+  
   // MARK: 현재 활성화된 도구
   @State private var activeTool: ActiveTool?
-
+  
   @State private var isShowShutterFlash: Bool = false
-
+  
   @State private var isShowCameraSettingTool: Bool = false
-
+  
   /// 눈까리
   @State private var isRemoteGuideHidden: Bool = false
-
+  
   /// 로그 내보내기 시트 노출 여부
   @State private var isShowLogExportingSheet: Bool = false
-
+  
   // 연결 종료 여부 확인 시트 노출 여부
   @State private var isShowDisconnectAlert = false
-
+  
   /// 연결 플로우가 진행되는 ConnectionView를 띄울지 여부
   @State private var isShowConnectionView: Bool = false
-
+  
+  @State private var isShowWifiAwareAlert: Bool = false
+  
   @State var isReferenceLarge: Bool = false  // 레퍼런스 확대 축소 프로퍼티
-
+  
   @Environment(\.displayScale) private var displayScale
-
+  
   let cameraViewModel: CameraViewModel
   let previewModel: PreviewModel
   let connectionViewModel: ConnectionViewModel
@@ -45,13 +47,13 @@ extension CameraView {
   private var currentMode: Role {
     self.connectionViewModel.role ?? .photographer
   }
-
+  
   private func openSetting() {
     if let url = URL(string: UIApplication.openSettingsURLString) {
       UIApplication.shared.open(url)
     }
   }
-
+  
   private var flashImage: String {
     switch cameraViewModel.isFlashMode {
     case .off:
@@ -64,15 +66,15 @@ extension CameraView {
       return "bolt.slash"
     }
   }
-
+  
   private var liveImage: String {
     cameraViewModel.isLivePhotoOn ? "livephoto" : "livephoto.slash"
   }
-
+  
   private var isPermissionGranted: Bool {
     cameraViewModel.isCameraPermissionGranted && cameraViewModel.isCameraPermissionGranted
   }
-
+  
   /// Top Tool Bar
   /// 세션 활성화 여부. False면 툴바에 연결하기 버튼이 노출된다.
   private var isSessionActive: Bool {
@@ -80,14 +82,14 @@ extension CameraView {
       || connectionViewModel.networkState == .host(.stopped)
       || connectionViewModel.networkState == .viewer(.stopped))
   }
-
+  
   private func flashScreen() {
     isShowShutterFlash = true
     withAnimation(.linear(duration: 0.01)) {
       isShowShutterFlash = false
     }
   }
-
+  
   // TopToolbar Intent Handlers
   private func changeRoleButtonDidTap() {
     // 가이딩 초기화
@@ -104,6 +106,10 @@ extension CameraView {
       }
     }
   }
+  
+  private var isAvailableWifiAware: Bool {
+    return WACapabilities.supportedFeatures.contains(.wifiAware)
+  }
 }
 
 extension CameraView: View {
@@ -116,7 +122,7 @@ extension CameraView: View {
         tapAction: { cameraViewModel.switchFlashMode() },
         isToolBar: false
       )
-
+      
       CameraSettingButton(
         title: "LIVE",
         systemName: liveImage,
@@ -124,7 +130,7 @@ extension CameraView: View {
         tapAction: { cameraViewModel.switchLivePhoto() },
         isToolBar: false
       )
-
+      
       CameraSettingButton(
         title: "그리드",
         systemName: "grid",
@@ -136,11 +142,11 @@ extension CameraView: View {
     .frame(width: 377, height: 192)
     .glassEffect(.clear.tint(Color.hex333333), in: .rect(cornerRadius: 59))
   }
-
+  
   var body: some View {
     ZStack {
       Color.black.ignoresSafeArea()
-
+      
       VStack(spacing: .zero) {
         // 제일 위 툴바 부분
         TopToolBarView(
@@ -150,17 +156,33 @@ extension CameraView: View {
             Button("역할 바꾸기") {
               changeRoleButtonDidTap()
             }
-
+            
             Button("연결 종료하기", role: .destructive) {
               isShowDisconnectAlert = true
             }
           },
           connectedWithButtonDidTap: {
-            isShowConnectionView = true
+            if isAvailableWifiAware {
+              isShowConnectionView = true
+            } else {
+              isShowWifiAwareAlert = true
+            }
           }
         )
         .padding()
-        //        .padding(.top, 12)
+        .alert(
+          "연결이 불가능한 기기입니다.",
+          isPresented: $isShowWifiAwareAlert,
+          actions: {
+            Button(role: .cancel) {
+            } label: {
+              Text("확인했어요")
+            }
+          },
+          message: {
+            Text("이 기기는 다른 기기와의 연결이 어려워요. 대신 찍자의 여러 가이드 기능은 이용할 수 있어요.")
+          }
+        )
         .alert(
           "연결을 종료합니다.",
           isPresented: $isShowDisconnectAlert,
@@ -170,7 +192,7 @@ extension CameraView: View {
             } label: {
               Text("연결 종료하기")
             }
-
+            
             Button(role: .cancel) {
             } label: {
               Text("취소하기")
@@ -180,7 +202,7 @@ extension CameraView: View {
             Text("친구와 연결을 끊고 촬영을 마칩니다.")
           }
         )
-
+        
         CameraPreviewArea(
           cameraViewModel: cameraViewModel,
           previewModel: previewModel,
@@ -199,7 +221,7 @@ extension CameraView: View {
           shutterActionEffect: flashScreen
         )
         .padding(DynamicModelUtils.isiPad ? 32 : 0)
-
+        
         CameraBottomContainer(
           currentRole: connectionViewModel.role,
           cameraViewModel: cameraViewModel,
@@ -243,10 +265,10 @@ extension CameraView: View {
               isShowCameraSettingTool = false
             }
           }
-
+        
         VStack {
           Spacer()
-
+          
           bottomCameraSettingTool
         }
         .padding(.bottom, 12)
@@ -258,13 +280,13 @@ extension CameraView: View {
         ZStack {
           Color.black.opacity(0.7)
             .ignoresSafeArea()
-
+          
           VStack(spacing: 24) {
             Text("찍자 서비스 이용을 위해\n카메라와 음성 권한을 허용해주세요.")
               .typo(.m15)
               .foregroundStyle(.systemWhite)
               .multilineTextAlignment(.center)
-
+            
             Button(action: { openSetting() }) {
               Text("설정으로 이동")
                 .typo(.m15)
@@ -305,7 +327,7 @@ extension CameraView: View {
           connectionViewModel.sessionFinishedOverlayCloseButtonDidTap()
         }
       }
-
+      
       if let lastStopReason = connectionViewModel.lastStopReason {
         SessionFinishedOverlayView(reason: LocalizedStringKey(lastStopReason)) {
           connectionViewModel.sessionFinishedOverlayCloseButtonDidTap()
@@ -316,11 +338,11 @@ extension CameraView: View {
     .onChange(of: connectionViewModel.networkState) { _, newState in
       guard let newState else { return }
       if newState == .host(.cancelled)
-        || newState == .viewer(.cancelled)
-        || newState == .host(.lost)
-        || newState == .viewer(.lost)
-        || newState == .host(.stopped)
-        || newState == .viewer(.stopped)
+          || newState == .viewer(.cancelled)
+          || newState == .host(.lost)
+          || newState == .viewer(.lost)
+          || newState == .host(.stopped)
+          || newState == .viewer(.stopped)
       {
         // 가이딩 초기화
         penViewModel.reset()
