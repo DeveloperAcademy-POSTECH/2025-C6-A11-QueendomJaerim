@@ -28,7 +28,7 @@ struct CameraView {
   /// 연결 플로우가 진행되는 ConnectionView를 띄울지 여부
   @State private var isShowConnectionView: Bool = false
 
-  @State private var isShowWifiAwareAlert: Bool = false
+  @State private var isShowWifiAwareUnsupportedAlert: Bool = false
 
   @State var isReferenceLarge: Bool = false  // 레퍼런스 확대 축소 프로퍼티
 
@@ -165,14 +165,14 @@ extension CameraView: View {
             if isAvailableWifiAware {
               isShowConnectionView = true
             } else {
-              isShowWifiAwareAlert = true
+              isShowWifiAwareUnsupportedAlert = true
             }
           }
         )
         .padding()
         .alert(
           "연결이 불가능한 기기입니다.",
-          isPresented: $isShowWifiAwareAlert,
+          isPresented: $isShowWifiAwareUnsupportedAlert,
           actions: {
             Button(role: .cancel) {
             } label: {
