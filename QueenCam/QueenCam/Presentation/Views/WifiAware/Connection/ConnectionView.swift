@@ -97,7 +97,7 @@ extension ConnectionView {
         didGuideComplete: {
           shouldGuideShow = false
           connectionViewModel.selectRole(for: activeRole)  // 가이드가 끝나면 역할 확정
-          guideViewModel.onboardingDidFinish()
+          guideViewModel.onboardingDidFinish(currentRole: activeRole)
         },
         backButtonDidTap: {
           shouldGuideShow = false
@@ -120,7 +120,9 @@ extension ConnectionView {
         }
       },
       didRoleSubmit: {
-        if guideViewModel.shouldShowConnectionGuide {
+        guard let activeRole else { return }
+
+        if guideViewModel.getShouldShowConnectionGuide(currentRole: activeRole) {
           shouldGuideShow = true  // 역할 선택 버튼을 누르면 가이드를 보여줌
         } else {
           // 이미 가이드를 본 경우 바로 역할 선택
@@ -139,7 +141,7 @@ extension ConnectionView {
     )
 
     @State var connectionGuideViewModel: ConnectionGuideViewModel = .init(
-      onboardingSettingService: OnboardingSettingService()
+      onboardingSettingService: OnboardingSettingsService()
     )
 
     @State var previewModel: PreviewModel = .init(

@@ -9,22 +9,35 @@ import Foundation
 
 @Observable
 final class ConnectionGuideViewModel {
-  private let onboardingSettingService: OnboardingSettingServiceProtocol
-  
-  init(onboardingSettingService: OnboardingSettingServiceProtocol) {
+  private let onboardingSettingService: OnboardingSettingsServiceProtocol
+
+  init(onboardingSettingService: OnboardingSettingsServiceProtocol) {
     self.onboardingSettingService = onboardingSettingService
   }
-  
-  var shouldShowConnectionGuide: Bool {
-    !onboardingSettingService.hasShownOnboarding
+
+  func getShouldShowConnectionGuide(currentRole: Role) -> Bool {
+    let hasShown: Bool
+    switch currentRole {
+    case .model:
+      hasShown = onboardingSettingService.hasShownModelOnboarding
+    case .photographer:
+      hasShown = onboardingSettingService.hasShownPhotographerOnboarding
+    }
+
+    return !hasShown
   }
 }
 
 extension ConnectionGuideViewModel {
-  
+
   // MARK: - Intents
-  
-  func onboardingDidFinish() {
-    onboardingSettingService.hasShownOnboarding = true
+
+  func onboardingDidFinish(currentRole: Role) {
+    switch currentRole {
+    case .model:
+      onboardingSettingService.hasShownModelOnboarding = true
+    case .photographer:
+      onboardingSettingService.hasShownPhotographerOnboarding = true
+    }
   }
 }
