@@ -108,7 +108,7 @@ extension CameraView {
   }
 
   private var isAvailableWifiAware: Bool {
-    !WACapabilities.supportedFeatures.contains(.wifiAware)
+    WACapabilities.supportedFeatures.contains(.wifiAware)
   }
 }
 
