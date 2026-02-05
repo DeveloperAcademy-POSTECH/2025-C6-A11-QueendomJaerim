@@ -9,6 +9,8 @@
 
 ### Added
 
+- WifiAware 미지원 기기 알럿 추가
+
 ### Changed
 
 - Transcoding 모듈의 버전을 명시 (1.0.1)
