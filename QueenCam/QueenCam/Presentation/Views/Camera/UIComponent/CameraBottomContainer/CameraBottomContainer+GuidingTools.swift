@@ -12,7 +12,7 @@ extension CameraView.CameraBottomContainer {
         isDisabled: isRemoteGuideHidden || disabledByPeer, // 상대가 소유 중이면 시각적으로도 비활성
         tapAction: {
           // 현재 프레임 소유권 전송 (내가 소유자로 설정)
-          frameViewModel.setFrame(true, currentRole)
+          frameViewModel.requestFrameOwnership(true, currentRole)
 
           // 프레임이 존재하면, isSelected = true
           if !frameViewModel.frames.isEmpty {
@@ -81,7 +81,7 @@ extension CameraView.CameraBottomContainer {
           }
           // 프레임 소유권 변경 및 초기화: 내가 해제하는 경우에만 owner 제거
           frameViewModel.selectedFrameID = nil // 프레임 선택(isSelected) 초기화 => 제어 모드 종료
-          frameViewModel.setFrame(false, nil) // 상대편 프레임 비활성화 상태 제거(소유자 해제 전파)
+          frameViewModel.requestFrameOwnership(false, nil) // 상대편 프레임 비활성화 상태 제거(소유자 해제 전파)
         },
         guidingButtonType: .frameChecked
       )
@@ -89,7 +89,7 @@ extension CameraView.CameraBottomContainer {
     } commandButtons: {
       // 프레임 추가
       Button(action: {
-        frameViewModel.setFrame(isFrameActive, currentRole) // 프레임 활성화 상태 + 현재 나의 역할 전송
+        frameViewModel.requestFrameOwnership(isFrameActive, currentRole) // 프레임 활성화 상태 + 현재 나의 역할 전송
 
         if isFrameActive && frameViewModel.frames.isEmpty {
           frameViewModel.addFrame(at: CGPoint(x: 0.24, y: 0.15))

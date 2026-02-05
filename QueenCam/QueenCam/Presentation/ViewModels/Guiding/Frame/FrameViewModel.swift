@@ -66,15 +66,14 @@ final class FrameViewModel {
   }
 
   // MARK: - 프레임 활성화 토글 + 네트워크
-  func setFrame(_ enabled: Bool, _ currentRole: Role?) {
-    // 로컬 상태 갱신
-    isFrameEnabled = enabled
-    frameOwnerRole = currentRole
+  func requestFrameOwnership(_ enabled: Bool, _ currentRole: Role?) {
 
-    // Send to network
+    // Send to network: 네트워크로 소유권 신청 요청만 전송
     sendFrameEnabled(enabled, currentRole)
   }
 
+  // 작가(결정권자)가 승인 후, 작가에게 전달
+  
   // MARK: - 프레임 추가
   func addFrame(at origin: CGPoint, size: CGSize = .init(width: frameWidth, height: frameHeight)) {
     guard frames.count < maxFrames else { return }
@@ -242,11 +241,12 @@ extension FrameViewModel {
         case .frameUpdated(let eventType):
           self.handleFrameEvent(eventType: eventType)
 
-        case .frameEnabled(let enabled, let role):
-          self.isFrameEnabled = enabled
-          self.frameOwnerRole = role
-          guard isFrameEnabled, frameOwnerRole != currentRole, !frames.isEmpty else { return }
-          peerFrameGuidingToast(type: .edit)
+          // FIXME: 프레임 동시성 문제 발생
+//        case .frameEnabled(let enabled, let role):
+//          self.isFrameEnabled = enabled
+//          self.frameOwnerRole = role
+//          guard isFrameEnabled, frameOwnerRole != currentRole, !frames.isEmpty else { return }
+//          peerFrameGuidingToast(type: .edit)
     
         default:
           break
@@ -316,6 +316,7 @@ extension FrameViewModel {
   }
 
   /// 프레임 토글 상태 전송
+  // FIXME: - 프레임 동시성 문제 발생
   private func sendFrameEnabled(_ enabled: Bool, _ currentRole: Role?) {
     Task.detached { [weak self] in
       guard let self else { return }
