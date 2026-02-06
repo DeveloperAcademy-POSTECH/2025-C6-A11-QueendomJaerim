@@ -28,6 +28,8 @@ struct CameraView {
   /// 연결 플로우가 진행되는 ConnectionView를 띄울지 여부
   @State private var isShowConnectionView: Bool = false
 
+  @State private var isShowWifiAwareUnsupportedAlert: Bool = false
+
   @State var isReferenceLarge: Bool = false  // 레퍼런스 확대 축소 프로퍼티
 
   @Environment(\.displayScale) private var displayScale
@@ -105,6 +107,10 @@ extension CameraView {
       }
     }
   }
+
+  private var isAvailableWifiAware: Bool {
+    WACapabilities.supportedFeatures.contains(.wifiAware)
+  }
 }
 
 extension CameraView: View {
@@ -157,11 +163,27 @@ extension CameraView: View {
             }
           },
           connectedWithButtonDidTap: {
-            isShowConnectionView = true
+            if isAvailableWifiAware {
+              isShowConnectionView = true
+            } else {
+              isShowWifiAwareUnsupportedAlert = true
+            }
           }
         )
         .padding()
-        //        .padding(.top, 12)
+        .alert(
+          "연결이 불가능한 기기입니다.",
+          isPresented: $isShowWifiAwareUnsupportedAlert,
+          actions: {
+            Button(role: .cancel) {
+            } label: {
+              Text("확인했어요")
+            }
+          },
+          message: {
+            Text("이 기기는 다른 기기와의 연결이 어려워요. 대신 찍자의 여러 가이드 기능은 이용할 수 있어요.")
+          }
+        )
         .alert(
           "연결을 종료합니다.",
           isPresented: $isShowDisconnectAlert,
