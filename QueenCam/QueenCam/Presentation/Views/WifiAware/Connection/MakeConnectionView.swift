@@ -22,6 +22,7 @@ struct MakeConnectionView {
   let errorWasConsumeByUser: () -> Void
   let changeRoleButtonDidTap: () -> Void
   let connectButtonDidTap: (WAPairedDevice) -> Void
+  let stopConnectingButtonDidTap: () -> Void
 
   @State private var errorAlertShowing: Bool = false
 
@@ -123,7 +124,8 @@ extension MakeConnectionView {
           isPairing: isPairing,
           isConnected: isConnected,
           selectedDevice: selectedPairedDevice,
-          connectButtonDidTap: connectButtonDidTap
+          connectButtonDidTap: connectButtonDidTap,
+          stopConnectingButtonDidTap: stopConnectingButtonDidTap
         )
         .frame(maxHeight: .infinity, alignment: .top)
         .padding(.horizontal, 20)
@@ -163,6 +165,7 @@ extension MakeConnectionView {
     lastConnectionError: nil,
     errorWasConsumeByUser: {},
     changeRoleButtonDidTap: {},
-    connectButtonDidTap: { _ in }
+    connectButtonDidTap: { _ in },
+    stopConnectingButtonDidTap: { }
   )
 }
