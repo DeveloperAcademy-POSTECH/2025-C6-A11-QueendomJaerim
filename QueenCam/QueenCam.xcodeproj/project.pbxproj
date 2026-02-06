@@ -7,10 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3D0D86132F162AA600E27C61 /* Transcoding in Frameworks */ = {isa = PBXBuildFile; productRef = 3D0D86122F162AA600E27C61 /* Transcoding */; };
 		3D3ABD912EC45C9E001FD2C3 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 3D3ABD902EC45C9E001FD2C3 /* FirebaseAnalytics */; };
 		3D3ABD932EC45C9E001FD2C3 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 3D3ABD922EC45C9E001FD2C3 /* FirebaseCore */; };
 		3D3ABD952EC45C9E001FD2C3 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 3D3ABD942EC45C9E001FD2C3 /* FirebaseCrashlytics */; };
-		3D525A9C2EA7CC5B00B4860A /* Transcoding in Frameworks */ = {isa = PBXBuildFile; productRef = 3D525A9B2EA7CC5B00B4860A /* Transcoding */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -76,7 +76,7 @@
 				3D3ABD912EC45C9E001FD2C3 /* FirebaseAnalytics in Frameworks */,
 				3D3ABD952EC45C9E001FD2C3 /* FirebaseCrashlytics in Frameworks */,
 				3D3ABD932EC45C9E001FD2C3 /* FirebaseCore in Frameworks */,
-				3D525A9C2EA7CC5B00B4860A /* Transcoding in Frameworks */,
+				3D0D86132F162AA600E27C61 /* Transcoding in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -140,10 +140,10 @@
 			);
 			name = QueenCam;
 			packageProductDependencies = (
-				3D525A9B2EA7CC5B00B4860A /* Transcoding */,
 				3D3ABD902EC45C9E001FD2C3 /* FirebaseAnalytics */,
 				3D3ABD922EC45C9E001FD2C3 /* FirebaseCore */,
 				3D3ABD942EC45C9E001FD2C3 /* FirebaseCrashlytics */,
+				3D0D86122F162AA600E27C61 /* Transcoding */,
 			);
 			productName = QueenCam;
 			productReference = 3D5E6BEE2E7D687300A0E03A /* QueenCam.app */;
@@ -230,8 +230,8 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				3D6CDA672E8E3EDD006C445A /* XCRemoteSwiftPackageReference "SwiftLintPlugins" */,
-				3D525A9A2EA7CC5B00B4860A /* XCRemoteSwiftPackageReference "Transcoding" */,
 				3D3ABD8F2EC45C9E001FD2C3 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				3D0D86112F162AA600E27C61 /* XCRemoteSwiftPackageReference "Transcoding" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 3D5E6BEF2E7D687300A0E03A /* Products */;
@@ -462,7 +462,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 17;
+				CURRENT_PROJECT_VERSION = 18;
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = D22ZM93S77;
 				ENABLE_PREVIEWS = YES;
@@ -485,7 +485,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.4;
+				MARKETING_VERSION = 1.1.5;
 				PRODUCT_BUNDLE_IDENTIFIER = com.queendom.QueenCam;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -512,7 +512,7 @@
 				CODE_SIGN_ENTITLEMENTS = QueenCam/QueenCam.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 17;
+				CURRENT_PROJECT_VERSION = 18;
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = D22ZM93S77;
 				ENABLE_PREVIEWS = YES;
@@ -535,7 +535,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.4;
+				MARKETING_VERSION = 1.1.5;
 				PRODUCT_BUNDLE_IDENTIFIER = com.queendom.QueenCam;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -559,10 +559,10 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 17;
+				CURRENT_PROJECT_VERSION = 18;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.1.4;
+				MARKETING_VERSION = 1.1.5;
 				PRODUCT_BUNDLE_IDENTIFIER = com.queendom.QueenCamTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
@@ -580,10 +580,10 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 17;
+				CURRENT_PROJECT_VERSION = 18;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.1.4;
+				MARKETING_VERSION = 1.1.5;
 				PRODUCT_BUNDLE_IDENTIFIER = com.queendom.QueenCamTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
@@ -600,9 +600,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 17;
+				CURRENT_PROJECT_VERSION = 18;
 				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.1.4;
+				MARKETING_VERSION = 1.1.5;
 				PRODUCT_BUNDLE_IDENTIFIER = com.queendom.QueenCamUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
@@ -619,9 +619,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 17;
+				CURRENT_PROJECT_VERSION = 18;
 				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.1.4;
+				MARKETING_VERSION = 1.1.5;
 				PRODUCT_BUNDLE_IDENTIFIER = com.queendom.QueenCamUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
@@ -676,20 +676,20 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		3D0D86112F162AA600E27C61 /* XCRemoteSwiftPackageReference "Transcoding" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/0tak2/Transcoding";
+			requirement = {
+				kind = exactVersion;
+				version = 1.0.1;
+			};
+		};
 		3D3ABD8F2EC45C9E001FD2C3 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
 			requirement = {
 				kind = exactVersion;
 				version = 12.5.0;
-			};
-		};
-		3D525A9A2EA7CC5B00B4860A /* XCRemoteSwiftPackageReference "Transcoding" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/0tak2/Transcoding";
-			requirement = {
-				branch = main;
-				kind = branch;
 			};
 		};
 		3D6CDA672E8E3EDD006C445A /* XCRemoteSwiftPackageReference "SwiftLintPlugins" */ = {
@@ -703,6 +703,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		3D0D86122F162AA600E27C61 /* Transcoding */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3D0D86112F162AA600E27C61 /* XCRemoteSwiftPackageReference "Transcoding" */;
+			productName = Transcoding;
+		};
 		3D3ABD902EC45C9E001FD2C3 /* FirebaseAnalytics */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 3D3ABD8F2EC45C9E001FD2C3 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
@@ -717,11 +722,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 3D3ABD8F2EC45C9E001FD2C3 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseCrashlytics;
-		};
-		3D525A9B2EA7CC5B00B4860A /* Transcoding */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 3D525A9A2EA7CC5B00B4860A /* XCRemoteSwiftPackageReference "Transcoding" */;
-			productName = Transcoding;
 		};
 		3D6CDA682E8E3F36006C445A /* SwiftLintBuildToolPlugin */ = {
 			isa = XCSwiftPackageProductDependency;

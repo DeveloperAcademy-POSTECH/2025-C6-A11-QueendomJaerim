@@ -11,9 +11,11 @@ enum GuideVideo {
   case modelGuide0
   case modelGuide1
   case modelGuide2
+  case modelGuide3
   case photographerGuide0
   case photographerGuide1
   case photographerGuide2
+  case photographerGuide3
 
   private var videoFileExtension: String { "mov" }
 
@@ -22,9 +24,11 @@ enum GuideVideo {
     case .modelGuide0: return "model_guide_0"
     case .modelGuide1: return "model_guide_1"
     case .modelGuide2: return "model_guide_2"
+    case .modelGuide3: return "model_guide_3"
     case .photographerGuide0: return "photographer_guide_0"
     case .photographerGuide1: return "photographer_guide_1"
     case .photographerGuide2: return "photographer_guide_2"
+    case .photographerGuide3: return "photographer_guide_3"
     }
   }
 
@@ -38,6 +42,7 @@ enum GuideVideo {
       case 0: return .modelGuide0
       case 1: return .modelGuide1
       case 2: return .modelGuide2
+      case 3: return .modelGuide3
       default: return nil
       }
     } else if role == .photographer {
@@ -45,6 +50,7 @@ enum GuideVideo {
       case 0: return .photographerGuide0
       case 1: return .photographerGuide1
       case 2: return .photographerGuide2
+      case 3: return .photographerGuide3
       default: return nil
       }
     }

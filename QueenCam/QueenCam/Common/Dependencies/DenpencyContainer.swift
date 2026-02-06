@@ -23,6 +23,8 @@ final class DependencyContainer {
 
   lazy var notificationService: NotificationService = NotificationService()
 
+  lazy var onboardingSettingService: OnboardingSettingsServiceProtocol = OnboardingSettingsService()
+
   // lazy면 NotificaitonCenter 기반 이벤트 로깅이 작동하지 않을 수 있음
   let analyticsService: AnalyticsService = AnalyticsService()
 }

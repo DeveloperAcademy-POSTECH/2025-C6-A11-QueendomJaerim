@@ -18,10 +18,7 @@ struct ConnectionGuidePage: View {
       Spacer()
         .frame(height: 60)
 
-      Text("\(guide.message)")
-        .multilineTextAlignment(.center)
-        .typo(.m22)
-        .foregroundStyle(.systemWhite)
+      AttributedLabelRepresentable(attributedString: guide.message)
     }
   }
 }

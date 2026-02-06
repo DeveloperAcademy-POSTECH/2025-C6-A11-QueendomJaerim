@@ -157,16 +157,6 @@
         }
       }
     },
-    "건너뛰기" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Skip"
-          }
-        }
-      }
-    },
     "그리드" : {
       "localizations" : {
         "en" : {
@@ -301,7 +291,7 @@
       "localizations" : {
         "en" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "Model"
           }
         }
@@ -363,6 +353,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Open Settings"
+          }
+        }
+      }
+    },
+    "언제든지 questionmark.circle 버튼으로\n페어링하는 법을 다시 볼 수 있어요." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Every time you press the questionmark.circle button,\nyou can see how to pair the devices."
           }
         }
       }
@@ -477,6 +477,16 @@
         }
       }
     },
+    "연결이 불가능한 기기입니다." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This device is not supported for connection."
+          }
+        }
+      }
+    },
     "연결이 종료되었어요." : {
       "localizations" : {
         "en" : {
@@ -503,6 +513,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "An error occurred during the connection. If the problem persists, please contact the Queendom team. %@"
+          }
+        }
+      }
+    },
+    "이 기기는 다른 기기와의 연결이 어려워요. 대신 찍자의 여러 가이드 기능은 이용할 수 있어요." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This device cannot connect to other devices, but you can still use ZZikZZa guide features."
           }
         }
       }
@@ -807,22 +827,22 @@
         }
       }
     },
-    "펜" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pen"
-          }
-        }
-      }
-    },
     "페어링을 요청" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "pair"
+          }
+        }
+      }
+    },
+    "펜" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pen"
           }
         }
       }
@@ -918,6 +938,16 @@
       }
     },
     "확인" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirm"
+          }
+        }
+      }
+    },
+    "확인했어요" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {

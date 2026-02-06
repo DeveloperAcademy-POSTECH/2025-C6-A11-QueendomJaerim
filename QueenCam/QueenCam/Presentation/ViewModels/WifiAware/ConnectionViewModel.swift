@@ -73,7 +73,7 @@ final class ConnectionViewModel {
 
   /// Error
   private(set) var connectionError: Error?
-  
+
   /// 연결 중단 이유
   private(set) var lastStopReason: String?
 
@@ -192,6 +192,11 @@ extension ConnectionViewModel {
         networkService.run(for: device)
       }
     }
+  }
+
+  func stopConnectingButtonDidTap() {
+    networkService.stop(byUser: true, userReason: nil)
+    selectedPairedDevice = nil
   }
 
   func disconnectButtonDidTap() {
