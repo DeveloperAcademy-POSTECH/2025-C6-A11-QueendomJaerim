@@ -52,21 +52,6 @@ extension ConnectionGuideView: View {
           backButtonDidTap()
         }
       }
-
-      ToolbarItem(placement: .topBarTrailing) {
-        if activeIndex != currentGuides.count - 1 {
-          Button {
-            skipButtonDidTap()
-          } label: {
-            Text("건너뛰기")
-              .typo(.m15)
-              .padding(.top, 10)
-              .padding(.bottom, 11)
-              .padding(.horizontal, 4)
-              .foregroundStyle(.gray400)
-          }
-        }
-      }
     }
   }
 }

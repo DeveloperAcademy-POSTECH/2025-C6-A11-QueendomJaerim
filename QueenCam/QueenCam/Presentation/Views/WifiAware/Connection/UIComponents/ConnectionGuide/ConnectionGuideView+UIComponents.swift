@@ -49,6 +49,7 @@ extension ConnectionGuideView {
       }
       .glassEffect()
       .opacity(lastPageVisited ? 1.0 : 0.0)
+      .padding(.horizontal, 16)
 
       Spacer()
         .frame(height: 48)
