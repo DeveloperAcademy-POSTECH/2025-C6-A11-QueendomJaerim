@@ -13,10 +13,6 @@ extension CameraViewModel {
   }
 
   private func sendEvent(_ event: AnalyticsEvent) {
-    NotificationCenter.default.post(
-      name: .QueenCamAnalyticsEventNotification,
-      object: nil,
-      userInfo: ["event": event]
-    )
+    AnalyticsService.sendEvent(event)
   }
 }
