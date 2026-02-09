@@ -9,6 +9,8 @@
 
 ### Added
 
+- 신규 GA 이벤트 추가 (`take_screenshot`, `take_video_capture`)
+
 ### Changed
 
 ### Deprecated
