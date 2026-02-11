@@ -13,6 +13,10 @@ struct MainView: View {
     networkService: DependencyContainer.defaultContainer.networkService,
     notificationService: DependencyContainer.defaultContainer.notificationService
   )
+  
+  @State private var guideViewModel = ConnectionGuideViewModel(
+    onboardingSettingService: DependencyContainer.defaultContainer.onboardingSettingService
+  )
 
   @State private var previewModel = PreviewModel(
     previewCaptureService: DependencyContainer.defaultContainer.previewCaptureService,
@@ -39,6 +43,7 @@ struct MainView: View {
       cameraViewModel: cameraViewModel,
       previewModel: previewModel,
       connectionViewModel: connectionViewModel,
+      guideViewModel: guideViewModel,
       referenceViewModel: referenceViewModel,
       penViewModel: penViewModel,
       frameViewModel: frameViewModel,

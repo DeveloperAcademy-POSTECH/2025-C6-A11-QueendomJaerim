@@ -11,13 +11,33 @@
 
 ### Changed
 
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [1.1.5] - 2026-02-06
+
+### Added
+
+- WifiAware 미지원 기기 알럿 추가
+- 연결 중 로딩 뷰를 누르면 연결을 중단하는 기능 추가
+
+### Changed
+
 - Transcoding 모듈의 버전을 명시 (1.0.1)
+- 페어링 가이드 개편 (역할별로 최초 1회만 노출, 추가 페이지)
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
+
+- 카메라뷰 썸네일 동기화 이슈 수정
 
 ### Security
 
@@ -343,7 +363,8 @@
 - Wi-Fi Aware 연결 후, 라이브 포토 촬영 시 앱이 크래시되는 문제
 - 레퍼런스 삭제 후 재등록에 관한 상태 초기화 문제
 
-[Unreleased]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.4...HEAD
+[Unreleased]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.5...HEAD
+[1.1.5]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.4...v1.1.5
 [1.1.4]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.3...v1.1.4
 [1.1.3]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.2...v1.1.3
 [1.1.2]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.1...v1.1.2

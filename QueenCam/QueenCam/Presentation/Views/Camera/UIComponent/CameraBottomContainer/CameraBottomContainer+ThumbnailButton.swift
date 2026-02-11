@@ -22,20 +22,14 @@ extension CameraView.CameraBottomContainer {
       activeTool = nil
 
     }) {
-      if let image = cameraViewModel.lastImage {
-        Image(uiImage: image)
+      if let thumbnailImage = cameraViewModel.thumbnailImage {
+        Image(uiImage: thumbnailImage)
           .resizable()
+          .scaledToFill()
           .frame(width: isMinimize ? 24 : 48, height: isMinimize ? 24 : 48)
           .clipShape(Circle())
       } else {
-        if let thumbnailImage = cameraViewModel.thumbnailImage {
-          Image(uiImage: thumbnailImage)
-            .resizable()
-            .frame(width: isMinimize ? 24 : 48, height: isMinimize ? 24 : 48)
-            .clipShape(Circle())
-        } else {
-          EmptyPhotoButton()
-        }
+        EmptyPhotoButton()
       }
     }
   }
