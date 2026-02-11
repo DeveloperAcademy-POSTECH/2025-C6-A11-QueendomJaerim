@@ -127,6 +127,25 @@ extension CameraView.CameraBottomContainer: View {
         isReferenceLarge = false
       }
     }
+    .onChange(of: frameViewModel.isFrameEnabled) { _, _ in
+      let isFrameOwner = (frameViewModel.frameOwnerRole == currentRole)
+      // 프레임 활성화 승인 + 내가 프레임 소유자일때
+      if frameViewModel.isFrameEnabled && isFrameOwner {
+        // 프레임이 존재하면, isSelected = true
+        if !frameViewModel.frames.isEmpty {
+          frameViewModel.selectedFrameID = frameViewModel.frames.first!.id
+        }
+        if !isFrameActive { // 프레임 버튼 활성화 => UI 로컬 변경
+          guidingToolToggle(.frame)
+        }
+        isRemoteGuideHidden = false
+      } else if !frameViewModel.isFrameEnabled { // 프레임 비활성화 승인
+        frameViewModel.selectedFrameID = nil
+        if isFrameActive { // 프레임 버튼 비활성화 => UI 로컬 변경
+          guidingToolToggle(.frame)
+        }
+      }
+    }
   }
 }
 

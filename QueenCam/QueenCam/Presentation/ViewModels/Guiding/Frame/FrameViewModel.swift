@@ -239,19 +239,22 @@ extension FrameViewModel {
         case .frameUpdated(let eventType):
           self.handleFrameEvent(eventType: eventType)
 
-        // FIXME: 프레임 동시성 문제 발생
+        // FIXME: - 프레임 동시성 문제 발생
         case .frameEnabled(let enabled, let role):
-          let isPhotographer = (currentRole == .photographer)
+          let isPhotographer = (currentRole != .model) // 작가(미연결 상태 포함)가 프레임 소유권 결정
 
           if isPhotographer {
-            // 프레임의 활성화/비활성 요청
-            let isActivationRequest = enabled && self.frameOwnerRole == nil
-            let isDeactivationRequest = !enabled && self.frameOwnerRole != nil
+            // 활성화 요청: enabled이고 현재 비활성이고, 소유자 없음 → 활성화 승인
+            let canActivate = enabled && !self.isFrameEnabled && self.frameOwnerRole == nil
+            // 비활성화 요청: !enabled이고 현재 활성이고, 소유자 있음 → 비활성화 승인
+            let canDeactivate = !enabled && self.isFrameEnabled && self.frameOwnerRole != nil // 미연결 상태일때 확인
 
-            if isActivationRequest || isDeactivationRequest {
+            if canActivate || canDeactivate {
+              // 최종 상태 결정
               self.isFrameEnabled = enabled
               self.frameOwnerRole = enabled ? role : nil
-              // 작가와 모델에게 최종 승인 결과 전송
+
+              // 최종 결과 브로드캐스트는 단 한 번
               Task.detached { [weak self] in
                 guard let self else { return }
                 await self.networkService.send(for: .frameEnabled(enabled, role))
@@ -259,7 +262,8 @@ extension FrameViewModel {
             }
             return
           }
-          // 작가와 모델은 승인된 결과를 반영
+
+          // 모델은 최종 결과를 수신하면 반영만 하고 재전송하지 않음
           self.isFrameEnabled = enabled
           self.frameOwnerRole = enabled ? role : nil
 
