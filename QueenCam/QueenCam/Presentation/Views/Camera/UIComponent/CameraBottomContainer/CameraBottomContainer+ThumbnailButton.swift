@@ -14,7 +14,7 @@ extension CameraView.CameraBottomContainer {
       case .pen:
         // 펜툴 비활성화 시 세션 strokes들을 persistedStrokes에 저장
         penViewModel.saveStroke()
-      case .maginPen:
+      case .magicPen:
         break
       case .none:
         break

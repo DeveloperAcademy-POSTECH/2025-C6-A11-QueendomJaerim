@@ -10,5 +10,5 @@ import Foundation
 enum ActiveTool {
   case frame
   case pen
-  case maginPen
+  case magicPen
 }

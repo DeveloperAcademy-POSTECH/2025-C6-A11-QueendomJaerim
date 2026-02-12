@@ -17,7 +17,7 @@ extension CameraView.CameraPreviewArea {
   }
 
   private var isMagicPenActive: Bool {
-    activeTool == .maginPen
+    activeTool == .magicPen
   }
 
   /// 가이딩 도구들 오버레이

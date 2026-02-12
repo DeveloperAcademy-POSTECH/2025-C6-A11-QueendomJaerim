@@ -49,7 +49,7 @@ extension CameraView.CameraBottomContainer {
   }
 
   var isMagicPenActive: Bool {
-    activeTool == .maginPen
+    activeTool == .magicPen
   }
 }
 
@@ -78,7 +78,7 @@ extension CameraView.CameraBottomContainer: View {
             frameSubToolBar
           case .pen:
             penSubToolBar
-          case .maginPen:
+          case .magicPen:
             magicPenSubToolBar
           }
         } else {
@@ -113,7 +113,7 @@ extension CameraView.CameraBottomContainer: View {
       if activeTool == .pen {
         penViewModel.saveStroke()
         penViewModel.showToolReferenceLargeToast(type: .pen)
-      } else if activeTool == .maginPen {
+      } else if activeTool == .magicPen {
         penViewModel.showToolReferenceLargeToast(type: .magicPen)
       } else if activeTool == .frame {
         
