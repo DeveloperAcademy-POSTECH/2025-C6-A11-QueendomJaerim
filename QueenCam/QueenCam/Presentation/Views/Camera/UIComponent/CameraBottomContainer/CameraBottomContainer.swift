@@ -29,7 +29,7 @@ extension CameraView {
     let guidingToolToggle: (_ selectedTool: ActiveTool) -> Void
     // 비율이 작은 기기를 위한 모드. true면 뷰 크기 조정
     var isMinimize = false
-    
+
     // 도구 버튼 토글 애니메이션을 위한 네임스페이스
     @Namespace var toggledToolNamespace
   }
@@ -116,7 +116,7 @@ extension CameraView.CameraBottomContainer: View {
       } else if activeTool == .maginPen {
         penViewModel.showToolReferenceLargeToast(type: .magicPen)
       } else if activeTool == .frame {
-        
+
       }
       activeTool = nil
     }
@@ -127,23 +127,38 @@ extension CameraView.CameraBottomContainer: View {
         isReferenceLarge = false
       }
     }
+    // 프레임의 활성화 여부가 바뀔 때 감지
     .onChange(of: frameViewModel.isFrameEnabled) { _, _ in
-      let isFrameOwner = (frameViewModel.frameOwnerRole == currentRole)
-      // 프레임 활성화 승인 + 내가 프레임 소유자일때
-      if frameViewModel.isFrameEnabled && isFrameOwner {
-        // 프레임이 존재하면, isSelected = true
+      updateFrameToolState()
+    }
+    // 프레임의 소유주가 바뀔 때도 감지
+    .onChange(of: frameViewModel.frameOwnerRole) { _, _ in
+      updateFrameToolState()
+    }
+  }
+
+  /// 프레임 도구 상태 동기화 메서드
+  private func updateFrameToolState() {
+    let isFrameOwner = (frameViewModel.frameOwnerRole == currentRole)
+    if frameViewModel.isFrameEnabled {
+      if isFrameOwner {
         if !frameViewModel.frames.isEmpty {
           frameViewModel.selectedFrameID = frameViewModel.frames.first!.id
         }
-        if !isFrameActive { // 프레임 버튼 활성화 => UI 로컬 변경
+        if !isFrameActive {
           guidingToolToggle(.frame)
         }
         isRemoteGuideHidden = false
-      } else if !frameViewModel.isFrameEnabled { // 프레임 비활성화 승인
-        frameViewModel.selectedFrameID = nil
-        if isFrameActive { // 프레임 버튼 비활성화 => UI 로컬 변경
-          guidingToolToggle(.frame)
+      } else {
+        if isFrameActive {
+          activeTool = nil  // 강제 종료
         }
+        frameViewModel.selectedFrameID = nil
+      }
+    } else {
+      frameViewModel.selectedFrameID = nil
+      if isFrameActive {
+        activeTool = nil
       }
     }
   }

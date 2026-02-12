@@ -41,7 +41,6 @@ extension CameraView.CameraBottomContainer {
         isActive: isMagicPenActive,
         isDisabled: isRemoteGuideHidden,
         tapAction: {
-
           penViewModel.showFirstToolToast(type: .magicPen)
           guidingToolToggle(.maginPen)
           if isMagicPenActive {

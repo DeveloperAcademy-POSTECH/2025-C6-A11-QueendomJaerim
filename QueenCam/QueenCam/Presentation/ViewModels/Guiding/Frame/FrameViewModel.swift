@@ -67,6 +67,8 @@ final class FrameViewModel {
 
   // MARK: - 프레임 활성화 토글 + 네트워크
   func requestFrameOwnership(_ enabled: Bool, _ currentRole: Role?) {
+    self.frameOwnerRole = enabled ? currentRole : nil
+    self.isFrameEnabled = enabled
 
     // Send to network: 네트워크로 소유권 신청 요청만 전송
     sendFrameEnabled(enabled, currentRole)
@@ -241,20 +243,19 @@ extension FrameViewModel {
 
         // FIXME: - 프레임 동시성 문제 발생
         case .frameEnabled(let enabled, let role):
-          let isPhotographer = (currentRole != .model) // 작가(미연결 상태 포함)가 프레임 소유권 결정
+          let isPhotographer = (currentRole != .model)  // 작가(미연결 상태 포함)가 프레임 소유권 결정
 
           if isPhotographer {
-            // 활성화 요청: enabled이고 현재 비활성이고, 소유자 없음 → 활성화 승인
+            // 활성화 요청: enabled이고 현재 비활성 + 소유자 없음 -> 활성화 승인
             let canActivate = enabled && !self.isFrameEnabled && self.frameOwnerRole == nil
-            // 비활성화 요청: !enabled이고 현재 활성이고, 소유자 있음 → 비활성화 승인
-            let canDeactivate = !enabled && self.isFrameEnabled && self.frameOwnerRole != nil // 미연결 상태일때 확인
 
+            // 비활성화 요청: !enabled이고 현재 활성 + 소유자 있음 -> 비활성화 승인
+            let canDeactivate = !enabled && self.isFrameEnabled && self.frameOwnerRole != nil  // 미연결 상태일때 확인
             if canActivate || canDeactivate {
               // 최종 상태 결정
-              self.isFrameEnabled = enabled
               self.frameOwnerRole = enabled ? role : nil
-
-              // 최종 결과 브로드캐스트는 단 한 번
+              self.isFrameEnabled = enabled
+              // 최종 결과 브로드캐스트
               Task.detached { [weak self] in
                 guard let self else { return }
                 await self.networkService.send(for: .frameEnabled(enabled, role))
@@ -262,10 +263,9 @@ extension FrameViewModel {
             }
             return
           }
-
           // 모델은 최종 결과를 수신하면 반영만 하고 재전송하지 않음
-          self.isFrameEnabled = enabled
           self.frameOwnerRole = enabled ? role : nil
+          self.isFrameEnabled = enabled
 
           guard isFrameEnabled, frameOwnerRole != currentRole, !frames.isEmpty else { return }
           peerFrameGuidingToast(type: .edit)
