@@ -158,9 +158,9 @@ extension ConnectionView {
         guideViewModel: connectionGuideViewModel,
         previewStreamingViewModel: previewModel
       )
-        .onAppear {
-          viewModel.selectRole(for: nil)
-        }
+      .onAppear {
+        viewModel.selectRole(for: nil)
+      }
     }
   }
 
