@@ -14,7 +14,7 @@ struct SettingsRouteView: View {
   var body: some View {
     switch currentRoute {
     case let .main(role):
-      SettingsMainView(navigationRouter: navigationRouter, role: role ?? .photographer)
+      SettingsMainView(navigationRouter: navigationRouter, role: role)
     case .faq:
       Text("TODO: FAQ")
     }

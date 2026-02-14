@@ -9,10 +9,11 @@ import SwiftUI
 
 struct SettingsMainView {
   let navigationRouter: NavigationRouter
-  let role: Role
+  let role: Role?
 
   @State private var safariSheetItem: SafariSheetItem?
-  @State private var isPresentGuideSheet: Bool = false
+  @State private var guideSheetItem: GuideSheetItem?
+  @State private var isConfirmingRole = false
 
   // MARK: - URLs
   let vocPageURL = URL(
@@ -34,7 +35,11 @@ extension SettingsMainView: View {
       VStack(alignment: .leading, spacing: 0) {
         SettingSection(title: "찍자 이용 가이드") {
           SettingBanner {
-            isPresentGuideSheet.toggle()
+            if let role {
+              guideSheetItem = GuideSheetItem(role: role)
+            } else {
+              isConfirmingRole.toggle()
+            }
           }
           .title("페어링 방법이 궁금하신가요?")
           .subtitle("새로운 친구를 등록하고 싶어요.")
@@ -84,14 +89,23 @@ extension SettingsMainView: View {
       SFSafariView(url: sheetItem.url)
         .ignoresSafeArea()
     }
-    .fullScreenCover(isPresented: $isPresentGuideSheet) {
+    .fullScreenCover(item: $guideSheetItem) { sheetItem in
       NavigationStack {
-        ConnectionGuideView(role: role) {
-          isPresentGuideSheet.toggle()
+        ConnectionGuideView(role: sheetItem.role) {
+          guideSheetItem = nil
         } backButtonDidTap: {
-          isPresentGuideSheet.toggle()
+          guideSheetItem = nil
         }
       }
+    }
+    .confirmationDialog("", isPresented: $isConfirmingRole) {
+      Button("작가 가이드") {
+        guideSheetItem = GuideSheetItem(role: .photographer)
+      }
+      Button("모델 가이드") {
+        guideSheetItem = GuideSheetItem(role: .model)
+      }
+      Button("취소", role: .cancel) {}
     }
   }
 }
@@ -125,6 +139,13 @@ private struct SafariSheetItem: Identifiable {
   let url: URL
   var id: String {
     url.absoluteString
+  }
+}
+
+private struct GuideSheetItem: Identifiable {
+  let role: Role
+  var id: String {
+    role.displayName
   }
 }
 
