@@ -85,20 +85,6 @@ extension MakeConnectionView: View {
   }
 }
 
-extension MakeConnectionView {
-  var pairingGuideView: some View {
-    ConnectionGuideView(
-      role: role,
-      didGuideComplete: {
-        isShowingSettings = false
-      },
-      backButtonDidTap: {
-        isShowingSettings = false
-      }
-    )
-  }
-}
-
 // MARK: 연결 진행 페이지
 extension MakeConnectionView {
   var makeConnectionControls: some View {
