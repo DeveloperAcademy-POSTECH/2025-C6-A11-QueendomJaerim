@@ -7,9 +7,11 @@
 
 import SwiftUI
 
-struct SettingSectionTitle: View {
+struct SettingSectionTitle {
   var title: String?
+}
 
+extension SettingSectionTitle: View {
   var body: some View {
     HStack {
       Text(title ?? "")

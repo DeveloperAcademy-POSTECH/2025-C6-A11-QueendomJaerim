@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct SettingSection<Content: View>: View {
+struct SettingSection<Content: View> {
   let title: String
   let content: Content
 
@@ -21,7 +21,9 @@ struct SettingSection<Content: View>: View {
     self.title = title
     self.content = content()
   }
+}
 
+extension SettingSection: View {
   var body: some View {
     VStack(alignment: .leading, spacing: 0) {
       Spacer()

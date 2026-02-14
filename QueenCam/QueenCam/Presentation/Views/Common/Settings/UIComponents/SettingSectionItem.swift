@@ -7,12 +7,14 @@
 
 import SwiftUI
 
-struct SettingSectionItem: View {
+struct SettingSectionItem {
   let action: () -> Void
   var title: String?
   var supplementayText: String?
   var disabled: Bool = false
+}
 
+extension SettingSectionItem: View {
   var body: some View {
     Button(action: action) {
       HStack {
