@@ -62,6 +62,7 @@ extension UIFont {
 
 enum TypographyStyle: CaseIterable {
   case r12
+  case r15
   case m10
   case m13
   case m14
@@ -87,6 +88,7 @@ enum TypographyStyle: CaseIterable {
   var displayName: String {
     switch self {
     case .r12: return "R_12"
+    case .r15: return "R_15"
     case .m10: return "M_10"
     case .m13: return "M_13"
     case .m14: return "M_14"
@@ -114,6 +116,7 @@ enum TypographyStyle: CaseIterable {
   var font: Font {
     switch self {
     case .r12: return .pretendard(.regular, size: 12)
+    case .r15: return .pretendard(.regular, size: 15)
     case .m10: return .pretendard(.medium, size: 10)
     case .m13: return .pretendard(.medium, size: 13)
     case .m14: return .pretendard(.medium, size: 14)
@@ -141,6 +144,7 @@ enum TypographyStyle: CaseIterable {
   var uiFont: UIFont {
     switch self {
     case .r12: return .pretendard(.regular, size: 12)
+    case .r15: return .pretendard(.regular, size: 15)
     case .m10: return .pretendard(.medium, size: 10)
     case .m13: return .pretendard(.medium, size: 13)
     case .m14: return .pretendard(.medium, size: 14)
@@ -168,6 +172,7 @@ enum TypographyStyle: CaseIterable {
   var lineHeight: CGFloat {
     switch self {
     case .r12: return 16
+    case .r15: return 23
     case .m10: return 12
     case .m13: return 16
     case .m14: return 21
