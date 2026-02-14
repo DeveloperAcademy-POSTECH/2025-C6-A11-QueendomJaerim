@@ -8,11 +8,18 @@
 import SwiftUI
 
 struct SettingsMainView {
-  @Environment(\.dismiss) private var dismiss
+  @State private var safariSheetItem: SafariSheetItem? = nil
 
   var appVersion: String {
     Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0.0"
   }
+
+  let vocPageURL = URL(
+    string: "https://docs.google.com/forms/d/e/1FAIpQLSc0GRoJYU8a-Ki5PmEDIv7GmBRtJ0PNG-zh-YsM5i1FzCWkJg/viewform?usp=header"
+  )
+  let privacyPageURL = URL(
+    string: "https://cyan-zydeco-5e9.notion.site/ZZikZZa-2025-11-13-2aa1b6b29f2c80cf90eed7ca2afc0e32?pvs=73"
+  )
 }
 
 extension SettingsMainView: View {
@@ -37,14 +44,18 @@ extension SettingsMainView: View {
           SettingSectionItem {}
             .title("자주하는 질문")
 
-          SettingSectionItem {}
-            .title("의견 보내기")
+          SettingSectionItem {
+            openURL(for: vocPageURL, showInApp: false)
+          }
+          .title("의견 보내기")
         }
         .padding(.horizontal, 20)
 
         SettingSection(title: "정보") {
-          SettingSectionItem {}
-            .title("서비스 이용약관")
+          SettingSectionItem {
+            openURL(for: privacyPageURL, showInApp: true)
+          }
+          .title("서비스 이용약관")
 
           SettingSectionItem {}
             .title("버전 정보")
@@ -57,6 +68,10 @@ extension SettingsMainView: View {
     }
     .navigationTitle("설정")
     .navigationBarTitleDisplayMode(.inline)
+    .fullScreenCover(item: $safariSheetItem) { sheetItem in
+      SFSafariView(url: sheetItem.url)
+        .ignoresSafeArea()
+    }
   }
 }
 
@@ -67,6 +82,28 @@ extension SettingsMainView {
         .foregroundStyle(SettingsColors.headerSeparator)
         .frame(height: 6)
     }
+  }
+}
+
+extension SettingsMainView {
+  func openURL(for url: URL?, showInApp: Bool) {
+    if let url {
+      if showInApp {
+        safariSheetItem = SafariSheetItem(url: url)
+      } else {
+        UIApplication.shared.open(url)
+      }
+    } else {
+      QueenLogger(category: "SettingsMainView")
+        .error("URL is nil")
+    }
+  }
+}
+
+private struct SafariSheetItem: Identifiable {
+  let url: URL
+  var id: String {
+    url.absoluteString
   }
 }
 
