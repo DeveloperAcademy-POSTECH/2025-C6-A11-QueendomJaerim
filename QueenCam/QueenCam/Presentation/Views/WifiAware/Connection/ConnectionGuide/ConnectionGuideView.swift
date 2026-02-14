@@ -30,15 +30,13 @@ struct ConnectionGuideView {
 
 extension ConnectionGuideView: View {
   var body: some View {
-    NavigationStack {
-      ZStack {
-        Color.black.ignoresSafeArea()
+    ZStack {
+      Color.black.ignoresSafeArea()
 
-        guidePages
-          .padding(.horizontal, DynamicModelUtils.isiPad ? 48 : 0)
+      guidePages
+        .padding(.horizontal, DynamicModelUtils.isiPad ? 48 : 0)
 
-        footer
-      }
+      footer
     }
     .onChange(of: activeIndex) { _, newValue in
       if newValue == currentGuides.count - 1 {

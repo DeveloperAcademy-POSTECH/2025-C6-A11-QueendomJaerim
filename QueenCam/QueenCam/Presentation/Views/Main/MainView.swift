@@ -57,7 +57,7 @@ struct MainView: View {
       .navigationDestination(for: Route.self) { route in
         switch route {
         case let .settings(settingsRoute):
-          SettingsRouteView(currentRoute: settingsRoute)
+          SettingsRouteView(currentRoute: settingsRoute, navigationRouter: navigationRouter)
         }
       }
     }

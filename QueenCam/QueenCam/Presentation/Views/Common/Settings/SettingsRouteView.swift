@@ -9,11 +9,12 @@ import SwiftUI
 
 struct SettingsRouteView: View {
   let currentRoute: Route.SettingsRoute
+  let navigationRouter: NavigationRouter
 
   var body: some View {
     switch currentRoute {
-    case .main:
-      SettingsMainView()
+    case let .main(role):
+      SettingsMainView(navigationRouter: navigationRouter, role: role ?? .photographer)
     case .faq:
       Text("TODO: FAQ")
     }
@@ -21,5 +22,8 @@ struct SettingsRouteView: View {
 }
 
 #Preview {
-  SettingsRouteView(currentRoute: .main)
+  SettingsRouteView(
+    currentRoute: .main(role: .photographer),
+    navigationRouter: NavigationRouter()
+  )
 }

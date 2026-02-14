@@ -8,27 +8,33 @@
 import SwiftUI
 
 struct SettingsMainView {
-  @State private var safariSheetItem: SafariSheetItem? = nil
+  let navigationRouter: NavigationRouter
+  let role: Role
 
-  var appVersion: String {
-    Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0.0"
-  }
+  @State private var safariSheetItem: SafariSheetItem?
+  @State private var isPresentGuideSheet: Bool = false
 
+  // MARK: - URLs
   let vocPageURL = URL(
     string: "https://docs.google.com/forms/d/e/1FAIpQLSc0GRoJYU8a-Ki5PmEDIv7GmBRtJ0PNG-zh-YsM5i1FzCWkJg/viewform?usp=header"
   )
   let privacyPageURL = URL(
     string: "https://cyan-zydeco-5e9.notion.site/ZZikZZa-2025-11-13-2aa1b6b29f2c80cf90eed7ca2afc0e32?pvs=73"
   )
+
+  // MARK: - Computed
+  var appVersion: String {
+    Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0.0"
+  }
 }
 
 extension SettingsMainView: View {
   var body: some View {
     ScrollView {
-      VStack(spacing: 0) {
+      VStack(alignment: .leading, spacing: 0) {
         SettingSection(title: "찍자 이용 가이드") {
           SettingBanner {
-            //
+            isPresentGuideSheet.toggle()
           }
           .title("페어링 방법이 궁금하신가요?")
           .subtitle("새로운 친구를 등록하고 싶어요.")
@@ -63,6 +69,12 @@ extension SettingsMainView: View {
             .disabled(true)
         }
         .padding(.horizontal, 20)
+
+        Text("© 2025. 팀 퀸덤. 문승찬, 엄태형, 윤보라, 이재림, 임영택, 차정인.")
+          .font(.pretendard(.medium, size: 11))
+          .foregroundStyle(.gray900)
+          .padding(.top, 18)
+          .padding(.horizontal, 20)
       }
       .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -71,6 +83,15 @@ extension SettingsMainView: View {
     .fullScreenCover(item: $safariSheetItem) { sheetItem in
       SFSafariView(url: sheetItem.url)
         .ignoresSafeArea()
+    }
+    .fullScreenCover(isPresented: $isPresentGuideSheet) {
+      NavigationStack {
+        ConnectionGuideView(role: role) {
+          isPresentGuideSheet.toggle()
+        } backButtonDidTap: {
+          isPresentGuideSheet.toggle()
+        }
+      }
     }
   }
 }
@@ -108,5 +129,5 @@ private struct SafariSheetItem: Identifiable {
 }
 
 #Preview {
-  SettingsMainView()
+  SettingsMainView(navigationRouter: NavigationRouter(), role: .model)
 }

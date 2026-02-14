@@ -118,7 +118,10 @@ extension MakeConnectionView {
       .navigationDestination(for: Route.self) { route in
         switch route {
         case let .settings(settingsRoute):
-          SettingsRouteView(currentRoute: settingsRoute)
+          SettingsRouteView(
+            currentRoute: settingsRoute,
+            navigationRouter: navigationRouter
+          )
         }
       }
       .padding(.top, 14)
@@ -139,7 +142,7 @@ extension MakeConnectionView {
 
       ToolbarItem(placement: .topBarTrailing) {
         Button("설정", systemImage: "gearshape") {
-          navigationRouter.push(.settings(.main))
+          navigationRouter.push(.settings(.main(role: role)))
         }
       }
     }

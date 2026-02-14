@@ -92,18 +92,20 @@ extension ConnectionView {
   @ViewBuilder
   var connectionGuideView: some View {
     if let activeRole {
-      ConnectionGuideView(
-        role: activeRole,
-        didGuideComplete: {
-          shouldGuideShow = false
-          connectionViewModel.selectRole(for: activeRole)  // 가이드가 끝나면 역할 확정
-          guideViewModel.onboardingDidFinish(currentRole: activeRole)
-        },
-        backButtonDidTap: {
-          shouldGuideShow = false
-          connectionViewModel.selectRole(for: nil)
-        }
-      )
+      NavigationStack {
+        ConnectionGuideView(
+          role: activeRole,
+          didGuideComplete: {
+            shouldGuideShow = false
+            connectionViewModel.selectRole(for: activeRole)  // 가이드가 끝나면 역할 확정
+            guideViewModel.onboardingDidFinish(currentRole: activeRole)
+          },
+          backButtonDidTap: {
+            shouldGuideShow = false
+            connectionViewModel.selectRole(for: nil)
+          }
+        )
+      }
     } else {
       Text("역할이 선택되지 않았습니다")
     }

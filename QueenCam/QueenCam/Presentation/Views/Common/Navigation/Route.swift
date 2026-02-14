@@ -9,9 +9,9 @@ import Foundation
 
 enum Route: Hashable {
   case settings(SettingsRoute)
-  
+
   enum SettingsRoute: Hashable {
-    case main
+    case main(role: Role?)
     case faq
   }
 }
