@@ -337,6 +337,9 @@
         }
       }
     },
+    "설정" : {
+
+    },
     "설정 앱에서 Wi-Fi 기능을 활성화하고 다시 시도해주세요." : {
       "localizations" : {
         "en" : {
@@ -827,22 +830,22 @@
         }
       }
     },
-    "페어링을 요청" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "pair"
-          }
-        }
-      }
-    },
     "펜" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pen"
+          }
+        }
+      }
+    },
+    "페어링을 요청" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "pair"
           }
         }
       }
