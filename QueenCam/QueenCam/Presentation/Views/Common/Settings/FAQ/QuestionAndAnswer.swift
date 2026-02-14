@@ -11,6 +11,7 @@ struct QuestionAndAnswer {
   let question: LocalizedStringKey
   let answer: LocalizedStringKey
 
+  // swiftlint:disable line_length trailing_whitespace
   static let faqList: [QuestionAndAnswer] = [
     QuestionAndAnswer(
       question: "찍자를 사용할 수 있는 기기 사양이 궁금해요.",
@@ -73,4 +74,5 @@ struct QuestionAndAnswer {
         """
     )
   ]
+  // swiftlint:enable line_length trailing_whitespace
 }
