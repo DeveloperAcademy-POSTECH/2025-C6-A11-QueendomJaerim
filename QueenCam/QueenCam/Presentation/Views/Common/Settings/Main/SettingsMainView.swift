@@ -93,7 +93,7 @@ extension SettingsMainView: View {
     }
     .fullScreenCover(item: $guideSheetItem) { sheetItem in
       NavigationStack {
-        ConnectionGuideView(role: sheetItem.role) {
+        ConnectionGuideView(role: sheetItem.role, referer: .settings) {
           guideSheetItem = nil
         } backButtonDidTap: {
           guideSheetItem = nil

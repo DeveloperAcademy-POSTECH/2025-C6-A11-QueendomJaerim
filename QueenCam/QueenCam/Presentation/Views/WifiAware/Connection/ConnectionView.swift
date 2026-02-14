@@ -95,6 +95,7 @@ extension ConnectionView {
       NavigationStack {
         ConnectionGuideView(
           role: activeRole,
+          referer: .selectRole,
           didGuideComplete: {
             shouldGuideShow = false
             connectionViewModel.selectRole(for: activeRole)  // 가이드가 끝나면 역할 확정
