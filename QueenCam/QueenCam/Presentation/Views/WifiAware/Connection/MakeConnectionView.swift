@@ -41,7 +41,10 @@ struct MakeConnectionView {
   let modelTheme = Color(red: 0xD8 / 255, green: 0xEB / 255, blue: 0x05 / 255)
 
   // MARK: State
-  @State private var isShowingParingGuide: Bool = false
+  @State private var isShowingSettings: Bool = false
+
+  // MARK: - Navigating
+  @State private var navigationRouter = NavigationRouter()
 }
 
 extension MakeConnectionView: View {
@@ -50,11 +53,7 @@ extension MakeConnectionView: View {
       ZStack {
         Color.black.ignoresSafeArea()
 
-        if isShowingParingGuide {
-          pairingGuideView
-        } else {
-          makeConnectionControls
-        }
+        makeConnectionControls
       }
       .alert(
         "연결에 실패했습니다",
@@ -91,10 +90,10 @@ extension MakeConnectionView {
     ConnectionGuideView(
       role: role,
       didGuideComplete: {
-        isShowingParingGuide = false
+        isShowingSettings = false
       },
       backButtonDidTap: {
-        isShowingParingGuide = false
+        isShowingSettings = false
       }
     )
   }
@@ -103,7 +102,7 @@ extension MakeConnectionView {
 // MARK: 연결 진행 페이지
 extension MakeConnectionView {
   var makeConnectionControls: some View {
-    NavigationStack {
+    NavigationStack(path: $navigationRouter.path) {
       VStack(spacing: 0) {
         ToolBar(role: role, changeRoleButtonDidTap: changeRoleButtonDidTap)
           .padding(.horizontal, 20)
@@ -113,7 +112,7 @@ extension MakeConnectionView {
 
         // MARK: - 주변 기기 찾기 버튼
         DeviceDiscoveryButton(role: role, photographerTheme: photographerTheme, modelTheme: modelTheme)
-          .padding(.horizontal, 16) // 다른 컨트롤과 좌우 패딩이 다름
+          .padding(.horizontal, 16)  // 다른 컨트롤과 좌우 패딩이 다름
 
         Spacer()
           .frame(height: 40)
@@ -129,6 +128,12 @@ extension MakeConnectionView {
         )
         .frame(maxHeight: .infinity, alignment: .top)
         .padding(.horizontal, 20)
+      }
+      .navigationDestination(for: Route.self) { route in
+        switch route {
+        case let .settings(settingsRoute):
+          SettingsRouteView(currentRoute: settingsRoute)
+        }
       }
       .padding(.top, 14)
       .ignoresSafeArea(edges: .bottom)
@@ -147,8 +152,8 @@ extension MakeConnectionView {
       }
 
       ToolbarItem(placement: .topBarTrailing) {
-        Button("가이드", systemImage: "questionmark.circle") {
-          isShowingParingGuide = true
+        Button("설정", systemImage: "gearshape") {
+          navigationRouter.push(.settings(.main))
         }
       }
     }
@@ -166,6 +171,6 @@ extension MakeConnectionView {
     errorWasConsumeByUser: {},
     changeRoleButtonDidTap: {},
     connectButtonDidTap: { _ in },
-    stopConnectingButtonDidTap: { }
+    stopConnectingButtonDidTap: {}
   )
 }
