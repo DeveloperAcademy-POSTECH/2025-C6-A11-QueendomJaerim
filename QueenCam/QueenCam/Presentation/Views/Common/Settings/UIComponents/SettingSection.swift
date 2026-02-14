@@ -11,13 +11,18 @@ struct SettingSection<Content: View> {
   let title: String
   let content: Content
 
+  var showSeparator: Bool = true
+
   // Spacing
   var topPadding: CGFloat = 18
   var titleToItemSpacing: CGFloat = 20
   var itemSpacing: CGFloat = 22
   var bottomPadding: CGFloat = 30
 
-  init(title: String, @ViewBuilder content: () -> Content) {
+  init(
+    title: String,
+    @ViewBuilder content: () -> Content
+  ) {
     self.title = title
     self.content = content()
   }
@@ -47,20 +52,29 @@ extension SettingSection: View {
         .frame(height: bottomPadding)
 
       // 구분선
-      Rectangle()
-        .frame(height: 1)
-        .foregroundStyle(.gray950)
+      if showSeparator {
+        Rectangle()
+          .frame(height: 1)
+          .foregroundStyle(.gray950)
+      }
     }
   }
 }
 
 // MARK: - Modifiers (간격 조절용)
 extension SettingSection {
-  func spacing(titleToItem: CGFloat? = nil, item: CGFloat? = nil, bottom: CGFloat? = nil) -> Self {
+  func spacing(top: CGFloat? = nil, titleToItem: CGFloat? = nil, item: CGFloat? = nil, bottom: CGFloat? = nil) -> Self {
     var copy = self
+    if let top { copy.topPadding = top }
     if let titleToItem { copy.titleToItemSpacing = titleToItem }
     if let item { copy.itemSpacing = item }
     if let bottom { copy.bottomPadding = bottom }
+    return copy
+  }
+
+  func showSeparator(_ isShow: Bool) -> Self {
+    var copy = self
+    copy.showSeparator = isShow
     return copy
   }
 }
