@@ -16,7 +16,7 @@ struct SettingsRouteView: View {
     case let .main(role):
       SettingsMainView(navigationRouter: navigationRouter, role: role)
     case .faq:
-      Text("TODO: FAQ")
+      FAQView()
     }
   }
 }
