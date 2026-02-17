@@ -181,14 +181,24 @@ extension CameraManager {
       mediaType: .video,
       position: position
     )
-
-    guard let device = discoverySession.devices.first
+    
+    logger.debug("discoverySession.devices: \(discoverySession.devices)")
+    
+    let deviceList = discoverySession.devices
+    guard let device = deviceTypeList
+      .compactMap({ type in
+        deviceList.first(where: { $0.deviceType == type})
+      })
+        .first
+            
     else {
       logger.error("Video device is unavailable")
       return
     }
 
     let input = try AVCaptureDeviceInput(device: device)
+    logger.debug("input: \(input)")
+    
 
     if let currentInput = videoDeviceInput {
       session.removeInput(currentInput)
@@ -241,7 +251,7 @@ extension CameraManager {
       guard let self else { return }
 
       let lens = device.activePrimaryConstituent?.localizedName ?? "Unknown"
-      self.logger.info("Lens Switch \(lens)")
+      self.logger.info("Lens \(lens)")
     }
   }
 
