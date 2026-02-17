@@ -19,6 +19,52 @@ extension LensZoomTool {
     let centerIndex = CGFloat(zoomScaleItemList.count - 1) / 2.0
     return (centerIndex - CGFloat(activeIndex)) * itemWidth
   }
+  
+  //  핀치 vs 프리셋 구분 로직
+  private func displayText(for item: CGFloat) -> String {
+    let isActive = item == activeZoom
+    let isPinching = abs(currentZoomFactor - activeZoom) > 0.05
+
+    if isActive {
+      if isPinching {
+        // 핀치 중 → 실제 줌
+        return zoomValueText(currentZoomFactor)
+      } else {
+        // 활성 프리셋
+        return activePresetText(item)
+      }
+    } else {
+      // 비활성 프리셋
+      return inactivePresetText(item)
+    }
+  }
+  
+  private func inactivePresetText(_ value: CGFloat) -> String {
+    if value < 1 {
+      return ".\(Int(value * 10))"
+    } else {
+      return "\(Int(value))"
+    }
+  }
+  
+  private func activePresetText(_ value: CGFloat) -> String {
+    if value.truncatingRemainder(dividingBy: 1) == 0 {
+      return "\(Int(value))x"
+    } else {
+      return "\(value)x"
+    }
+  }
+
+  private func zoomValueText(_ value: CGFloat) -> String {
+    let rounded = round(value * 10) / 10
+
+    if rounded.truncatingRemainder(dividingBy: 1) == 0 {
+      return "\(Int(rounded))x"
+    } else {
+      return "\(rounded)x"
+    }
+  }
+
 }
 
 extension LensZoomTool: View {
@@ -43,26 +89,6 @@ extension LensZoomTool: View {
     }
     .offset(x: getCenterOffset())
     .animation(.spring(response: 0.4, dampingFraction: 0.8), value: activeZoom)
-  }
-
-  //  핀치 vs 프리셋 구분 로직
-  private func displayText(for item: CGFloat) -> String {
-    let isActive = item == activeZoom
-    let isPinching = abs(currentZoomFactor - activeZoom) > 0.05
-
-    if isActive {
-      if isPinching {
-        return String(format: "%.1fx", currentZoomFactor)
-      } else {
-        return item == floor(item)
-          ? String(format: "%.0fx", item)
-          : String(format: "%.1fx", item)
-      }
-    } else {
-      return item == floor(item)
-        ? String(format: "%.0f", item)
-        : String(format: "%.1f", item).replacingOccurrences(of: "0", with: "")
-    }
   }
 }
 
