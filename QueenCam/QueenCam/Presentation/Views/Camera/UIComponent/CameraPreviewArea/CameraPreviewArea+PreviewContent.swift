@@ -67,7 +67,7 @@ extension CameraView.CameraPreviewArea {
 
         // 전체 줌 배율 업데이트
         let newZoom = currentZoomFactor * delta
-        let clampedZoom = max(0.5, min(newZoom, 2.0))
+        let clampedZoom = max(0.5, min(newZoom, maxZoomFactor))
         currentZoomFactor = clampedZoom
 
         cameraViewModel.setZoom(factor: currentZoomFactor, ramp: false)

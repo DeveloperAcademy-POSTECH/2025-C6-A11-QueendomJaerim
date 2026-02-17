@@ -52,6 +52,19 @@ extension CameraView.CameraPreviewArea {
     cameraViewModel.cameraPostion == .front
   }
 
+  var maxZoomFactor: CGFloat {
+    switch cameraViewModel.selectedCameraDeviceType {
+    case .builtInTripleCamera:
+      return 10
+    case .builtInDualWideCamera:
+      return 5
+    case .builtInWideAngleCamera:
+      return 3
+    default:
+      return 3
+    }
+  }
+
   var activeZoom: CGFloat {
     switch currentZoomFactor {
     case ..<0.95:

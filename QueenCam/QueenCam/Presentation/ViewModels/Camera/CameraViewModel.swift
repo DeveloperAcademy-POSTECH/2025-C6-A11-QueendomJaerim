@@ -11,36 +11,36 @@ final class CameraViewModel {
   let cameraManager: CameraManager
   let networkService: NetworkServiceProtocol
   let cameraSettingsService: CameraSettingsServiceProtocol
-  
+
   var isCameraPermissionGranted = false
   var isPhotosPermissionGranted = false
   var isMicPermissionGranted = false
-  
+
   var selectedZoom: CGFloat = 1.0
-  
+
   var isLivePhotoOn: Bool
   var isShowGrid: Bool
   var isFlashMode: FlashMode
-  
+
   var cameraPostion: AVCaptureDevice.Position?
-  
+  var selectedCameraDeviceType: AVCaptureDevice.DeviceType?
+
   var errorMessage = ""
-  
+
   var isCaptureButtonEnabled: Bool = true
-  
+
   var isCapturingLivePhoto: Bool = false
-  
+
   // MARK: Thumbnail
   var thumbnailImage: UIImage?
   private let photosLibraryObserver = PhotosLibraryObserver()
   private var displayScale: CGFloat = 1.0
 
-  
   private let logger = QueenLogger(category: "CameraViewModel")
-  
+
   // MARK: State Toast
   private let notificationService: NotificationServiceProtocol
-  
+
   init(
     previewCaptureService: PreviewCaptureService,
     networkService: NetworkServiceProtocol,
@@ -53,48 +53,52 @@ final class CameraViewModel {
       previewCaptureService: previewCaptureService,
       networkService: networkService
     )
-    
+
     self.isLivePhotoOn = cameraSettingsService.livePhotoOn
     self.isShowGrid = cameraSettingsService.gridOn
     self.isFlashMode = cameraSettingsService.flashMode
-    
+
     self.notificationService = notificationService
- 
+
     cameraManager.isLivePhotoOn = isLivePhotoOn
     cameraManager.flashMode = isFlashMode.convertAVCaptureDeviceFlashMode
-    
-    cameraManager.onReadinessState = { [weak self] readiness in
-      self?.handleReadiness(readiness: readiness)
+
+    cameraManager.onWillCaptureLivePhoto = { [weak self] in
+      self?.isCapturingLivePhoto = true
     }
-    
+
+    cameraManager.onDidFinishCapture = { [weak self] in
+      self?.isCapturingLivePhoto = false
+    }
+
     cameraManager.onPhotoCapture = { [weak self] image in
       self?.thumbnailImage = image
     }
-    
+
     cameraManager.onTapCameraSwitch = { [weak self] position in
       self?.cameraPostion = position
       if position == .back {
         self?.selectedZoom = 1.0
       }
     }
-    
-    cameraManager.onWillCaptureLivePhoto = { [weak self] in
-      self?.isCapturingLivePhoto = true
+
+    cameraManager.onSelectedCameraDeviceType = { [weak self] deviceType in
+      self?.selectedCameraDeviceType = deviceType
     }
-    
-    cameraManager.onDidFinishCapture = { [weak self] in
-      self?.isCapturingLivePhoto = false
+
+    cameraManager.onReadinessState = { [weak self] readiness in
+      self?.handleReadiness(readiness: readiness)
     }
-    
+
     photosLibraryObserver.onUpdate = { [weak self] image in
-       self?.thumbnailImage = image
-     }
-     
+      self?.thumbnailImage = image
+    }
+
     photosLibraryObserver.getCurrentScale = { [weak self] in
       self?.displayScale ?? 1.0
-     }
+    }
   }
-  
+
   func checkPermissions() async {
     let cameraGranted: Bool
     switch AVCaptureDevice.authorizationStatus(for: .video) {
@@ -105,7 +109,7 @@ final class CameraViewModel {
     default:
       cameraGranted = false
     }
-    
+
     let audioGranted: Bool
     switch AVCaptureDevice.authorizationStatus(for: .audio) {
     case .notDetermined:
@@ -115,7 +119,7 @@ final class CameraViewModel {
     default:
       audioGranted = false
     }
-    
+
     let photoGranted: Bool
     switch PHPhotoLibrary.authorizationStatus(for: .readWrite) {
     case .notDetermined:
@@ -126,7 +130,7 @@ final class CameraViewModel {
     default:
       photoGranted = false
     }
-    
+
     if cameraGranted && audioGranted {
       isCameraPermissionGranted = true
       isMicPermissionGranted = true
@@ -134,24 +138,24 @@ final class CameraViewModel {
       try? await cameraManager.configureSession()
     }
   }
-  
+
   func stopSession() {
     cameraManager.stopSession()
   }
-  
+
   func capturePhoto() {
     traceShutterPressedEvent()
     cameraManager.capturePhoto()
   }
-  
+
   func setZoom(factor: CGFloat, ramp: Bool) {
     if ramp {
       selectedZoom = factor
     }
-    
+
     cameraManager.setZoomScale(factor: factor, ramp: ramp)
   }
-  
+
   func switchCamera() async {
     do {
       try await cameraManager.switchCamera()
@@ -159,11 +163,11 @@ final class CameraViewModel {
       errorMessage = error.localizedDescription
     }
   }
-  
+
   func showLivePhotoToast() {
     notificationService.registerNotification(DomainNotification.make(type: .captureLivePhoto))
   }
-  
+
   func switchFlashMode() {
     switch isFlashMode {
     case .off:
@@ -176,11 +180,11 @@ final class CameraViewModel {
       isFlashMode = .off
       notificationService.registerNotification(DomainNotification.make(type: .flashOff))
     }
-    
+
     cameraSettingsService.flashMode = isFlashMode
     cameraManager.flashMode = isFlashMode.convertAVCaptureDeviceFlashMode
   }
-  
+
   func switchLivePhoto() {
     switch isLivePhotoOn {
     case true:
@@ -190,30 +194,30 @@ final class CameraViewModel {
       isLivePhotoOn = true
       notificationService.registerNotification(DomainNotification.make(type: .liveOn))
     }
-    
+
     cameraSettingsService.livePhotoOn = isLivePhotoOn
     cameraManager.isLivePhotoOn = isLivePhotoOn
   }
-  
+
   func setFocus(point: CGPoint) {
     cameraManager.focusAndExpose(at: point)
   }
-  
+
   func switchGrid() {
     isShowGrid.toggle()
     cameraSettingsService.gridOn = isShowGrid
   }
-  
+
   func loadThumbnail(scale: CGFloat) async {
     await photosLibraryObserver.loadThumbnail(scale: scale)
   }
-  
+
   func managePhotosPickerToast(isShowPhotosPicker: Bool) {
     if isShowPhotosPicker {
       notificationService.registerNotification(.make(type: .photosPickerShowing))
     } else {
       if let currentNotification = notificationService.currentNotification,
-         currentNotification.isType(of: .photosPickerShowing)
+        currentNotification.isType(of: .photosPickerShowing)
       {
         notificationService.reset()
       }

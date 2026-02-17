@@ -38,6 +38,9 @@ final class CameraManager: NSObject {
   var onDidFinishCapture: (() -> Void)?
   var onPhotoCapture: ((UIImage) -> Void)?
   var onTapCameraSwitch: ((AVCaptureDevice.Position) -> Void)?
+  
+  // 현재 선택된 디바이스 타입
+  var onSelectedCameraDeviceType: ((AVCaptureDevice.DeviceType?) -> Void)?
 
   // 카메라 촬영이 준비되는 상태 추적
   var onReadinessState: ((AVCapturePhotoOutput.CaptureReadiness) -> Void)?
@@ -196,6 +199,10 @@ extension CameraManager {
       return
     }
 
+    DispatchQueue.main.async {
+      self.onSelectedCameraDeviceType?(device.deviceType)
+    }
+    
     let input = try AVCaptureDeviceInput(device: device)
     logger.debug("input: \(input)")
     
