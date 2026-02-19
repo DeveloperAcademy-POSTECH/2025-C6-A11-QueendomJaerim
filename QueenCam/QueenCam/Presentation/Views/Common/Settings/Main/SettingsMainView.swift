@@ -72,7 +72,7 @@ extension SettingsMainView: View {
 
           SettingSectionItem {}
             .title("버전 정보")
-            .supplementayText(appVersion)
+            .supplementayText(LocalizedStringKey(stringLiteral: appVersion))
             .disabled(true)
         }
         .padding(.horizontal, 20)

@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct SettingSection<Content: View> {
-  let title: String
+  let title: LocalizedStringKey
   let content: Content
 
   var showSeparator: Bool = true
@@ -20,7 +20,7 @@ struct SettingSection<Content: View> {
   var bottomPadding: CGFloat = 30
 
   init(
-    title: String,
+    title: LocalizedStringKey,
     @ViewBuilder content: () -> Content
   ) {
     self.title = title

@@ -9,8 +9,8 @@ import SwiftUI
 
 struct SettingSectionItem {
   let action: () -> Void
-  var title: String?
-  var supplementayText: String?
+  var title: LocalizedStringKey?
+  var supplementayText: LocalizedStringKey?
   var disabled: Bool = false
 }
 
@@ -41,13 +41,13 @@ extension SettingSectionItem: View {
 }
 
 extension SettingSectionItem {
-  func title(_ title: String) -> Self {
+  func title(_ title: LocalizedStringKey) -> Self {
     var copy = self
     copy.title = title
     return copy
   }
 
-  func supplementayText(_ supplementayText: String) -> Self {
+  func supplementayText(_ supplementayText: LocalizedStringKey) -> Self {
     var copy = self
     copy.supplementayText = supplementayText
     return copy

@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct SettingSectionTitle {
-  var title: String?
+  var title: LocalizedStringKey?
 }
 
 extension SettingSectionTitle: View {
@@ -24,7 +24,7 @@ extension SettingSectionTitle: View {
 }
 
 extension SettingSectionTitle {
-  func title(_ title: String) -> Self {
+  func title(_ title: LocalizedStringKey) -> Self {
     var copy = self
     copy.title = title
     return copy

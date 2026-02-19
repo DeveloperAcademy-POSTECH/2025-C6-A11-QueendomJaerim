@@ -10,8 +10,8 @@ import SwiftUI
 struct SettingBanner {
   let action: () -> Void
 
-  var title: String?
-  var subtitle: String?
+  var title: LocalizedStringKey?
+  var subtitle: LocalizedStringKey?
   var bannerImage: ImageResource?
 
   // Spacing
@@ -35,8 +35,8 @@ extension SettingBanner: View {
 
 extension SettingBanner {
   private struct ButtonLabel: View {
-    let title: String
-    let subtitle: String
+    let title: LocalizedStringKey
+    let subtitle: LocalizedStringKey
     let bannerImage: ImageResource?
 
     // Dimensions
@@ -73,13 +73,13 @@ extension SettingBanner {
 }
 
 extension SettingBanner {
-  func title(_ title: String) -> Self {
+  func title(_ title: LocalizedStringKey) -> Self {
     var body = self
     body.title = title
     return body
   }
 
-  func subtitle(_ subtitle: String) -> Self {
+  func subtitle(_ subtitle: LocalizedStringKey) -> Self {
     var body = self
     body.subtitle = subtitle
     return body
