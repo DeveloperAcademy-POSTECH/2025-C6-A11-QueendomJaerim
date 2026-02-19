@@ -51,7 +51,7 @@ extension SettingsMainView: View {
 
         HeaderSeparator()
 
-        SettingSection(title: "고객지원") {
+        SettingSection(title: "고객센터") {
           SettingSectionItem {
             navigationRouter.push(.settings(.faq))
           }

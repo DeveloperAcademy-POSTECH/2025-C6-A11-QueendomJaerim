@@ -86,7 +86,7 @@ extension SettingSection {
       Color.black.ignoresSafeArea()
 
       VStack(alignment: .leading, spacing: 0) {
-        SettingSection(title: "고객지원") {
+        SettingSection(title: "고객센터") {
           SettingSectionItem {}
             .title("자주하는 질문")
 
