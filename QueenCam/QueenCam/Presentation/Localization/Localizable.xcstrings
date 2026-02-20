@@ -518,12 +518,12 @@
         }
       }
     },
-    "언제든지 questionmark.circle 버튼으로\n페어링하는 법을 다시 볼 수 있어요." : {
+    "언제든지 gearshape 버튼으로\n페어링하는 법을 다시 볼 수 있어요." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Every time you press the questionmark.circle button,\nyou can see how to pair the devices."
+            "value" : "Every time you press the gearshape button,\nyou can see how to pair the devices."
           }
         }
       }
@@ -1118,22 +1118,22 @@
         }
       }
     },
-    "페어링 방법이 궁금하신가요?" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wondering how to pair devices?"
-          }
-        }
-      }
-    },
     "펜" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pen"
+          }
+        }
+      }
+    },
+    "페어링 방법이 궁금하신가요?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wondering how to pair devices?"
           }
         }
       }
