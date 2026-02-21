@@ -16,6 +16,7 @@
 ### Removed
 
 ### Fixed
+- Frame concurrency 문제 해결
 
 ### Security
 
