@@ -71,22 +71,11 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
         completion(.livePhoto(thumbnail: thumbnail, imageData: imageData, videoData: movieData))
       }
     } else {
-      if selectedPhotoAspectRatio == .ratio4x3 {
-        PhotoLibraryHelpers.saveProxyToPhotoLibrary(imageData)
-        completion(.basicPhoto(thumbnail: UIImage(data: imageData) ?? .init(), imageData: imageData))
-        return
-      }
-
-      guard let cropped = croppedImageData(from: imageData, targetRatio: selectedPhotoAspectRatio.value) else {
-        logger.error("Deferred proxy crop failed. Fallback to original image data.")
-        PhotoLibraryHelpers.saveProxyToPhotoLibrary(imageData)
-        completion(.basicPhoto(thumbnail: UIImage(data: imageData) ?? .init(), imageData: imageData))
-        return
-      }
-
-      PhotoLibraryHelpers.saveProxyToPhotoLibrary(cropped.imageData)
-      completion(.basicPhoto(thumbnail: cropped.thumbnail, imageData: cropped.imageData))
-
+      processBasicPhoto(
+        imageData: imageData,
+        photoSaveType: .proxy,
+        cropFailureMessage: "Deferred proxy crop failed. Fallback to original image data."
+      )
     }
   }
 
@@ -114,26 +103,11 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
     lastStillImageData = imageData
 
     if !isLivePhoto {
-      if selectedPhotoAspectRatio == .ratio4x3 {
-        PhotoLibraryHelpers.saveToPhotoLibrary(imageData)
-        completion(.basicPhoto(thumbnail: image, imageData: imageData))
-        return
-      }
-
-      guard
-        let cropped = croppedImageData(
-          from: imageData,
-          targetRatio: selectedPhotoAspectRatio.value
-        )
-      else {
-        logger.error("Failed to crop image data. Fallback to original image data.")
-        PhotoLibraryHelpers.saveToPhotoLibrary(imageData)
-        completion(.basicPhoto(thumbnail: image, imageData: imageData))
-        return
-      }
-
-      PhotoLibraryHelpers.saveToPhotoLibrary(cropped.imageData)
-      completion(.basicPhoto(thumbnail: cropped.thumbnail, imageData: cropped.imageData))
+      processBasicPhoto(
+        imageData: imageData,
+        photoSaveType: .basic,
+        cropFailureMessage: "Failed to crop image data. Fallback to original image data."
+      )
     }
   }
 
@@ -185,9 +159,47 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
 }
 
 extension CameraDelegate {
+  private enum PhotoSaveType {
+    case basic
+    case proxy
+  }
+  
+  private func processBasicPhoto(
+    imageData: Data,
+    photoSaveType: PhotoSaveType,
+    cropFailureMessage: String
+  ) {
+    let originalThumbnail = UIImage(data: imageData) ?? .init()
+
+    if selectedPhotoAspectRatio == .ratio4x3 {
+      saveImageDataToPhotoLibrary(imageData, photoSaveType: photoSaveType)
+      completion(.basicPhoto(thumbnail: originalThumbnail, imageData: imageData))
+      return
+    }
+
+    guard let cropped = croppedImageData(imageData: imageData, targetRatio: selectedPhotoAspectRatio.value) else {
+      logger.error("\(cropFailureMessage)")
+      saveImageDataToPhotoLibrary(imageData, photoSaveType: photoSaveType)
+      completion(.basicPhoto(thumbnail: originalThumbnail, imageData: imageData))
+      return
+    }
+
+    saveImageDataToPhotoLibrary(cropped.imageData, photoSaveType: photoSaveType)
+    completion(.basicPhoto(thumbnail: cropped.thumbnail, imageData: cropped.imageData))
+  }
+
+  private func saveImageDataToPhotoLibrary(_ imageData: Data, photoSaveType: PhotoSaveType) {
+    switch photoSaveType {
+    case .basic:
+      PhotoLibraryHelpers.saveToPhotoLibrary(imageData)
+    case .proxy:
+      PhotoLibraryHelpers.saveProxyToPhotoLibrary(imageData)
+    }
+  }
+
   /// 사진을 선택한 비율(예: 4:3, 1:1, 16:9)에 맞게 자르는 함수
   private func croppedImageData(
-    from imageData: Data,
+    imageData: Data,
     targetRatio: CGFloat
   ) -> (thumbnail: UIImage, imageData: Data)? {
     guard let image = UIImage(data: imageData) else { return nil }
