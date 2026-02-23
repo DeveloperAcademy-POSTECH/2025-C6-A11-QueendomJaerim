@@ -112,11 +112,23 @@ extension CameraView {
   private var isAvailableWifiAware: Bool {
     WACapabilities.supportedFeatures.contains(.wifiAware)
   }
+  
+  private var photoAspectRatioSystemImage: String {
+     switch cameraViewModel.selectedPhotoAspectRatio {
+     case .ratio16x9:
+       return "rectangle"
+     case .ratio1x1:
+       return "square"
+     case .ratio4x3:
+       return "rectangle.portrait"
+     }
+   }
+
 }
 
 extension CameraView: View {
   private var bottomCameraSettingTool: some View {
-    HStack(spacing: 50) {
+    HStack(spacing: 20) {
       CameraSettingButton(
         title: "플래시",
         systemName: flashImage,
@@ -140,8 +152,27 @@ extension CameraView: View {
         tapAction: { cameraViewModel.switchGrid() },
         isToolBar: false
       )
+      
+      
+      CameraSettingButton(
+        title: LocalizedStringKey(cameraViewModel.selectedPhotoAspectRatio.rawValue),
+        systemName: photoAspectRatioSystemImage,
+        isActive: true,
+        tapAction: {
+          switch cameraViewModel.selectedPhotoAspectRatio {
+          case .ratio4x3:
+            cameraViewModel.setPhotoAspectRatio(ratio: .ratio16x9)
+          case .ratio16x9:
+            cameraViewModel.setPhotoAspectRatio(ratio: .ratio1x1)
+          case .ratio1x1:
+            cameraViewModel.setPhotoAspectRatio(ratio: .ratio4x3)
+          }
+        },
+        isToolBar: false
+      )
     }
-    .frame(width: 377, height: 192)
+    .frame(height: 192)
+    .frame(maxWidth: .infinity)
     .glassEffect(.clear.tint(Color.hex333333), in: .rect(cornerRadius: 59))
   }
 

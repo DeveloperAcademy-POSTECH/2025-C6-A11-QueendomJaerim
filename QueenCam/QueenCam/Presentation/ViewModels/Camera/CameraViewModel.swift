@@ -24,6 +24,7 @@ final class CameraViewModel {
 
   var cameraPostion: AVCaptureDevice.Position?
   var selectedCameraDeviceType: AVCaptureDevice.DeviceType?
+  var selectedPhotoAspectRatio: PhotoAspectRatio = .ratio4x3
 
   var errorMessage = ""
 
@@ -62,6 +63,7 @@ final class CameraViewModel {
 
     cameraManager.isLivePhotoOn = isLivePhotoOn
     cameraManager.flashMode = isFlashMode.convertAVCaptureDeviceFlashMode
+    cameraManager.selectedPhotoAspectRatio = selectedPhotoAspectRatio
 
     cameraManager.onWillCaptureLivePhoto = { [weak self] in
       self?.isCapturingLivePhoto = true
@@ -146,6 +148,11 @@ final class CameraViewModel {
   func capturePhoto() {
     traceShutterPressedEvent()
     cameraManager.capturePhoto()
+  }
+  
+  func setPhotoAspectRatio(ratio: PhotoAspectRatio) {
+    selectedPhotoAspectRatio = ratio
+    cameraManager.selectedPhotoAspectRatio = ratio
   }
 
   func setZoom(factor: CGFloat, ramp: Bool) {
