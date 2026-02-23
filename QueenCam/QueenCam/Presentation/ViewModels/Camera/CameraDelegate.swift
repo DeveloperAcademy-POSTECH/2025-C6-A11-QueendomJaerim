@@ -6,6 +6,7 @@ import UIKit
 final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
   private let logger = QueenLogger(category: "CameraDelegate")
   private let isCameraPosition: AVCaptureDevice.Position
+  private let selectedPhotoAspectRatio: PhotoAspectRatio
 
   private let completion: ((PhotoOuput?) -> Void)
   private var lastThumbnailImage: UIImage?
@@ -18,10 +19,12 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
 
   init(
     isCameraPosition: AVCaptureDevice.Position,
+    selectedPhotoAspectRatio: PhotoAspectRatio,
     willCaptureLivePhoto: (() -> Void)? = nil,
     completion: @escaping (PhotoOuput?) -> Void
   ) {
     self.isCameraPosition = isCameraPosition
+    self.selectedPhotoAspectRatio = selectedPhotoAspectRatio
     self.willCaptureLivePhoto = willCaptureLivePhoto
     self.completion = completion
   }
@@ -97,8 +100,26 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
     lastStillImageData = imageData
 
     if !isLivePhoto {
-      PhotoLibraryHelpers.saveToPhotoLibrary(imageData)
-      completion(.basicPhoto(thumbnail: image, imageData: imageData))
+      if selectedPhotoAspectRatio == .ratio4x3 {
+        PhotoLibraryHelpers.saveToPhotoLibrary(imageData)
+        completion(.basicPhoto(thumbnail: image, imageData: imageData))
+        return
+      }
+
+      guard
+        let cropped = croppedImageData(
+          from: imageData,
+          targetRatio: selectedPhotoAspectRatio.value
+        )
+      else {
+        logger.error("Failed to crop image data. Fallback to original image data.")
+        PhotoLibraryHelpers.saveToPhotoLibrary(imageData)
+        completion(.basicPhoto(thumbnail: image, imageData: imageData))
+        return
+      }
+
+      PhotoLibraryHelpers.saveToPhotoLibrary(cropped.imageData)
+      completion(.basicPhoto(thumbnail: cropped.thumbnail, imageData: cropped.imageData))
     }
   }
 
@@ -146,5 +167,35 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
       completion(.livePhoto(thumbnail: lastThumbnailImage, imageData: lastStillImageData, videoData: movieData))
       return
     }
+  }
+}
+
+extension CameraDelegate {
+  private func croppedImageData(
+    from imageData: Data,
+    targetRatio: CGFloat
+  ) -> (thumbnail: UIImage, imageData: Data)? {
+    guard let image = UIImage(data: imageData) else { return nil }
+    let sourceSize = image.size
+    let sourceRatio = sourceSize.width / sourceSize.height
+
+    let cropRect: CGRect
+    if sourceRatio > targetRatio {
+      let targetWidth = sourceSize.height * targetRatio
+      let x = (sourceSize.width - targetWidth) / 2.0
+      cropRect = CGRect(x: x, y: 0, width: targetWidth, height: sourceSize.height)
+    } else {
+      let targetHeight = sourceSize.width / targetRatio
+      let y = (sourceSize.height - targetHeight) / 2.0
+      cropRect = CGRect(x: 0, y: y, width: sourceSize.width, height: targetHeight)
+    }
+    
+    guard let cgImage = image.cgImage?.cropping(to: cropRect.integral) else { return nil }
+    
+    let croppedImage = UIImage(cgImage: cgImage, scale: image.scale, orientation: image.imageOrientation)
+    
+    guard let croppedData = croppedImage.jpegData(compressionQuality: 1.0) else { return nil }
+    
+    return (thumbnail: croppedImage, imageData: croppedData)
   }
 }

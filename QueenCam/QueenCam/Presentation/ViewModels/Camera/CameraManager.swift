@@ -28,6 +28,8 @@ final class CameraManager: NSObject {
   var position: AVCaptureDevice.Position = .back
   var flashMode: AVCaptureDevice.FlashMode = .off
   var isLivePhotoOn: Bool = false
+  
+  var selectedPhotoAspectRatio: PhotoAspectRatio = .ratio4x3
 
   private let logger = QueenLogger(category: "CameraManager")
 
@@ -128,6 +130,7 @@ final class CameraManager: NSObject {
       // 2
       let delegate = CameraDelegate(
         isCameraPosition: self.position,
+        selectedPhotoAspectRatio: selectedPhotoAspectRatio,
         willCaptureLivePhoto: { [weak self] in
           self?.onWillCaptureLivePhoto?()
         }
