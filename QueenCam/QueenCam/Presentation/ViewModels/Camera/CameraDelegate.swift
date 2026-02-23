@@ -71,8 +71,22 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
         completion(.livePhoto(thumbnail: thumbnail, imageData: imageData, videoData: movieData))
       }
     } else {
-      PhotoLibraryHelpers.saveProxyToPhotoLibrary(imageData)
-      completion(.basicPhoto(thumbnail: UIImage(data: imageData) ?? .init(), imageData: imageData))
+      if selectedPhotoAspectRatio == .ratio4x3 {
+        PhotoLibraryHelpers.saveProxyToPhotoLibrary(imageData)
+        completion(.basicPhoto(thumbnail: UIImage(data: imageData) ?? .init(), imageData: imageData))
+        return
+      }
+
+      guard let cropped = croppedImageData(from: imageData, targetRatio: selectedPhotoAspectRatio.value) else {
+        logger.error("Deferred proxy crop failed. Fallback to original image data.")
+        PhotoLibraryHelpers.saveProxyToPhotoLibrary(imageData)
+        completion(.basicPhoto(thumbnail: UIImage(data: imageData) ?? .init(), imageData: imageData))
+        return
+      }
+
+      PhotoLibraryHelpers.saveProxyToPhotoLibrary(cropped.imageData)
+      completion(.basicPhoto(thumbnail: cropped.thumbnail, imageData: cropped.imageData))
+
     }
   }
 
@@ -171,6 +185,7 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
 }
 
 extension CameraDelegate {
+  /// 사진을 선택한 비율(예: 4:3, 1:1, 16:9)에 맞게 자르는 함수
   private func croppedImageData(
     from imageData: Data,
     targetRatio: CGFloat
@@ -189,13 +204,13 @@ extension CameraDelegate {
       let y = (sourceSize.height - targetHeight) / 2.0
       cropRect = CGRect(x: 0, y: y, width: sourceSize.width, height: targetHeight)
     }
-    
+
     guard let cgImage = image.cgImage?.cropping(to: cropRect.integral) else { return nil }
-    
+
     let croppedImage = UIImage(cgImage: cgImage, scale: image.scale, orientation: image.imageOrientation)
-    
+
     guard let croppedData = croppedImage.jpegData(compressionQuality: 1.0) else { return nil }
-    
+
     return (thumbnail: croppedImage, imageData: croppedData)
   }
 }
