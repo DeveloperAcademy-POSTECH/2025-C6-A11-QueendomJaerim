@@ -49,7 +49,7 @@ struct MakeConnectionView {
 
 extension MakeConnectionView: View {
   var body: some View {
-    NavigationStack {
+    NavigationStack(path: $navigationRouter.path) {
       ZStack {
         Color.black.ignoresSafeArea()
 
@@ -88,45 +88,43 @@ extension MakeConnectionView: View {
 // MARK: 연결 진행 페이지
 extension MakeConnectionView {
   var makeConnectionControls: some View {
-    NavigationStack(path: $navigationRouter.path) {
-      VStack(spacing: 0) {
-        ToolBar(role: role, changeRoleButtonDidTap: changeRoleButtonDidTap)
-          .padding(.horizontal, 20)
-
-        Spacer()
-          .frame(height: 20)
-
-        // MARK: - 주변 기기 찾기 버튼
-        DeviceDiscoveryButton(role: role, photographerTheme: photographerTheme, modelTheme: modelTheme)
-          .padding(.horizontal, 16)  // 다른 컨트롤과 좌우 패딩이 다름
-
-        Spacer()
-          .frame(height: 40)
-
-        // MARK: - 찾아낸 기기 리스트
-        PairedDevicesList(
-          pairedDevices: pairedDevices,
-          isPairing: isPairing,
-          isConnected: isConnected,
-          selectedDevice: selectedPairedDevice,
-          connectButtonDidTap: connectButtonDidTap,
-          stopConnectingButtonDidTap: stopConnectingButtonDidTap
-        )
-        .frame(maxHeight: .infinity, alignment: .top)
+    VStack(spacing: 0) {
+      ToolBar(role: role, changeRoleButtonDidTap: changeRoleButtonDidTap)
         .padding(.horizontal, 20)
-      }
-      .navigationDestination(for: Route.self) { route in
-        switch route {
-        case let .settings(settingsRoute):
-          SettingsRouteView(
-            currentRoute: settingsRoute,
-            navigationRouter: navigationRouter
-          )
-        }
-      }
-      .padding(.top, 14)
-      .ignoresSafeArea(edges: .bottom)
+
+      Spacer()
+        .frame(height: 20)
+
+      // MARK: - 주변 기기 찾기 버튼
+      DeviceDiscoveryButton(role: role, photographerTheme: photographerTheme, modelTheme: modelTheme)
+        .padding(.horizontal, 16)  // 다른 컨트롤과 좌우 패딩이 다름
+
+      Spacer()
+        .frame(height: 40)
+
+      // MARK: - 찾아낸 기기 리스트
+      PairedDevicesList(
+        pairedDevices: pairedDevices,
+        isPairing: isPairing,
+        isConnected: isConnected,
+        selectedDevice: selectedPairedDevice,
+        connectButtonDidTap: connectButtonDidTap,
+        stopConnectingButtonDidTap: stopConnectingButtonDidTap
+      )
+      .frame(maxHeight: .infinity, alignment: .top)
+      .padding(.horizontal, 20)
     }
+    .navigationDestination(for: Route.self) { route in
+      switch route {
+      case let .settings(settingsRoute):
+        SettingsRouteView(
+          currentRoute: settingsRoute,
+          navigationRouter: navigationRouter
+        )
+      }
+    }
+    .padding(.top, 14)
+    .ignoresSafeArea(edges: .bottom)
     .navigationBarTitleDisplayMode(.inline)  // LargeTitle 때문에 레이아웃 깨지는 문제 수정
     .toolbar {
       ToolbarItem(placement: .navigation) {
