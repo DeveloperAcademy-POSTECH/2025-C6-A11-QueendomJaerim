@@ -9,7 +9,6 @@ import UIKit
 @MainActor
 final class CameraViewModel {
   let cameraManager: CameraManager
-  let networkService: NetworkServiceProtocol
   let cameraSettingsService: CameraSettingsServiceProtocol
 
   var isCameraPermissionGranted = false
@@ -43,23 +42,17 @@ final class CameraViewModel {
   private let notificationService: NotificationServiceProtocol
 
   init(
-    previewCaptureService: PreviewCaptureService,
-    networkService: NetworkServiceProtocol,
+    cameraManager: CameraManager,
     cameraSettingsService: CameraSettingsServiceProtocol,
     notificationService: NotificationServiceProtocol
   ) {
-    self.networkService = networkService
     self.cameraSettingsService = cameraSettingsService
-    self.cameraManager = CameraManager(
-      previewCaptureService: previewCaptureService,
-      networkService: networkService
-    )
-
+    self.cameraManager = cameraManager
+    self.notificationService = notificationService
+    
     self.isLivePhotoOn = cameraSettingsService.livePhotoOn
     self.isShowGrid = cameraSettingsService.gridOn
     self.isFlashMode = cameraSettingsService.flashMode
-
-    self.notificationService = notificationService
 
     cameraManager.isLivePhotoOn = isLivePhotoOn
     cameraManager.flashMode = isFlashMode.convertAVCaptureDeviceFlashMode

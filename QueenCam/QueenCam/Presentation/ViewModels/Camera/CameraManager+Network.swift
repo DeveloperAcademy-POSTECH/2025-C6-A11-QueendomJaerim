@@ -26,6 +26,12 @@ extension CameraManager {
 // MARK: - Receive
 extension CameraManager {
   func bind() {
+    guard !isNetworkBound else {
+      logger.warning("Network binding is already active. Skipping duplicate bind request.")
+      return
+    }
+    isNetworkBound = true
+
     networkService.networkEventPublisher
       .receive(on: RunLoop.main)
       .compactMap { $0 }

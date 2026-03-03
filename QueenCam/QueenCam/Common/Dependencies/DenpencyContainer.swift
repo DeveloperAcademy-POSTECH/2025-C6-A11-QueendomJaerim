@@ -18,6 +18,10 @@ final class DependencyContainer {
   )
 
   lazy var previewCaptureService = PreviewCaptureService()
+  
+  lazy var cameraManager = CameraManager(
+    previewCaptureService: previewCaptureService,
+    networkService: networkService)
 
   lazy var cameraSettingServcice: CameraSettingsServiceProtocol = CameraSettingsService()
 

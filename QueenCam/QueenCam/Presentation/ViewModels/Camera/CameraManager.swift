@@ -18,6 +18,7 @@ final class CameraManager: NSObject {
 
   /// 세션 초기화 여부를 표현하는 플래그 변수
   private(set) var isSessionConfigured: Bool = false
+  var isNetworkBound: Bool = false
 
   // 프리뷰 프레임 캡쳐
   private let previewCaptureService: PreviewCaptureService
