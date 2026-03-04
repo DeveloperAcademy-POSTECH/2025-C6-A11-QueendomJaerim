@@ -56,7 +56,6 @@ final class CameraViewModel {
 
     cameraManager.isLivePhotoOn = isLivePhotoOn
     cameraManager.flashMode = isFlashMode.convertAVCaptureDeviceFlashMode
-    cameraManager.selectedPhotoAspectRatio = selectedPhotoAspectRatio
 
     cameraManager.onWillCaptureLivePhoto = { [weak self] in
       self?.isCapturingLivePhoto = true
@@ -140,12 +139,11 @@ final class CameraViewModel {
 
   func capturePhoto() {
     traceShutterPressedEvent()
-    cameraManager.capturePhoto()
+    cameraManager.capturePhoto(selectedPhotoAspectRatio: selectedPhotoAspectRatio)
   }
   
   func setPhotoAspectRatio(ratio: PhotoAspectRatio) {
     selectedPhotoAspectRatio = ratio
-    cameraManager.selectedPhotoAspectRatio = ratio
   }
 
   func setZoom(factor: CGFloat, ramp: Bool) {

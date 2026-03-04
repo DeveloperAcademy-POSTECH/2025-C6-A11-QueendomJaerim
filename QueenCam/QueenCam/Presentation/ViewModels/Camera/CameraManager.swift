@@ -30,8 +30,6 @@ final class CameraManager: NSObject {
   var flashMode: AVCaptureDevice.FlashMode = .off
   var isLivePhotoOn: Bool = false
   
-  var selectedPhotoAspectRatio: PhotoAspectRatio = .ratio4x3
-
   private let logger = QueenLogger(category: "CameraManager")
 
   private var inTrackingCameraDelegate: [Int64: CameraDelegate] = [:]
@@ -98,7 +96,7 @@ final class CameraManager: NSObject {
     }
   }
 
-  func capturePhoto() {
+  func capturePhoto(selectedPhotoAspectRatio: PhotoAspectRatio) {
     captureSessionQueue.async { [weak self] in
       guard let self else { return }
 
