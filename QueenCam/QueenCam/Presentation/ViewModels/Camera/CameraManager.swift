@@ -29,7 +29,7 @@ final class CameraManager: NSObject {
   var position: AVCaptureDevice.Position = .back
   var flashMode: AVCaptureDevice.FlashMode = .off
   var isLivePhotoOn: Bool = false
-  
+
   private let logger = QueenLogger(category: "CameraManager")
 
   private var inTrackingCameraDelegate: [Int64: CameraDelegate] = [:]
@@ -39,7 +39,7 @@ final class CameraManager: NSObject {
   var onDidFinishCapture: (() -> Void)?
   var onPhotoCapture: ((UIImage) -> Void)?
   var onTapCameraSwitch: ((AVCaptureDevice.Position) -> Void)?
-  
+
   // 현재 선택된 디바이스 타입
   var onSelectedCameraDeviceType: ((AVCaptureDevice.DeviceType?) -> Void)?
 
@@ -119,6 +119,10 @@ final class CameraManager: NSObject {
       photoSettings.photoQualityPrioritization = .quality
       photoSettings.maxPhotoDimensions = photoOutput.maxPhotoDimensions
 
+      if photoOutput.isAutoDeferredPhotoDeliverySupported {
+        photoOutput.isAutoDeferredPhotoDeliveryEnabled = (selectedPhotoAspectRatio == .ratio4x3)
+      }
+
       if self.isLivePhotoOn, self.photoOutput.isLivePhotoCaptureEnabled {
         photoSettings.livePhotoMovieFileURL = URL.movieFileURL
       }
@@ -151,9 +155,9 @@ final class CameraManager: NSObject {
         // 6
         DispatchQueue.main.async {
           switch photoOutput {
-          case .basicPhoto(let thumbnail, let imageData):
+          case .basicPhoto(let thumbnail, _):
             self.onPhotoCapture?(thumbnail)
-          case .livePhoto(let thumbnail, let imageData, let videoData):
+          case .livePhoto(let thumbnail, _, _):
             self.onPhotoCapture?(thumbnail)
           }
           self.onDidFinishCapture?()
@@ -186,16 +190,18 @@ extension CameraManager {
       mediaType: .video,
       position: position
     )
-    
+
     logger.debug("discoverySession.devices: \(discoverySession.devices)")
-    
+
     let deviceList = discoverySession.devices
-    guard let device = deviceTypeList
-      .compactMap({ type in
-        deviceList.first(where: { $0.deviceType == type})
-      })
+    guard
+      let device =
+        deviceTypeList
+        .compactMap({ type in
+          deviceList.first(where: { $0.deviceType == type })
+        })
         .first
-            
+
     else {
       logger.error("Video device is unavailable")
       return
@@ -204,10 +210,9 @@ extension CameraManager {
     DispatchQueue.main.async {
       self.onSelectedCameraDeviceType?(device.deviceType)
     }
-    
+
     let input = try AVCaptureDeviceInput(device: device)
     logger.debug("input: \(input)")
-    
 
     if let currentInput = videoDeviceInput {
       session.removeInput(currentInput)
@@ -290,15 +295,10 @@ extension CameraManager {
 
     if photoOutput.isResponsiveCaptureSupported {
       photoOutput.isResponsiveCaptureEnabled = true
-    }
 
-    if photoOutput.isFastCapturePrioritizationSupported {
-
-      photoOutput.isFastCapturePrioritizationEnabled = true
-    }
-
-    if photoOutput.isAutoDeferredPhotoDeliverySupported {
-      photoOutput.isAutoDeferredPhotoDeliveryEnabled = true
+      if photoOutput.isFastCapturePrioritizationSupported {
+        photoOutput.isFastCapturePrioritizationEnabled = true
+      }
     }
 
     if let device = videoDeviceInput?.device {
@@ -399,9 +399,6 @@ extension CameraManager {
 
           photoOutput.isLivePhotoCaptureEnabled = photoOutput.isLivePhotoCaptureSupported
 
-          logger.info("Switch -> photoOutput.isLivePhotoCaptureSupported: \(photoOutput.isLivePhotoCaptureSupported)")
-          logger.info("Switch -> photoOutput.isLivePhotoCaptureEnabled: \(photoOutput.isLivePhotoCaptureEnabled)")
-
           DispatchQueue.main.async {
             self.onTapCameraSwitch?(self.position)
           }
@@ -412,7 +409,6 @@ extension CameraManager {
           self.logger.error("Failed to switch camera: \(error.localizedDescription)")
           continuation.resume(throwing: error)
         }
-
       }
     }
 
