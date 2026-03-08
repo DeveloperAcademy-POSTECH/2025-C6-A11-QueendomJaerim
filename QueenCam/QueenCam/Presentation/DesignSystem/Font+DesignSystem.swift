@@ -62,6 +62,7 @@ extension UIFont {
 
 enum TypographyStyle: CaseIterable {
   case r12
+  case r15
   case m10
   case m13
   case m14
@@ -69,6 +70,7 @@ enum TypographyStyle: CaseIterable {
   case m18
   case m22
   case sb12
+  case sb14
   case sb15
   case sb16
   case sb17
@@ -86,6 +88,7 @@ enum TypographyStyle: CaseIterable {
   var displayName: String {
     switch self {
     case .r12: return "R_12"
+    case .r15: return "R_15"
     case .m10: return "M_10"
     case .m13: return "M_13"
     case .m14: return "M_14"
@@ -93,6 +96,7 @@ enum TypographyStyle: CaseIterable {
     case .m18: return "M_18"
     case .m22: return "M_22"
     case .sb12: return "SB_12"
+    case .sb14: return "SB_14"
     case .sb15: return "SB_15"
     case .sb16: return "SB_16"
     case .sb17: return "SB_17"
@@ -112,17 +116,19 @@ enum TypographyStyle: CaseIterable {
   var font: Font {
     switch self {
     case .r12: return .pretendard(.regular, size: 12)
+    case .r15: return .pretendard(.regular, size: 15)
     case .m10: return .pretendard(.medium, size: 10)
     case .m13: return .pretendard(.medium, size: 13)
     case .m14: return .pretendard(.medium, size: 14)
     case .m15: return .pretendard(.medium, size: 15)
     case .m18: return .pretendard(.medium, size: 18)
     case .m22: return .pretendard(.medium, size: 22)
-    case .sb12: return .pretendard(.medium, size: 12)
-    case .sb15: return .pretendard(.medium, size: 15)
-    case .sb16: return .pretendard(.medium, size: 16)
-    case .sb17: return .pretendard(.medium, size: 17)
-    case .sb20: return .pretendard(.medium, size: 20)
+    case .sb12: return .pretendard(.semibold, size: 12)
+    case .sb14: return .pretendard(.semibold, size: 14)
+    case .sb15: return .pretendard(.semibold, size: 15)
+    case .sb16: return .pretendard(.semibold, size: 16)
+    case .sb17: return .pretendard(.semibold, size: 17)
+    case .sb20: return .pretendard(.semibold, size: 20)
     case .b22: return .pretendard(.bold, size: 22)
     case .sfRoundedR15: return .system(size: 15, weight: .regular, design: .rounded)
     case .sfR10: return .system(size: 10, weight: .regular)
@@ -138,6 +144,7 @@ enum TypographyStyle: CaseIterable {
   var uiFont: UIFont {
     switch self {
     case .r12: return .pretendard(.regular, size: 12)
+    case .r15: return .pretendard(.regular, size: 15)
     case .m10: return .pretendard(.medium, size: 10)
     case .m13: return .pretendard(.medium, size: 13)
     case .m14: return .pretendard(.medium, size: 14)
@@ -145,6 +152,7 @@ enum TypographyStyle: CaseIterable {
     case .m18: return .pretendard(.medium, size: 18)
     case .m22: return .pretendard(.medium, size: 22)
     case .sb12: return .pretendard(.medium, size: 12)
+    case .sb14: return .pretendard(.semibold, size: 14)
     case .sb15: return .pretendard(.medium, size: 15)
     case .sb16: return .pretendard(.medium, size: 16)
     case .sb17: return .pretendard(.medium, size: 17)
@@ -164,6 +172,7 @@ enum TypographyStyle: CaseIterable {
   var lineHeight: CGFloat {
     switch self {
     case .r12: return 16
+    case .r15: return 23
     case .m10: return 12
     case .m13: return 16
     case .m14: return 21
@@ -171,6 +180,7 @@ enum TypographyStyle: CaseIterable {
     case .m18: return 27
     case .m22: return 33
     case .sb12: return 18
+    case .sb14: return 20
     case .sb15: return 22
     case .sb16: return 24
     case .sb17: return 20

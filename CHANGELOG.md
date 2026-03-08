@@ -9,6 +9,8 @@
 
 ### Added
 
+- 설정 페이지
+
 ### Changed
 
 ### Deprecated
