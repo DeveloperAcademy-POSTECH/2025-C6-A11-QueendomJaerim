@@ -116,7 +116,7 @@ extension CameraView.CameraPreviewArea: View {
         ReconnectingView(didCancelButtonTap: reconnectCancelButtonDidTap)
       }
     }
-    .aspectRatio(3 / 4, contentMode: .fill)
+    .aspectRatio(cameraViewModel.selectedPhotoAspectRatio.previewAspectRatio, contentMode: .fill)
     .clipped()
     .clipShape(.rect(cornerRadius: 5))
     // MARK: Overlays

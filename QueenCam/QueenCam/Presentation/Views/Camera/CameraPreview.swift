@@ -9,7 +9,7 @@ struct CameraPreview: UIViewRepresentable {
     let view = VideoPreview()
     view.backgroundColor = .black
     view.videoPreviewLayer.session = session
-    view.videoPreviewLayer.videoGravity = .resizeAspect
+    view.videoPreviewLayer.videoGravity = .resizeAspectFill
     return view
   }
 
