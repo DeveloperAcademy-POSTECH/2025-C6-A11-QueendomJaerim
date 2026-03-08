@@ -14,19 +14,20 @@ struct QuestionAndAnswerPanel {
 
 extension QuestionAndAnswerPanel: View {
   var body: some View {
-    Button {
-      withAnimation {
-        isExpanded.toggle()
-      }
-    } label: {
-      VStack(spacing: 0) {
-        QuestionView(question: questionAndAnser.question, isClosed: !isExpanded)
-        if isExpanded {
-          AnswerView(answer: questionAndAnser.answer)
-            .transition(.move(edge: .bottom).combined(with: .opacity))
+    VStack(alignment: .leading, spacing: 0) {
+      Button {
+        withAnimation {
+          isExpanded.toggle()
         }
+      } label: {
+        QuestionView(question: questionAndAnser.question, isClosed: !isExpanded)
+      }
+
+      if isExpanded {
+        AnswerView(answer: questionAndAnser.answer)
       }
     }
+    .clipped()
   }
 }
 
