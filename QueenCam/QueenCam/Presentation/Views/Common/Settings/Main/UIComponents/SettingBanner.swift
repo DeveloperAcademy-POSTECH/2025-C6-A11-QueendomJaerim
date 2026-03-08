@@ -48,7 +48,7 @@ extension SettingBanner {
         .frame(height: bannerHeight)
         .overlay {
           HStack {
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 6) {
               Text(title)
                 .typo(.sb15)
                 .foregroundStyle(.modelPrimary)
