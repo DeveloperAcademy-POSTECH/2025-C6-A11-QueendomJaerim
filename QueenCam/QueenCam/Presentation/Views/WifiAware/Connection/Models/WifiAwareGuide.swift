@@ -38,9 +38,9 @@ struct WifiAwareGuide {
     ),
     .init(
       message: attached(
-        original: base(for: String(localized: "언제든지 questionmark.circle 버튼으로\n페어링하는 법을 다시 볼 수 있어요.")),
-        target: "questionmark.circle",
-        imageName: "questionmark.circle",
+        original: base(for: String(localized: "언제든지 gearshape 버튼으로\n페어링하는 법을 다시 볼 수 있어요.")),
+        target: "gearshape",
+        imageName: "gearshape",
         foregroundColor: .systemWhite
       ),
       video: .photographerGuide3
@@ -78,9 +78,9 @@ struct WifiAwareGuide {
     ),
     .init(
       message: attached(
-        original: base(for: String(localized: "언제든지 questionmark.circle 버튼으로\n페어링하는 법을 다시 볼 수 있어요.")),
-        target: "questionmark.circle",
-        imageName: "questionmark.circle",
+        original: base(for: String(localized: "언제든지 gearshape 버튼으로\n페어링하는 법을 다시 볼 수 있어요.")),
+        target: "gearshape",
+        imageName: "gearshape",
         foregroundColor: .systemWhite
       ),
       video: .modelGuide3

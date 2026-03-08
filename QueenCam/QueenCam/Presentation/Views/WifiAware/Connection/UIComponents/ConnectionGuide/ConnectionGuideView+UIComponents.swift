@@ -38,7 +38,7 @@ extension ConnectionGuideView {
       Button {
         startConnectingButtonDidTap()
       } label: {
-        Text("연결 시작하기")
+        Text(lastButtonTitle)
           .typo(.sb16)
           .foregroundColor(.offWhite)
           .background(

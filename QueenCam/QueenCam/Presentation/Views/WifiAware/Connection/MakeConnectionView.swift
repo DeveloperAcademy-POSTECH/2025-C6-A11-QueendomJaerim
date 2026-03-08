@@ -41,20 +41,19 @@ struct MakeConnectionView {
   let modelTheme = Color(red: 0xD8 / 255, green: 0xEB / 255, blue: 0x05 / 255)
 
   // MARK: State
-  @State private var isShowingParingGuide: Bool = false
+  @State private var isShowingSettings: Bool = false
+
+  // MARK: - Navigating
+  @State private var navigationRouter = NavigationRouter()
 }
 
 extension MakeConnectionView: View {
   var body: some View {
-    NavigationStack {
+    NavigationStack(path: $navigationRouter.path) {
       ZStack {
         Color.black.ignoresSafeArea()
 
-        if isShowingParingGuide {
-          pairingGuideView
-        } else {
-          makeConnectionControls
-        }
+        makeConnectionControls
       }
       .alert(
         "연결에 실패했습니다",
@@ -86,53 +85,46 @@ extension MakeConnectionView: View {
   }
 }
 
-extension MakeConnectionView {
-  var pairingGuideView: some View {
-    ConnectionGuideView(
-      role: role,
-      didGuideComplete: {
-        isShowingParingGuide = false
-      },
-      backButtonDidTap: {
-        isShowingParingGuide = false
-      }
-    )
-  }
-}
-
 // MARK: 연결 진행 페이지
 extension MakeConnectionView {
   var makeConnectionControls: some View {
-    NavigationStack {
-      VStack(spacing: 0) {
-        ToolBar(role: role, changeRoleButtonDidTap: changeRoleButtonDidTap)
-          .padding(.horizontal, 20)
-
-        Spacer()
-          .frame(height: 20)
-
-        // MARK: - 주변 기기 찾기 버튼
-        DeviceDiscoveryButton(role: role, photographerTheme: photographerTheme, modelTheme: modelTheme)
-          .padding(.horizontal, 16) // 다른 컨트롤과 좌우 패딩이 다름
-
-        Spacer()
-          .frame(height: 40)
-
-        // MARK: - 찾아낸 기기 리스트
-        PairedDevicesList(
-          pairedDevices: pairedDevices,
-          isPairing: isPairing,
-          isConnected: isConnected,
-          selectedDevice: selectedPairedDevice,
-          connectButtonDidTap: connectButtonDidTap,
-          stopConnectingButtonDidTap: stopConnectingButtonDidTap
-        )
-        .frame(maxHeight: .infinity, alignment: .top)
+    VStack(spacing: 0) {
+      ToolBar(role: role, changeRoleButtonDidTap: changeRoleButtonDidTap)
         .padding(.horizontal, 20)
-      }
-      .padding(.top, 14)
-      .ignoresSafeArea(edges: .bottom)
+
+      Spacer()
+        .frame(height: 20)
+
+      // MARK: - 주변 기기 찾기 버튼
+      DeviceDiscoveryButton(role: role, photographerTheme: photographerTheme, modelTheme: modelTheme)
+        .padding(.horizontal, 16)  // 다른 컨트롤과 좌우 패딩이 다름
+
+      Spacer()
+        .frame(height: 40)
+
+      // MARK: - 찾아낸 기기 리스트
+      PairedDevicesList(
+        pairedDevices: pairedDevices,
+        isPairing: isPairing,
+        isConnected: isConnected,
+        selectedDevice: selectedPairedDevice,
+        connectButtonDidTap: connectButtonDidTap,
+        stopConnectingButtonDidTap: stopConnectingButtonDidTap
+      )
+      .frame(maxHeight: .infinity, alignment: .top)
+      .padding(.horizontal, 20)
     }
+    .navigationDestination(for: Route.self) { route in
+      switch route {
+      case let .settings(settingsRoute):
+        SettingsRouteView(
+          currentRoute: settingsRoute,
+          navigationRouter: navigationRouter
+        )
+      }
+    }
+    .padding(.top, 14)
+    .ignoresSafeArea(edges: .bottom)
     .navigationBarTitleDisplayMode(.inline)  // LargeTitle 때문에 레이아웃 깨지는 문제 수정
     .toolbar {
       ToolbarItem(placement: .navigation) {
@@ -147,8 +139,8 @@ extension MakeConnectionView {
       }
 
       ToolbarItem(placement: .topBarTrailing) {
-        Button("가이드", systemImage: "questionmark.circle") {
-          isShowingParingGuide = true
+        Button("설정", systemImage: "gearshape") {
+          navigationRouter.push(.settings(.main(role: role)))
         }
       }
     }
@@ -166,6 +158,6 @@ extension MakeConnectionView {
     errorWasConsumeByUser: {},
     changeRoleButtonDidTap: {},
     connectButtonDidTap: { _ in },
-    stopConnectingButtonDidTap: { }
+    stopConnectingButtonDidTap: {}
   )
 }
