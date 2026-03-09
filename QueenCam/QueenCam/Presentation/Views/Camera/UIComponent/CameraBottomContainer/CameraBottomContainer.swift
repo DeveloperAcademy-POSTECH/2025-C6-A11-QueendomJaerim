@@ -57,7 +57,6 @@ extension CameraView.CameraBottomContainer: View {
   var dragGesture: some Gesture {
     DragGesture(minimumDistance: 30)
       .onEnded { value in
-        guard currentMode == .photographer else { return }
         if value.translation.height < 0 {
           withAnimation {
             self.isShowCameraSettingTool = true

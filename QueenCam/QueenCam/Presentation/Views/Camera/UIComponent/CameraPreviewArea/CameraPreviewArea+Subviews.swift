@@ -82,7 +82,6 @@ extension CameraView.CameraPreviewArea {
   /// 카메라 바구니 토글 버튼과 눈까리 버튼
   var toggleButtonsLayer: some View {
     VStack {
-      if currentMode == .photographer {
         HStack {
           Spacer()
 
@@ -94,7 +93,6 @@ extension CameraView.CameraPreviewArea {
           }
         }
         .padding(12)
-      }
 
       Spacer()
 

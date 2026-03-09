@@ -112,38 +112,41 @@ extension CameraView {
   private var isAvailableWifiAware: Bool {
     WACapabilities.supportedFeatures.contains(.wifiAware)
   }
-  
+
   private var photoAspectRatioSystemImage: String {
-     switch cameraViewModel.selectedPhotoAspectRatio {
-     case .ratio16x9:
-       return "rectangle"
-     case .ratio1x1:
-       return "square"
-     case .ratio4x3:
-       return "rectangle.portrait"
-     }
-   }
+    switch cameraViewModel.selectedPhotoAspectRatio {
+    case .ratio16x9:
+      return "rectangle"
+    case .ratio1x1:
+      return "square"
+    case .ratio4x3:
+      return "rectangle.portrait"
+    }
+  }
 
 }
 
 extension CameraView: View {
   private var bottomCameraSettingTool: some View {
     HStack(spacing: 20) {
-      CameraSettingButton(
-        title: "플래시",
-        systemName: flashImage,
-        isActive: cameraViewModel.isFlashMode != .off,
-        tapAction: { cameraViewModel.switchFlashMode() },
-        isToolBar: false
-      )
+      if currentMode != .model {
 
-      CameraSettingButton(
-        title: "LIVE",
-        systemName: liveImage,
-        isActive: cameraViewModel.isLivePhotoOn,
-        tapAction: { cameraViewModel.switchLivePhoto() },
-        isToolBar: false
-      )
+        CameraSettingButton(
+          title: "플래시",
+          systemName: flashImage,
+          isActive: cameraViewModel.isFlashMode != .off,
+          tapAction: { cameraViewModel.switchFlashMode() },
+          isToolBar: false
+        )
+
+        CameraSettingButton(
+          title: "LIVE",
+          systemName: liveImage,
+          isActive: cameraViewModel.isLivePhotoOn,
+          tapAction: { cameraViewModel.switchLivePhoto() },
+          isToolBar: false
+        )
+      }
 
       CameraSettingButton(
         title: "그리드",
@@ -152,8 +155,7 @@ extension CameraView: View {
         tapAction: { cameraViewModel.switchGrid() },
         isToolBar: false
       )
-      
-      
+
       CameraSettingButton(
         title: LocalizedStringKey(cameraViewModel.selectedPhotoAspectRatio.rawValue),
         systemName: photoAspectRatioSystemImage,
@@ -246,7 +248,7 @@ extension CameraView: View {
             }
           }
         )
-//        .padding() // 툴바로 들어가면서 안 먹힘
+        //        .padding() // 툴바로 들어가면서 안 먹힘
         .alert(
           "연결이 불가능한 기기입니다.",
           isPresented: $isShowWifiAwareUnsupportedAlert,
@@ -295,7 +297,6 @@ extension CameraView: View {
           .gesture(
             DragGesture(minimumDistance: 30)
               .onEnded { value in
-                guard currentMode == .photographer else { return }
                 if value.translation.height > 0 {
                   withAnimation {
                     self.isShowCameraSettingTool = false
@@ -360,7 +361,7 @@ extension CameraView: View {
         guideViewModel: guideViewModel,
         previewStreamingViewModel: previewModel
       )
-        .dynamicTypeSize(.medium) // FIXME: Dynamic Type 정책 결정 후 수정
+      .dynamicTypeSize(.medium)  // FIXME: Dynamic Type 정책 결정 후 수정
     }
     .onChange(of: connectionViewModel.connections) { oldValue, newValue in
       if !newValue.isEmpty && newValue.count > oldValue.count && connectionViewModel.role == .photographer {

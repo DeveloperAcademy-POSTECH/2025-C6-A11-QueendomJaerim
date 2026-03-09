@@ -101,7 +101,7 @@ final class SampleBufferDisplayView: UIView {
     let videoLayer = AVSampleBufferDisplayLayer()
     videoLayer.backgroundColor = UIColor.black.cgColor
     videoLayer.frame = bounds
-    videoLayer.videoGravity = .resizeAspect
+    videoLayer.videoGravity = .resizeAspectFill
 
     layer.insertSublayer(videoLayer, at: 0)
     self.videoLayer = videoLayer
