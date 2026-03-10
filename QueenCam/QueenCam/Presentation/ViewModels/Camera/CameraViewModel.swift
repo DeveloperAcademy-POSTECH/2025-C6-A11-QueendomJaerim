@@ -37,6 +37,7 @@ final class CameraViewModel {
   private let photosLibraryObserver = PhotosLibraryObserver()
   private var displayScale: CGFloat = 1.0
   private let photoAspectRatioActorId = UUID().uuidString
+  private var isAspectRatioSessionInitialized: Bool = false
 
   private var cancellables: Set<AnyCancellable> = []
 
@@ -97,6 +98,17 @@ final class CameraViewModel {
     }
 
     bind()
+
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(handleRoleChangedNotification(notification:)),
+      name: .QueenCamRoleChangedNotification,
+      object: nil
+    )
+  }
+
+  deinit {
+    NotificationCenter.default.removeObserver(self)
   }
 
   func checkPermissions() async {
@@ -298,6 +310,14 @@ extension CameraViewModel {
         }
       }
       .store(in: &cancellables)
+
+    cameraManager.networkService.networkStatePublisher
+      .receive(on: RunLoop.main)
+      .compactMap { $0 }
+      .sink { [weak self] state in
+        self?.handleNetworkStateChanged(state)
+      }
+      .store(in: &cancellables)
   }
 
   private func handleReceivedPhotoAspectRatio(payload: PhotoAspectRatioPayload) {
@@ -305,6 +325,60 @@ extension CameraViewModel {
       ratio: payload.ratio,
       lwwRegister: payload.lwwRegister
     )
+  }
+
+  @objc private func handleRoleChangedNotification(notification: Notification) {
+    guard notification.userInfo?["newRole"] as? Role != nil else { return }
+    resetPhotoAspectRatioForSessionStart()
+  }
+
+  private func handleNetworkStateChanged(_ state: NetworkState) {
+    if isAspectRatioSessionStartState(state) {
+      if !isAspectRatioSessionInitialized {
+        isAspectRatioSessionInitialized = true
+        resetPhotoAspectRatioForSessionStart()
+      }
+    } else if isAspectRatioSessionEndState(state) {
+      resetPhotoAspectRatioForSessionEnd()
+    }
+  }
+
+  private func resetPhotoAspectRatioForSessionStart() {
+    let lwwRegister = LWWRegister(actorId: photoAspectRatioActorId, timestamp: .init())
+    updatePhotoAspectRatio(ratio: .ratio4x3, lwwRegister: lwwRegister)
+
+    let isConnected =
+      cameraManager.networkService.networkState == .host(.publishing)
+      || cameraManager.networkService.networkState == .viewer(.connected)
+
+    guard isConnected else { return }
+
+    Task {
+      await cameraManager.networkService.send(
+        for: .photoAspectRatio(.init(ratio: .ratio4x3, lwwRegister: lwwRegister))
+      )
+    }
+  }
+
+  private func resetPhotoAspectRatioForSessionEnd() {
+    let lwwRegister = LWWRegister(actorId: photoAspectRatioActorId, timestamp: .init())
+    updatePhotoAspectRatio(ratio: .ratio4x3, lwwRegister: lwwRegister)
+    isAspectRatioSessionInitialized = false
+  }
+
+  /// 연결 성립 또는 재연결처럼 세션 시작으로 간주할 상태인지 판단한다.
+  private func isAspectRatioSessionStartState(_ state: NetworkState) -> Bool {
+    state == .host(.publishing) || state == .viewer(.connected)
+  }
+
+  /// 연결 종료, 유실, 취소처럼 세션 종료로 간주할 상태인지 판단한다.
+  private func isAspectRatioSessionEndState(_ state: NetworkState) -> Bool {
+    state == .host(.stopped)
+      || state == .viewer(.stopped)
+      || state == .host(.cancelled)
+      || state == .viewer(.cancelled)
+      || state == .host(.lost)
+      || state == .viewer(.lost)
   }
 }
 
