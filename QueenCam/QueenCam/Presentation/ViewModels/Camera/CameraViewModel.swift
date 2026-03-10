@@ -24,6 +24,7 @@ final class CameraViewModel {
   var cameraPostion: AVCaptureDevice.Position?
   var selectedCameraDeviceType: AVCaptureDevice.DeviceType?
   var selectedPhotoAspectRatio: PhotoAspectRatio = .ratio4x3
+  var lastPhotoAspectRatioLWWRegister: LWWRegister?
 
   var errorMessage = ""
 
@@ -35,6 +36,7 @@ final class CameraViewModel {
   var thumbnailImage: UIImage?
   private let photosLibraryObserver = PhotosLibraryObserver()
   private var displayScale: CGFloat = 1.0
+  private let photoAspectRatioActorId = UUID().uuidString
 
   private let logger = QueenLogger(category: "CameraViewModel")
 
@@ -49,7 +51,7 @@ final class CameraViewModel {
     self.cameraSettingsService = cameraSettingsService
     self.cameraManager = cameraManager
     self.notificationService = notificationService
-    
+
     self.isLivePhotoOn = cameraSettingsService.livePhotoOn
     self.isShowGrid = cameraSettingsService.gridOn
     self.isFlashMode = cameraSettingsService.flashMode
@@ -141,9 +143,14 @@ final class CameraViewModel {
     traceShutterPressedEvent()
     cameraManager.capturePhoto(selectedPhotoAspectRatio: selectedPhotoAspectRatio)
   }
-  
+
   func setPhotoAspectRatio(ratio: PhotoAspectRatio) {
-    selectedPhotoAspectRatio = ratio
+    let lwwRegister = LWWRegister(
+      actorId: photoAspectRatioActorId,
+      timestamp: Date()
+    )
+
+    updatePhotoAspectRatio(ratio: ratio, lwwRegister: lwwRegister)
   }
 
   func setZoom(factor: CGFloat, ramp: Bool) {
@@ -238,6 +245,25 @@ extension CameraViewModel {
       isCaptureButtonEnabled = false
     @unknown default:
       isCaptureButtonEnabled = false
+    }
+  }
+}
+
+extension CameraViewModel {
+  private func updatePhotoAspectRatio(ratio: PhotoAspectRatio, lwwRegister: LWWRegister) {
+    if let lastPhotoAspectRatioLWWRegister {
+      if lwwRegister.timestamp > lastPhotoAspectRatioLWWRegister.timestamp {
+        selectedPhotoAspectRatio = ratio
+        self.lastPhotoAspectRatioLWWRegister = lwwRegister
+      } else if lwwRegister.timestamp == lastPhotoAspectRatioLWWRegister.timestamp,
+        lwwRegister.actorId > lastPhotoAspectRatioLWWRegister.actorId
+      {
+        selectedPhotoAspectRatio = ratio
+        self.lastPhotoAspectRatioLWWRegister = lwwRegister
+      }
+    } else {
+      selectedPhotoAspectRatio = ratio
+      self.lastPhotoAspectRatioLWWRegister = lwwRegister
     }
   }
 }
