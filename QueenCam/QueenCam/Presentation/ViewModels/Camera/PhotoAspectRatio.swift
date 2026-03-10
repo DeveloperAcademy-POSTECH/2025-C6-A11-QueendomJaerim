@@ -1,6 +1,6 @@
 import Foundation
 
-enum PhotoAspectRatio: String, CaseIterable {
+enum PhotoAspectRatio: String, Sendable, CaseIterable, Codable {
   case ratio16x9 = "16:9"
   case ratio1x1 = "1:1"
   case ratio4x3 = "4:3"

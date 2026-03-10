@@ -60,6 +60,10 @@ enum NetworkEvent: Sendable {
 
   /// 따봉 이벤트
   case thumbsUp
+  
+  /// 사진 비율 변경
+  case photoAspectRatio(PhotoAspectRatioPayload)
+
 }
 
 nonisolated extension NetworkEvent: Codable {
