@@ -95,7 +95,7 @@ final class CameraViewModel {
     photosLibraryObserver.getCurrentScale = { [weak self] in
       self?.displayScale ?? 1.0
     }
-    
+
     bind()
   }
 
@@ -155,6 +155,18 @@ final class CameraViewModel {
     )
 
     updatePhotoAspectRatio(ratio: ratio, lwwRegister: lwwRegister)
+
+    let isConnected =
+      cameraManager.networkService.networkState == .host(.publishing)
+      || cameraManager.networkService.networkState == .viewer(.connected)
+
+    guard isConnected else { return }
+
+    Task {
+      await cameraManager.networkService.send(
+        for: .photoAspectRatio(.init(ratio: ratio, lwwRegister: lwwRegister))
+      )
+    }
   }
 
   func setZoom(factor: CGFloat, ramp: Bool) {
