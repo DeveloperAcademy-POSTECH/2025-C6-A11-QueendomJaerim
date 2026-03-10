@@ -23,7 +23,9 @@ final class CameraViewModel {
 
   var cameraPostion: AVCaptureDevice.Position?
   var selectedCameraDeviceType: AVCaptureDevice.DeviceType?
+
   var selectedPhotoAspectRatio: PhotoAspectRatio = .ratio4x3
+  /// 현재 사진 비율 상태를 마지막으로 확정한 LWW 기록
   var lastPhotoAspectRatioLWWRegister: LWWRegister?
 
   var errorMessage = ""
@@ -36,7 +38,9 @@ final class CameraViewModel {
   var thumbnailImage: UIImage?
   private let photosLibraryObserver = PhotosLibraryObserver()
   private var displayScale: CGFloat = 1.0
+  /// 사진 비율 동기화 이벤트를 구분하기 위한 현재 디바이스 식별자
   private let photoAspectRatioActorId = UUID().uuidString
+  /// 현재 세션에서 사진 비율 초기화를 완료했는지 나타내는 플래그
   private var isAspectRatioSessionInitialized: Bool = false
 
   private var cancellables: Set<AnyCancellable> = []
@@ -99,6 +103,7 @@ final class CameraViewModel {
 
     bind()
 
+    // 역할 변경을 세션 시작 이벤트로 보고 비율을 4:3으로 초기화하기 위해 구독
     NotificationCenter.default.addObserver(
       self,
       selector: #selector(handleRoleChangedNotification(notification:)),
@@ -108,6 +113,7 @@ final class CameraViewModel {
   }
 
   deinit {
+    // NotificationCenter observer 정리
     NotificationCenter.default.removeObserver(self)
   }
 
@@ -161,11 +167,7 @@ final class CameraViewModel {
   }
 
   func setPhotoAspectRatio(ratio: PhotoAspectRatio) {
-    let lwwRegister = LWWRegister(
-      actorId: photoAspectRatioActorId,
-      timestamp: Date()
-    )
-
+    let lwwRegister = LWWRegister(actorId: photoAspectRatioActorId, timestamp: .init())
     updatePhotoAspectRatio(ratio: ratio, lwwRegister: lwwRegister)
 
     let isConnected =
@@ -175,9 +177,7 @@ final class CameraViewModel {
     guard isConnected else { return }
 
     Task {
-      await cameraManager.networkService.send(
-        for: .photoAspectRatio(.init(ratio: ratio, lwwRegister: lwwRegister))
-      )
+      await cameraManager.networkService.send(for: .photoAspectRatio(.init(ratio: ratio, lwwRegister: lwwRegister)))
     }
   }
 
@@ -258,7 +258,9 @@ final class CameraViewModel {
   }
 }
 
+// MARK: - Readiness
 extension CameraViewModel {
+  /// 카메라 촬영 가능 상태를 반영해 촬영 버튼 활성 여부를 갱신한다.
   private func handleReadiness(readiness: AVCapturePhotoOutput.CaptureReadiness) {
     switch readiness {
     case .sessionNotRunning:
@@ -277,7 +279,9 @@ extension CameraViewModel {
   }
 }
 
+// MARK: - Photo Aspect Ratio Sync
 extension CameraViewModel {
+  /// 사진 비율 변경이 현재 상태보다 최신일 때만 선택 비율과 LWW 기록을 갱신한다.
   private func updatePhotoAspectRatio(ratio: PhotoAspectRatio, lwwRegister: LWWRegister) {
     if let lastPhotoAspectRatioLWWRegister {
       if lwwRegister.timestamp > lastPhotoAspectRatioLWWRegister.timestamp {
@@ -294,9 +298,19 @@ extension CameraViewModel {
       self.lastPhotoAspectRatioLWWRegister = lwwRegister
     }
   }
+
+  /// 상대 기기에서 수신한 사진 비율 변경 이벤트를 동일한 LWW 경로로 반영한다.
+  private func handleReceivedPhotoAspectRatio(payload: PhotoAspectRatioPayload) {
+    updatePhotoAspectRatio(
+      ratio: payload.ratio,
+      lwwRegister: payload.lwwRegister
+    )
+  }
 }
 
+// MARK: - Binding
 extension CameraViewModel {
+  /// 네트워크 이벤트와 연결 상태 변화를 구독해 사진 비율 동기화 로직에 연결한다.
   private func bind() {
     cameraManager.networkService.networkEventPublisher
       .receive(on: RunLoop.main)
@@ -319,19 +333,34 @@ extension CameraViewModel {
       }
       .store(in: &cancellables)
   }
+}
 
-  private func handleReceivedPhotoAspectRatio(payload: PhotoAspectRatioPayload) {
-    updatePhotoAspectRatio(
-      ratio: payload.ratio,
-      lwwRegister: payload.lwwRegister
-    )
-  }
-
+// MARK: - Session Reset
+extension CameraViewModel {
+  /// 역할 변경 알림을 수신하면 새 세션 시작 정책에 따라 사진 비율을 기본값으로 초기화한다.
   @objc private func handleRoleChangedNotification(notification: Notification) {
     guard notification.userInfo?["newRole"] as? Role != nil else { return }
     resetPhotoAspectRatioForSessionStart()
   }
 
+  /// 세션 시작 상태에서는 공통 시작 비율인 `4:3`을 로컬과 상대 기기에 함께 반영한다.
+  private func resetPhotoAspectRatioForSessionStart() {
+    let lwwRegister = LWWRegister(actorId: photoAspectRatioActorId, timestamp: .init())
+
+    updatePhotoAspectRatio(ratio: .ratio4x3, lwwRegister: lwwRegister)
+
+    let isConnected =
+      cameraManager.networkService.networkState == .host(.publishing)
+      || cameraManager.networkService.networkState == .viewer(.connected)
+
+    guard isConnected else { return }
+
+    Task {
+      await cameraManager.networkService.send(for: .photoAspectRatio(.init(ratio: .ratio4x3, lwwRegister: lwwRegister)))
+    }
+  }
+
+  /// 연결 상태 변화에 따라 세션 시작/종료 시점의 사진 비율 초기화 정책을 수행한다.
   private func handleNetworkStateChanged(_ state: NetworkState) {
     if isAspectRatioSessionStartState(state) {
       if !isAspectRatioSessionInitialized {
@@ -343,25 +372,13 @@ extension CameraViewModel {
     }
   }
 
-  private func resetPhotoAspectRatioForSessionStart() {
-    let lwwRegister = LWWRegister(actorId: photoAspectRatioActorId, timestamp: .init())
-    updatePhotoAspectRatio(ratio: .ratio4x3, lwwRegister: lwwRegister)
-
-    let isConnected =
-      cameraManager.networkService.networkState == .host(.publishing)
-      || cameraManager.networkService.networkState == .viewer(.connected)
-
-    guard isConnected else { return }
-
-    Task {
-      await cameraManager.networkService.send(
-        for: .photoAspectRatio(.init(ratio: .ratio4x3, lwwRegister: lwwRegister))
-      )
-    }
-  }
-
+  /// 세션 종료 상태에서는 로컬 사진 비율을 기본값 `4:3`으로 되돌리고 초기화 플래그를 해제한다.
   private func resetPhotoAspectRatioForSessionEnd() {
-    let lwwRegister = LWWRegister(actorId: photoAspectRatioActorId, timestamp: .init())
+    let lwwRegister = LWWRegister(
+      actorId: photoAspectRatioActorId,
+      timestamp: Date()
+    )
+
     updatePhotoAspectRatio(ratio: .ratio4x3, lwwRegister: lwwRegister)
     isAspectRatioSessionInitialized = false
   }
