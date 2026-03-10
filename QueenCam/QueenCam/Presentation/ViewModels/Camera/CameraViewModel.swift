@@ -38,6 +38,8 @@ final class CameraViewModel {
   private var displayScale: CGFloat = 1.0
   private let photoAspectRatioActorId = UUID().uuidString
 
+  private var cancellables: Set<AnyCancellable> = []
+
   private let logger = QueenLogger(category: "CameraViewModel")
 
   // MARK: State Toast
@@ -93,6 +95,8 @@ final class CameraViewModel {
     photosLibraryObserver.getCurrentScale = { [weak self] in
       self?.displayScale ?? 1.0
     }
+    
+    bind()
   }
 
   func checkPermissions() async {
@@ -265,6 +269,30 @@ extension CameraViewModel {
       selectedPhotoAspectRatio = ratio
       self.lastPhotoAspectRatioLWWRegister = lwwRegister
     }
+  }
+}
+
+extension CameraViewModel {
+  private func bind() {
+    cameraManager.networkService.networkEventPublisher
+      .receive(on: RunLoop.main)
+      .compactMap { $0 }
+      .sink { [weak self] event in
+        switch event {
+        case .photoAspectRatio(let payload):
+          self?.handleReceivedPhotoAspectRatio(payload: payload)
+        default:
+          break
+        }
+      }
+      .store(in: &cancellables)
+  }
+
+  private func handleReceivedPhotoAspectRatio(payload: PhotoAspectRatioPayload) {
+    updatePhotoAspectRatio(
+      ratio: payload.ratio,
+      lwwRegister: payload.lwwRegister
+    )
   }
 }
 
