@@ -42,7 +42,6 @@ struct CameraView {
   let penViewModel: PenViewModel
   let frameViewModel: FrameViewModel
   let thumbsUpViewModel: ThumbsUpViewModel
-  let navigationRouter: NavigationRouter
 }
 
 extension CameraView {
@@ -150,6 +149,61 @@ extension CameraView: View {
       Color.black.ignoresSafeArea()
 
       VStack(spacing: .zero) {
+        // 제일 위 툴바 부분
+        TopToolBarView(
+          connectedDeviceName: connectionViewModel.connectedDeviceName,
+          reconnectingDeviceName: connectionViewModel.reconnectingDeviceName,
+          indicatorMenuContent: {
+            Button("역할 바꾸기") {
+              changeRoleButtonDidTap()
+            }
+
+            Button("연결 종료하기", role: .destructive) {
+              isShowDisconnectAlert = true
+            }
+          },
+          connectedWithButtonDidTap: {
+            if isAvailableWifiAware {
+              isShowConnectionView = true
+            } else {
+              isShowWifiAwareUnsupportedAlert = true
+            }
+          }
+        )
+        .padding()
+        .alert(
+          "연결이 불가능한 기기입니다.",
+          isPresented: $isShowWifiAwareUnsupportedAlert,
+          actions: {
+            Button(role: .cancel) {
+            } label: {
+              Text("확인했어요")
+            }
+          },
+          message: {
+            Text("이 기기는 다른 기기와의 연결이 어려워요. 대신 찍자의 여러 가이드 기능은 이용할 수 있어요.")
+          }
+        )
+        .alert(
+          "연결을 종료합니다.",
+          isPresented: $isShowDisconnectAlert,
+          actions: {
+            Button(role: .destructive) {
+              connectionViewModel.disconnectButtonDidTap()
+            } label: {
+              Text("연결 종료하기")
+            }
+
+            Button(role: .cancel) {
+            } label: {
+              Text("취소하기")
+            }
+          },
+          message: {
+            Text("친구와 연결을 끊고 촬영을 마칩니다.")
+          }
+        )
+
         CameraPreviewArea(
           cameraViewModel: cameraViewModel,
           previewModel: previewModel,
@@ -189,72 +243,7 @@ extension CameraView: View {
         }
         .minimize(DynamicModelUtils.isiPad)
       }
-    }
-    .padding(.top, 21)
-    .navigationBarTitleDisplayMode(.inline)
-    .toolbar {
-      ToolbarItem(placement: .principal) {
-        // 제일 위 연결 상태 뷰
-        TopToolBarView(
-          connectedDeviceName: connectionViewModel.connectedDeviceName,
-          reconnectingDeviceName: connectionViewModel.reconnectingDeviceName,
-          indicatorMenuContent: {
-            Button("역할 바꾸기") {
-              changeRoleButtonDidTap()
-            }
-
-            Button("연결 종료하기", role: .destructive) {
-              isShowDisconnectAlert = true
-            }
-          },
-          connectedWithButtonDidTap: {
-            if isAvailableWifiAware {
-              isShowConnectionView = true
-            } else {
-              isShowWifiAwareUnsupportedAlert = true
-            }
-          }
-        )
-//        .padding() // 툴바로 들어가면서 안 먹힘
-        .alert(
-          "연결이 불가능한 기기입니다.",
-          isPresented: $isShowWifiAwareUnsupportedAlert,
-          actions: {
-            Button(role: .cancel) {
-            } label: {
-              Text("확인했어요")
-            }
-          },
-          message: {
-            Text("이 기기는 다른 기기와의 연결이 어려워요. 대신 찍자의 여러 가이드 기능은 이용할 수 있어요.")
-          }
-        )
-        .alert(
-          "연결을 종료합니다.",
-          isPresented: $isShowDisconnectAlert,
-          actions: {
-            Button(role: .destructive) {
-              connectionViewModel.disconnectButtonDidTap()
-            } label: {
-              Text("연결 종료하기")
-            }
-
-            Button(role: .cancel) {
-            } label: {
-              Text("취소하기")
-            }
-          },
-          message: {
-            Text("친구와 연결을 끊고 촬영을 마칩니다.")
-          }
-        )
-      }
-
-      ToolbarItem(placement: .topBarTrailing) {
-        Button("설정", systemImage: "gearshape") {
-          navigationRouter.push(.settings(.main(role: connectionViewModel.role)))
-        }
-      }
+      .padding(.top, 5)
     }
     // MARK: 카메라 세팅 툴
     .overlay {
