@@ -11,6 +11,13 @@
 
 ### Changed
 
+- 1.1.6 이후 MakeConnectionView에서 DeviceDiscoveryUI 이용한 기기 디스커버리
+  안되는 이슈 발생
+- 1.1.6 에서 연결 뷰 변경, 특히 NavigationStack 중첩으로 인한 사이드 이펙트로
+  판단하나 정확한 원인 불명
+- CameraView를 감싸는 NavigationStack을 제거하면 이슈가 사라지는 것을 확인하고
+  해당 부분에 한정하여 롤백
+
 ### Deprecated
 
 ### Removed
