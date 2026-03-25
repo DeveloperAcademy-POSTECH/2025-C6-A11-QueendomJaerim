@@ -18,14 +18,8 @@ struct TopToolBarView<IndicatorMenuContent: View> {
   /// 가운데 연결 메뉴 아이템
   @ViewBuilder let indicatorMenuContent: () -> IndicatorMenuContent
 
-  /// 뒤로 가기 버튼 액션. nil이면 뒤로가기 버튼 숨김
-  let backButtonDidTap: (() -> Void)?
-
   /// 현재 연결 기기 버튼 액션
   let connectedWithButtonDidTap: (() -> Void)
-
-  private let minimumSpacing: CGFloat = 16
-  private let backButtonSymbolName: String = "chevron.left"
 
   init(
     connectedDeviceName: String?,
@@ -37,34 +31,17 @@ struct TopToolBarView<IndicatorMenuContent: View> {
     self.connectedDeviceName = connectedDeviceName
     self.reconnectingDeviceName = reconnectingDeviceName
     self.indicatorMenuContent = indicatorMenuContent
-    self.backButtonDidTap = backButtonDidTap
     self.connectedWithButtonDidTap = connectedWithButtonDidTap
   }
 }
 
 extension TopToolBarView: View {
   var body: some View {
-    HStack(spacing: 0) {
-      if let backButtonDidTap {
-        ToolBarButton(symbolName: backButtonSymbolName) {
-          backButtonDidTap()
-        }
-      } else {
-        placeholderEmptyView
-      }
-
-      Spacer(minLength: minimumSpacing)
-
-      ConnectedWithView(
-        connectedDeviceName: connectedDeviceName ?? reconnectingDeviceName,
-        menuContent: indicatorMenuContent
-      ) {
-        connectedWithButtonDidTap()
-      }
-
-      Spacer(minLength: minimumSpacing)
-
-      placeholderEmptyView
+    ConnectedWithView(
+      connectedDeviceName: connectedDeviceName ?? reconnectingDeviceName,
+      menuContent: indicatorMenuContent
+    ) {
+      connectedWithButtonDidTap()
     }
   }
 

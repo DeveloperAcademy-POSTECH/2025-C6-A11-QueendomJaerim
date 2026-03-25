@@ -94,6 +94,7 @@ extension ConnectionView {
     if let activeRole {
       ConnectionGuideView(
         role: activeRole,
+        referer: .selectRole,
         didGuideComplete: {
           shouldGuideShow = false
           connectionViewModel.selectRole(for: activeRole)  // 가이드가 끝나면 역할 확정
@@ -155,9 +156,9 @@ extension ConnectionView {
         guideViewModel: connectionGuideViewModel,
         previewStreamingViewModel: previewModel
       )
-        .onAppear {
-          viewModel.selectRole(for: nil)
-        }
+      .onAppear {
+        viewModel.selectRole(for: nil)
+      }
     }
   }
 
