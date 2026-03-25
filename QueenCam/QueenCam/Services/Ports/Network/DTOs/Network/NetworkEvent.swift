@@ -50,7 +50,7 @@ enum NetworkEvent: Sendable {
   case frameUpdated(FrameEventType)
 
   /// 프레임 (비)활성화
-  case frameEnabled(Bool, Role?)
+  case frameEnabled(Bool, Role?, Date)
 
   /// 펜 이벤트
   case penUpdated(PenEventType)
