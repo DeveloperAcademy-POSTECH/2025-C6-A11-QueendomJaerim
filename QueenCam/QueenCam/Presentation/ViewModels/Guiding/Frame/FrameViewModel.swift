@@ -358,7 +358,7 @@ extension FrameViewModel {
       }
     }
     else { //프레임 끄기 요청인 경우
-      if self.frameOwnerRole == role || self.frameOwnerRole == nil {
+      if self.frameOwnerRole == role || role == nil || self.frameOwnerRole == nil {
         self.frameOwnerRole = nil
         self.isFrameEnabled = false
         self.frameOwnershipTimestamp = nil

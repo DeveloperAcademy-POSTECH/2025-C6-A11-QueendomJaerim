@@ -11,8 +11,12 @@ extension CameraView.CameraBottomContainer {
         isActive: isFrameActive,
         isDisabled: isRemoteGuideHidden || disabledByPeer,  // 상대가 소유 중이면 시각적으로도 비활성
         tapAction: {
-          // 현재 프레임 소유권 전송 (내가 소유자로 설정)
-          frameViewModel.requestFrameOwnership(true, currentRole)
+          if isFrameActive {
+            frameViewModel.selectedFrameID = nil
+            frameViewModel.requestFrameOwnership(false, currentRole)
+          } else{
+            frameViewModel.requestFrameOwnership(true, currentRole)
+          }
         },
         guidingButtonType: .frame
       )
