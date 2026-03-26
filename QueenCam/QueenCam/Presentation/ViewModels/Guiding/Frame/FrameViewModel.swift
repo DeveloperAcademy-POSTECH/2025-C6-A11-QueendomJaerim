@@ -69,7 +69,7 @@ final class FrameViewModel {
 
   // MARK: - 프레임 활성화 토글 + 네트워크
   func requestFrameOwnership(_ enabled: Bool, _ currentRole: Role?) {
-    let now = Date() //프레임 활성화 버튼을 누른 현재 시간
+    let now = Date() // 프레임 활성화 버튼을 누른 현재 시간
     self.frameOwnerRole = enabled ? currentRole : nil
     self.isFrameEnabled = enabled
     self.frameOwnershipTimestamp = enabled ? now : nil

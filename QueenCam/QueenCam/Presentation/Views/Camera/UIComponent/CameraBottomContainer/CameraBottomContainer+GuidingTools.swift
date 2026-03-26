@@ -69,7 +69,7 @@ extension CameraView.CameraBottomContainer {
         isDisabled: isRemoteGuideHidden || disabledByPeer,
         tapAction: {
           // 프레임 소유권 초기화
-          frameViewModel.requestFrameOwnership(false, nil)  // 상대편 프레임 비활성화 상태 제거(소유자 해제 전파)
+          frameViewModel.requestFrameOwnership(false, currentRole)  // 상대편 프레임 비활성화 상태 제거(소유자 해제 전파)
         },
         guidingButtonType: .frameChecked
       )
