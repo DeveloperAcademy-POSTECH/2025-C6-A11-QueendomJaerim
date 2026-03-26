@@ -9,19 +9,13 @@ extension CameraView.CameraBottomContainer {
       GuidingButton(
         role: currentRole,
         isActive: isFrameActive,
-        isDisabled: isRemoteGuideHidden || disabledByPeer, // 상대가 소유 중이면 시각적으로도 비활성
+        isDisabled: isRemoteGuideHidden || disabledByPeer,  // 상대가 소유 중이면 시각적으로도 비활성
         tapAction: {
-          // 현재 프레임 소유권 전송 (내가 소유자로 설정)
-          frameViewModel.setFrame(true, currentRole)
-
-          // 프레임이 존재하면, isSelected = true
-          if !frameViewModel.frames.isEmpty {
-            frameViewModel.selectedFrameID = frameViewModel.frames.first!.id
-          } // 프레임이 존재 안하면, subToolBar에서 프레임 추가하고 isSelected=true
-          guidingToolToggle(.frame)
-
-          if frameViewModel.isFrameEnabled {
-            isRemoteGuideHidden = false
+          if isFrameActive {
+            frameViewModel.selectedFrameID = nil
+            frameViewModel.requestFrameOwnership(false, currentRole)
+          } else{
+            frameViewModel.requestFrameOwnership(true, currentRole)
           }
         },
         guidingButtonType: .frame
@@ -51,7 +45,6 @@ extension CameraView.CameraBottomContainer {
         isActive: isMagicPenActive,
         isDisabled: isRemoteGuideHidden,
         tapAction: {
-
           penViewModel.showFirstToolToast(type: .magicPen)
           guidingToolToggle(.magicPen)
           if isMagicPenActive {
@@ -75,13 +68,8 @@ extension CameraView.CameraBottomContainer {
         isActive: isFrameActive,
         isDisabled: isRemoteGuideHidden || disabledByPeer,
         tapAction: {
-          guidingToolToggle(.frame)
-          if frameViewModel.isFrameEnabled {
-            isRemoteGuideHidden = false
-          }
-          // 프레임 소유권 변경 및 초기화: 내가 해제하는 경우에만 owner 제거
-          frameViewModel.selectedFrameID = nil // 프레임 선택(isSelected) 초기화 => 제어 모드 종료
-          frameViewModel.setFrame(false, nil) // 상대편 프레임 비활성화 상태 제거(소유자 해제 전파)
+          // 프레임 소유권 초기화
+          frameViewModel.requestFrameOwnership(false, currentRole)  // 상대편 프레임 비활성화 상태 제거(소유자 해제 전파)
         },
         guidingButtonType: .frameChecked
       )
@@ -89,8 +77,6 @@ extension CameraView.CameraBottomContainer {
     } commandButtons: {
       // 프레임 추가
       Button(action: {
-        frameViewModel.setFrame(isFrameActive, currentRole) // 프레임 활성화 상태 + 현재 나의 역할 전송
-
         if isFrameActive && frameViewModel.frames.isEmpty {
           frameViewModel.addFrame(at: CGPoint(x: 0.24, y: 0.15))
         }

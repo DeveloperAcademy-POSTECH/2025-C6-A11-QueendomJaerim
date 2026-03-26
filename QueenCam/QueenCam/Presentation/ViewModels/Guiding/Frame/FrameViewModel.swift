@@ -19,6 +19,8 @@ final class FrameViewModel {
 
   /// 프레임 토글 여부
   var isFrameEnabled: Bool = false
+  /// 프레임 소유권이 활성화된 시간
+  var frameOwnershipTimestamp: Date?
   /// 프레임의 현재 소유자
   var frameOwnerRole: Role?
   /// 수정 및 선택한 프레임의 식별자
@@ -66,13 +68,14 @@ final class FrameViewModel {
   }
 
   // MARK: - 프레임 활성화 토글 + 네트워크
-  func setFrame(_ enabled: Bool, _ currentRole: Role?) {
-    // 로컬 상태 갱신
-    isFrameEnabled = enabled
-    frameOwnerRole = currentRole
+  func requestFrameOwnership(_ enabled: Bool, _ currentRole: Role?) {
+    let now = Date() // 프레임 활성화 버튼을 누른 현재 시간
+    self.frameOwnerRole = enabled ? currentRole : nil
+    self.isFrameEnabled = enabled
+    self.frameOwnershipTimestamp = enabled ? now : nil
 
-    // Send to network
-    sendFrameEnabled(enabled, currentRole)
+    // Send to network: 네트워크로 소유권 신청 요청만 전송
+    sendFrameEnabled(enabled, currentRole, now)
   }
 
   // MARK: - 프레임 추가
@@ -242,12 +245,9 @@ extension FrameViewModel {
         case .frameUpdated(let eventType):
           self.handleFrameEvent(eventType: eventType)
 
-        case .frameEnabled(let enabled, let role):
-          self.isFrameEnabled = enabled
-          self.frameOwnerRole = role
-          guard isFrameEnabled, frameOwnerRole != currentRole, !frames.isEmpty else { return }
-          peerFrameGuidingToast(type: .edit)
-    
+        case .frameEnabled(let enabled, let role, let timeStamp):
+          self.handleReceivedFrameEnabled(enabled: enabled, role: role, timestamp: timeStamp)
+
         default:
           break
         }
@@ -316,10 +316,10 @@ extension FrameViewModel {
   }
 
   /// 프레임 토글 상태 전송
-  private func sendFrameEnabled(_ enabled: Bool, _ currentRole: Role?) {
+  private func sendFrameEnabled(_ enabled: Bool, _ currentRole: Role?, _ timestamp: Date) {
     Task.detached { [weak self] in
       guard let self else { return }
-      await self.networkService.send(for: .frameEnabled(enabled, currentRole))
+      await self.networkService.send(for: .frameEnabled(enabled, currentRole, timestamp))
     }
   }
 }
@@ -329,4 +329,40 @@ private enum FrameNetworkCommand {
   case move(frame: Frame)
   case modify(frame: Frame)
   case deleteAll
+}
+
+extension FrameViewModel {
+  func handleReceivedFrameEnabled(enabled: Bool, role: Role?, timestamp: Date) {
+    if enabled {
+      if let currentOwner = self.frameOwnerRole, let myTimestamp = self.frameOwnershipTimestamp {
+        if timestamp < myTimestamp { // 상대방이 나보다 먼저 누른 경우
+          self.frameOwnerRole = role
+          self.frameOwnershipTimestamp = timestamp
+          self.isFrameEnabled = true
+        }
+        else if (timestamp == myTimestamp){
+          if role == .photographer {
+            self.frameOwnerRole = role
+            self.frameOwnershipTimestamp = timestamp
+            self.isFrameEnabled = true
+          }
+        }
+      }
+      else {
+        self.frameOwnerRole = role
+        self.isFrameEnabled = true
+        self.frameOwnershipTimestamp = timestamp
+      }
+      if self.isFrameEnabled, self.frameOwnerRole != self.currentRole, !self.frames.isEmpty {
+        self.peerFrameGuidingToast(type: .edit)
+      }
+    }
+    else { //프레임 끄기 요청인 경우
+      if self.frameOwnerRole == role || role == nil || self.frameOwnerRole == nil {
+        self.frameOwnerRole = nil
+        self.isFrameEnabled = false
+        self.frameOwnershipTimestamp = nil
+      }
+    }
+  }
 }
