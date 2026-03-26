@@ -38,18 +38,29 @@ struct MainView: View {
 
   @State private var thumbsUpViewModel = ThumbsUpViewModel()
 
+  @State private var navigationRouter = NavigationRouter()
+
   var body: some View {
-    CameraView(
-      cameraViewModel: cameraViewModel,
-      previewModel: previewModel,
-      connectionViewModel: connectionViewModel,
-      guideViewModel: guideViewModel,
-      referenceViewModel: referenceViewModel,
-      penViewModel: penViewModel,
-      frameViewModel: frameViewModel,
-      thumbsUpViewModel: thumbsUpViewModel
-    )
-    .dynamicTypeSize(.medium) // FIXME: Dynamic Type 정책 결정 후 수정
+    NavigationStack(path: $navigationRouter.path) {
+      CameraView(
+        cameraViewModel: cameraViewModel,
+        previewModel: previewModel,
+        connectionViewModel: connectionViewModel,
+        guideViewModel: guideViewModel,
+        referenceViewModel: referenceViewModel,
+        penViewModel: penViewModel,
+        frameViewModel: frameViewModel,
+        thumbsUpViewModel: thumbsUpViewModel,
+        navigationRouter: navigationRouter
+      )
+      .dynamicTypeSize(.medium) // FIXME: Dynamic Type 정책 결정 후 수정
+      .navigationDestination(for: Route.self) { route in
+        switch route {
+        case let .settings(settingsRoute):
+          SettingsRouteView(currentRoute: settingsRoute, navigationRouter: navigationRouter)
+        }
+      }
+    }
     #if DEBUG
     .alert(
       "Ping 메시지 도착",
