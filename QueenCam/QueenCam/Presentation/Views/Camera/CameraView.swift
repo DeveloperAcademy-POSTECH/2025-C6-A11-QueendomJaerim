@@ -29,6 +29,7 @@ struct CameraView {
   @State private var isShowConnectionView: Bool = false
 
   @State private var isShowWifiAwareUnsupportedAlert: Bool = false
+  @State private var navigationRouter = NavigationRouter()
 
   @State var isReferenceLarge: Bool = false  // 레퍼런스 확대 축소 프로퍼티
 
@@ -42,7 +43,6 @@ struct CameraView {
   let penViewModel: PenViewModel
   let frameViewModel: FrameViewModel
   let thumbsUpViewModel: ThumbsUpViewModel
-  let navigationRouter: NavigationRouter
 }
 
 extension CameraView {
@@ -146,113 +146,121 @@ extension CameraView: View {
   }
 
   var body: some View {
-    ZStack {
-      Color.black.ignoresSafeArea()
+    NavigationStack(path: $navigationRouter.path) {
+      ZStack {
+        Color.black.ignoresSafeArea()
 
-      VStack(spacing: .zero) {
-        CameraPreviewArea(
-          cameraViewModel: cameraViewModel,
-          previewModel: previewModel,
-          penViewModel: penViewModel,
-          frameViewModel: frameViewModel,
-          referenceViewModel: referenceViewModel,
-          thumbsUpViewModel: thumbsUpViewModel,
-          activeTool: $activeTool,
-          isShowShutterFlash: $isShowShutterFlash,
-          isShowCameraSettingTool: $isShowCameraSettingTool,
-          isRemoteGuideHidden: $isRemoteGuideHidden,
-          isReferenceLarge: $isReferenceLarge,
-          currentRole: connectionViewModel.role,
-          connectionLost: connectionViewModel.connectionLost,
-          reconnectCancelButtonDidTap: connectionViewModel.reconnectCancelButtonDidTap,
-          shutterActionEffect: flashScreen
-        )
-        .padding(DynamicModelUtils.isiPad ? 32 : 0)
+        VStack(spacing: .zero) {
+          CameraPreviewArea(
+            cameraViewModel: cameraViewModel,
+            previewModel: previewModel,
+            penViewModel: penViewModel,
+            frameViewModel: frameViewModel,
+            referenceViewModel: referenceViewModel,
+            thumbsUpViewModel: thumbsUpViewModel,
+            activeTool: $activeTool,
+            isShowShutterFlash: $isShowShutterFlash,
+            isShowCameraSettingTool: $isShowCameraSettingTool,
+            isRemoteGuideHidden: $isRemoteGuideHidden,
+            isReferenceLarge: $isReferenceLarge,
+            currentRole: connectionViewModel.role,
+            connectionLost: connectionViewModel.connectionLost,
+            reconnectCancelButtonDidTap: connectionViewModel.reconnectCancelButtonDidTap,
+            shutterActionEffect: flashScreen
+          )
+          .padding(DynamicModelUtils.isiPad ? 32 : 0)
 
-        CameraBottomContainer(
-          currentRole: connectionViewModel.role,
-          cameraViewModel: cameraViewModel,
-          previewModel: previewModel,
-          penViewModel: penViewModel,
-          frameViewModel: frameViewModel,
-          referenceViewModel: referenceViewModel,
-          thumbsUpViewModel: thumbsUpViewModel,
-          activeTool: $activeTool,
-          isShowShutterFlash: $isShowShutterFlash,
-          isShowCameraSettingTool: $isShowCameraSettingTool,
-          isRemoteGuideHidden: $isRemoteGuideHidden,
-          isShowPhotoPicker: $isShowPhotoPicker,
-          isReferenceLarge: $isReferenceLarge,
-          shutterActionEffect: flashScreen
-        ) { targetTool in
-          activeTool = activeTool == targetTool ? nil : targetTool
+          CameraBottomContainer(
+            currentRole: connectionViewModel.role,
+            cameraViewModel: cameraViewModel,
+            previewModel: previewModel,
+            penViewModel: penViewModel,
+            frameViewModel: frameViewModel,
+            referenceViewModel: referenceViewModel,
+            thumbsUpViewModel: thumbsUpViewModel,
+            activeTool: $activeTool,
+            isShowShutterFlash: $isShowShutterFlash,
+            isShowCameraSettingTool: $isShowCameraSettingTool,
+            isRemoteGuideHidden: $isRemoteGuideHidden,
+            isShowPhotoPicker: $isShowPhotoPicker,
+            isReferenceLarge: $isReferenceLarge,
+            shutterActionEffect: flashScreen
+          ) { targetTool in
+            activeTool = activeTool == targetTool ? nil : targetTool
+          }
+          .minimize(DynamicModelUtils.isiPad)
         }
-        .minimize(DynamicModelUtils.isiPad)
       }
-    }
-    .padding(.top, 21)
-    .navigationBarTitleDisplayMode(.inline)
-    .toolbar {
-      ToolbarItem(placement: .principal) {
-        // 제일 위 연결 상태 뷰
-        TopToolBarView(
-          connectedDeviceName: connectionViewModel.connectedDeviceName,
-          reconnectingDeviceName: connectionViewModel.reconnectingDeviceName,
-          indicatorMenuContent: {
-            Button("역할 바꾸기") {
-              changeRoleButtonDidTap()
-            }
+      .padding(.top, 21)
+      .navigationBarTitleDisplayMode(.inline)
+      .toolbar {
+        ToolbarItem(placement: .principal) {
+          // 제일 위 연결 상태 뷰
+          TopToolBarView(
+            connectedDeviceName: connectionViewModel.connectedDeviceName,
+            reconnectingDeviceName: connectionViewModel.reconnectingDeviceName,
+            indicatorMenuContent: {
+              Button("역할 바꾸기") {
+                changeRoleButtonDidTap()
+              }
 
-            Button("연결 종료하기", role: .destructive) {
-              isShowDisconnectAlert = true
+              Button("연결 종료하기", role: .destructive) {
+                isShowDisconnectAlert = true
+              }
+            },
+            connectedWithButtonDidTap: {
+              if isAvailableWifiAware {
+                isShowConnectionView = true
+              } else {
+                isShowWifiAwareUnsupportedAlert = true
+              }
             }
-          },
-          connectedWithButtonDidTap: {
-            if isAvailableWifiAware {
-              isShowConnectionView = true
-            } else {
-              isShowWifiAwareUnsupportedAlert = true
+          )
+          //        .padding() // 툴바로 들어가면서 안 먹힘
+          .alert(
+            "연결이 불가능한 기기입니다.",
+            isPresented: $isShowWifiAwareUnsupportedAlert,
+            actions: {
+              Button(role: .cancel) {
+              } label: {
+                Text("확인했어요")
+              }
+            },
+            message: {
+              Text("이 기기는 다른 기기와의 연결이 어려워요. 대신 찍자의 여러 가이드 기능은 이용할 수 있어요.")
             }
-          }
-        )
-//        .padding() // 툴바로 들어가면서 안 먹힘
-        .alert(
-          "연결이 불가능한 기기입니다.",
-          isPresented: $isShowWifiAwareUnsupportedAlert,
-          actions: {
-            Button(role: .cancel) {
-            } label: {
-              Text("확인했어요")
-            }
-          },
-          message: {
-            Text("이 기기는 다른 기기와의 연결이 어려워요. 대신 찍자의 여러 가이드 기능은 이용할 수 있어요.")
-          }
-        )
-        .alert(
-          "연결을 종료합니다.",
-          isPresented: $isShowDisconnectAlert,
-          actions: {
-            Button(role: .destructive) {
-              connectionViewModel.disconnectButtonDidTap()
-            } label: {
-              Text("연결 종료하기")
-            }
+          )
+          .alert(
+            "연결을 종료합니다.",
+            isPresented: $isShowDisconnectAlert,
+            actions: {
+              Button(role: .destructive) {
+                connectionViewModel.disconnectButtonDidTap()
+              } label: {
+                Text("연결 종료하기")
+              }
 
-            Button(role: .cancel) {
-            } label: {
-              Text("취소하기")
+              Button(role: .cancel) {
+              } label: {
+                Text("취소하기")
+              }
+            },
+            message: {
+              Text("친구와 연결을 끊고 촬영을 마칩니다.")
             }
-          },
-          message: {
-            Text("친구와 연결을 끊고 촬영을 마칩니다.")
+          )
+        }
+
+        ToolbarItem(placement: .topBarTrailing) {
+          Button("설정", systemImage: "gearshape") {
+            navigationRouter.push(.settings(.main(role: connectionViewModel.role)))
           }
-        )
+        }
       }
-
-      ToolbarItem(placement: .topBarTrailing) {
-        Button("설정", systemImage: "gearshape") {
-          navigationRouter.push(.settings(.main(role: connectionViewModel.role)))
+      .navigationDestination(for: Route.self) { route in
+        switch route {
+        case let .settings(settingsRoute):
+          SettingsRouteView(currentRoute: settingsRoute, navigationRouter: navigationRouter)
         }
       }
     }
