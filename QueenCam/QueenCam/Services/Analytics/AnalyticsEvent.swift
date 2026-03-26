@@ -11,12 +11,16 @@ enum AnalyticsEvent {
   case sessionStart
   case connectionLost
   case shutterPressed
+  case takeScreenshot
+  case takeVideoCapture
 
   var eventName: String {
     switch self {
     case .sessionStart: return "shooting_session_start"
     case .connectionLost: return "connection_lost"
     case .shutterPressed: return "shutter_pressed"
+    case .takeScreenshot: return "take_screenshot"
+    case .takeVideoCapture: return "take_video_capture"
     }
   }
 
@@ -25,6 +29,8 @@ enum AnalyticsEvent {
     case .sessionStart: return "connection"
     case .connectionLost: return "connection"
     case .shutterPressed: return "camera"
+    case .takeScreenshot: return "device"
+    case .takeVideoCapture: return "device"
     }
   }
 }
