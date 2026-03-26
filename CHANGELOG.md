@@ -16,6 +16,7 @@
 ### Removed
 
 ### Fixed
+- Frame concurrency 문제 해결
 
 - 1.1.6 이후 MakeConnectionView에서 DeviceDiscoveryUI 이용한 기기 디스커버리
   안되는 이슈 발생
