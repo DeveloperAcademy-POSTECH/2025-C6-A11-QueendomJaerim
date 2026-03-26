@@ -19,6 +19,28 @@
 
 ### Security
 
+## [1.1.7] - 2026-03-26
+
+### Added
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+- Frame concurrency 문제 해결
+
+- 1.1.6 이후 MakeConnectionView에서 DeviceDiscoveryUI 이용한 기기 디스커버리
+  안되는 이슈 발생
+- 1.1.6 에서 연결 뷰 변경, 특히 NavigationStack 중첩으로 인한 사이드 이펙트로
+  판단하나 정확한 원인 불명
+- MainView 감싸는 NavigationStack의 위치를 조정하면 문제가 사라지는 것을 루크가
+  발견하여 이렇게 일단 조치
+
+### Security
+
 ## [1.1.6] - 2026-03-08
 
 ### Added
@@ -379,7 +401,8 @@
 - Wi-Fi Aware 연결 후, 라이브 포토 촬영 시 앱이 크래시되는 문제
 - 레퍼런스 삭제 후 재등록에 관한 상태 초기화 문제
 
-[Unreleased]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.6...HEAD
+[Unreleased]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.7...HEAD
+[1.1.7]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.6...v1.1.7
 [1.1.6]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.5...v1.1.6
 [1.1.5]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.4...v1.1.5
 [1.1.4]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.3...v1.1.4

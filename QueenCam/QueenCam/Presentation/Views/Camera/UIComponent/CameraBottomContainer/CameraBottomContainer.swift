@@ -29,7 +29,7 @@ extension CameraView {
     let guidingToolToggle: (_ selectedTool: ActiveTool) -> Void
     // 비율이 작은 기기를 위한 모드. true면 뷰 크기 조정
     var isMinimize = false
-    
+
     // 도구 버튼 토글 애니메이션을 위한 네임스페이스
     @Namespace var toggledToolNamespace
   }
@@ -116,7 +116,7 @@ extension CameraView.CameraBottomContainer: View {
       } else if activeTool == .maginPen {
         penViewModel.showToolReferenceLargeToast(type: .magicPen)
       } else if activeTool == .frame {
-        
+
       }
       activeTool = nil
     }
@@ -125,6 +125,40 @@ extension CameraView.CameraBottomContainer: View {
       guard new != nil else { return }
       withAnimation(.easeInOut(duration: 0.25)) {
         isReferenceLarge = false
+      }
+    }
+    // 프레임의 활성화 여부가 바뀔 때 감지
+    .onChange(of: frameViewModel.isFrameEnabled) { _, _ in
+      updateFrameToolState()
+    }
+    // 프레임의 소유주가 바뀔 때도 감지
+    .onChange(of: frameViewModel.frameOwnerRole) { _, _ in
+      updateFrameToolState()
+    }
+  }
+
+  /// 프레임 도구 상태 동기화 메서드
+  private func updateFrameToolState() {
+    let isFrameOwner = (frameViewModel.frameOwnerRole == currentRole)
+    if frameViewModel.isFrameEnabled {
+      if isFrameOwner {
+        if !frameViewModel.frames.isEmpty {
+          frameViewModel.selectedFrameID = frameViewModel.frames.first!.id
+        }
+        if !isFrameActive {
+          guidingToolToggle(.frame)
+        }
+        isRemoteGuideHidden = false
+      } else {
+        if isFrameActive {
+          activeTool = nil  // 강제 종료
+        }
+        frameViewModel.selectedFrameID = nil
+      }
+    } else {
+      frameViewModel.selectedFrameID = nil
+      if isFrameActive {
+        activeTool = nil
       }
     }
   }
