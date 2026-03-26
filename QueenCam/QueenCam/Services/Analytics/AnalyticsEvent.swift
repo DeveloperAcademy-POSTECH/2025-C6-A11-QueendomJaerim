@@ -40,9 +40,20 @@ enum AnalyticsEvent {
     case .shutterPressed: return "camera"
     case .takeScreenshot: return "device"
     case .takeVideoCapture: return "device"
-    case .frameSelected: return "guiding"
-    case .penSelected: return "guiding"
-    case .magicPenSelected: return "guiding"
+    case .frameSelected: return "guiding_tool"
+    case .penSelected: return "guiding_tool"
+    case .magicPenSelected: return "guiding_tool"
+    }
+  }
+
+  var roleParameters: [String: String] {
+    switch self {
+    case .frameSelected(let role),
+         .penSelected(let role),
+         .magicPenSelected(let role):
+      return ["user_role": role]
+    default:
+      return [:]
     }
   }
 }

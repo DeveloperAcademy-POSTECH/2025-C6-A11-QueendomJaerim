@@ -15,6 +15,7 @@ extension CameraView.CameraBottomContainer {
             frameViewModel.selectedFrameID = nil
             frameViewModel.requestFrameOwnership(false, currentRole)
           } else{
+            AnalyticsService.sendEvent(.frameSelected(role: "\(currentRole)"))
             frameViewModel.requestFrameOwnership(true, currentRole)
           }
         },
@@ -30,6 +31,7 @@ extension CameraView.CameraBottomContainer {
         isDisabled: isRemoteGuideHidden,
         tapAction: {
           penViewModel.showFirstToolToast(type: .pen)
+          AnalyticsService.sendEvent(.penSelected(role: "\(currentRole)"))
           guidingToolToggle(.pen)
           if isPenActive {
             isRemoteGuideHidden = false
@@ -46,6 +48,7 @@ extension CameraView.CameraBottomContainer {
         isDisabled: isRemoteGuideHidden,
         tapAction: {
           penViewModel.showFirstToolToast(type: .magicPen)
+          AnalyticsService.sendEvent(.magicPenSelected(role: "\(currentRole)"))
           guidingToolToggle(.magicPen)
           if isMagicPenActive {
             isRemoteGuideHidden = false

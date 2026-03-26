@@ -34,12 +34,16 @@ final class AnalyticsService {
 
   private func logEvent(_ event: AnalyticsEvent) {
     logger.debug("will send event: \(event.eventName) to FirebaseAnalytics")
+
+    var parameters: [String: String] = [
+      AnalyticsParameterItemName: event.eventName,
+      AnalyticsParameterContentType: event.eventType
+    ]
+    event.roleParameters.forEach { parameters[$0] = $1 }
+
     Analytics.logEvent(
       event.eventName,
-      parameters: [
-        AnalyticsParameterItemName: event.eventName,
-        AnalyticsParameterContentType: event.eventType
-      ]
+      parameters: parameters
     )
   }
 }
