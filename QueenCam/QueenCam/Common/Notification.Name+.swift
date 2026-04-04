@@ -16,4 +16,7 @@ extension Notification.Name {
 
   /// 애널리틱스 이벤트 알림. 반드시 userInfo에 "event"를 키로 해서, AnalyticsEvent 타입 객체를 보내야한다.
   static let QueenCamAnalyticsEventNotification = Notification.Name("QueenCam.AnalyticsEventNotification")
+
+  /// 애널리틱스 스크린 알림. 반드시 userInfo에 "screenAction"를 키로 해서, AnalyticsScreenAction 타입 객체를 보내야한다.
+  static let QueenCamAnalyticsScreenEventNotification = Notification.Name("QueenCam.AnalyticsScreenEventNotification")
 }
