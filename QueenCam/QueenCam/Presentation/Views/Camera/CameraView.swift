@@ -193,6 +193,7 @@ extension CameraView: View {
       }
       .padding(.top, 21)
       .navigationBarTitleDisplayMode(.inline)
+      .trackScreen(.camera, Self.self)
       .toolbar {
         ToolbarItem(placement: .principal) {
           // 제일 위 연결 상태 뷰

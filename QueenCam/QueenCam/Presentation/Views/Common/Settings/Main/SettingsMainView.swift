@@ -85,6 +85,7 @@ extension SettingsMainView: View {
       }
       .frame(maxWidth: .infinity, alignment: .leading)
     }
+    .trackScreen(.settings, Self.self)
     .navigationTitle("설정")
     .navigationBarTitleDisplayMode(.inline)
     .fullScreenCover(item: $safariSheetItem) { sheetItem in
