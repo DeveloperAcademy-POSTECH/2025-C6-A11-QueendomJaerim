@@ -261,6 +261,7 @@ final class PenPhotoOverlayComposer {
 
     var properties = imageProperties(from: originalImageData)
     properties[kCGImageDestinationLossyCompressionQuality as String] = 0.95
+    normalizeOrientation(in: &properties)
 
     if let livePhotoAssetIdentifier {
       var makerAppleDictionary = properties[kCGImagePropertyMakerAppleDictionary as String] as? [String: Any] ?? [:]
@@ -272,6 +273,15 @@ final class PenPhotoOverlayComposer {
     guard CGImageDestinationFinalize(destination) else { return nil }
 
     return data as Data
+  }
+
+  private static func normalizeOrientation(in properties: inout [String: Any]) {
+    properties[kCGImagePropertyOrientation as String] = CGImagePropertyOrientation.up.rawValue
+
+    if var tiffDictionary = properties[kCGImagePropertyTIFFDictionary as String] as? [String: Any] {
+      tiffDictionary[kCGImagePropertyTIFFOrientation as String] = CGImagePropertyOrientation.up.rawValue
+      properties[kCGImagePropertyTIFFDictionary as String] = tiffDictionary
+    }
   }
 
   private static func imageProperties(from imageData: Data) -> [String: Any] {
