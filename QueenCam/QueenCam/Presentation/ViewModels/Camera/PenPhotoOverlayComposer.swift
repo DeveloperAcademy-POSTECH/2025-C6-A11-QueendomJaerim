@@ -5,9 +5,12 @@
 //  Created by 임영택 on 6/14/26.
 //
 
+import AVFoundation
 import CoreImage
 import Foundation
+import ImageIO
 import UIKit
+import UniformTypeIdentifiers
 
 final class PenPhotoOverlayComposer {
   private struct OverlayStroke {
@@ -49,14 +52,22 @@ final class PenPhotoOverlayComposer {
     case .basicPhoto(_, let imageData, _):
       guard
         let image = makeCompositeImage(from: imageData),
-        let compositeData = image.jpegData(compressionQuality: 0.95)
+        let compositeData = Self.makeJPEGData(from: image, originalImageData: imageData)
       else { return nil }
 
       return .basicPhoto(thumbnail: image, imageData: compositeData, isProxy: false)
     case .livePhoto(_, let imageData, let videoData, _):
+      let assetIdentifier = Self.livePhotoAssetIdentifier(from: imageData)
+        ?? Self.livePhotoAssetIdentifier(fromVideoData: videoData)
+
       guard
+        let assetIdentifier,
         let image = makeCompositeImage(from: imageData),
-        let compositeData = image.jpegData(compressionQuality: 0.95)
+        let compositeData = Self.makeJPEGData(
+          from: image,
+          originalImageData: imageData,
+          livePhotoAssetIdentifier: assetIdentifier
+        )
       else { return nil }
 
       return .livePhoto(thumbnail: image, imageData: compositeData, videoData: videoData, isDeferred: false)
@@ -233,6 +244,70 @@ final class PenPhotoOverlayComposer {
       return .modelPrimary
     case .photographer:
       return .photographerPrimary
+    }
+  }
+
+  private static func makeJPEGData(
+    from image: UIImage,
+    originalImageData: Data,
+    livePhotoAssetIdentifier: String? = nil
+  ) -> Data? {
+    guard let cgImage = image.cgImage else { return nil }
+
+    let data = NSMutableData()
+    guard let destination = CGImageDestinationCreateWithData(data, UTType.jpeg.identifier as CFString, 1, nil) else {
+      return nil
+    }
+
+    var properties = imageProperties(from: originalImageData)
+    properties[kCGImageDestinationLossyCompressionQuality as String] = 0.95
+
+    if let livePhotoAssetIdentifier {
+      var makerAppleDictionary = properties[kCGImagePropertyMakerAppleDictionary as String] as? [String: Any] ?? [:]
+      makerAppleDictionary["17"] = livePhotoAssetIdentifier
+      properties[kCGImagePropertyMakerAppleDictionary as String] = makerAppleDictionary
+    }
+
+    CGImageDestinationAddImage(destination, cgImage, properties as CFDictionary)
+    guard CGImageDestinationFinalize(destination) else { return nil }
+
+    return data as Data
+  }
+
+  private static func imageProperties(from imageData: Data) -> [String: Any] {
+    guard
+      let source = CGImageSourceCreateWithData(imageData as CFData, nil),
+      let properties = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [String: Any]
+    else { return [:] }
+
+    return properties
+  }
+
+  private static func livePhotoAssetIdentifier(from imageData: Data) -> String? {
+    let makerAppleDictionary = imageProperties(from: imageData)[kCGImagePropertyMakerAppleDictionary as String]
+      as? [String: Any]
+
+    return makerAppleDictionary?["17"] as? String
+  }
+
+  private static func livePhotoAssetIdentifier(fromVideoData videoData: Data) -> String? {
+    let videoURL = FileManager.default.temporaryDirectory
+      .appendingPathComponent(UUID().uuidString)
+      .appendingPathExtension(for: .quickTimeMovie)
+
+    do {
+      try videoData.write(to: videoURL)
+      defer { try? FileManager.default.removeItem(at: videoURL) }
+
+      let asset = AVURLAsset(url: videoURL)
+      return asset.metadata(forFormat: .quickTimeMetadata)
+        .first { item in
+          item.identifier == .quickTimeMetadataContentIdentifier
+            || item.key as? String == "com.apple.quicktime.content.identifier"
+        }?
+        .stringValue
+    } catch {
+      return nil
     }
   }
 }
