@@ -24,7 +24,8 @@ final class CameraManager: NSObject {
   // 네트워크 송수신
   let networkService: NetworkServiceProtocol
   let cameraSettingsService: CameraSettingsServiceProtocol
-  let penPhotoOverlayComposer: PenPhotoOverlayComposer
+  let globalSettingsService: GlobalSettingsServiceProtocol
+  let strokePhotoOverlayComposer: StrokePhotoOverlayComposer
   var cancellables: Set<AnyCancellable> = []
 
   var position: AVCaptureDevice.Position = .back
@@ -51,12 +52,14 @@ final class CameraManager: NSObject {
     previewCaptureService: PreviewCaptureService,
     networkService: NetworkServiceProtocol,
     cameraSettingsService: CameraSettingsServiceProtocol,
-    penPhotoOverlayComposer: PenPhotoOverlayComposer
+    globalSettingsService: GlobalSettingsServiceProtocol,
+    strokePhotoOverlayComposer: StrokePhotoOverlayComposer
   ) {
     self.previewCaptureService = previewCaptureService
     self.networkService = networkService
     self.cameraSettingsService = cameraSettingsService
-    self.penPhotoOverlayComposer = penPhotoOverlayComposer
+    self.globalSettingsService = globalSettingsService
+    self.strokePhotoOverlayComposer = strokePhotoOverlayComposer
 
     super.init()
 

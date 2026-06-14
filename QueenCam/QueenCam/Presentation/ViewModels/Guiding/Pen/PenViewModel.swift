@@ -20,8 +20,10 @@ final class PenViewModel {
   var currentRole: Role?
   /// 미연결(nil)인 경우 작가로 역할 부여
   private var myRole: Role { currentRole ?? .photographer }
+  private var remoteRole: Role { myRole.counterpart }
   /// 세션 동안 내가 한 번이라도 그렸는지 여부
   var hasEverDrawn: Bool = false
+  private var isVisibleInPhotoOverlay = true
 
   // 가이드 최초 1회
   private var hasShownPenToast: Bool = false
@@ -32,6 +34,7 @@ final class PenViewModel {
 
   // MARK: - 네트워크
   let networkService: NetworkServiceProtocol
+  private let strokePhotoOverlayComposer: StrokePhotoOverlayComposer
   var cancellables: Set<AnyCancellable> = []
 
   // MARK: - Toast
@@ -39,10 +42,12 @@ final class PenViewModel {
 
   init(
     networkService: NetworkServiceProtocol = DependencyContainer.defaultContainer.networkService,
-    notificationService: NotificationServiceProtocol = DependencyContainer.defaultContainer.notificationService
+    notificationService: NotificationServiceProtocol = DependencyContainer.defaultContainer.notificationService,
+    strokePhotoOverlayComposer: StrokePhotoOverlayComposer = DependencyContainer.defaultContainer.strokePhotoOverlayComposer
   ) {
     self.networkService = networkService
     self.notificationService = notificationService
+    self.strokePhotoOverlayComposer = strokePhotoOverlayComposer
 
     bind()
   }
@@ -58,6 +63,7 @@ final class PenViewModel {
 
     // Send to network
     sendPenCommand(command: .add(stroke: stroke))
+    syncPhotoOverlayStrokes()
     return stroke.id
   }
 
@@ -69,6 +75,7 @@ final class PenViewModel {
     strokes[strokeIndex].endDrawing = endDrawing
     // Send to network
     sendPenCommand(command: .replace(stroke: strokes[strokeIndex]))
+    syncPhotoOverlayStrokes()
   }
   // MARK: - 세션 종료 후 Stroke 저장
   /// 펜 툴 해제(세션 종료) 시 본인 stroke를 strokes에서 persistedStrokes로 이관
@@ -89,6 +96,7 @@ final class PenViewModel {
         deleteStrokes[i].removeAll { $0.author == myRole }
       }
     }
+    syncPhotoOverlayStrokes()
   }
 
   // MARK: - 스트로크 삭제
@@ -103,6 +111,7 @@ final class PenViewModel {
 
     // Send to network
     sendPenCommand(command: .remove(id: id))
+    syncPhotoOverlayStrokes()
   }
 
   /// 본인이 생성한 펜 가이딩 전체 삭제
@@ -125,6 +134,7 @@ final class PenViewModel {
     for id in myIds {
       sendPenCommand(command: .remove(id: id))
     }
+    syncPhotoOverlayStrokes()
   }
 
   /// 펜 가이딩 초기화
@@ -135,6 +145,7 @@ final class PenViewModel {
 
     // Send to network
     sendPenCommand(command: .reset)
+    syncPhotoOverlayStrokes()
   }
 
   // MARK: - 스트로크 실행취소/재실행
@@ -144,6 +155,7 @@ final class PenViewModel {
       for stroke in recentDeleteStrokes {
         sendPenCommand(command: .add(stroke: stroke))
       }
+      syncPhotoOverlayStrokes()
       return
     }
     guard let index = strokes.lastIndex(where: { $0.author == myRole }) else { return }
@@ -152,6 +164,12 @@ final class PenViewModel {
 
     // Send to network
     sendPenCommand(command: .remove(id: last.id))
+    syncPhotoOverlayStrokes()
+  }
+
+  func setPhotoOverlayVisibility(_ isVisible: Bool) {
+    isVisibleInPhotoOverlay = isVisible
+    syncPhotoOverlayStrokes()
   }
 
   // MARK: - 토스트
@@ -215,6 +233,7 @@ extension PenViewModel {
       if !strokes.contains(where: { $0.id == stroke.id }) {
         strokes.append(stroke)
       }
+      syncPhotoOverlayStrokes()
     case .replace(let penPayload):
       let replaceTo = PenMapper.convert(payload: penPayload)
       let targetId = replaceTo.id
@@ -225,13 +244,38 @@ extension PenViewModel {
         }
         return stroke
       }
+      syncPhotoOverlayStrokes()
     case .delete(let id):
       strokes.removeAll { $0.id == id }
       persistedStrokes.removeAll { $0.id == id }
+      syncPhotoOverlayStrokes()
     case .reset:
       strokes.removeAll()
       hasEverDrawn = false
+      syncPhotoOverlayStrokes()
     }
+  }
+}
+
+private extension PenViewModel {
+  func syncPhotoOverlayStrokes() {
+    guard isVisibleInPhotoOverlay else {
+      strokePhotoOverlayComposer.clearAll()
+      return
+    }
+
+    let visibleStrokes = (persistedStrokes + strokes).filter {
+      $0.points.count > 1 && !$0.isMagicPen
+    }
+
+    strokePhotoOverlayComposer.replaceVisibleStrokes(
+      visibleStrokes.filter { $0.author == myRole },
+      for: .userStrokes
+    )
+    strokePhotoOverlayComposer.replaceVisibleStrokes(
+      visibleStrokes.filter { $0.author == remoteRole },
+      for: .remoteStrokes
+    )
   }
 }
 

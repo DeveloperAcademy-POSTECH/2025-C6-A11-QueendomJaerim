@@ -69,8 +69,8 @@ extension CameraManager {
 // MARK: - Send
 extension CameraManager {
   func saveAndSendPhoto(_ photoOutput: PhotoOuput) {
-    let compositeOutput = cameraSettingsService.savePenOverlayImageOn
-      ? penPhotoOverlayComposer.makeCompositePhotoOutput(from: photoOutput)
+    let compositeOutput = globalSettingsService.saveGuidingOverlayImageOn
+      ? strokePhotoOverlayComposer.makeCompositePhotoOutput(from: photoOutput)
       : nil
 
     savePhotoOutput(photoOutput)

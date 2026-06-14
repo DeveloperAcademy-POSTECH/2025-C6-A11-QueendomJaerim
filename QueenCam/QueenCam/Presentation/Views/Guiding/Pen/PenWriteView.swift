@@ -9,7 +9,6 @@ import SwiftUI
 /// 펜 가이드라인 작성 뷰
 struct PenWriteView: View {
   var penViewModel: PenViewModel
-  let penPhotoOverlayComposer: PenPhotoOverlayComposer
   var isMagicPen: Bool
   let role: Role?
   var isZooming: Bool
@@ -17,7 +16,6 @@ struct PenWriteView: View {
 
   init(
     penViewModel: PenViewModel,
-    penPhotoOverlayComposer: PenPhotoOverlayComposer,
     isPen: Bool,
     isMagicPen: Bool,
     role: Role?,
@@ -25,7 +23,6 @@ struct PenWriteView: View {
     isVisibleInPhotoOverlay: Bool
   ) {
     self.penViewModel = penViewModel
-    self.penPhotoOverlayComposer = penPhotoOverlayComposer
     self.isMagicPen = isMagicPen
     self.role = role
     self.penViewModel.currentRole = role
@@ -38,7 +35,6 @@ struct PenWriteView: View {
   /// 작성 중인 스트로크 ID
   @State private var currentStrokeID: UUID?
 
-  private var topColor = Color.offWhite
   private var photographerColor = Color.photographerPrimary
   private var modelColor = Color.modelPrimary
 
@@ -48,7 +44,6 @@ struct PenWriteView: View {
         // MARK: - 세션전 저장된 Stroke + 세션 중 그리기 완료된 Stroke
         PenDisplayView(
           penViewModel: penViewModel,
-          penPhotoOverlayComposer: penPhotoOverlayComposer,
           isVisibleInPhotoOverlay: isVisibleInPhotoOverlay
         )
 
@@ -58,14 +53,11 @@ struct PenWriteView: View {
         // 1) 일반펜
         if tempPoints.count > 1, !isMagicPen {
           Canvas { context, _ in
-            drawTempPoints(
-              context: context,
-              size: geo.size,
+            StrokeOverlayRenderer.drawNormalStroke(
               points: tempPoints,
-              layers: [
-                .stroke(color: topColor, width: 10),
-                .stroke(color: outerColor, width: 7)
-              ]
+              author: author,
+              in: context,
+              size: geo.size
             )
           }
           .background(.clear)
@@ -80,8 +72,8 @@ struct PenWriteView: View {
               size: geo.size,
               points: tempPoints,
               layers: [
-                .stroke(color: outerColor, width: 10),
-                .stroke(color: .systemWhite, width: 5)
+                (color: outerColor, width: 10),
+                (color: .systemWhite, width: 5)
               ]
             )
           }
@@ -97,7 +89,7 @@ struct PenWriteView: View {
               size: geo.size,
               points: tempPoints,
               layers: [
-                .stroke(color: .systemWhite, width: 3)
+                (color: .systemWhite, width: 3)
               ]
             )
           }
@@ -151,40 +143,19 @@ struct PenWriteView: View {
 }
 
 private extension PenWriteView {
-  enum StrokeLayer {
-    case stroke(color: Color, width: CGFloat)
-
-    var style: StrokeStyle {
-      StrokeStyle(lineWidth: lineWidth, lineCap: .round, lineJoin: .round)
-    }
-
-    private var lineWidth: CGFloat {
-      switch self {
-      case .stroke(_, let width): return width
-      }
-    }
-  }
-  func makePath(fromAbsolute points: [CGPoint]) -> Path {
-    var path = Path()
-    path.addLines(points)
-    return path
-  }
-  func makePath(fromRelative points: [CGPoint], in size: CGSize) -> Path {
-    let abs = points.map { CGPoint(x: $0.x * size.width, y: $0.y * size.height) }
-    return makePath(fromAbsolute: abs)
-  }
   func drawTempPoints(
     context: GraphicsContext,
     size: CGSize,
     points: [CGPoint],
-    layers: [StrokeLayer]
+    layers: [(color: Color, width: CGFloat)]
   ) {
-    let path = makePath(fromRelative: points, in: size)
+    let path = StrokeOverlayRenderer.makePath(points: points, in: size)
     for layer in layers {
-      switch layer {
-      case .stroke(let color, _):
-        context.stroke(path, with: .color(color), style: layer.style)
-      }
+      context.stroke(
+        path,
+        with: .color(layer.color),
+        style: StrokeStyle(lineWidth: layer.width, lineCap: .round, lineJoin: .round)
+      )
     }
   }
 }

@@ -26,7 +26,6 @@ extension CameraView.CameraPreviewArea {
       if isPenActive || isMagicPenActive {
         PenWriteView(
           penViewModel: penViewModel,
-          penPhotoOverlayComposer: penPhotoOverlayComposer,
           isPen: isPenActive,
           isMagicPen: isMagicPenActive,
           role: currentMode,
@@ -37,7 +36,6 @@ extension CameraView.CameraPreviewArea {
       } else {
         PenDisplayView(
           penViewModel: penViewModel,
-          penPhotoOverlayComposer: penPhotoOverlayComposer,
           isVisibleInPhotoOverlay: !isRemoteGuideHidden
         )
       }

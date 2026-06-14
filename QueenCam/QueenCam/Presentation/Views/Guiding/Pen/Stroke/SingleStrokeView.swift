@@ -16,18 +16,11 @@ struct SingleStrokeView: View {
 
   var body: some View {
     Canvas { context, _ in
-      let outerColor = (stroke.author == .model) ? Color.modelPrimary : .photographerPrimary
-      var path = Path()
-      path.addLines(stroke.absolutePoints(in: geoSize))
-      context.stroke(
-        path,
-        with: .color(.offWhite),
-        style: StrokeStyle(lineWidth: 10, lineCap: .round, lineJoin: .round)
-      )
-      context.stroke(
-        path,
-        with: .color(outerColor),
-        style: StrokeStyle(lineWidth: 7, lineCap: .round, lineJoin: .round)
+      StrokeOverlayRenderer.drawNormalStroke(
+        points: stroke.points,
+        author: stroke.author,
+        in: context,
+        size: geoSize
       )
     }
   }

@@ -27,14 +27,16 @@ struct MainView: View {
     previewCaptureService: DependencyContainer.defaultContainer.previewCaptureService,
     networkService: DependencyContainer.defaultContainer.networkService,
     cameraSettingsService: DependencyContainer.defaultContainer.cameraSettingServcice,
+    globalSettingsService: DependencyContainer.defaultContainer.globalSettingsService,
     notificationService: DependencyContainer.defaultContainer.notificationService,
-    penPhotoOverlayComposer: DependencyContainer.defaultContainer.penPhotoOverlayComposer
+    strokePhotoOverlayComposer: DependencyContainer.defaultContainer.strokePhotoOverlayComposer
   )
 
   @State private var referenceViewModel = ReferenceViewModel()
 
-  @State private var penViewModel = PenViewModel()
-  @State private var penPhotoOverlayComposer = DependencyContainer.defaultContainer.penPhotoOverlayComposer
+  @State private var penViewModel = PenViewModel(
+    strokePhotoOverlayComposer: DependencyContainer.defaultContainer.strokePhotoOverlayComposer
+  )
 
   @State private var frameViewModel = FrameViewModel()
 
@@ -48,7 +50,6 @@ struct MainView: View {
       guideViewModel: guideViewModel,
       referenceViewModel: referenceViewModel,
       penViewModel: penViewModel,
-      penPhotoOverlayComposer: penPhotoOverlayComposer,
       frameViewModel: frameViewModel,
       thumbsUpViewModel: thumbsUpViewModel
     )

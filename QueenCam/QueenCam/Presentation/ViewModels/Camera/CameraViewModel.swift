@@ -45,8 +45,9 @@ final class CameraViewModel {
     previewCaptureService: PreviewCaptureService,
     networkService: NetworkServiceProtocol,
     cameraSettingsService: CameraSettingsServiceProtocol,
+    globalSettingsService: GlobalSettingsServiceProtocol,
     notificationService: NotificationServiceProtocol,
-    penPhotoOverlayComposer: PenPhotoOverlayComposer
+    strokePhotoOverlayComposer: StrokePhotoOverlayComposer
   ) {
     self.networkService = networkService
     self.cameraSettingsService = cameraSettingsService
@@ -54,7 +55,8 @@ final class CameraViewModel {
       previewCaptureService: previewCaptureService,
       networkService: networkService,
       cameraSettingsService: cameraSettingsService,
-      penPhotoOverlayComposer: penPhotoOverlayComposer
+      globalSettingsService: globalSettingsService,
+      strokePhotoOverlayComposer: strokePhotoOverlayComposer
     )
     
     self.isLivePhotoOn = cameraSettingsService.livePhotoOn

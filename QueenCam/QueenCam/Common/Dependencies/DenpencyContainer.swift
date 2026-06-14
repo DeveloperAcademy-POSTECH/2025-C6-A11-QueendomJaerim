@@ -21,7 +21,9 @@ final class DependencyContainer {
 
   lazy var cameraSettingServcice: CameraSettingsServiceProtocol = CameraSettingsService()
 
-  lazy var penPhotoOverlayComposer = PenPhotoOverlayComposer()
+  lazy var globalSettingsService: GlobalSettingsServiceProtocol = GlobalSettingsService()
+
+  lazy var strokePhotoOverlayComposer = StrokePhotoOverlayComposer()
 
   lazy var notificationService: NotificationService = NotificationService()
 

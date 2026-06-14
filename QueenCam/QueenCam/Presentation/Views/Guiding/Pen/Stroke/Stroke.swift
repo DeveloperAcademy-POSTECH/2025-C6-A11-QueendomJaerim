@@ -30,3 +30,8 @@ struct Stroke: Identifiable, Hashable, Equatable {
     points.map { CGPoint(x: $0.x * size.width, y: $0.y * size.height) }
   }
 }
+
+extension StrokeLayerKey {
+  static let userStrokes = StrokeLayerKey("userStrokes")
+  static let remoteStrokes = StrokeLayerKey("remoteStrokes")
+}

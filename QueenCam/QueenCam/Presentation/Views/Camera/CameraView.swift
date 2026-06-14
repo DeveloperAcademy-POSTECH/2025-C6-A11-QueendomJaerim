@@ -41,7 +41,6 @@ struct CameraView {
   let guideViewModel: ConnectionGuideViewModel
   let referenceViewModel: ReferenceViewModel
   let penViewModel: PenViewModel
-  let penPhotoOverlayComposer: PenPhotoOverlayComposer
   let frameViewModel: FrameViewModel
   let thumbsUpViewModel: ThumbsUpViewModel
 }
@@ -156,7 +155,6 @@ extension CameraView: View {
             cameraViewModel: cameraViewModel,
             previewModel: previewModel,
             penViewModel: penViewModel,
-            penPhotoOverlayComposer: penPhotoOverlayComposer,
             frameViewModel: frameViewModel,
             referenceViewModel: referenceViewModel,
             thumbsUpViewModel: thumbsUpViewModel,
