@@ -12,6 +12,7 @@
 - 에이전트 작업 가이드 문서 추가
 - Actor 격리와 `@MainActor` 적용 판단 가이드 추가
 - Swift Modern Concurrency 우선 사용 가이드 추가
+- 로깅과 공통 유틸 사용 가이드 추가
 
 ### Changed
 
