@@ -23,7 +23,12 @@ final class PenViewModel {
   private var remoteRole: Role { myRole.counterpart }
   /// 세션 동안 내가 한 번이라도 그렸는지 여부
   var hasEverDrawn: Bool = false
-  private var isVisibleInPhotoOverlay = true
+  var isPhotoOverlayVisible = true {
+    didSet {
+      guard oldValue != isPhotoOverlayVisible else { return }
+      syncPhotoOverlayStrokes()
+    }
+  }
 
   // 가이드 최초 1회
   private var hasShownPenToast: Bool = false
@@ -167,11 +172,6 @@ final class PenViewModel {
     syncPhotoOverlayStrokes()
   }
 
-  func setPhotoOverlayVisibility(_ isVisible: Bool) {
-    isVisibleInPhotoOverlay = isVisible
-    syncPhotoOverlayStrokes()
-  }
-
   // MARK: - 토스트
   enum GuidingType {
     case pen
@@ -259,7 +259,7 @@ extension PenViewModel {
 
 private extension PenViewModel {
   func syncPhotoOverlayStrokes() {
-    guard isVisibleInPhotoOverlay else {
+    guard isPhotoOverlayVisible else {
       strokePhotoOverlayComposer.clearAll()
       return
     }

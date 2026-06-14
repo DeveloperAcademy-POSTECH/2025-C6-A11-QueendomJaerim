@@ -29,15 +29,11 @@ extension CameraView.CameraPreviewArea {
           isPen: isPenActive,
           isMagicPen: isMagicPenActive,
           role: currentMode,
-          isZooming: isZooming,
-          isVisibleInPhotoOverlay: !isRemoteGuideHidden
+          isZooming: isZooming
         )
         .gesture(magnificationGesture)
       } else {
-        PenDisplayView(
-          penViewModel: penViewModel,
-          isVisibleInPhotoOverlay: !isRemoteGuideHidden
-        )
+        PenDisplayView(penViewModel: penViewModel)
       }
       if isFrameActive {
         FrameEditorView(frameViewModel: frameViewModel, currentRole: currentMode)
@@ -46,6 +42,12 @@ extension CameraView.CameraPreviewArea {
       }
     }
     .opacity(isRemoteGuideHidden ? .zero : 1)
+    .onAppear {
+      penViewModel.isPhotoOverlayVisible = !isRemoteGuideHidden
+    }
+    .onChange(of: isRemoteGuideHidden) { _, newValue in
+      penViewModel.isPhotoOverlayVisible = !newValue
+    }
   }
 
   /// 레퍼런스 확대되면 배경에 깔리는 디밍

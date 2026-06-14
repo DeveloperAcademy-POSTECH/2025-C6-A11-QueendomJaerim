@@ -10,14 +10,9 @@ import SwiftUI
 /// 저장된 펜 가이드라인 조회(출력) 뷰
 struct PenDisplayView: View {
   var penViewModel: PenViewModel
-  let isVisibleInPhotoOverlay: Bool
 
-  init(
-    penViewModel: PenViewModel,
-    isVisibleInPhotoOverlay: Bool
-  ) {
+  init(penViewModel: PenViewModel) {
     self.penViewModel = penViewModel
-    self.isVisibleInPhotoOverlay = isVisibleInPhotoOverlay
   }
 
   var body: some View {
@@ -48,12 +43,6 @@ struct PenDisplayView: View {
       }
       .background(.clear)
       .allowsHitTesting(false)
-      .onAppear {
-        penViewModel.setPhotoOverlayVisibility(isVisibleInPhotoOverlay)
-      }
-      .onChange(of: isVisibleInPhotoOverlay) { _, _ in
-        penViewModel.setPhotoOverlayVisibility(isVisibleInPhotoOverlay)
-      }
     }
   }
 }

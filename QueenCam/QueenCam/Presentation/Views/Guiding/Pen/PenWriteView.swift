@@ -12,22 +12,19 @@ struct PenWriteView: View {
   var isMagicPen: Bool
   let role: Role?
   var isZooming: Bool
-  let isVisibleInPhotoOverlay: Bool
 
   init(
     penViewModel: PenViewModel,
     isPen: Bool,
     isMagicPen: Bool,
     role: Role?,
-    isZooming: Bool,
-    isVisibleInPhotoOverlay: Bool
+    isZooming: Bool
   ) {
     self.penViewModel = penViewModel
     self.isMagicPen = isMagicPen
     self.role = role
     self.penViewModel.currentRole = role
     self.isZooming = isZooming
-    self.isVisibleInPhotoOverlay = isVisibleInPhotoOverlay
   }
 
   /// 현재 그리고 있는 Stroke의 좌표 (저장 전)
@@ -42,10 +39,7 @@ struct PenWriteView: View {
     GeometryReader { geo in
       ZStack {
         // MARK: - 세션전 저장된 Stroke + 세션 중 그리기 완료된 Stroke
-        PenDisplayView(
-          penViewModel: penViewModel,
-          isVisibleInPhotoOverlay: isVisibleInPhotoOverlay
-        )
+        PenDisplayView(penViewModel: penViewModel)
 
         // MARK: - 현재 그리고 있는 Stroke
         let author = role ?? .photographer
