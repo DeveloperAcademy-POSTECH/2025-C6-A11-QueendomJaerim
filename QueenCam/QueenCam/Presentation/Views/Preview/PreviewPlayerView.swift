@@ -22,5 +22,6 @@ struct PreviewPlayerView: View {
         previewModel.frameDidRenderStablely()
       }
     )
+    .trackScreen(.preview, Self.self)
   }
 }

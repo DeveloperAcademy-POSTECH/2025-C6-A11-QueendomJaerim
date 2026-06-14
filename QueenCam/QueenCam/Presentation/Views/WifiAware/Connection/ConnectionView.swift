@@ -38,6 +38,7 @@ extension ConnectionView: View {
         }
       }
     }
+    .trackScreen(.connectionSheet, Self.self)
     .task {
       await connectionViewModel.viewDidAppearTask()
     }

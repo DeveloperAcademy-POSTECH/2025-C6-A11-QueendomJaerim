@@ -9,6 +9,8 @@
 
 ### Added
 
+- 신규 GA 이벤트 추가 (`take_screenshot`, `take_video_capture`)
+- 화면 전환 트래킹 인프라 구축 및 주요 뷰 적용 (인스턴스 기반 추적)
 - 에이전트 작업 가이드 문서 추가
 - Actor 격리와 `@MainActor` 적용 판단 가이드 추가
 - Swift Modern Concurrency 우선 사용 가이드 추가
