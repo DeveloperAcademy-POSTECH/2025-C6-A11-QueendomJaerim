@@ -57,6 +57,8 @@ final class PenPhotoOverlayComposer {
 
       return .basicPhoto(thumbnail: image, imageData: compositeData, isProxy: false)
     case .livePhoto(_, let imageData, let videoData, _):
+      // Live Photo는 still image와 paired video가 같은 content identifier를 가져야 Photos에서 하나의 자산으로 묶인다.
+      // 합성 과정에서 still image를 새 JPEG로 다시 쓰기 때문에, 원본의 identifier를 읽어 새 still metadata에 다시 심는다.
       let assetIdentifier = Self.livePhotoAssetIdentifier(from: imageData)
         ?? Self.livePhotoAssetIdentifier(fromVideoData: videoData)
 
@@ -259,11 +261,15 @@ final class PenPhotoOverlayComposer {
       return nil
     }
 
+    // 새 JPEG에도 촬영 시점의 EXIF/MakerApple metadata를 최대한 유지한다.
+    // Live Photo content identifier도 이 metadata에 들어가므로 단순 jpegData(compressionQuality:)를 쓰면 안 된다.
     var properties = imageProperties(from: originalImageData)
     properties[kCGImageDestinationLossyCompressionQuality as String] = 0.95
     normalizeOrientation(in: &properties)
 
     if let livePhotoAssetIdentifier {
+      // Apple MakerNote key "17"이 Live Photo still과 video를 연결하는 content identifier다.
+      // 이 값이 paired video의 quicktime content.identifier와 맞지 않으면 PHPhotosErrorDomain 3302가 발생한다.
       var makerAppleDictionary = properties[kCGImagePropertyMakerAppleDictionary as String] as? [String: Any] ?? [:]
       makerAppleDictionary["17"] = livePhotoAssetIdentifier
       properties[kCGImagePropertyMakerAppleDictionary as String] = makerAppleDictionary
@@ -276,6 +282,8 @@ final class PenPhotoOverlayComposer {
   }
 
   private static func normalizeOrientation(in properties: inout [String: Any]) {
+    // UIImage.draw(in:)는 orientation을 적용한 픽셀을 새 이미지에 굽는다.
+    // 원본 orientation metadata까지 그대로 복사하면 Photos가 한 번 더 회전시키므로, 새 JPEG는 .up으로 정규화한다.
     properties[kCGImagePropertyOrientation as String] = CGImagePropertyOrientation.up.rawValue
 
     if var tiffDictionary = properties[kCGImagePropertyTIFFDictionary as String] as? [String: Any] {
@@ -294,6 +302,7 @@ final class PenPhotoOverlayComposer {
   }
 
   private static func livePhotoAssetIdentifier(from imageData: Data) -> String? {
+    // AVCapturePhoto.fileDataRepresentation()이 만든 원본 still에는 보통 MakerApple "17" 값이 들어 있다.
     let makerAppleDictionary = imageProperties(from: imageData)[kCGImagePropertyMakerAppleDictionary as String]
       as? [String: Any]
 
@@ -301,6 +310,8 @@ final class PenPhotoOverlayComposer {
   }
 
   private static func livePhotoAssetIdentifier(fromVideoData videoData: Data) -> String? {
+    // deferred/proxy 경로 등에서 still metadata를 읽지 못할 경우를 대비해 paired video의 QuickTime metadata를 fallback으로 사용한다.
+    // AVURLAsset은 URL 기반으로 metadata를 읽기 때문에, 받은 Data를 임시 mov 파일로 쓴 뒤 바로 삭제한다.
     let videoURL = FileManager.default.temporaryDirectory
       .appendingPathComponent(UUID().uuidString)
       .appendingPathExtension(for: .quickTimeMovie)
