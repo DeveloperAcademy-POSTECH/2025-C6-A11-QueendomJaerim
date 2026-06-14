@@ -9,16 +9,28 @@ import SwiftUI
 /// 펜 가이드라인 작성 뷰
 struct PenWriteView: View {
   var penViewModel: PenViewModel
+  let penPhotoOverlayComposer: PenPhotoOverlayComposer
   var isMagicPen: Bool
   let role: Role?
   var isZooming: Bool
+  let isVisibleInPhotoOverlay: Bool
 
-  init(penViewModel: PenViewModel, isPen: Bool, isMagicPen: Bool, role: Role?, isZooming: Bool) {
+  init(
+    penViewModel: PenViewModel,
+    penPhotoOverlayComposer: PenPhotoOverlayComposer,
+    isPen: Bool,
+    isMagicPen: Bool,
+    role: Role?,
+    isZooming: Bool,
+    isVisibleInPhotoOverlay: Bool
+  ) {
     self.penViewModel = penViewModel
+    self.penPhotoOverlayComposer = penPhotoOverlayComposer
     self.isMagicPen = isMagicPen
     self.role = role
     self.penViewModel.currentRole = role
     self.isZooming = isZooming
+    self.isVisibleInPhotoOverlay = isVisibleInPhotoOverlay
   }
 
   /// 현재 그리고 있는 Stroke의 좌표 (저장 전)
@@ -34,7 +46,11 @@ struct PenWriteView: View {
     GeometryReader { geo in
       ZStack {
         // MARK: - 세션전 저장된 Stroke + 세션 중 그리기 완료된 Stroke
-        PenDisplayView(penViewModel: penViewModel)
+        PenDisplayView(
+          penViewModel: penViewModel,
+          penPhotoOverlayComposer: penPhotoOverlayComposer,
+          isVisibleInPhotoOverlay: isVisibleInPhotoOverlay
+        )
 
         // MARK: - 현재 그리고 있는 Stroke
         let author = role ?? .photographer

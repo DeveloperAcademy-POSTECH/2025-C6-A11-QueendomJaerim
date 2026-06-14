@@ -19,6 +19,7 @@ extension CameraView {
     let cameraViewModel: CameraViewModel
     let previewModel: PreviewModel
     let penViewModel: PenViewModel
+    let penPhotoOverlayComposer: PenPhotoOverlayComposer
     let frameViewModel: FrameViewModel
     let referenceViewModel: ReferenceViewModel
     @Bindable var thumbsUpViewModel: ThumbsUpViewModel

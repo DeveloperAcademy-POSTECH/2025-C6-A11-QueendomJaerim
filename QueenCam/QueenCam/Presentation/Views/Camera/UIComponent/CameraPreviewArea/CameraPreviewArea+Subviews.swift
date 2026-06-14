@@ -26,14 +26,20 @@ extension CameraView.CameraPreviewArea {
       if isPenActive || isMagicPenActive {
         PenWriteView(
           penViewModel: penViewModel,
+          penPhotoOverlayComposer: penPhotoOverlayComposer,
           isPen: isPenActive,
           isMagicPen: isMagicPenActive,
           role: currentMode,
-          isZooming: isZooming
+          isZooming: isZooming,
+          isVisibleInPhotoOverlay: !isRemoteGuideHidden
         )
         .gesture(magnificationGesture)
       } else {
-        PenDisplayView(penViewModel: penViewModel)
+        PenDisplayView(
+          penViewModel: penViewModel,
+          penPhotoOverlayComposer: penPhotoOverlayComposer,
+          isVisibleInPhotoOverlay: !isRemoteGuideHidden
+        )
       }
       if isFrameActive {
         FrameEditorView(frameViewModel: frameViewModel, currentRole: currentMode)

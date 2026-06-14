@@ -45,13 +45,16 @@ final class CameraViewModel {
     previewCaptureService: PreviewCaptureService,
     networkService: NetworkServiceProtocol,
     cameraSettingsService: CameraSettingsServiceProtocol,
-    notificationService: NotificationServiceProtocol
+    notificationService: NotificationServiceProtocol,
+    penPhotoOverlayComposer: PenPhotoOverlayComposer
   ) {
     self.networkService = networkService
     self.cameraSettingsService = cameraSettingsService
     self.cameraManager = CameraManager(
       previewCaptureService: previewCaptureService,
-      networkService: networkService
+      networkService: networkService,
+      cameraSettingsService: cameraSettingsService,
+      penPhotoOverlayComposer: penPhotoOverlayComposer
     )
     
     self.isLivePhotoOn = cameraSettingsService.livePhotoOn
