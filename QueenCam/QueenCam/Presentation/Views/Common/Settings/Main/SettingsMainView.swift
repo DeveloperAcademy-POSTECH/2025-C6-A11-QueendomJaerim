@@ -65,7 +65,7 @@ extension SettingsMainView: View {
         HeaderSeparator()
 
         SettingSection(title: "촬영") {
-          SettingToggleSectionItem(title: "펜 가이드 합성본 함께 저장", isOn: $savePenOverlayImageOn)
+          SettingToggleSectionItem(title: "펜 가이드 함께 저장", isOn: $savePenOverlayImageOn)
         }
         .padding(.horizontal, 20)
 

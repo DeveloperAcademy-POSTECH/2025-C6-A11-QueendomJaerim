@@ -1118,22 +1118,22 @@
         }
       }
     },
-    "펜" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pen"
-          }
-        }
-      }
-    },
     "페어링 방법이 궁금하신가요?" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Wondering how to pair devices?"
+          }
+        }
+      }
+    },
+    "펜" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pen"
           }
         }
       }
@@ -1154,6 +1154,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "When pairing, I entered the code shown on the other device, but the screen doesn’t proceed."
+          }
+        }
+      }
+    },
+    "펜 가이드 함께 저장" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save with Pen Guide"
           }
         }
       }
