@@ -23,6 +23,8 @@ final class CameraManager: NSObject {
   private let previewCaptureService: PreviewCaptureService
   // 네트워크 송수신
   let networkService: NetworkServiceProtocol
+  let cameraSettingsService: CameraSettingsServiceProtocol
+  let penPhotoOverlayComposer: PenPhotoOverlayComposer
   var cancellables: Set<AnyCancellable> = []
 
   var position: AVCaptureDevice.Position = .back
@@ -45,9 +47,16 @@ final class CameraManager: NSObject {
   // 렌즈 변경 상태를 관찰하기 위한 옵저버
   private var lensChangeObserver: NSKeyValueObservation?
 
-  init(previewCaptureService: PreviewCaptureService, networkService: NetworkServiceProtocol) {
+  init(
+    previewCaptureService: PreviewCaptureService,
+    networkService: NetworkServiceProtocol,
+    cameraSettingsService: CameraSettingsServiceProtocol,
+    penPhotoOverlayComposer: PenPhotoOverlayComposer
+  ) {
     self.previewCaptureService = previewCaptureService
     self.networkService = networkService
+    self.cameraSettingsService = cameraSettingsService
+    self.penPhotoOverlayComposer = penPhotoOverlayComposer
 
     super.init()
 
@@ -146,15 +155,15 @@ final class CameraManager: NSObject {
         // 6
         DispatchQueue.main.async {
           switch photoOutput {
-          case .basicPhoto(let thumbnail, let imageData):
+          case .basicPhoto(let thumbnail, _, _):
             self.onPhotoCapture?(thumbnail)
-          case .livePhoto(let thumbnail, let imageData, let videoData):
+          case .livePhoto(let thumbnail, _, _, _):
             self.onPhotoCapture?(thumbnail)
           }
           self.onDidFinishCapture?()
         }
 
-        self.sendPhoto(photoOutput)
+        self.saveAndSendPhoto(photoOutput)
       }
 
       // 3

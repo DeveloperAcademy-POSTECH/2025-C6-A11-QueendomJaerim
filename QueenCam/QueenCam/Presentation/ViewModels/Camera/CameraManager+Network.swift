@@ -13,11 +13,6 @@ import UIKit
 
 // MARK: Configs
 extension CameraManager {
-  // 라이브 포토 비디오 저장 디렉토리 프리픽스
-  private var livePhotoMoviesDirectoryName: String {
-    "receivedLivePhotoMovies"
-  }
-
   private var logger: QueenLogger {
     QueenLogger(category: "CameraManager+Network")
   }
@@ -40,8 +35,6 @@ extension CameraManager {
   }
 
   func handlePhotoResultEvent(photoData: Data, videoData: Data?) {
-    let isLivePhoto = videoData != nil
-
     if let videoData {
       handleLivePhotoEvent(photoData: photoData, videoData: videoData)
     } else {
@@ -50,22 +43,7 @@ extension CameraManager {
   }
 
   private func handleLivePhotoEvent(photoData: Data, videoData: Data) {
-    do {
-      let path = try FileManager.default
-        .url(for: .cachesDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
-        .appendingPathComponent(livePhotoMoviesDirectoryName)
-
-      try FileManager.default.createDirectory(at: path, withIntermediateDirectories: true)
-
-      let fileURL = path.appendingPathComponent(UUID().uuidString)
-        .appendingPathExtension(for: .quickTimeMovie)
-
-      try videoData.write(to: fileURL)
-
-      PhotoLibraryHelpers.saveLivePhotoToPhotosLibrary(stillImageData: photoData, livePhotoMovieURL: fileURL)
-    } catch {
-      logger.error("failed to prepare directory to save a live photo movie. error=\(error.localizedDescription)")
-    }
+    PhotoLibraryHelpers.saveLivePhotoToPhotosLibrary(stillImageData: photoData, livePhotoMovieData: videoData)
 
     if let image = UIImage(data: photoData) {
       DispatchQueue.main.async {
@@ -90,6 +68,36 @@ extension CameraManager {
 
 // MARK: - Send
 extension CameraManager {
+  func saveAndSendPhoto(_ photoOutput: PhotoOuput) {
+    let compositeOutput = cameraSettingsService.savePenOverlayImageOn
+      ? penPhotoOverlayComposer.makeCompositePhotoOutput(from: photoOutput)
+      : nil
+
+    savePhotoOutput(photoOutput)
+    sendPhoto(photoOutput)
+
+    guard let compositeOutput else { return }
+    savePhotoOutput(compositeOutput)
+    sendPhoto(compositeOutput)
+  }
+
+  private func savePhotoOutput(_ photoOutput: PhotoOuput) {
+    switch photoOutput {
+    case .basicPhoto(_, let imageData, let isProxy):
+      if isProxy {
+        PhotoLibraryHelpers.saveProxyToPhotoLibrary(imageData)
+      } else {
+        PhotoLibraryHelpers.saveToPhotoLibrary(imageData)
+      }
+    case .livePhoto(_, let imageData, let videoData, let isDeferred):
+      if isDeferred {
+        PhotoLibraryHelpers.saveDeferredLivePhotoToPhotosLibrary(proxyData: imageData, livePhotoMovieData: videoData)
+      } else {
+        PhotoLibraryHelpers.saveLivePhotoToPhotosLibrary(stillImageData: imageData, livePhotoMovieData: videoData)
+      }
+    }
+  }
+
   /// 이미지를 전송한다.
   func sendPhoto(_ photoOutput: PhotoOuput) {
     let isConnected = networkService.networkState == .host(.publishing)
@@ -101,9 +109,9 @@ extension CameraManager {
 
     Task.detached { [weak self] in
       switch photoOutput {
-      case .basicPhoto(_, let imageData):
+      case .basicPhoto(_, let imageData, _):
         await self?.networkService.send(for: .photoResult(imageData: imageData, videoData: nil))
-      case .livePhoto(_, let imageData, let videoData):
+      case .livePhoto(_, let imageData, let videoData, _):
         await self?.networkService.send(for: .photoResult(imageData: imageData, videoData: videoData))
       }
     }

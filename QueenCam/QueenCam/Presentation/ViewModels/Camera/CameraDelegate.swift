@@ -60,16 +60,10 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
         let thumbnail = UIImage(data: imageData)
       {
         logger.info("Live Photo: Saving deferred live photo (Proxy delegate).")
-        PhotoLibraryHelpers.saveDeferredLivePhotoToPhotosLibrary(
-          proxyData: imageData,
-          livePhotoMovieURL: livePhotoMovieURL
-        )
-
-        completion(.livePhoto(thumbnail: thumbnail, imageData: imageData, videoData: movieData))
+        completion(.livePhoto(thumbnail: thumbnail, imageData: imageData, videoData: movieData, isDeferred: true))
       }
     } else {
-      PhotoLibraryHelpers.saveProxyToPhotoLibrary(imageData)
-      completion(.basicPhoto(thumbnail: UIImage(data: imageData) ?? .init(), imageData: imageData))
+      completion(.basicPhoto(thumbnail: UIImage(data: imageData) ?? .init(), imageData: imageData, isProxy: true))
     }
   }
 
@@ -97,8 +91,7 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
     lastStillImageData = imageData
 
     if !isLivePhoto {
-      PhotoLibraryHelpers.saveToPhotoLibrary(imageData)
-      completion(.basicPhoto(thumbnail: image, imageData: imageData))
+      completion(.basicPhoto(thumbnail: image, imageData: imageData, isProxy: false))
     }
   }
 
@@ -125,11 +118,12 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
       let thumbnail = UIImage(data: deferredPhotoProxyData)
     {
       logger.info("Live Photo: Saving deferred live photo (Movie delegate).")
-      PhotoLibraryHelpers.saveDeferredLivePhotoToPhotosLibrary(
-        proxyData: deferredPhotoProxyData,
-        livePhotoMovieURL: outputFileURL
-      )
-      completion(.livePhoto(thumbnail: thumbnail, imageData: deferredPhotoProxyData, videoData: movieData))
+      completion(.livePhoto(
+        thumbnail: thumbnail,
+        imageData: deferredPhotoProxyData,
+        videoData: movieData,
+        isDeferred: true
+      ))
       return
     }
 
@@ -139,11 +133,12 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
       let movieData = try? Data(contentsOf: outputFileURL)
     {
       logger.info("Live Photo: Saving standard live photo (Movie delegate).")
-      PhotoLibraryHelpers.saveLivePhotoToPhotosLibrary(
-        stillImageData: lastStillImageData,
-        livePhotoMovieURL: outputFileURL
-      )
-      completion(.livePhoto(thumbnail: lastThumbnailImage, imageData: lastStillImageData, videoData: movieData))
+      completion(.livePhoto(
+        thumbnail: lastThumbnailImage,
+        imageData: lastStillImageData,
+        videoData: movieData,
+        isDeferred: false
+      ))
       return
     }
   }

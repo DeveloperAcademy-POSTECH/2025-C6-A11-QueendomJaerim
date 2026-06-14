@@ -12,6 +12,7 @@ import UIKit
 
 struct PhotoLibraryHelpers {
   static let logger = QueenLogger(category: "PhotoLiberaryHelpers")
+  private static let livePhotoMoviesDirectoryName = "livePhotoMovies"
 
   static func saveToPhotoLibrary(_ imageData: Data) {
     PHPhotoLibrary.shared().performChanges({
@@ -58,6 +59,16 @@ struct PhotoLibraryHelpers {
     }
   }
 
+  static func saveLivePhotoToPhotosLibrary(stillImageData: Data, livePhotoMovieData: Data) {
+    do {
+      let fileURL = try makeLivePhotoMovieFileURL()
+      try livePhotoMovieData.write(to: fileURL)
+      saveLivePhotoToPhotosLibrary(stillImageData: stillImageData, livePhotoMovieURL: fileURL)
+    } catch {
+      logger.error("Failed to prepare Live Photo movie file: \(error.localizedDescription)")
+    }
+  }
+
   static func saveDeferredLivePhotoToPhotosLibrary(proxyData: Data, livePhotoMovieURL: URL) {
     PHPhotoLibrary.shared().performChanges({
       let creationRequest = PHAssetCreationRequest.forAsset()
@@ -75,5 +86,27 @@ struct PhotoLibraryHelpers {
         self.logger.error("Failed to save Deferred Live Photo: \(error.localizedDescription)")
       }
     }
+  }
+
+  static func saveDeferredLivePhotoToPhotosLibrary(proxyData: Data, livePhotoMovieData: Data) {
+    do {
+      let fileURL = try makeLivePhotoMovieFileURL()
+      try livePhotoMovieData.write(to: fileURL)
+      saveDeferredLivePhotoToPhotosLibrary(proxyData: proxyData, livePhotoMovieURL: fileURL)
+    } catch {
+      logger.error("Failed to prepare deferred Live Photo movie file: \(error.localizedDescription)")
+    }
+  }
+
+  private static func makeLivePhotoMovieFileURL() throws -> URL {
+    let directoryURL = try FileManager.default
+      .url(for: .cachesDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
+      .appendingPathComponent(livePhotoMoviesDirectoryName)
+
+    try FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true)
+
+    return directoryURL
+      .appendingPathComponent(UUID().uuidString)
+      .appendingPathExtension(for: .quickTimeMovie)
   }
 }
