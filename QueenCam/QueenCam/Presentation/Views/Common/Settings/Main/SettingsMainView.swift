@@ -10,10 +10,12 @@ import SwiftUI
 struct SettingsMainView {
   let navigationRouter: NavigationRouter
   let role: Role?
+  private let cameraSettingsService: CameraSettingsServiceProtocol
 
   @State private var safariSheetItem: SafariSheetItem?
   @State private var guideSheetItem: GuideSheetItem?
   @State private var isConfirmingRole = false
+  @State private var savePenOverlayImageOn: Bool
 
   // MARK: - URLs
   let vocPageURL = URL(
@@ -26,6 +28,17 @@ struct SettingsMainView {
   // MARK: - Computed
   var appVersion: String {
     Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0.0"
+  }
+
+  init(
+    navigationRouter: NavigationRouter,
+    role: Role?,
+    cameraSettingsService: CameraSettingsServiceProtocol = DependencyContainer.defaultContainer.cameraSettingServcice
+  ) {
+    self.navigationRouter = navigationRouter
+    self.role = role
+    self.cameraSettingsService = cameraSettingsService
+    _savePenOverlayImageOn = State(initialValue: cameraSettingsService.savePenOverlayImageOn)
   }
 }
 
@@ -50,6 +63,11 @@ extension SettingsMainView: View {
         .padding(.horizontal, 20)
 
         HeaderSeparator()
+
+        SettingSection(title: "촬영") {
+          SettingToggleSectionItem(title: "펜 가이드 합성본 함께 저장", isOn: $savePenOverlayImageOn)
+        }
+        .padding(.horizontal, 20)
 
         SettingSection(title: "고객센터") {
           SettingSectionItem {
@@ -108,6 +126,9 @@ extension SettingsMainView: View {
         guideSheetItem = GuideSheetItem(role: .model)
       }
       Button("취소", role: .cancel) {}
+    }
+    .onChange(of: savePenOverlayImageOn) { _, newValue in
+      cameraSettingsService.savePenOverlayImageOn = newValue
     }
   }
 }

@@ -4,12 +4,14 @@ final class CameraSettingsService: CameraSettingsServiceProtocol {
   private let livePhotoKey = "livePhotoOn"
   private let gridKey = "gridOn"
   private let flashKey = "flashMode"
+  private let savePenOverlayImageKey = "savePenOverlayImageOn"
 
   init() {
     UserDefaults.standard.register(defaults: [
       livePhotoKey: false,
       gridKey: false,
-      flashKey: FlashMode.off.rawValue
+      flashKey: FlashMode.off.rawValue,
+      savePenOverlayImageKey: true
     ])
   }
 
@@ -37,6 +39,15 @@ final class CameraSettingsService: CameraSettingsServiceProtocol {
     }
     set {
       UserDefaults.standard.set(newValue.rawValue, forKey: flashKey)
+    }
+  }
+
+  var savePenOverlayImageOn: Bool {
+    get {
+      UserDefaults.standard.bool(forKey: savePenOverlayImageKey)
+    }
+    set {
+      UserDefaults.standard.set(newValue, forKey: savePenOverlayImageKey)
     }
   }
 }
