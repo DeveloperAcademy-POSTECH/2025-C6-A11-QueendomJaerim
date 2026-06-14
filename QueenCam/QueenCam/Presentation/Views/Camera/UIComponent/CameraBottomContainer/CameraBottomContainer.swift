@@ -17,9 +17,6 @@ extension CameraView {
 
     @Binding var isShowCameraSettingTool: Bool
 
-    /// 눈까리
-    @Binding var isRemoteGuideHidden: Bool
-
     @Binding var isShowPhotoPicker: Bool
     @Binding var isReferenceLarge: Bool  // 레퍼런스 확대 축소 프로퍼티
 
@@ -148,7 +145,7 @@ extension CameraView.CameraBottomContainer: View {
         if !isFrameActive {
           guidingToolToggle(.frame)
         }
-        isRemoteGuideHidden = false
+        penViewModel.showGuide()
       } else {
         if isFrameActive {
           activeTool = nil  // 강제 종료

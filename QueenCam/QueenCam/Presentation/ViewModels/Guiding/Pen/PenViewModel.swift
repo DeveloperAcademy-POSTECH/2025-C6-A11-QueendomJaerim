@@ -23,9 +23,9 @@ final class PenViewModel {
   private var remoteRole: Role { myRole.counterpart }
   /// 세션 동안 내가 한 번이라도 그렸는지 여부
   var hasEverDrawn: Bool = false
-  var isPhotoOverlayVisible = true {
+  var isGuideVisible = true {
     didSet {
-      guard oldValue != isPhotoOverlayVisible else { return }
+      guard oldValue != isGuideVisible else { return }
       syncPhotoOverlayStrokes()
     }
   }
@@ -172,6 +172,14 @@ final class PenViewModel {
     syncPhotoOverlayStrokes()
   }
 
+  func showGuide() {
+    isGuideVisible = true
+  }
+
+  func toggleGuideVisibility() {
+    isGuideVisible.toggle()
+  }
+
   // MARK: - 토스트
   enum GuidingType {
     case pen
@@ -259,7 +267,7 @@ extension PenViewModel {
 
 private extension PenViewModel {
   func syncPhotoOverlayStrokes() {
-    guard isPhotoOverlayVisible else {
+    guard isGuideVisible else {
       strokePhotoOverlayComposer.clearAll()
       return
     }

@@ -29,8 +29,6 @@ extension CameraView {
 
     @Binding var isShowCameraSettingTool: Bool
 
-    /// 눈까리
-    @Binding var isRemoteGuideHidden: Bool
     @Binding var isReferenceLarge: Bool  // 레퍼런스 확대 축소 프로퍼티
 
     // connectionViewModel -> 프로퍼티 변환
@@ -64,7 +62,7 @@ extension CameraView.CameraPreviewArea {
   }
 
   var guideToggleImage: String {
-    isRemoteGuideHidden ? "eye.slash" : "eye"
+    penViewModel.isGuideVisible ? "eye" : "eye.slash"
   }
 }
 

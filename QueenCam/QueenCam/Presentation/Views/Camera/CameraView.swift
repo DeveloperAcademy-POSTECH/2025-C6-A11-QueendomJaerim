@@ -16,9 +16,6 @@ struct CameraView {
 
   @State private var isShowCameraSettingTool: Bool = false
 
-  /// 눈까리
-  @State private var isRemoteGuideHidden: Bool = false
-
   /// 로그 내보내기 시트 노출 여부
   @State private var isShowLogExportingSheet: Bool = false
 
@@ -161,7 +158,6 @@ extension CameraView: View {
             activeTool: $activeTool,
             isShowShutterFlash: $isShowShutterFlash,
             isShowCameraSettingTool: $isShowCameraSettingTool,
-            isRemoteGuideHidden: $isRemoteGuideHidden,
             isReferenceLarge: $isReferenceLarge,
             currentRole: connectionViewModel.role,
             connectionLost: connectionViewModel.connectionLost,
@@ -181,7 +177,6 @@ extension CameraView: View {
             activeTool: $activeTool,
             isShowShutterFlash: $isShowShutterFlash,
             isShowCameraSettingTool: $isShowCameraSettingTool,
-            isRemoteGuideHidden: $isRemoteGuideHidden,
             isShowPhotoPicker: $isShowPhotoPicker,
             isReferenceLarge: $isReferenceLarge,
             shutterActionEffect: flashScreen

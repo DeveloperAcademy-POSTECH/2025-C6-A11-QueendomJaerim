@@ -9,7 +9,7 @@ extension CameraView.CameraBottomContainer {
       GuidingButton(
         role: currentRole,
         isActive: isFrameActive,
-        isDisabled: isRemoteGuideHidden || disabledByPeer,  // 상대가 소유 중이면 시각적으로도 비활성
+        isDisabled: !penViewModel.isGuideVisible || disabledByPeer,  // 상대가 소유 중이면 시각적으로도 비활성
         tapAction: {
           if isFrameActive {
             frameViewModel.selectedFrameID = nil
@@ -27,12 +27,12 @@ extension CameraView.CameraBottomContainer {
       GuidingButton(
         role: currentRole,
         isActive: isPenActive,
-        isDisabled: isRemoteGuideHidden,
+        isDisabled: !penViewModel.isGuideVisible,
         tapAction: {
           penViewModel.showFirstToolToast(type: .pen)
           guidingToolToggle(.pen)
           if isPenActive {
-            isRemoteGuideHidden = false
+            penViewModel.showGuide()
           }
         },
         guidingButtonType: .pen
@@ -43,12 +43,12 @@ extension CameraView.CameraBottomContainer {
       GuidingButton(
         role: currentRole,
         isActive: isMagicPenActive,
-        isDisabled: isRemoteGuideHidden,
+        isDisabled: !penViewModel.isGuideVisible,
         tapAction: {
           penViewModel.showFirstToolToast(type: .magicPen)
           guidingToolToggle(.maginPen)
           if isMagicPenActive {
-            isRemoteGuideHidden = false
+            penViewModel.showGuide()
           }
         },
         guidingButtonType: .magicPen
@@ -66,7 +66,7 @@ extension CameraView.CameraBottomContainer {
       GuidingButton(
         role: currentRole,
         isActive: isFrameActive,
-        isDisabled: isRemoteGuideHidden || disabledByPeer,
+        isDisabled: !penViewModel.isGuideVisible || disabledByPeer,
         tapAction: {
           // 프레임 소유권 초기화
           frameViewModel.requestFrameOwnership(false, currentRole)  // 상대편 프레임 비활성화 상태 제거(소유자 해제 전파)
@@ -108,11 +108,11 @@ extension CameraView.CameraBottomContainer {
       GuidingButton(
         role: currentRole,
         isActive: isPenActive,
-        isDisabled: isRemoteGuideHidden,
+        isDisabled: !penViewModel.isGuideVisible,
         tapAction: {
           guidingToolToggle(.pen)
           if isPenActive {
-            isRemoteGuideHidden = false
+            penViewModel.showGuide()
           } else {
             // 펜툴 비활성화 시 세션 strokes들을 persistedStrokes에 저장
             penViewModel.saveStroke()
@@ -140,11 +140,11 @@ extension CameraView.CameraBottomContainer {
     GuidingButton(
       role: currentRole,
       isActive: isMagicPenActive,
-      isDisabled: isRemoteGuideHidden,
+      isDisabled: !penViewModel.isGuideVisible,
       tapAction: {
         guidingToolToggle(.maginPen)
         if isMagicPenActive {
-          isRemoteGuideHidden = false
+          penViewModel.showGuide()
         }
       },
       guidingButtonType: .magicPenChecked

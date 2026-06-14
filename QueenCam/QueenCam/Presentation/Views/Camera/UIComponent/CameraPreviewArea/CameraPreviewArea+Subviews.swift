@@ -41,13 +41,7 @@ extension CameraView.CameraPreviewArea {
         FrameDisplayView(frameViewModel: frameViewModel)
       }
     }
-    .opacity(isRemoteGuideHidden ? .zero : 1)
-    .onAppear {
-      penViewModel.isPhotoOverlayVisible = !isRemoteGuideHidden
-    }
-    .onChange(of: isRemoteGuideHidden) { _, newValue in
-      penViewModel.isPhotoOverlayVisible = !newValue
-    }
+    .opacity(penViewModel.isGuideVisible ? 1 : .zero)
   }
 
   /// 레퍼런스 확대되면 배경에 깔리는 디밍
@@ -112,9 +106,9 @@ extension CameraView.CameraPreviewArea {
           GuidingToggleButton(
             role: currentRole,
             systemName: guideToggleImage,
-            isActive: !isRemoteGuideHidden
+            isActive: penViewModel.isGuideVisible
           ) {
-            isRemoteGuideHidden.toggle()
+            penViewModel.toggleGuideVisibility()
           }
         }
         .padding(12)
