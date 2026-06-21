@@ -11,6 +11,7 @@ final class CameraViewModel {
   let cameraManager: CameraManager
   let networkService: NetworkServiceProtocol
   let cameraSettingsService: CameraSettingsServiceProtocol
+  private let guidingStrokeRepository: GuidingStrokeRepositoryProtocol
   
   var isCameraPermissionGranted = false
   var isPhotosPermissionGranted = false
@@ -45,10 +46,12 @@ final class CameraViewModel {
     previewCaptureService: PreviewCaptureService,
     networkService: NetworkServiceProtocol,
     cameraSettingsService: CameraSettingsServiceProtocol,
-    notificationService: NotificationServiceProtocol
+    notificationService: NotificationServiceProtocol,
+    guidingStrokeRepository: GuidingStrokeRepositoryProtocol = DependencyContainer.defaultContainer.guidingStrokeRepository
   ) {
     self.networkService = networkService
     self.cameraSettingsService = cameraSettingsService
+    self.guidingStrokeRepository = guidingStrokeRepository
     self.cameraManager = CameraManager(
       previewCaptureService: previewCaptureService,
       networkService: networkService
@@ -141,7 +144,12 @@ final class CameraViewModel {
   
   func capturePhoto() {
     traceShutterPressedEvent()
-    cameraManager.capturePhoto()
+    guard cameraSettingsService.saveGuidingOverlayImageOn else {
+      cameraManager.capturePhoto()
+      return
+    }
+
+    cameraManager.capturePhoto(drawableStrokes: guidingStrokeRepository.captureDrawableStrokes())
   }
   
   func setZoom(factor: CGFloat, ramp: Bool) {
