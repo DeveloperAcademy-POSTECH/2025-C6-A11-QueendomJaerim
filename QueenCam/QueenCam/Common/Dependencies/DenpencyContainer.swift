@@ -16,6 +16,9 @@ final class DependencyContainer {
     networkManager: networkManager,
     connectionManager: connectionManager
   )
+  lazy var guidingStrokeRepository: GuidingStrokeRepositoryProtocol = GuidingStrokeRepository(
+    networkService: networkService
+  )
 
   lazy var previewCaptureService = PreviewCaptureService()
 
