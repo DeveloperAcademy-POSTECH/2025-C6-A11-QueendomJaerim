@@ -10,4 +10,5 @@ protocol CameraSettingsServiceProtocol: AnyObject {
   var livePhotoOn: Bool { get set }
   var gridOn: Bool { get set }
   var flashMode: FlashMode { get set }
+  var saveGuidingOverlayImageOn: Bool { get set }
 }
