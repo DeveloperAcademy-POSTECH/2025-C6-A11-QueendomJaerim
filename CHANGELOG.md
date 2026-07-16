@@ -9,7 +9,19 @@
 
 ### Added
 
+- 릴리즈 이슈와 `develop → main` PR 생성 스킬 추가
+- 신규 GA 이벤트 추가 (`take_screenshot`, `take_video_capture`)
+- 화면 전환 트래킹 인프라 구축 및 주요 뷰 적용 (인스턴스 기반 추적)
+- 에이전트 작업 가이드 문서 추가
+- Actor 격리와 `@MainActor` 적용 판단 가이드 추가
+- Swift Modern Concurrency 우선 사용 가이드 추가
+- 로깅과 공통 유틸 사용 가이드 추가
+
 ### Changed
+
+- 앱 호환 최소 버전 값을 xcconfig에서 관리하도록 변경
+- 의견 보내기 URL을 xcconfig에서 관리하는 새 Google Forms 주소로 변경
+- 에이전트 작업 정책을 토픽별 문서로 분리
 
 ### Deprecated
 

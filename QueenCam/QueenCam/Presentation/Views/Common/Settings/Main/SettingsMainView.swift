@@ -16,9 +16,12 @@ struct SettingsMainView {
   @State private var isConfirmingRole = false
 
   // MARK: - URLs
-  let vocPageURL = URL(
-    string: "https://docs.google.com/forms/d/e/1FAIpQLSc0GRoJYU8a-Ki5PmEDIv7GmBRtJ0PNG-zh-YsM5i1FzCWkJg/viewform?usp=header"
-  )
+  var vocPageURL: URL? {
+    guard let urlString = Bundle.main.infoDictionary?["VOCPageURL"] as? String else {
+      return nil
+    }
+    return URL(string: urlString)
+  }
   let privacyPageURL = URL(
     string: "https://cyan-zydeco-5e9.notion.site/ZZikZZa-2025-11-13-2aa1b6b29f2c80cf90eed7ca2afc0e32?pvs=73"
   )
@@ -85,6 +88,7 @@ extension SettingsMainView: View {
       }
       .frame(maxWidth: .infinity, alignment: .leading)
     }
+    .trackScreen(.settings, Self.self)
     .navigationTitle("설정")
     .navigationBarTitleDisplayMode(.inline)
     .fullScreenCover(item: $safariSheetItem) { sheetItem in

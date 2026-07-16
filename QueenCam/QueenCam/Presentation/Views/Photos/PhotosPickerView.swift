@@ -140,6 +140,7 @@ extension PhotosPickerView: View {
         }
       }
     }
+    .trackScreen(.photoSheet, Self.self)
     .onChange(of: selectedImageID) { _, newValue in
       if newValue == nil {
         sheetSelectedImage = nil
