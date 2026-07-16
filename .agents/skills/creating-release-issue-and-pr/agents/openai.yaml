@@ -1,0 +1,4 @@
+interface:
+  display_name: "릴리즈 이슈 및 PR 생성"
+  short_description: "릴리즈 이슈와 develop → main PR을 안전하게 생성"
+  default_prompt: "Use $creating-release-issue-and-pr to create a release issue and a develop-to-main pull request for the requested version."
