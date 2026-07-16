@@ -1,13 +1,13 @@
 ---
 name: creating-release-issue-and-pr
-description: Use when preparing a QueenCam release and the user requests a release issue, a develop-to-main pull request, or both.
+description: Use when preparing or completing a QueenCam release and the user requests a release issue, a develop-to-main pull request, or a release back-merge.
 ---
 
 # Creating a Release Issue and PR
 
 ## Overview
 
-Create one versioned release issue and one `develop → main` PR using this repository's conventions. Keep deployment triggering separate from release preparation.
+Create release issues and PRs using this repository's conventions. Keep preparation, deployment triggering, and post-release back-merge verification separate.
 
 ## Safety Contract
 
@@ -24,7 +24,7 @@ Create one versioned release issue and one `develop → main` PR using this repo
 
 ### 1. Inspect Before Writing
 
-Read `AGENTS.md`, `docs/agents/git-and-collaboration.md`, the release issue template, and release workflow before acting.
+Read the repository instructions, release issue template, and release workflow first.
 
 Run:
 
@@ -95,12 +95,6 @@ Verify:
 - PR state is `OPEN`, base is `main`, and head is `develop`.
 - Working tree remains clean on `develop`.
 
-## Common Mistakes
+### 6. Handle Post-Release Back-Merge
 
-| Mistake | Correct action |
-|---|---|
-| Guessing the version | Ask for it. |
-| Trusting the template's label | Query it first. |
-| Writing `/start` | Require current-turn authorization. |
-| Using `Closes` | Use `Related`. |
-| Creating a release branch | Create only the issue and PR. |
+When the user requests a release back-merge, read [references/backmerge.md](references/backmerge.md) and follow it completely. Create `release/vX.Y.Z → develop` only when the release branch is not already an ancestor of `develop`; otherwise report the existing merge commit because GitHub has no back-merge diff to accept.

@@ -11,6 +11,7 @@
 
 ### Changed
 
+- 릴리즈 스킬에 릴리즈 브랜치의 `develop` 백머지 PR 생성 절차 추가
 ### Deprecated
 
 ### Removed

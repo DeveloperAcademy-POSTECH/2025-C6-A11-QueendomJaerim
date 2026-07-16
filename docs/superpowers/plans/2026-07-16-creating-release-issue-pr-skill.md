@@ -14,6 +14,7 @@
 - 실제 브랜치 이름 `develop`과 `main`을 사용한다.
 - `/start vX.Y.Z` 코멘트는 해당 턴의 명시적 요청 없이는 작성하지 않는다.
 - 중복 이슈와 PR을 생성하지 않는다.
+- 릴리즈 브랜치가 `develop`에 미포함된 경우에만 백머지 PR을 생성한다.
 
 ---
 
@@ -22,6 +23,7 @@
 **Files:**
 - Create: `.agents/skills/creating-release-issue-and-pr/SKILL.md`
 - Create: `.agents/skills/creating-release-issue-and-pr/agents/openai.yaml`
+- Create: `.agents/skills/creating-release-issue-and-pr/references/backmerge.md`
 - Modify: `CHANGELOG.md`
 
 **Interfaces:**
