@@ -31,6 +31,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		3D2DCCAA2F1A100000000001 /* Shared.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config/Shared.xcconfig; sourceTree = "<group>"; };
 		3D5E6BEE2E7D687300A0E03A /* QueenCam.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = QueenCam.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3D5E6BFB2E7D687300A0E03A /* QueenCamTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = QueenCamTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3D5E6C052E7D687300A0E03A /* QueenCamUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = QueenCamUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -101,6 +102,7 @@
 			isa = PBXGroup;
 			children = (
 				3D6CDA632E8E1DF1006C445A /* .swiftlint.yml */,
+				3D2DCCAA2F1A100000000001 /* Shared.xcconfig */,
 				3D5E6BF02E7D687300A0E03A /* QueenCam */,
 				3D5E6BFE2E7D687300A0E03A /* QueenCamTests */,
 				3D5E6C082E7D687300A0E03A /* QueenCamUITests */,
@@ -455,6 +457,7 @@
 		};
 		3D5E6C102E7D687300A0E03A /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3D2DCCAA2F1A100000000001 /* Shared.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = ZZikZZa;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -506,6 +509,7 @@
 		};
 		3D5E6C112E7D687300A0E03A /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3D2DCCAA2F1A100000000001 /* Shared.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = ZZikZZa;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
