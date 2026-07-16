@@ -8,6 +8,8 @@
 	<false/>
 	<key>QueenCamCompatibleMinimumVersion</key>
 	<string>1.1.7</string>
+	<key>VOCPageURL</key>
+	<string>$(VOC_PAGE_URL)</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Pretendard-Medium.ttf</string>
