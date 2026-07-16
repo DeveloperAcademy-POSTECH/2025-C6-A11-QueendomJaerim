@@ -18,6 +18,7 @@
 
 ### Changed
 
+- 앱 호환 최소 버전 값을 xcconfig에서 관리하도록 변경
 - 의견 보내기 URL을 xcconfig에서 관리하는 새 Google Forms 주소로 변경
 - 에이전트 작업 정책을 토픽별 문서로 분리
 
