@@ -7,7 +7,8 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
   private let logger = QueenLogger(category: "CameraDelegate")
   private let isCameraPosition: AVCaptureDevice.Position
 
-  private let completion: ((PhotoOuput?) -> Void)
+  private let photoOutputProcessor: ((PhotoOuput) -> PhotoOuput)?
+  private let completion: ((PhotoOuput?, [PhotoOuput]) -> Void)
   private var lastThumbnailImage: UIImage?
   private var lastStillImageData: Data?
   private var deferredPhotoProxyData: Data?
@@ -19,10 +20,12 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
   init(
     isCameraPosition: AVCaptureDevice.Position,
     willCaptureLivePhoto: (() -> Void)? = nil,
-    completion: @escaping (PhotoOuput?) -> Void
+    photoOutputProcessor: ((PhotoOuput) -> PhotoOuput)? = nil,
+    completion: @escaping (PhotoOuput?, [PhotoOuput]) -> Void
   ) {
     self.isCameraPosition = isCameraPosition
     self.willCaptureLivePhoto = willCaptureLivePhoto
+    self.photoOutputProcessor = photoOutputProcessor
     self.completion = completion
   }
 
@@ -41,7 +44,7 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
   ) {
     guard error == nil else {
       logger.error("Deferred Photo Proxy Error: \(error)")
-      completion(nil)
+      completion(nil, [])
       return
     }
 
@@ -49,7 +52,7 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
       let imageData = deferredPhotoProxy.fileDataRepresentation()
     else {
       logger.error("Deferred proxy is nil or no data")
-      completion(nil)
+      completion(nil, [])
       return
     }
 
@@ -60,16 +63,22 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
         let thumbnail = UIImage(data: imageData)
       {
         logger.info("Live Photo: Saving deferred live photo (Proxy delegate).")
+        let originalPhotoOutput = PhotoOuput.livePhoto(thumbnail: thumbnail, imageData: imageData, videoData: movieData)
+        let photoOutput = process(originalPhotoOutput)
+        saveOriginalIfNeeded(originalPhotoOutput, isDeferredLivePhoto: true)
         PhotoLibraryHelpers.saveDeferredLivePhotoToPhotosLibrary(
-          proxyData: imageData,
+          proxyData: photoOutput.imageData,
           livePhotoMovieURL: livePhotoMovieURL
         )
 
-        completion(.livePhoto(thumbnail: thumbnail, imageData: imageData, videoData: movieData))
+        completion(photoOutput, sendOutputs(original: originalPhotoOutput, processed: photoOutput))
       }
     } else {
-      PhotoLibraryHelpers.saveProxyToPhotoLibrary(imageData)
-      completion(.basicPhoto(thumbnail: UIImage(data: imageData) ?? .init(), imageData: imageData))
+      let originalPhotoOutput = PhotoOuput.basicPhoto(thumbnail: UIImage(data: imageData) ?? .init(), imageData: imageData)
+      let photoOutput = process(originalPhotoOutput)
+      saveOriginalIfNeeded(originalPhotoOutput, isDeferredPhoto: true)
+      PhotoLibraryHelpers.saveProxyToPhotoLibrary(photoOutput.imageData)
+      completion(photoOutput, sendOutputs(original: originalPhotoOutput, processed: photoOutput))
     }
   }
 
@@ -80,7 +89,7 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
   ) {
     guard error == nil else {
       logger.error("Error while capturing photo")
-      completion(nil)
+      completion(nil, [])
       return
     }
 
@@ -89,7 +98,7 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
       let image = UIImage(data: imageData)
     else {
       logger.error("Image not fetched.")
-      completion(nil)
+      completion(nil, [])
       return
     }
 
@@ -97,8 +106,11 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
     lastStillImageData = imageData
 
     if !isLivePhoto {
-      PhotoLibraryHelpers.saveToPhotoLibrary(imageData)
-      completion(.basicPhoto(thumbnail: image, imageData: imageData))
+      let originalPhotoOutput = PhotoOuput.basicPhoto(thumbnail: image, imageData: imageData)
+      let photoOutput = process(originalPhotoOutput)
+      saveOriginalIfNeeded(originalPhotoOutput)
+      PhotoLibraryHelpers.saveToPhotoLibrary(photoOutput.imageData)
+      completion(photoOutput, sendOutputs(original: originalPhotoOutput, processed: photoOutput))
     }
   }
 
@@ -113,7 +125,7 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
 
     guard error == nil else {
       logger.error("Error capturing Live Photo movie: \(error)")
-      completion(nil)
+      completion(nil, [])
       return
     }
 
@@ -125,11 +137,18 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
       let thumbnail = UIImage(data: deferredPhotoProxyData)
     {
       logger.info("Live Photo: Saving deferred live photo (Movie delegate).")
+      let originalPhotoOutput = PhotoOuput.livePhoto(
+        thumbnail: thumbnail,
+        imageData: deferredPhotoProxyData,
+        videoData: movieData
+      )
+      let photoOutput = process(originalPhotoOutput)
+      saveOriginalIfNeeded(originalPhotoOutput, isDeferredLivePhoto: true)
       PhotoLibraryHelpers.saveDeferredLivePhotoToPhotosLibrary(
-        proxyData: deferredPhotoProxyData,
+        proxyData: photoOutput.imageData,
         livePhotoMovieURL: outputFileURL
       )
-      completion(.livePhoto(thumbnail: thumbnail, imageData: deferredPhotoProxyData, videoData: movieData))
+      completion(photoOutput, sendOutputs(original: originalPhotoOutput, processed: photoOutput))
       return
     }
 
@@ -139,12 +158,54 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
       let movieData = try? Data(contentsOf: outputFileURL)
     {
       logger.info("Live Photo: Saving standard live photo (Movie delegate).")
+      let originalPhotoOutput = PhotoOuput.livePhoto(
+        thumbnail: lastThumbnailImage,
+        imageData: lastStillImageData,
+        videoData: movieData
+      )
+      let photoOutput = process(originalPhotoOutput)
+      saveOriginalIfNeeded(originalPhotoOutput)
       PhotoLibraryHelpers.saveLivePhotoToPhotosLibrary(
-        stillImageData: lastStillImageData,
+        stillImageData: photoOutput.imageData,
         livePhotoMovieURL: outputFileURL
       )
-      completion(.livePhoto(thumbnail: lastThumbnailImage, imageData: lastStillImageData, videoData: movieData))
+      completion(photoOutput, sendOutputs(original: originalPhotoOutput, processed: photoOutput))
       return
+    }
+  }
+}
+
+private extension CameraDelegate {
+  func process(_ photoOutput: PhotoOuput) -> PhotoOuput {
+    photoOutputProcessor?(photoOutput) ?? photoOutput
+  }
+
+  func sendOutputs(original: PhotoOuput, processed: PhotoOuput) -> [PhotoOuput] {
+    guard photoOutputProcessor != nil else { return [processed] }
+    return [original, processed]
+  }
+
+  func saveOriginalIfNeeded(
+    _ photoOutput: PhotoOuput,
+    isDeferredPhoto: Bool = false,
+    isDeferredLivePhoto: Bool = false
+  ) {
+    guard photoOutputProcessor != nil else { return }
+
+    switch photoOutput {
+    case .basicPhoto(_, let imageData):
+      if isDeferredPhoto {
+        PhotoLibraryHelpers.saveProxyToPhotoLibrary(imageData)
+      } else {
+        PhotoLibraryHelpers.saveToPhotoLibrary(imageData)
+      }
+
+    case .livePhoto(_, let imageData, let videoData):
+      if isDeferredLivePhoto {
+        PhotoLibraryHelpers.saveDeferredLivePhotoToPhotosLibrary(proxyData: imageData, livePhotoMovieData: videoData)
+      } else {
+        PhotoLibraryHelpers.saveLivePhotoToPhotosLibrary(stillImageData: imageData, livePhotoMovieData: videoData)
+      }
     }
   }
 }

@@ -32,12 +32,14 @@
 - Actor 격리와 `@MainActor` 적용 판단 가이드 추가
 - Swift Modern Concurrency 우선 사용 가이드 추가
 - 로깅과 공통 유틸 사용 가이드 추가
+- 펜 가이드를 사진 저장 결과에 함께 합성하는 설정과 저장 기능 추가
 
 ### Changed
 
 - 앱 호환 최소 버전 값을 xcconfig에서 관리하도록 변경
 - 의견 보내기 URL을 xcconfig에서 관리하는 새 Google Forms 주소로 변경
 - 에이전트 작업 정책을 토픽별 문서로 분리
+- 펜 stroke 상태를 `GuidingStrokeRepository` 단일 출처로 재구성
 
 ### Deprecated
 

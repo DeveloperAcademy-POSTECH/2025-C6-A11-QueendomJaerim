@@ -23,6 +23,7 @@ final class CameraManager: NSObject {
   private let previewCaptureService: PreviewCaptureService
   // 네트워크 송수신
   let networkService: NetworkServiceProtocol
+  private let photoOverlayCompositingService: PhotoOverlayCompositingServiceProtocol
   var cancellables: Set<AnyCancellable> = []
 
   var position: AVCaptureDevice.Position = .back
@@ -45,9 +46,14 @@ final class CameraManager: NSObject {
   // 렌즈 변경 상태를 관찰하기 위한 옵저버
   private var lensChangeObserver: NSKeyValueObservation?
 
-  init(previewCaptureService: PreviewCaptureService, networkService: NetworkServiceProtocol) {
+  init(
+    previewCaptureService: PreviewCaptureService,
+    networkService: NetworkServiceProtocol,
+    photoOverlayCompositingService: PhotoOverlayCompositingServiceProtocol = PhotoOverlayCompositingService()
+  ) {
     self.previewCaptureService = previewCaptureService
     self.networkService = networkService
+    self.photoOverlayCompositingService = photoOverlayCompositingService
 
     super.init()
 
@@ -92,7 +98,21 @@ final class CameraManager: NSObject {
     }
   }
 
-  func capturePhoto() {
+  func capturePhoto(drawableStrokes: [DrawableStroke] = []) {
+    guard !drawableStrokes.isEmpty else {
+      performCapturePhoto(allowsDeferredPhotoDelivery: true)
+      return
+    }
+
+    performCapturePhoto(allowsDeferredPhotoDelivery: false) { [photoOverlayCompositingService] photoOutput in
+      photoOverlayCompositingService.composite(photoOutput: photoOutput, strokes: drawableStrokes)
+    }
+  }
+
+  private func performCapturePhoto(
+    allowsDeferredPhotoDelivery: Bool,
+    photoOutputProcessor: ((PhotoOuput) -> PhotoOuput)? = nil
+  ) {
     captureSessionQueue.async { [weak self] in
       guard let self else { return }
 
@@ -119,6 +139,10 @@ final class CameraManager: NSObject {
         photoSettings.livePhotoMovieFileURL = URL.movieFileURL
       }
 
+      if self.photoOutput.isAutoDeferredPhotoDeliverySupported {
+        self.photoOutput.isAutoDeferredPhotoDeliveryEnabled = allowsDeferredPhotoDelivery
+      }
+
       // 1
       let uniqueID = photoSettings.uniqueID
 
@@ -127,8 +151,9 @@ final class CameraManager: NSObject {
         isCameraPosition: self.position,
         willCaptureLivePhoto: { [weak self] in
           self?.onWillCaptureLivePhoto?()
-        }
-      ) { [weak self] photoOutput in
+        },
+        photoOutputProcessor: photoOutputProcessor
+      ) { [weak self] photoOutput, photoOutputsToSend in
         guard let self else { return }
 
         // 5
@@ -154,7 +179,9 @@ final class CameraManager: NSObject {
           self.onDidFinishCapture?()
         }
 
-        self.sendPhoto(photoOutput)
+        photoOutputsToSend.forEach {
+          self.sendPhoto($0)
+        }
       }
 
       // 3

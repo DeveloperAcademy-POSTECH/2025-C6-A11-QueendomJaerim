@@ -26,10 +26,6 @@ struct PenWriteView: View {
   /// 작성 중인 스트로크 ID
   @State private var currentStrokeID: UUID?
 
-  private var topColor = Color.offWhite
-  private var photographerColor = Color.photographerPrimary
-  private var modelColor = Color.modelPrimary
-
   var body: some View {
     GeometryReader { geo in
       ZStack {
@@ -38,19 +34,10 @@ struct PenWriteView: View {
 
         // MARK: - 현재 그리고 있는 Stroke
         let author = role ?? .photographer
-        let outerColor = (author == .model) ? modelColor : photographerColor
         // 1) 일반펜
         if tempPoints.count > 1, !isMagicPen {
           Canvas { context, _ in
-            drawTempPoints(
-              context: context,
-              size: geo.size,
-              points: tempPoints,
-              layers: [
-                .stroke(color: topColor, width: 10),
-                .stroke(color: outerColor, width: 7)
-              ]
-            )
+            drawNormalTempPoints(context: context, size: geo.size, points: tempPoints, author: author)
           }
           .background(.clear)
         }
@@ -59,6 +46,7 @@ struct PenWriteView: View {
         // 매직펜 Blur 레이어
         Canvas { context, _ in
           if tempPoints.count > 1, isMagicPen {
+            let outerColor = author == .model ? Color.modelPrimary : .photographerPrimary
             drawTempPoints(
               context: context,
               size: geo.size,
@@ -170,5 +158,12 @@ private extension PenWriteView {
         context.stroke(path, with: .color(color), style: layer.style)
       }
     }
+  }
+
+  func drawNormalTempPoints(context: GraphicsContext, size: CGSize, points: [CGPoint], author: Role) {
+    let path = StrokeOverlayGeometry.path(from: points, in: size)
+    let style = StrokeRenderStyleResolver.normalStrokeStyle(for: author)
+    context.stroke(path, with: .color(style.backgroundColor), style: style.backgroundStrokeStyle)
+    context.stroke(path, with: .color(style.foregroundColor), style: style.foregroundStrokeStyle)
   }
 }
