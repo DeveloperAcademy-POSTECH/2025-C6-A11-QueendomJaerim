@@ -918,6 +918,16 @@
         }
       }
     },
+    "펜 가이드 함께 저장" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save with pen guide"
+          }
+        }
+      }
+    },
     "취소" : {
       "localizations" : {
         "en" : {

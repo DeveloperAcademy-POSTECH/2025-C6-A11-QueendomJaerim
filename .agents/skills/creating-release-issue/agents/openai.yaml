@@ -1,0 +1,4 @@
+interface:
+  display_name: "릴리즈 이슈 생성"
+  short_description: "QueenCam 릴리즈 이슈를 지정 양식으로 생성"
+  default_prompt: "Use $creating-release-issue to create the release issue for the version I specify."

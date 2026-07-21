@@ -58,6 +58,15 @@ struct PhotoLibraryHelpers {
     }
   }
 
+  static func saveLivePhotoToPhotosLibrary(stillImageData: Data, livePhotoMovieData: Data) {
+    do {
+      let livePhotoMovieURL = try writeLivePhotoMovieDataToTemporaryFile(livePhotoMovieData)
+      saveLivePhotoToPhotosLibrary(stillImageData: stillImageData, livePhotoMovieURL: livePhotoMovieURL)
+    } catch {
+      logger.error("Failed to prepare Live Photo movie file: \(error.localizedDescription)")
+    }
+  }
+
   static func saveDeferredLivePhotoToPhotosLibrary(proxyData: Data, livePhotoMovieURL: URL) {
     PHPhotoLibrary.shared().performChanges({
       let creationRequest = PHAssetCreationRequest.forAsset()
@@ -75,5 +84,27 @@ struct PhotoLibraryHelpers {
         self.logger.error("Failed to save Deferred Live Photo: \(error.localizedDescription)")
       }
     }
+  }
+
+  static func saveDeferredLivePhotoToPhotosLibrary(proxyData: Data, livePhotoMovieData: Data) {
+    do {
+      let livePhotoMovieURL = try writeLivePhotoMovieDataToTemporaryFile(livePhotoMovieData)
+      saveDeferredLivePhotoToPhotosLibrary(proxyData: proxyData, livePhotoMovieURL: livePhotoMovieURL)
+    } catch {
+      logger.error("Failed to prepare deferred Live Photo movie file: \(error.localizedDescription)")
+    }
+  }
+}
+
+private extension PhotoLibraryHelpers {
+  static func writeLivePhotoMovieDataToTemporaryFile(_ movieData: Data) throws -> URL {
+    // Live Photo 저장은 paired video 파일을 Photos 라이브러리로 이동시킨다.
+    // 원본 Live Photo와 오버레이 합성 Live Photo를 함께 저장할 때 같은 movie URL을 재사용하면
+    // 먼저 완료된 저장 요청이 파일을 이동시켜 나머지 저장 요청의 paired video가 사라진다.
+    // 따라서 캡처된 movie data를 별도의 임시 파일로 복제해
+    // 각 Live Photo asset이 독립적인 파일을 소유하게 한다.
+    let livePhotoMovieURL = URL.movieFileURL
+    try movieData.write(to: livePhotoMovieURL)
+    return livePhotoMovieURL
   }
 }

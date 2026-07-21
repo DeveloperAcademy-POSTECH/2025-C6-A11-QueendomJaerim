@@ -22,6 +22,7 @@
 - 테스트 작성 판단과 테스트 용이성 기준은 [Testing](docs/agents/testing.md)을 참고한다.
 - `CHANGELOG.md` 갱신 기준은 [Changelog](docs/agents/changelog.md)를 참고한다.
 - 커밋, 브랜치, 이슈, PR 컨벤션과 금지 사항은 [Git And Collaboration](docs/agents/git-and-collaboration.md)을 참고한다.
+- 릴리즈 이슈 생성 스킬의 호출법과 범위는 [Release Skill](docs/agents/release-skill.md)을 참고한다.
 
 ## 작업 전 체크리스트
 
