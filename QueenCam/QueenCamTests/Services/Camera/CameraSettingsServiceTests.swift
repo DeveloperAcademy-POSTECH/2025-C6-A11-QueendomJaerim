@@ -12,12 +12,12 @@ import Testing
 
 @Suite("CameraSettingsService Tests")
 struct CameraSettingsServiceTests {
-  @Test("펜 가이드 함께 저장 설정 기본값은 켜짐이다")
-  func saveGuidingOverlayImageDefaultIsOn() {
+  @Test("펜 가이드 함께 저장 설정 기본값은 꺼짐이다")
+  func saveGuidingOverlayImageDefaultIsOff() {
     UserDefaults.standard.removeObject(forKey: "saveGuidingOverlayImageOn")
 
     let service = CameraSettingsService()
 
-    #expect(service.saveGuidingOverlayImageOn == true)
+    #expect(service.saveGuidingOverlayImageOn == false)
   }
 }
