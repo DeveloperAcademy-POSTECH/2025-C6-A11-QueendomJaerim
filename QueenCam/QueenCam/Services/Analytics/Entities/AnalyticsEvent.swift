@@ -67,11 +67,11 @@ struct AnalyticsSettingChange {
   let previousValue: String
   let changedValue: String
 
-  static func toggle(
+  static func makeToggleChange(
     key: AnalyticsSettingKey,
     previousValue: Bool,
     changedValue: Bool
-  ) -> AnalyticsSettingChange {
+  ) -> Self {
     AnalyticsSettingChange(
       key: key,
       previousValue: previousValue ? "on" : "off",

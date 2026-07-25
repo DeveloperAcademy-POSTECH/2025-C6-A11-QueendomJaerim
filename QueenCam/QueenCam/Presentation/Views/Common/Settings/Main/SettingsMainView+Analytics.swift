@@ -14,7 +14,7 @@ extension SettingsMainView {
 
     if previousSettings.saveGuidingOverlayImageOn != newSettings.saveGuidingOverlayImageOn {
       changes.append(
-        .toggle(
+        .makeToggleChange(
           key: .saveGuidingOverlayImage,
           previousValue: previousSettings.saveGuidingOverlayImageOn,
           changedValue: newSettings.saveGuidingOverlayImageOn

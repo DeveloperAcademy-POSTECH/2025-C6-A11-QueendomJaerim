@@ -35,7 +35,7 @@ struct AnalyticsEventTests {
 
   @Test("설정 변경 이벤트가 문자열 변경 페이로드를 제공한다")
   func settingsChangedProvidesStringPayload() {
-    let change = AnalyticsSettingChange.toggle(
+    let change = AnalyticsSettingChange.makeToggleChange(
       key: .saveGuidingOverlayImage,
       previousValue: false,
       changedValue: true

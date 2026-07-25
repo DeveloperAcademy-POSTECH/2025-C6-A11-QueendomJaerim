@@ -67,7 +67,7 @@ struct AnalyticsServiceTests {
       screenContext: AnalyticsScreenContext(),
       settingsContext: AnalyticsSettingsContext(cameraSettingsService: settingsService)
     )
-    let change = AnalyticsSettingChange.toggle(
+    let change = AnalyticsSettingChange.makeToggleChange(
       key: .saveGuidingOverlayImage,
       previousValue: false,
       changedValue: true
