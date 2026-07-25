@@ -15,7 +15,7 @@ struct SettingsMainView {
   @State private var safariSheetItem: SafariSheetItem?
   @State private var guideSheetItem: GuideSheetItem?
   @State private var isConfirmingRole = false
-  @State private var isSaveGuidingOverlayImageOn = false
+  @State private var settings: SettingsState
 
   // MARK: - URLs
   var vocPageURL: URL? {
@@ -41,6 +41,11 @@ struct SettingsMainView {
     self.navigationRouter = navigationRouter
     self.role = role
     self.cameraSettingsService = cameraSettingsService
+    self._settings = State(
+      initialValue: SettingsState(
+        saveGuidingOverlayImageOn: cameraSettingsService.saveGuidingOverlayImageOn
+      )
+    )
   }
 }
 
@@ -67,7 +72,10 @@ extension SettingsMainView: View {
         HeaderSeparator()
 
         SettingSection(title: "촬영") {
-          SettingToggleSectionItem(title: "펜 가이드 함께 저장", isOn: $isSaveGuidingOverlayImageOn)
+          SettingToggleSectionItem(
+            title: "펜 가이드 함께 저장",
+            isOn: $settings.saveGuidingOverlayImageOn
+          )
         }
         .padding(.horizontal, 20)
 
@@ -130,16 +138,20 @@ extension SettingsMainView: View {
       }
       Button("취소", role: .cancel) {}
     }
-    .onAppear {
-      isSaveGuidingOverlayImageOn = cameraSettingsService.saveGuidingOverlayImageOn
-    }
-    .onChange(of: isSaveGuidingOverlayImageOn) { _, newValue in
-      cameraSettingsService.saveGuidingOverlayImageOn = newValue
+    .onChange(of: settings) { previousSettings, newSettings in
+      persist(newSettings)
+      analyticsChanges(from: previousSettings, to: newSettings).forEach { change in
+        AnalyticsService.sendEvent(.settingsChanged(change))
+      }
     }
   }
 }
 
 extension SettingsMainView {
+  private func persist(_ settings: SettingsState) {
+    cameraSettingsService.saveGuidingOverlayImageOn = settings.saveGuidingOverlayImageOn
+  }
+
   private struct HeaderSeparator: View {
     var body: some View {
       Rectangle()
