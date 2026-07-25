@@ -19,16 +19,23 @@ final class DependencyContainer {
   lazy var guidingStrokeRepository: GuidingStrokeRepositoryProtocol = GuidingStrokeRepository(
     networkService: networkService
   )
-
   lazy var previewCaptureService = PreviewCaptureService()
-
   lazy var cameraSettingServcice: CameraSettingsServiceProtocol = CameraSettingsService()
-
-  lazy var notificationService: NotificationService = NotificationService()
-
+  lazy var notificationService = NotificationService()
   lazy var onboardingSettingService: OnboardingSettingsServiceProtocol = OnboardingSettingsService()
 
-  // lazy면 NotificaitonCenter 기반 이벤트 로깅이 작동하지 않을 수 있음
-  let analyticsService: AnalyticsService = AnalyticsService()
-  let globalDeviceEventObserver: GlobalDeviceEventObserver = GlobalDeviceEventObserver()
+  private lazy var analyticsScreenContext = AnalyticsScreenContext()
+  private lazy var analyticsSettingsContext = AnalyticsSettingsContext(
+    cameraSettingsService: cameraSettingServcice
+  )
+  private lazy var analyticsService = AnalyticsService(
+    screenContext: analyticsScreenContext,
+    settingsContext: analyticsSettingsContext
+  )
+  private lazy var globalDeviceEventObserver = GlobalDeviceEventObserver()
+
+  func bootstrap() {
+    _ = analyticsService
+    _ = globalDeviceEventObserver
+  }
 }
