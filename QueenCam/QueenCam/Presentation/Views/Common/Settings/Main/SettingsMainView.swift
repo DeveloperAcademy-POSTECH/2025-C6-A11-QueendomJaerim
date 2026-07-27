@@ -71,7 +71,7 @@ extension SettingsMainView: View {
 
         HeaderSeparator()
 
-        SettingSection(title: "촬영") {
+        SettingSection(title: "실험실") {
           SettingToggleSectionItem(
             title: "펜 가이드 함께 저장",
             isOn: $settings.saveGuidingOverlayImageOn
