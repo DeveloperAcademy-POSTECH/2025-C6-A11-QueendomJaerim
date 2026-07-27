@@ -9,7 +9,12 @@
 
 ### Added
 
+- 셔터 이벤트에 이벤트 발행 시점의 주요 카메라 설정을 기록하는 Analytics 설정 컨텍스트 추가
+- 설정 페이지에서 설정 변경 시 이전 값과 변경 값을 기록하는 `settings_changed` Analytics 이벤트 추가
+
 ### Changed
+
+- 신규 설치 시 펜 가이드 함께 저장 설정의 기본값을 꺼짐으로 변경
 
 ### Deprecated
 

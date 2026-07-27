@@ -15,6 +15,7 @@ final class QueenCamAppDelegate: NSObject, UIApplicationDelegate {
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
   ) -> Bool {
     FirebaseApp.configure()
+    DependencyContainer.defaultContainer.bootstrap()
 
     return true
   }

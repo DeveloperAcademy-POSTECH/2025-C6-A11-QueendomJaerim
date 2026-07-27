@@ -9,11 +9,16 @@ import FirebaseAnalytics
 
 final class AnalyticsService {
   private let screenContext: AnalyticsScreenContext
+  private let settingsContext: AnalyticsSettingsContext
 
   private let logger = QueenLogger(category: "AnalyticsService")
 
-  init(initialScreenStack: [AnalyticsScreenData] = []) {
-    self.screenContext = AnalyticsScreenContext(screenStack: initialScreenStack)
+  init(
+    screenContext: AnalyticsScreenContext,
+    settingsContext: AnalyticsSettingsContext
+  ) {
+    self.screenContext = screenContext
+    self.settingsContext = settingsContext
     self.screenContext.delegate = self
 
     NotificationCenter.default.addObserver(
@@ -66,13 +71,25 @@ final class AnalyticsService {
     logger.debug("will send event: \(event.eventName) to FirebaseAnalytics")
     Analytics.logEvent(
       event.eventName,
-      parameters: [
-        AnalyticsParameterItemName: event.eventName,
-        AnalyticsParameterContentType: event.eventType,
-        AnalyticsParameterScreenName: screenContext.getLastScreen()?.screen.displayName ?? "unknown",
-        AnalyticsParameterScreenClass: screenContext.getLastScreen()?.className ?? "unknown"
-      ]
+      parameters: parameters(for: event)
     )
+  }
+
+  func parameters(for event: AnalyticsEvent) -> [String: Any] {
+    var parameters: [String: Any] = [
+      AnalyticsParameterItemName: event.eventName,
+      AnalyticsParameterContentType: event.eventType,
+      AnalyticsParameterScreenName: screenContext.getLastScreen()?.screen.displayName ?? "unknown",
+      AnalyticsParameterScreenClass: screenContext.getLastScreen()?.className ?? "unknown"
+    ]
+
+    parameters.merge(event.parameters) { _, newValue in newValue }
+
+    if event.includesSettingsContext {
+      parameters.merge(settingsContext.snapshot().parameters) { _, newValue in newValue }
+    }
+
+    return parameters
   }
 }
 
