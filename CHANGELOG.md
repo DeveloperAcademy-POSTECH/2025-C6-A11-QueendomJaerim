@@ -19,6 +19,25 @@
 
 ### Security
 
+## [1.1.10] - 2026-07-28
+
+### Added
+
+- 셔터 이벤트에 이벤트 발행 시점의 주요 카메라 설정을 기록하는 Analytics 설정 컨텍스트 추가
+- 설정 페이지에서 설정 변경 시 이전 값과 변경 값을 기록하는 `settings_changed` Analytics 이벤트 추가
+
+### Changed
+
+- 신규 설치 시 펜 가이드 함께 저장 설정의 기본값을 꺼짐으로 변경
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
 ## [1.1.9] - 2026-07-21
 
 ### Added
@@ -445,7 +464,8 @@
 - Wi-Fi Aware 연결 후, 라이브 포토 촬영 시 앱이 크래시되는 문제
 - 레퍼런스 삭제 후 재등록에 관한 상태 초기화 문제
 
-[Unreleased]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.9...HEAD
+[Unreleased]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.10...HEAD
+[1.1.10]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.9...v1.1.10
 [1.1.9]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.8...v1.1.9
 [1.1.8]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.7...v1.1.8
 [1.1.7]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.6...v1.1.7

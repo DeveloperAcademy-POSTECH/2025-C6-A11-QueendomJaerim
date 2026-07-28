@@ -11,7 +11,7 @@ final class CameraSettingsService: CameraSettingsServiceProtocol {
       livePhotoKey: false,
       gridKey: false,
       flashKey: FlashMode.off.rawValue,
-      saveGuidingOverlayImageKey: true
+      saveGuidingOverlayImageKey: false
     ])
   }
 
