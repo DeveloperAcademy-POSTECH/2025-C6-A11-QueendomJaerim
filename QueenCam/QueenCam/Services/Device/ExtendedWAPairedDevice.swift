@@ -44,6 +44,19 @@ nonisolated struct ExtendedWAPairedDevice: Identifiable, Sendable {
     lastConnectedAt = record.lastConnectedAt
     self.isNew = isNew
   }
+
+  var record: DeviceRecord {
+    DeviceRecord(
+      id: id,
+      waDeviceId: device.id,
+      name: name,
+      pairingName: pairingName,
+      vendorName: vendorName,
+      modelName: modelName,
+      createdAt: createdAt,
+      lastConnectedAt: lastConnectedAt
+    )
+  }
 }
 
 nonisolated extension DeviceRecord {

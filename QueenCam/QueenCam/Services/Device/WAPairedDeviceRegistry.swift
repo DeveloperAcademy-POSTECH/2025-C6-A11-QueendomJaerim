@@ -17,6 +17,8 @@ nonisolated final class WAPairedDeviceRegistry: WAPairedDeviceRegistryProtocol, 
   private let uuid: @Sendable () -> UUID
   private let upstreamTask: Task<Void, Never>
   private let logger: QueenLogger
+  private let state: RegistryState
+  private let continuation: AsyncStream<[ExtendedWAPairedDevice]>.Continuation
 
   init(
     repository: DeviceRepositoryProtocol,
@@ -29,9 +31,12 @@ nonisolated final class WAPairedDeviceRegistry: WAPairedDeviceRegistryProtocol, 
     self.uuid = uuid
     let logger = QueenLogger(category: "WAPairedDeviceRegistry")
     self.logger = logger
+    let state = RegistryState()
+    self.state = state
 
     let (devices, continuation) = AsyncStream.makeStream(of: [ExtendedWAPairedDevice].self)
     self.devices = devices
+    self.continuation = continuation
     self.upstreamTask = Task {
       do {
         for try await updates in deviceUpdates() {
@@ -48,6 +53,7 @@ nonisolated final class WAPairedDeviceRegistry: WAPairedDeviceRegistryProtocol, 
           }
 
           let sorted = extendedDevices.sorted(by: Self.isOrderedBefore)
+          await state.replace(sorted)
           logger.debug("페어링 기기 목록 결합 완료 count=\(sorted.count)")
           continuation.yield(sorted)
         }
@@ -95,19 +101,14 @@ nonisolated final class WAPairedDeviceRegistry: WAPairedDeviceRegistryProtocol, 
   func recordConnection(to device: WAPairedDevice) async {
     do {
       let timestamp = now()
-      let existing = try await repository.device(waDeviceId: device.id)
-      let record: DeviceRecord
-      if let existing {
-        record = existing.merging(device: device, lastConnectedAt: timestamp)
-      } else {
-        record = DeviceRecord(
-          id: uuid(),
-          device: device,
-          createdAt: timestamp,
-          lastConnectedAt: timestamp
-        )
+      let record = try await repository.recordConnection(
+        device: device,
+        id: uuid(),
+        connectedAt: timestamp
+      )
+      if let updated = await state.update(device: device, record: record) {
+        continuation.yield(updated.sorted(by: Self.isOrderedBefore))
       }
-      try await repository.upsert(record)
       logger.debug(
         "상대 기기 최근 연결 시간 갱신 waDeviceId=\(device.id), id=\(record.id), lastConnectedAt=\(timestamp)"
       )
@@ -124,38 +125,14 @@ nonisolated final class WAPairedDeviceRegistry: WAPairedDeviceRegistryProtocol, 
     logger: QueenLogger
   ) async -> ExtendedWAPairedDevice {
     do {
-      if let existing = try await repository.device(waDeviceId: device.id) {
-        let updated = existing.merging(device: device)
-        if updated.metadata != existing.metadata {
-          do {
-            try await repository.upsert(updated)
-            logger.debug(
-              "OS 메타데이터로 상대 기기 갱신 waDeviceId=\(device.id), id=\(existing.id), "
-                + "old=\(existing.metadata), new=\(updated.metadata)"
-            )
-          } catch {
-            logger.warning("상대 기기 메타데이터 저장 실패 waDeviceId=\(device.id), 다음 조회에서 재시도: \(error)")
-          }
-        }
-        return ExtendedWAPairedDevice(device: device, record: updated, isNew: false)
-      }
-
       let discoveredAt = now()
-      let newRecord = DeviceRecord(
-        id: uuid(),
+      let (record, isNew) = try await repository.refresh(
         device: device,
-        createdAt: discoveredAt,
-        lastConnectedAt: nil
+        id: uuid(),
+        discoveredAt: discoveredAt
       )
-      do {
-        try await repository.upsert(newRecord)
-        logger.debug(
-          "새 상대 기기 발견 및 저장 waDeviceId=\(device.id), id=\(newRecord.id), createdAt=\(discoveredAt)"
-        )
-      } catch {
-        logger.warning("새 상대 기기 저장 실패 waDeviceId=\(device.id), 다음 조회에서 재시도: \(error)")
-      }
-      return ExtendedWAPairedDevice(device: device, record: newRecord, isNew: true)
+      logger.debug("상대 기기 원자 갱신 waDeviceId=\(device.id), id=\(record.id), isNew=\(isNew)")
+      return ExtendedWAPairedDevice(device: device, record: record, isNew: isNew)
     } catch {
       let fallback = DeviceRecord(
         id: uuid(),
@@ -165,7 +142,7 @@ nonisolated final class WAPairedDeviceRegistry: WAPairedDeviceRegistryProtocol, 
       )
       logger.warning("상대 기기 조회 실패로 폴백 발행 waDeviceId=\(device.id): \(error)")
       do {
-        try await repository.upsert(fallback)
+        _ = try await repository.refresh(device: device, id: fallback.id, discoveredAt: fallback.createdAt)
       } catch {
         logger.error("폴백 상대 기기 업서트 실패 waDeviceId=\(device.id): \(error)")
       }
@@ -197,5 +174,29 @@ nonisolated final class WAPairedDeviceRegistry: WAPairedDeviceRegistryProtocol, 
       return lhsName.localizedStandardCompare(rhsName) == .orderedAscending
     }
     return lhs.device.id < rhs.device.id
+  }
+}
+
+private actor RegistryState {
+  private var devices: [UInt64: ExtendedWAPairedDevice] = [:]
+
+  func replace(_ updated: [ExtendedWAPairedDevice]) {
+    devices = Dictionary(uniqueKeysWithValues: updated.map { item in
+      guard
+        let current = devices[item.device.id],
+        let currentDate = current.lastConnectedAt,
+        currentDate > (item.lastConnectedAt ?? .distantPast)
+      else {
+        return (item.device.id, item)
+      }
+      let record = item.record.merging(device: item.device, lastConnectedAt: currentDate)
+      return (item.device.id, ExtendedWAPairedDevice(device: item.device, record: record, isNew: false))
+    })
+  }
+
+  func update(device: WAPairedDevice, record: DeviceRecord) -> [ExtendedWAPairedDevice]? {
+    guard devices[device.id] != nil else { return nil }
+    devices[device.id] = ExtendedWAPairedDevice(device: device, record: record, isNew: false)
+    return Array(devices.values)
   }
 }

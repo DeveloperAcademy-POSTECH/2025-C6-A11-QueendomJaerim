@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftData
+import WiFiAware
 
 @ModelActor
 actor DeviceRepository: DeviceRepositoryProtocol {
@@ -38,5 +39,39 @@ actor DeviceRepository: DeviceRepositoryProtocol {
 
     try modelContext.save()
     return record
+  }
+
+  func refresh(device: WAPairedDevice, id: UUID, discoveredAt: Date) throws -> (DeviceRecord, Bool) {
+    if let existing = try storedDevice(waDeviceId: device.id) {
+      let record = DeviceRecord(storedDevice: existing).merging(device: device)
+      existing.update(with: record)
+      try modelContext.save()
+      return (record, false)
+    }
+    let record = DeviceRecord(id: id, device: device, createdAt: discoveredAt, lastConnectedAt: nil)
+    modelContext.insert(StoredDevice(record: record))
+    try modelContext.save()
+    return (record, true)
+  }
+
+  func recordConnection(device: WAPairedDevice, id: UUID, connectedAt: Date) throws -> DeviceRecord {
+    let record: DeviceRecord
+    if let existing = try storedDevice(waDeviceId: device.id) {
+      record = DeviceRecord(storedDevice: existing).merging(device: device, lastConnectedAt: connectedAt)
+      existing.update(with: record)
+    } else {
+      record = DeviceRecord(id: id, device: device, createdAt: connectedAt, lastConnectedAt: connectedAt)
+      modelContext.insert(StoredDevice(record: record))
+    }
+    try modelContext.save()
+    return record
+  }
+
+  private func storedDevice(waDeviceId: UInt64) throws -> StoredDevice? {
+    var descriptor = FetchDescriptor<StoredDevice>(
+      predicate: #Predicate { device in device.waDeviceId == waDeviceId }
+    )
+    descriptor.fetchLimit = 1
+    return try modelContext.fetch(descriptor).first
   }
 }

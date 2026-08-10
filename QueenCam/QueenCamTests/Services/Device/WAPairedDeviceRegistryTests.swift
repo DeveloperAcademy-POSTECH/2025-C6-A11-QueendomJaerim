@@ -34,6 +34,26 @@ private actor FakeDeviceRepository: DeviceRepositoryProtocol {
     records[record.waDeviceId] = record
     return record
   }
+
+  func refresh(device: WAPairedDevice, id: UUID, discoveredAt: Date) throws -> (DeviceRecord, Bool) {
+    if shouldFail { throw DeviceRepositoryTestError.failed }
+    if let existing = records[device.id] {
+      let updated = existing.merging(device: device)
+      records[device.id] = updated
+      return (updated, false)
+    }
+    let record = DeviceRecord(id: id, device: device, createdAt: discoveredAt, lastConnectedAt: nil)
+    records[device.id] = record
+    return (record, true)
+  }
+
+  func recordConnection(device: WAPairedDevice, id: UUID, connectedAt: Date) throws -> DeviceRecord {
+    if shouldFail { throw DeviceRepositoryTestError.failed }
+    let record = records[device.id]?.merging(device: device, lastConnectedAt: connectedAt)
+      ?? DeviceRecord(id: id, device: device, createdAt: connectedAt, lastConnectedAt: connectedAt)
+    records[device.id] = record
+    return record
+  }
 }
 
 @Suite("WAPairedDeviceRegistry Tests")
@@ -135,6 +155,27 @@ struct WAPairedDeviceRegistryTests {
     let saved = try #require(try await repository.device(waDeviceId: 3001))
     #expect(saved.createdAt == Date(timeIntervalSince1970: 1_000))
     #expect(saved.lastConnectedAt == Date(timeIntervalSince1970: 1_000))
+  }
+
+  @Test("연결 완료 시 최신 연결 시각과 정렬을 즉시 다시 발행한다")
+  func republishesAfterConnection() async throws {
+    let repository = FakeDeviceRepository(records: [
+      makeRecord(waDeviceId: 3101, pairingName: "첫 기기", lastConnectedAt: nil),
+      makeRecord(waDeviceId: 3102, pairingName: "둘째 기기", lastConnectedAt: Date(timeIntervalSince1970: 500))
+    ])
+    let (stream, continuation) = makeDeviceStream()
+    let registry = makeRegistry(repository: repository, stream: stream)
+    var iterator = registry.devices.makeAsyncIterator()
+    let first = makeDevice(id: 3101, name: "첫 기기", pairingName: "첫 기기")
+    let second = makeDevice(id: 3102, name: "둘째 기기", pairingName: "둘째 기기")
+    continuation.yield([first.id: first, second.id: second])
+    _ = await iterator.next()
+
+    await registry.recordConnection(to: first)
+    let updated = try #require(await iterator.next())
+
+    #expect(updated.map(\.device.id) == [3101, 3102])
+    #expect(updated[0].lastConnectedAt == Date(timeIntervalSince1970: 1_000))
   }
 
   @Test("저장소가 실패해도 라이브 기기를 신규 폴백 값으로 발행한다")
