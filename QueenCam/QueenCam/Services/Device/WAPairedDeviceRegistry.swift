@@ -18,7 +18,6 @@ nonisolated final class WAPairedDeviceRegistry: WAPairedDeviceRegistryProtocol, 
   private let upstreamTask: Task<Void, Never>
   private let logger: QueenLogger
   private let state: RegistryState
-  private let continuation: AsyncStream<[ExtendedWAPairedDevice]>.Continuation
 
   init(
     repository: DeviceRepositoryProtocol,
@@ -31,12 +30,13 @@ nonisolated final class WAPairedDeviceRegistry: WAPairedDeviceRegistryProtocol, 
     self.uuid = uuid
     let logger = QueenLogger(category: "WAPairedDeviceRegistry")
     self.logger = logger
-    let state = RegistryState()
-    self.state = state
 
     let (devices, continuation) = AsyncStream.makeStream(of: [ExtendedWAPairedDevice].self)
     self.devices = devices
-    self.continuation = continuation
+    let state = RegistryState(continuation: continuation) { devices in
+      devices.sorted(by: Self.isOrderedBefore)
+    }
+    self.state = state
     self.upstreamTask = Task {
       do {
         for try await updates in deviceUpdates() {
@@ -52,10 +52,8 @@ nonisolated final class WAPairedDeviceRegistry: WAPairedDeviceRegistryProtocol, 
             extendedDevices.append(extended)
           }
 
-          let sorted = extendedDevices.sorted(by: Self.isOrderedBefore)
-          let merged = await state.replace(sorted).sorted(by: Self.isOrderedBefore)
-          logger.debug("페어링 기기 목록 결합 완료 count=\(merged.count)")
-          continuation.yield(merged)
+          let count = await state.replaceAndPublish(extendedDevices)
+          logger.debug("페어링 기기 목록 결합 완료 count=\(count)")
         }
       } catch {
         logger.error("Wi-Fi Aware 페어링 기기 스트림 처리 실패: \(error)")
@@ -106,9 +104,7 @@ nonisolated final class WAPairedDeviceRegistry: WAPairedDeviceRegistryProtocol, 
         id: uuid(),
         connectedAt: timestamp
       )
-      if let updated = await state.update(device: device, record: record) {
-        continuation.yield(updated.sorted(by: Self.isOrderedBefore))
-      }
+      await state.updateAndPublish(device: device, record: record)
       logger.debug(
         "상대 기기 최근 연결 시간 갱신 waDeviceId=\(device.id), id=\(record.id), lastConnectedAt=\(timestamp)"
       )
@@ -179,8 +175,18 @@ nonisolated final class WAPairedDeviceRegistry: WAPairedDeviceRegistryProtocol, 
 
 private actor RegistryState {
   private var devices: [UInt64: ExtendedWAPairedDevice] = [:]
+  private let continuation: AsyncStream<[ExtendedWAPairedDevice]>.Continuation
+  private let sort: @Sendable ([ExtendedWAPairedDevice]) -> [ExtendedWAPairedDevice]
 
-  func replace(_ updated: [ExtendedWAPairedDevice]) -> [ExtendedWAPairedDevice] {
+  init(
+    continuation: AsyncStream<[ExtendedWAPairedDevice]>.Continuation,
+    sort: @escaping @Sendable ([ExtendedWAPairedDevice]) -> [ExtendedWAPairedDevice]
+  ) {
+    self.continuation = continuation
+    self.sort = sort
+  }
+
+  func replaceAndPublish(_ updated: [ExtendedWAPairedDevice]) -> Int {
     devices = Dictionary(uniqueKeysWithValues: updated.map { item in
       guard
         let current = devices[item.device.id],
@@ -192,12 +198,13 @@ private actor RegistryState {
       let record = item.record.merging(device: item.device, lastConnectedAt: currentDate)
       return (item.device.id, ExtendedWAPairedDevice(device: item.device, record: record, isNew: false))
     })
-    return Array(devices.values)
+    continuation.yield(sort(Array(devices.values)))
+    return devices.count
   }
 
-  func update(device: WAPairedDevice, record: DeviceRecord) -> [ExtendedWAPairedDevice]? {
-    guard devices[device.id] != nil else { return nil }
+  func updateAndPublish(device: WAPairedDevice, record: DeviceRecord) {
+    guard devices[device.id] != nil else { return }
     devices[device.id] = ExtendedWAPairedDevice(device: device, record: record, isNew: false)
-    return Array(devices.values)
+    continuation.yield(sort(Array(devices.values)))
   }
 }
