@@ -53,9 +53,9 @@ nonisolated final class WAPairedDeviceRegistry: WAPairedDeviceRegistryProtocol, 
           }
 
           let sorted = extendedDevices.sorted(by: Self.isOrderedBefore)
-          await state.replace(sorted)
-          logger.debug("페어링 기기 목록 결합 완료 count=\(sorted.count)")
-          continuation.yield(sorted)
+          let merged = await state.replace(sorted).sorted(by: Self.isOrderedBefore)
+          logger.debug("페어링 기기 목록 결합 완료 count=\(merged.count)")
+          continuation.yield(merged)
         }
       } catch {
         logger.error("Wi-Fi Aware 페어링 기기 스트림 처리 실패: \(error)")
@@ -180,7 +180,7 @@ nonisolated final class WAPairedDeviceRegistry: WAPairedDeviceRegistryProtocol, 
 private actor RegistryState {
   private var devices: [UInt64: ExtendedWAPairedDevice] = [:]
 
-  func replace(_ updated: [ExtendedWAPairedDevice]) {
+  func replace(_ updated: [ExtendedWAPairedDevice]) -> [ExtendedWAPairedDevice] {
     devices = Dictionary(uniqueKeysWithValues: updated.map { item in
       guard
         let current = devices[item.device.id],
@@ -192,6 +192,7 @@ private actor RegistryState {
       let record = item.record.merging(device: item.device, lastConnectedAt: currentDate)
       return (item.device.id, ExtendedWAPairedDevice(device: item.device, record: record, isNew: false))
     })
+    return Array(devices.values)
   }
 
   func update(device: WAPairedDevice, record: DeviceRecord) -> [ExtendedWAPairedDevice]? {
