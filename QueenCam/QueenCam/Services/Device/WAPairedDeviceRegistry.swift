@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftData
 import WiFiAware
 
 nonisolated final class WAPairedDeviceRegistry: WAPairedDeviceRegistryProtocol, @unchecked Sendable {
@@ -54,6 +55,36 @@ nonisolated final class WAPairedDeviceRegistry: WAPairedDeviceRegistryProtocol, 
         logger.error("Wi-Fi Aware 페어링 기기 스트림 처리 실패: \(error)")
       }
       continuation.finish()
+    }
+  }
+
+  convenience init(repository: DeviceRepositoryProtocol) {
+    self.init(repository: repository) {
+      AsyncThrowingStream { continuation in
+        let task = Task {
+          do {
+            for try await devices in WAPairedDevice.allDevices {
+              continuation.yield(devices)
+            }
+            continuation.finish()
+          } catch {
+            continuation.finish(throwing: error)
+          }
+        }
+        continuation.onTermination = { _ in
+          task.cancel()
+        }
+      }
+    }
+  }
+
+  static func inMemory() -> WAPairedDeviceRegistry {
+    do {
+      let configuration = ModelConfiguration(isStoredInMemoryOnly: true)
+      let container = try ModelContainer(for: StoredDevice.self, configurations: configuration)
+      return WAPairedDeviceRegistry(repository: DeviceRepository(modelContainer: container))
+    } catch {
+      fatalError("인메모리 상대 기기 저장소 생성에 실패했습니다: \(error)")
     }
   }
 

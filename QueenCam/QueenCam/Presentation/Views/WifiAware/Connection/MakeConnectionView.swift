@@ -16,7 +16,7 @@ struct MakeConnectionView {
   let role: Role
   let networkState: NetworkState?
   let selectedPairedDevice: WAPairedDevice?
-  let pairedDevices: [WAPairedDevice]
+  let pairedDevices: [ExtendedWAPairedDevice]
   let isConnected: Bool
   var lastConnectionError: Error?
   let errorWasConsumeByUser: () -> Void

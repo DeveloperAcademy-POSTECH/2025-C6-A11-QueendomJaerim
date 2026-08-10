@@ -24,7 +24,7 @@ final class ConnectionViewModel {
       }
     }
   }
-  private(set) var pairedDevices: [WAPairedDevice] = []
+  private(set) var pairedDevices: [ExtendedWAPairedDevice] = []
   private(set) var selectedPairedDevice: WAPairedDevice?
 
   var networkState: NetworkState? {
@@ -62,6 +62,7 @@ final class ConnectionViewModel {
   private let myLWWActorId: String = UUID().uuidString
 
   private let networkService: NetworkServiceProtocol
+  private let pairedDeviceRegistry: WAPairedDeviceRegistryProtocol
   private var cancellables: Set<AnyCancellable> = []
 
   var isConnecting: Bool {
@@ -79,9 +80,14 @@ final class ConnectionViewModel {
 
   private let logger = QueenLogger(category: "ConnectionViewModel")
 
-  init(networkService: NetworkServiceProtocol, notificationService: NotificationServiceProtocol) {
+  init(
+    networkService: NetworkServiceProtocol,
+    notificationService: NotificationServiceProtocol,
+    pairedDeviceRegistry: WAPairedDeviceRegistryProtocol
+  ) {
     self.networkService = networkService
     self.notificationService = notificationService
+    self.pairedDeviceRegistry = pairedDeviceRegistry
     bind()
 
     // @Observable ViewModel은 두 번 초기화될 수 있음
@@ -156,14 +162,9 @@ final class ConnectionViewModel {
   }
 
   private func updatePairedDevices() async {
-    do {
-      for try await updatedDeviceList in WAPairedDevice.allDevices {
-        let devices = Array(updatedDeviceList.values)
-        self.pairedDevices = devices
-        logger.info("pairedDevices updated.\n\(devices)")
-      }
-    } catch {
-      logger.error("Failed to get paired devices: \(error)")
+    for await devices in pairedDeviceRegistry.devices {
+      pairedDevices = devices
+      logger.debug("확장 페어링 기기 목록 갱신 count=\(devices.count)")
     }
   }
 }
