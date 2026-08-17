@@ -408,6 +408,16 @@
         }
       }
     },
+    "사진에 펜 가이드 함께 저장" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save photos with pen guides"
+          }
+        }
+      }
+    },
     "삭제" : {
       "localizations" : {
         "en" : {
@@ -484,6 +494,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Open Settings"
+          }
+        }
+      }
+    },
+    "실험실" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Labs"
           }
         }
       }
@@ -928,12 +948,22 @@
         }
       }
     },
-    "사진에 펜 가이드 함께 저장" : {
+    "촬영한 사진은 사용자의 기기에만 저장됩니다.\n앱에서 별도 저장, 보관하지 않으니 안심하고 이용해 주세요!" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Save photos with pen guides"
+            "value" : "Are photos taken with the app stored on a server?\nNo. Photos are saved only on your device."
+          }
+        }
+      }
+    },
+    "촬영한 사진이 서버에 저장되나요?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are photos taken with the app stored on a server?"
           }
         }
       }
@@ -1138,16 +1168,6 @@
         }
       }
     },
-    "펜" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pen"
-          }
-        }
-      }
-    },
     "페어링 방법이 궁금하신가요?" : {
       "localizations" : {
         "en" : {
@@ -1174,6 +1194,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "When pairing, I entered the code shown on the other device, but the screen doesn’t proceed."
+          }
+        }
+      }
+    },
+    "펜" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pen"
           }
         }
       }
