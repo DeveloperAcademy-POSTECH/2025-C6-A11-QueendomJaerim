@@ -918,12 +918,22 @@
         }
       }
     },
-    "펜 가이드 함께 저장" : {
+    "촬영자 기준으로 적용되는 설정이에요" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Save with pen guide"
+            "value" : "Pen guides are saved based on the photographer’s setting."
+          }
+        }
+      }
+    },
+    "사진에 펜 가이드 함께 저장" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save photos with pen guides"
           }
         }
       }
