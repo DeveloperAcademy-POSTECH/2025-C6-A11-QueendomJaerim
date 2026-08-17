@@ -17,7 +17,7 @@ struct DeviceRepositoryTests {
   @Test("새 상대 기기를 저장하고 Wi-Fi Aware 식별자로 조회한다")
   func insertsAndFetchesDevice() async throws {
     let (_, repository) = try makeRepository()
-    let record = DeviceRecord(
+    let record = StoredDeviceSnapshot(
       id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!,
       waDeviceId: 1001,
       name: "작가의 iPhone",
@@ -41,7 +41,7 @@ struct DeviceRepositoryTests {
     let id = UUID(uuidString: "00000000-0000-0000-0000-000000000002")!
     let createdAt = Date(timeIntervalSince1970: 200)
     let lastConnectedAt = Date(timeIntervalSince1970: 300)
-    let original = DeviceRecord(
+    let original = StoredDeviceSnapshot(
       id: id,
       waDeviceId: 1002,
       name: "이전 이름",
@@ -51,7 +51,7 @@ struct DeviceRepositoryTests {
       createdAt: createdAt,
       lastConnectedAt: lastConnectedAt
     )
-    let updated = DeviceRecord(
+    let updated = StoredDeviceSnapshot(
       id: id,
       waDeviceId: 1002,
       name: "현재 이름",
@@ -79,7 +79,7 @@ struct DeviceRepositoryTests {
     let id = UUID(uuidString: "00000000-0000-0000-0000-000000000003")!
     let createdAt = Date(timeIntervalSince1970: 10)
     let connectedAt = Date(timeIntervalSince1970: 20)
-    let original = DeviceRecord(
+    let original = StoredDeviceSnapshot(
       id: id, waDeviceId: 1003, name: "이전", pairingName: "이전", vendorName: nil,
       modelName: nil, createdAt: createdAt, lastConnectedAt: connectedAt
     )

@@ -11,18 +11,18 @@ import WiFiAware
 
 @ModelActor
 actor DeviceRepository: DeviceRepositoryProtocol {
-  func device(waDeviceId: UInt64) throws -> DeviceRecord? {
+  func device(waDeviceId: UInt64) throws -> StoredDeviceSnapshot? {
     var descriptor = FetchDescriptor<StoredDevice>(
       predicate: #Predicate { device in
         device.waDeviceId == waDeviceId
       }
     )
     descriptor.fetchLimit = 1
-    return try modelContext.fetch(descriptor).first.map(DeviceRecord.init(storedDevice:))
+    return try modelContext.fetch(descriptor).first.map(StoredDeviceSnapshot.init(storedDevice:))
   }
 
   @discardableResult
-  func upsert(_ record: DeviceRecord) throws -> DeviceRecord {
+  func upsert(_ record: StoredDeviceSnapshot) throws -> StoredDeviceSnapshot {
     let waDeviceId = record.waDeviceId
     var descriptor = FetchDescriptor<StoredDevice>(
       predicate: #Predicate { device in
@@ -41,26 +41,40 @@ actor DeviceRepository: DeviceRepositoryProtocol {
     return record
   }
 
-  func refresh(device: WAPairedDevice, id: UUID, discoveredAt: Date) throws -> (DeviceRecord, Bool) {
+  func refresh(
+    device: WAPairedDevice,
+    id: UUID,
+    discoveredAt: Date
+  ) throws -> (StoredDeviceSnapshot, Bool) {
     if let existing = try storedDevice(waDeviceId: device.id) {
-      let record = DeviceRecord(storedDevice: existing).merging(device: device)
+      let record = StoredDeviceSnapshot(storedDevice: existing).merging(device: device)
       existing.update(with: record)
       try modelContext.save()
       return (record, false)
     }
-    let record = DeviceRecord(id: id, device: device, createdAt: discoveredAt, lastConnectedAt: nil)
+    let record = StoredDeviceSnapshot(id: id, device: device, createdAt: discoveredAt, lastConnectedAt: nil)
     modelContext.insert(StoredDevice(record: record))
     try modelContext.save()
     return (record, true)
   }
 
-  func recordConnection(device: WAPairedDevice, id: UUID, connectedAt: Date) throws -> DeviceRecord {
-    let record: DeviceRecord
+  func recordConnection(
+    device: WAPairedDevice,
+    id: UUID,
+    connectedAt: Date
+  ) throws -> StoredDeviceSnapshot {
+    let record: StoredDeviceSnapshot
     if let existing = try storedDevice(waDeviceId: device.id) {
-      record = DeviceRecord(storedDevice: existing).merging(device: device, lastConnectedAt: connectedAt)
+      record = StoredDeviceSnapshot(storedDevice: existing)
+        .merging(device: device, lastConnectedAt: connectedAt)
       existing.update(with: record)
     } else {
-      record = DeviceRecord(id: id, device: device, createdAt: connectedAt, lastConnectedAt: connectedAt)
+      record = StoredDeviceSnapshot(
+        id: id,
+        device: device,
+        createdAt: connectedAt,
+        lastConnectedAt: connectedAt
+      )
       modelContext.insert(StoredDevice(record: record))
     }
     try modelContext.save()

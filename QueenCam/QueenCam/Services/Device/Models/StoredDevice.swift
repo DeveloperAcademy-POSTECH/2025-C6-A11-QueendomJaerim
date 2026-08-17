@@ -19,7 +19,7 @@ final class StoredDevice {
   var createdAt: Date
   var lastConnectedAt: Date?
 
-  init(record: DeviceRecord) {
+  init(record: StoredDeviceSnapshot) {
     self.waDeviceId = record.waDeviceId
     self.id = record.id
     self.name = record.name
@@ -30,7 +30,7 @@ final class StoredDevice {
     self.lastConnectedAt = record.lastConnectedAt
   }
 
-  func update(with record: DeviceRecord) {
+  func update(with record: StoredDeviceSnapshot) {
     id = record.id
     name = record.name
     pairingName = record.pairingName
@@ -41,7 +41,7 @@ final class StoredDevice {
   }
 }
 
-nonisolated struct DeviceRecord: Equatable, Sendable {
+nonisolated struct StoredDeviceSnapshot: Equatable, Sendable {
   let id: UUID
   let waDeviceId: UInt64
   let name: String

@@ -16,41 +16,41 @@ private enum DeviceRepositoryTestError: Error {
 }
 
 private actor FakeDeviceRepository: DeviceRepositoryProtocol {
-  private var records: [UInt64: DeviceRecord]
+  private var records: [UInt64: StoredDeviceSnapshot]
   private let shouldFail: Bool
 
-  init(records: [DeviceRecord] = [], shouldFail: Bool = false) {
+  init(records: [StoredDeviceSnapshot] = [], shouldFail: Bool = false) {
     self.records = Dictionary(uniqueKeysWithValues: records.map { ($0.waDeviceId, $0) })
     self.shouldFail = shouldFail
   }
 
-  func device(waDeviceId: UInt64) throws -> DeviceRecord? {
+  func device(waDeviceId: UInt64) throws -> StoredDeviceSnapshot? {
     if shouldFail { throw DeviceRepositoryTestError.failed }
     return records[waDeviceId]
   }
 
-  func upsert(_ record: DeviceRecord) throws -> DeviceRecord {
+  func upsert(_ record: StoredDeviceSnapshot) throws -> StoredDeviceSnapshot {
     if shouldFail { throw DeviceRepositoryTestError.failed }
     records[record.waDeviceId] = record
     return record
   }
 
-  func refresh(device: WAPairedDevice, id: UUID, discoveredAt: Date) throws -> (DeviceRecord, Bool) {
+  func refresh(device: WAPairedDevice, id: UUID, discoveredAt: Date) throws -> (StoredDeviceSnapshot, Bool) {
     if shouldFail { throw DeviceRepositoryTestError.failed }
     if let existing = records[device.id] {
       let updated = existing.merging(device: device)
       records[device.id] = updated
       return (updated, false)
     }
-    let record = DeviceRecord(id: id, device: device, createdAt: discoveredAt, lastConnectedAt: nil)
+    let record = StoredDeviceSnapshot(id: id, device: device, createdAt: discoveredAt, lastConnectedAt: nil)
     records[device.id] = record
     return (record, true)
   }
 
-  func recordConnection(device: WAPairedDevice, id: UUID, connectedAt: Date) throws -> DeviceRecord {
+  func recordConnection(device: WAPairedDevice, id: UUID, connectedAt: Date) throws -> StoredDeviceSnapshot {
     if shouldFail { throw DeviceRepositoryTestError.failed }
     let record = records[device.id]?.merging(device: device, lastConnectedAt: connectedAt)
-      ?? DeviceRecord(id: id, device: device, createdAt: connectedAt, lastConnectedAt: connectedAt)
+      ?? StoredDeviceSnapshot(id: id, device: device, createdAt: connectedAt, lastConnectedAt: connectedAt)
     records[device.id] = record
     return record
   }
@@ -83,7 +83,7 @@ struct WAPairedDeviceRegistryTests {
     let createdAt = Date(timeIntervalSince1970: 10)
     let lastConnectedAt = Date(timeIntervalSince1970: 20)
     let repository = FakeDeviceRepository(records: [
-      DeviceRecord(
+      StoredDeviceSnapshot(
         id: id,
         waDeviceId: 1010,
         name: "이전 이름",
@@ -214,8 +214,12 @@ private func makeDeviceStream() -> (
   AsyncThrowingStream.makeStream(of: [UInt64: WAPairedDevice].self)
 }
 
-private func makeRecord(waDeviceId: UInt64, pairingName: String, lastConnectedAt: Date?) -> DeviceRecord {
-  DeviceRecord(
+private func makeRecord(
+  waDeviceId: UInt64,
+  pairingName: String,
+  lastConnectedAt: Date?
+) -> StoredDeviceSnapshot {
+  StoredDeviceSnapshot(
     id: UUID(),
     waDeviceId: waDeviceId,
     name: pairingName,

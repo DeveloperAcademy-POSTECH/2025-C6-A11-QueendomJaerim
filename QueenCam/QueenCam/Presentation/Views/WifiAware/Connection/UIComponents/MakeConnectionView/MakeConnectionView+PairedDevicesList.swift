@@ -212,7 +212,7 @@ private func createTestDevice(id: Int, name: String) -> ExtendedWAPairedDevice? 
   if let jsonData = deviceJSON.data(using: .utf8) {
     do {
       let device = try JSONDecoder().decode(WAPairedDevice.self, from: jsonData)
-      let record = DeviceRecord(
+      let record = StoredDeviceSnapshot(
         id: UUID(),
         device: device,
         createdAt: Date(),

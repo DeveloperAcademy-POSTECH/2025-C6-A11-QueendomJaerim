@@ -33,7 +33,7 @@ nonisolated struct ExtendedWAPairedDevice: Identifiable, Sendable {
   let lastConnectedAt: Date?
   let isNew: Bool
 
-  init(device: WAPairedDevice, record: DeviceRecord, isNew: Bool) {
+  init(device: WAPairedDevice, record: StoredDeviceSnapshot, isNew: Bool) {
     id = record.id
     self.device = device
     name = record.name
@@ -45,8 +45,8 @@ nonisolated struct ExtendedWAPairedDevice: Identifiable, Sendable {
     self.isNew = isNew
   }
 
-  var record: DeviceRecord {
-    DeviceRecord(
+  var record: StoredDeviceSnapshot {
+    StoredDeviceSnapshot(
       id: id,
       waDeviceId: device.id,
       name: name,
@@ -59,7 +59,7 @@ nonisolated struct ExtendedWAPairedDevice: Identifiable, Sendable {
   }
 }
 
-nonisolated extension DeviceRecord {
+nonisolated extension StoredDeviceSnapshot {
   init(
     id: UUID,
     device: WAPairedDevice,
@@ -79,9 +79,9 @@ nonisolated extension DeviceRecord {
     )
   }
 
-  func merging(device: WAPairedDevice, lastConnectedAt: Date? = nil) -> DeviceRecord {
+  func merging(device: WAPairedDevice, lastConnectedAt: Date? = nil) -> StoredDeviceSnapshot {
     let metadata = DeviceMetadata(device: device)
-    return DeviceRecord(
+    return StoredDeviceSnapshot(
       id: id,
       waDeviceId: waDeviceId,
       name: metadata.name,

@@ -130,7 +130,7 @@ nonisolated final class WAPairedDeviceRegistry: WAPairedDeviceRegistryProtocol, 
       logger.debug("상대 기기 원자 갱신 waDeviceId=\(device.id), id=\(record.id), isNew=\(isNew)")
       return ExtendedWAPairedDevice(device: device, record: record, isNew: isNew)
     } catch {
-      let fallback = DeviceRecord(
+      let fallback = StoredDeviceSnapshot(
         id: uuid(),
         device: device,
         createdAt: now(),
@@ -202,7 +202,7 @@ private actor RegistryState {
     return devices.count
   }
 
-  func updateAndPublish(device: WAPairedDevice, record: DeviceRecord) {
+  func updateAndPublish(device: WAPairedDevice, record: StoredDeviceSnapshot) {
     guard devices[device.id] != nil else { return }
     devices[device.id] = ExtendedWAPairedDevice(device: device, record: record, isNew: false)
     continuation.yield(sort(Array(devices.values)))

@@ -9,11 +9,19 @@ import Foundation
 import WiFiAware
 
 nonisolated protocol DeviceRepositoryProtocol: Sendable {
-  func device(waDeviceId: UInt64) async throws -> DeviceRecord?
+  func device(waDeviceId: UInt64) async throws -> StoredDeviceSnapshot?
 
   @discardableResult
-  func upsert(_ record: DeviceRecord) async throws -> DeviceRecord
+  func upsert(_ record: StoredDeviceSnapshot) async throws -> StoredDeviceSnapshot
 
-  func refresh(device: WAPairedDevice, id: UUID, discoveredAt: Date) async throws -> (DeviceRecord, Bool)
-  func recordConnection(device: WAPairedDevice, id: UUID, connectedAt: Date) async throws -> DeviceRecord
+  func refresh(
+    device: WAPairedDevice,
+    id: UUID,
+    discoveredAt: Date
+  ) async throws -> (StoredDeviceSnapshot, Bool)
+  func recordConnection(
+    device: WAPairedDevice,
+    id: UUID,
+    connectedAt: Date
+  ) async throws -> StoredDeviceSnapshot
 }
