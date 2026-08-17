@@ -9,17 +9,36 @@ import SwiftUI
 
 struct SettingToggleSectionItem {
   let title: LocalizedStringKey
+  let supplementaryText: LocalizedStringKey?
   @Binding var isOn: Bool
+
+  init(
+    title: LocalizedStringKey,
+    supplementaryText: LocalizedStringKey? = nil,
+    isOn: Binding<Bool>
+  ) {
+    self.title = title
+    self.supplementaryText = supplementaryText
+    self._isOn = isOn
+  }
 }
 
 extension SettingToggleSectionItem: View {
   var body: some View {
-    Toggle(isOn: $isOn) {
-      Text(title)
-        .typo(.sb16)
-        .foregroundStyle(.offWhite)
+    VStack(alignment: .leading, spacing: 8) {
+      Toggle(isOn: $isOn) {
+        Text(title)
+          .typo(.sb16)
+          .foregroundStyle(.offWhite)
+      }
+      .tint(.photographerPrimary)
+
+      if let supplementaryText {
+        Text(supplementaryText)
+          .typo(.m13)
+          .foregroundStyle(.gray600)
+      }
     }
-    .tint(.photographerPrimary)
   }
 }
 
@@ -29,7 +48,11 @@ extension SettingToggleSectionItem: View {
   ZStack {
     Color.black
 
-    SettingToggleSectionItem(title: "펜 가이드 함께 저장", isOn: $isOn)
+    SettingToggleSectionItem(
+      title: "사진에 펜 가이드 함께 저장",
+      supplementaryText: "촬영자 기준으로 적용되는 설정이에요",
+      isOn: $isOn
+    )
       .padding(20)
   }
 }

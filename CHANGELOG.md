@@ -11,6 +11,8 @@
 
 ### Changed
 
+- 설정 화면의 펜 가이드 저장 옵션에 촬영자 설정 기준 안내 문구 추가
+
 ### Deprecated
 
 ### Removed

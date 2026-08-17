@@ -73,7 +73,8 @@ extension SettingsMainView: View {
 
         SettingSection(title: "실험실") {
           SettingToggleSectionItem(
-            title: "펜 가이드 함께 저장",
+            title: "사진에 펜 가이드 함께 저장",
+            supplementaryText: "촬영자 기준으로 적용되는 설정이에요",
             isOn: $settings.saveGuidingOverlayImageOn
           )
         }
