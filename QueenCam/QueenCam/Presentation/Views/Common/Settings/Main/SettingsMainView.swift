@@ -78,7 +78,8 @@ extension SettingsMainView: View {
             isOn: $settings.saveGuidingOverlayImageOn
           )
         }
-        .padding(.horizontal, 20)
+        .padding(.leading, 20)
+        .padding(.trailing, 26)
 
         SettingSection(title: "고객센터") {
           SettingSectionItem {
