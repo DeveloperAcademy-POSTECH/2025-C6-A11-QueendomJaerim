@@ -107,7 +107,7 @@ extension SettingsMainView: View {
         }
         .padding(.horizontal, 20)
 
-        Text("© 2025. 팀 퀸덤. 문승찬, 엄태형, 윤보라, 이재림, 임영택, 차정인.")
+        Text("© 2025-2026. 팀 퀸덤. 문승찬, 신지현, 엄태형, 윤보라, 이재림, 임영택, 차정인.")
           .font(.pretendard(.medium, size: 11))
           .foregroundStyle(.gray900)
           .padding(.top, 18)
