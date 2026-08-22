@@ -64,6 +64,7 @@ final class ConnectionViewModel {
   private let networkService: NetworkServiceProtocol
   private let pairedDeviceRegistry: WAPairedDeviceRegistryProtocol
   private var cancellables: Set<AnyCancellable> = []
+  private var pairedDevicesTask: Task<Void, Never>?
 
   var isConnecting: Bool {
     !(networkState == nil || networkState == .host(.stopped) || networkState == .viewer(.stopped))
@@ -96,6 +97,10 @@ final class ConnectionViewModel {
     if notificationService.currentNotification == nil {
       notificationService.registerBaseNotification(DomainNotification.make(type: .ready))
     }
+  }
+
+  isolated deinit {
+    pairedDevicesTask?.cancel()
   }
 
   private func bind() {
@@ -159,12 +164,13 @@ final class ConnectionViewModel {
         self?.connectionError = error
       }
       .store(in: &cancellables)
-  }
 
-  private func updatePairedDevices() async {
-    for await devices in pairedDeviceRegistry.devices {
-      pairedDevices = devices
-      logger.debug("확장 페어링 기기 목록 갱신 count=\(devices.count)")
+    pairedDevicesTask = Task { [weak self, pairedDeviceRegistry] in
+      for await devices in pairedDeviceRegistry.devices {
+        guard let self else { return }
+        pairedDevices = devices
+        logger.debug("확장 페어링 기기 목록 갱신 count=\(devices.count)")
+      }
     }
   }
 }
@@ -207,10 +213,6 @@ extension ConnectionViewModel {
     connectionLost = false
     reconnectingDeviceName = nil
     notificationService.registerNotification(.make(type: .disconnected))
-  }
-
-  func viewDidAppearTask() async {
-    await updatePairedDevices()
   }
 
   func pingButtonDidTap() {
