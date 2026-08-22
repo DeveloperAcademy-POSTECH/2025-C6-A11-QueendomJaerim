@@ -24,35 +24,26 @@ private actor FakeDeviceRepository: DeviceRepositoryProtocol {
     self.shouldFail = shouldFail
   }
 
-  func device(waDeviceId: UInt64) throws -> StoredDeviceSnapshot? {
+  func find(waDeviceId: UInt64) throws -> StoredDeviceSnapshot? {
     if shouldFail { throw DeviceRepositoryTestError.failed }
     return records[waDeviceId]
   }
 
-  func upsert(_ record: StoredDeviceSnapshot) throws -> StoredDeviceSnapshot {
+  func upsert(
+    _ incoming: StoredDeviceSnapshot,
+    resolvingConflictWith resolveConflict: @Sendable (
+      _ stored: StoredDeviceSnapshot,
+      _ incoming: StoredDeviceSnapshot
+    ) -> StoredDeviceSnapshot
+  ) throws -> (snapshot: StoredDeviceSnapshot, wasInserted: Bool) {
     if shouldFail { throw DeviceRepositoryTestError.failed }
-    records[record.waDeviceId] = record
-    return record
-  }
-
-  func refresh(device: WAPairedDevice, id: UUID, discoveredAt: Date) throws -> (StoredDeviceSnapshot, Bool) {
-    if shouldFail { throw DeviceRepositoryTestError.failed }
-    if let existing = records[device.id] {
-      let updated = existing.merging(device: device)
-      records[device.id] = updated
-      return (updated, false)
+    if let stored = records[incoming.waDeviceId] {
+      let resolved = resolveConflict(stored, incoming)
+      records[incoming.waDeviceId] = resolved
+      return (resolved, false)
     }
-    let record = StoredDeviceSnapshot(id: id, device: device, createdAt: discoveredAt, lastConnectedAt: nil)
-    records[device.id] = record
-    return (record, true)
-  }
-
-  func recordConnection(device: WAPairedDevice, id: UUID, connectedAt: Date) throws -> StoredDeviceSnapshot {
-    if shouldFail { throw DeviceRepositoryTestError.failed }
-    let record = records[device.id]?.merging(device: device, lastConnectedAt: connectedAt)
-      ?? StoredDeviceSnapshot(id: id, device: device, createdAt: connectedAt, lastConnectedAt: connectedAt)
-    records[device.id] = record
-    return record
+    records[incoming.waDeviceId] = incoming
+    return (incoming, true)
   }
 }
 
@@ -72,7 +63,7 @@ struct WAPairedDeviceRegistryTests {
     #expect(devices.count == 1)
     #expect(devices[0].isNew)
     #expect(devices[0].device.id == 1001)
-    let saved = try #require(try await repository.device(waDeviceId: 1001))
+    let saved = try #require(try await repository.find(waDeviceId: 1001))
     #expect(saved.createdAt == Date(timeIntervalSince1970: 1_000))
     #expect(saved.id == UUID(uuidString: "00000000-0000-0000-0000-000000000001"))
   }
@@ -110,7 +101,7 @@ struct WAPairedDeviceRegistryTests {
 
     #expect(devices[0].isNew == false)
     #expect(devices[0].id == id)
-    let saved = try #require(try await repository.device(waDeviceId: 1010))
+    let saved = try #require(try await repository.find(waDeviceId: 1010))
     #expect(saved.name == "현재 이름")
     #expect(saved.pairingName == "현재 페어링 이름")
     #expect(saved.vendorName == "Apple")
@@ -152,7 +143,7 @@ struct WAPairedDeviceRegistryTests {
 
     await registry.recordConnection(to: device)
 
-    let saved = try #require(try await repository.device(waDeviceId: 3001))
+    let saved = try #require(try await repository.find(waDeviceId: 3001))
     #expect(saved.createdAt == Date(timeIntervalSince1970: 1_000))
     #expect(saved.lastConnectedAt == Date(timeIntervalSince1970: 1_000))
   }

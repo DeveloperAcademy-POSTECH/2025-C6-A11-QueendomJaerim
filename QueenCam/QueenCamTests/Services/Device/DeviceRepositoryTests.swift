@@ -8,7 +8,6 @@
 import Foundation
 import SwiftData
 import Testing
-import WiFiAware
 
 @testable import QueenCam
 
@@ -28,10 +27,11 @@ struct DeviceRepositoryTests {
       lastConnectedAt: nil
     )
 
-    let saved = try await repository.upsert(record)
-    let fetched = try await repository.device(waDeviceId: 1001)
+    let (saved, wasInserted) = try await repository.upsert(record) { _, incoming in incoming }
+    let fetched = try await repository.find(waDeviceId: 1001)
 
     #expect(saved == record)
+    #expect(wasInserted)
     #expect(fetched == record)
   }
 
@@ -62,19 +62,21 @@ struct DeviceRepositoryTests {
       lastConnectedAt: lastConnectedAt
     )
 
-    _ = try await repository.upsert(original)
-    _ = try await repository.upsert(updated)
+    _ = try await repository.upsert(original) { _, incoming in incoming }
+    let (saved, wasInserted) = try await repository.upsert(updated) { _, incoming in incoming }
 
-    let fetched = try await repository.device(waDeviceId: 1002)
+    let fetched = try await repository.find(waDeviceId: 1002)
     let count = try await MainActor.run {
       try container.mainContext.fetchCount(FetchDescriptor<StoredDevice>())
     }
+    #expect(saved == updated)
+    #expect(wasInserted == false)
     #expect(fetched == updated)
     #expect(count == 1)
   }
 
-  @Test("메타데이터 갱신은 기존 식별자와 날짜를 보존한다")
-  func refreshPreservesIdentityAndDates() async throws {
+  @Test("충돌 해결 결과를 같은 행에 원자적으로 저장한다")
+  func resolvesConflictAtomically() async throws {
     let (_, repository) = try makeRepository()
     let id = UUID(uuidString: "00000000-0000-0000-0000-000000000003")!
     let createdAt = Date(timeIntervalSince1970: 10)
@@ -83,20 +85,32 @@ struct DeviceRepositoryTests {
       id: id, waDeviceId: 1003, name: "이전", pairingName: "이전", vendorName: nil,
       modelName: nil, createdAt: createdAt, lastConnectedAt: connectedAt
     )
-    _ = try await repository.upsert(original)
-
-    let current = makeRepositoryDevice(id: 1003, name: "현재")
-    let (refreshed, isNew) = try await repository.refresh(
-      device: current,
-      id: UUID(),
-      discoveredAt: Date(timeIntervalSince1970: 30)
+    let incoming = StoredDeviceSnapshot(
+      id: UUID(), waDeviceId: 1003, name: "현재", pairingName: "현재", vendorName: "Apple",
+      modelName: "iPhone", createdAt: Date(timeIntervalSince1970: 30), lastConnectedAt: nil
     )
+    _ = try await repository.upsert(original) { _, incoming in incoming }
 
-    #expect(isNew == false)
-    #expect(refreshed.id == id)
-    #expect(refreshed.createdAt == createdAt)
-    #expect(refreshed.lastConnectedAt == connectedAt)
-    #expect(refreshed.pairingName == "현재")
+    let (resolved, wasInserted) = try await repository.upsert(incoming) { stored, incoming in
+      StoredDeviceSnapshot(
+        id: stored.id,
+        waDeviceId: stored.waDeviceId,
+        name: incoming.name,
+        pairingName: incoming.pairingName,
+        vendorName: incoming.vendorName,
+        modelName: incoming.modelName,
+        createdAt: stored.createdAt,
+        lastConnectedAt: stored.lastConnectedAt
+      )
+    }
+    let fetched = try await repository.find(waDeviceId: 1003)
+
+    #expect(wasInserted == false)
+    #expect(resolved.id == id)
+    #expect(resolved.createdAt == createdAt)
+    #expect(resolved.lastConnectedAt == connectedAt)
+    #expect(resolved.pairingName == "현재")
+    #expect(fetched == resolved)
   }
 
   private func makeRepository() throws -> (ModelContainer, DeviceRepository) {
@@ -104,13 +118,4 @@ struct DeviceRepositoryTests {
     let container = try ModelContainer(for: StoredDevice.self, configurations: configuration)
     return (container, DeviceRepository(modelContainer: container))
   }
-}
-
-private func makeRepositoryDevice(id: UInt64, name: String) -> WAPairedDevice {
-  let json = "{\"id\":\(id),\"name\":\"\(name)\",\"pairingInfo\":"
-    + "{\"pairingName\":\"\(name)\",\"vendorName\":\"Apple\",\"modelName\":\"iPhone\"}}"
-  guard let device = try? JSONDecoder().decode(WAPairedDevice.self, from: Data(json.utf8)) else {
-    fatalError("WAPairedDevice 테스트 fixture 디코딩에 실패했습니다")
-  }
-  return device
 }

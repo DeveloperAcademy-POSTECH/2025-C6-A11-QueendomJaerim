@@ -99,11 +99,15 @@ nonisolated final class WAPairedDeviceRegistry: WAPairedDeviceRegistryProtocol, 
   func recordConnection(to device: WAPairedDevice) async {
     do {
       let timestamp = now()
-      let record = try await repository.recordConnection(
-        device: device,
+      let incoming = StoredDeviceSnapshot(
         id: uuid(),
-        connectedAt: timestamp
+        device: device,
+        createdAt: timestamp,
+        lastConnectedAt: timestamp
       )
+      let (record, _) = try await repository.upsert(incoming) { stored, _ in
+        stored.merging(device: device, lastConnectedAt: timestamp)
+      }
       await state.updateAndPublish(device: device, record: record)
       logger.debug(
         "상대 기기 최근 연결 시간 갱신 waDeviceId=\(device.id), id=\(record.id), lastConnectedAt=\(timestamp)"
@@ -122,13 +126,17 @@ nonisolated final class WAPairedDeviceRegistry: WAPairedDeviceRegistryProtocol, 
   ) async -> ExtendedWAPairedDevice {
     do {
       let discoveredAt = now()
-      let (record, isNew) = try await repository.refresh(
-        device: device,
+      let incoming = StoredDeviceSnapshot(
         id: uuid(),
-        discoveredAt: discoveredAt
+        device: device,
+        createdAt: discoveredAt,
+        lastConnectedAt: nil
       )
-      logger.debug("상대 기기 원자 갱신 waDeviceId=\(device.id), id=\(record.id), isNew=\(isNew)")
-      return ExtendedWAPairedDevice(device: device, record: record, isNew: isNew)
+      let (record, wasInserted) = try await repository.upsert(incoming) { stored, _ in
+        stored.merging(device: device)
+      }
+      logger.debug("상대 기기 원자 갱신 waDeviceId=\(device.id), id=\(record.id), isNew=\(wasInserted)")
+      return ExtendedWAPairedDevice(device: device, record: record, isNew: wasInserted)
     } catch {
       let fallback = StoredDeviceSnapshot(
         id: uuid(),
@@ -138,7 +146,9 @@ nonisolated final class WAPairedDeviceRegistry: WAPairedDeviceRegistryProtocol, 
       )
       logger.warning("상대 기기 조회 실패로 폴백 발행 waDeviceId=\(device.id): \(error)")
       do {
-        _ = try await repository.refresh(device: device, id: fallback.id, discoveredAt: fallback.createdAt)
+        _ = try await repository.upsert(fallback) { stored, _ in
+          stored.merging(device: device)
+        }
       } catch {
         logger.error("폴백 상대 기기 업서트 실패 waDeviceId=\(device.id): \(error)")
       }
