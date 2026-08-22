@@ -8,6 +8,11 @@ platform :ios do
       scheme: "QueenCam",
       configuration: "Release",
       export_method: "app-store",
+      export_options: {
+        provisioningProfiles: {
+          "com.queendom.QueenCam" => "QueenCamAppStore"
+        }
+      },
       output_directory: "build",
       output_name: "QueenCam.ipa",
       clean: true
