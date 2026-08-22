@@ -39,8 +39,8 @@
 
 > 찍자 ZZikZZa는 팀 퀸덤이 함께 만들어나가고 있습니다.
 
-|  Erin 차정인  | Peppr 이재림 | Yoshi 엄태형  |  Bob 임영택   |  Bota 윤보라  |  Luke 문승찬 |
-|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|
-|   PM   |  디자인  |  디자인  |   개발   |   개발   |   개발   |
-|   퀸에린   |  재림퀸  |  요시퀸  |   퀴노아밥   |   보타퀸   |   루퀸   |
-|   [@Jeongin-C](https://github.com/Jeongin-C)   |  [@jell1237](https://github.com/jell1237)  |  [@umtaehyung](https://github.com/umtaehyung)  |   [@0tak2](https://github.com/0tak2)   |   [@b0tab0ra](https://github.com/b0tab0ra)   |   [@seungchan2022](https://github.com/seungchan2022)   |
+|  Zigu 신지현  |  Erin 차정인  | Peppr 이재림 | Yoshi 엄태형  |  Bob 임영택   |  Bota 윤보라  |  Luke 문승찬 |
+|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|
+|   PM   |   전 PM, 그로스   |  디자인  |  디자인  |   개발   |   개발   |   개발   |
+|   지구퀸   |   퀸에린   |  재림퀸  |  요시퀸  |   퀴노아밥   |   보타퀸   |   루퀸   |
+|   [@991218t](https://github.com/991218t)   |   [@Jeongin-C](https://github.com/Jeongin-C)   |  [@jell1237](https://github.com/jell1237)  |  [@umtaehyung](https://github.com/umtaehyung)  |   [@0tak2](https://github.com/0tak2)   |   [@b0tab0ra](https://github.com/b0tab0ra)   |   [@seungchan2022](https://github.com/seungchan2022)   |
