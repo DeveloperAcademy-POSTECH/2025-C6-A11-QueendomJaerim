@@ -47,6 +47,37 @@ private actor FakeDeviceRepository: DeviceRepositoryProtocol {
   }
 }
 
+private actor RetrySuccessDeviceRepository: DeviceRepositoryProtocol {
+  private let savedSnapshot: StoredDeviceSnapshot
+  private var upsertCallCount = 0
+
+  init(savedSnapshot: StoredDeviceSnapshot) {
+    self.savedSnapshot = savedSnapshot
+  }
+
+  func find(waDeviceId: UInt64) throws -> StoredDeviceSnapshot? {
+    savedSnapshot.waDeviceId == waDeviceId ? savedSnapshot : nil
+  }
+
+  func upsert(
+    _ incoming: StoredDeviceSnapshot,
+    resolvingConflictWith resolveConflict: @Sendable (
+      _ stored: StoredDeviceSnapshot,
+      _ incoming: StoredDeviceSnapshot
+    ) -> StoredDeviceSnapshot
+  ) throws -> (snapshot: StoredDeviceSnapshot, wasInserted: Bool) {
+    upsertCallCount += 1
+    if upsertCallCount == 1 {
+      throw DeviceRepositoryTestError.failed
+    }
+    return (savedSnapshot, false)
+  }
+
+  func numberOfUpsertCalls() -> Int {
+    upsertCallCount
+  }
+}
+
 @Suite("WAPairedDeviceRegistry Tests")
 struct WAPairedDeviceRegistryTests {
   @Test("처음 발견한 기기는 신규로 발행하고 즉시 저장한다")
@@ -183,6 +214,34 @@ struct WAPairedDeviceRegistryTests {
     #expect(devices.count == 1)
     #expect(devices[0].isNew)
     #expect(devices[0].device.id == 4001)
+  }
+
+  @Test("재시도가 성공하면 저장소가 반환한 기록을 발행한다")
+  func retrySuccessPublishesSavedSnapshot() async throws {
+    let savedSnapshot = StoredDeviceSnapshot(
+      id: UUID(uuidString: "00000000-0000-0000-0000-000000000042")!,
+      waDeviceId: 4002,
+      name: "저장된 이름",
+      pairingName: "저장된 페어링 이름",
+      vendorName: "Apple",
+      modelName: "iPhone 17 Pro",
+      createdAt: Date(timeIntervalSince1970: 42),
+      lastConnectedAt: Date(timeIntervalSince1970: 84)
+    )
+    let repository = RetrySuccessDeviceRepository(savedSnapshot: savedSnapshot)
+    let (stream, continuation) = makeDeviceStream()
+    let registry = makeRegistry(repository: repository, stream: stream)
+    var iterator = registry.devices.makeAsyncIterator()
+    let device = makeDevice(id: 4002, name: "현재 이름", pairingName: "현재 페어링 이름")
+
+    continuation.yield([device.id: device])
+    let devices = try #require(await iterator.next())
+
+    #expect(await repository.numberOfUpsertCalls() == 2)
+    #expect(devices[0].isNew == false)
+    #expect(devices[0].id == savedSnapshot.id)
+    #expect(devices[0].createdAt == savedSnapshot.createdAt)
+    #expect(devices[0].lastConnectedAt == savedSnapshot.lastConnectedAt)
   }
 }
 

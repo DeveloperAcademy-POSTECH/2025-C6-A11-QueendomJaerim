@@ -146,9 +146,11 @@ nonisolated final class WAPairedDeviceRegistry: WAPairedDeviceRegistryProtocol, 
       )
       logger.warning("상대 기기 조회 실패로 폴백 발행 waDeviceId=\(device.id): \(error)")
       do {
-        _ = try await repository.upsert(fallback) { stored, _ in
+        let (record, wasInserted) = try await repository.upsert(fallback) { stored, _ in
           stored.merging(device: device)
         }
+        logger.debug("폴백 상대 기기 업서트 성공 waDeviceId=\(device.id), id=\(record.id), isNew=\(wasInserted)")
+        return ExtendedWAPairedDevice(device: device, record: record, isNew: wasInserted)
       } catch {
         logger.error("폴백 상대 기기 업서트 실패 waDeviceId=\(device.id): \(error)")
       }
