@@ -130,13 +130,16 @@ final class NetworkService: NetworkServiceProtocol {
   var versionCheckTimer: Timer?
   var versionChecked: Bool = false
 
+  private let pairedDeviceRegistry: WAPairedDeviceRegistryProtocol
+
   private let logger = QueenLogger(category: "NetworkService")
 
-  init() {
+  init(pairedDeviceRegistry: WAPairedDeviceRegistryProtocol = WAPairedDeviceRegistry.inMemory()) {
     let connectionManager = ConnectionManager()
     let networkManager = NetworkManager(connectionManager: connectionManager)
     self.connectionManager = connectionManager
     self.networkManager = networkManager
+    self.pairedDeviceRegistry = pairedDeviceRegistry
 
     eventHandlerTasks.append(setupEventHandler(for: networkManager.localEvents))
     eventHandlerTasks.append(setupEventHandler(for: networkManager.networkEvents))
@@ -144,9 +147,14 @@ final class NetworkService: NetworkServiceProtocol {
     eventHandlerTasks.append(setupEventHandler(for: connectionManager.networkEvents))
   }
 
-  init(networkManager: NetworkManagerProtocol, connectionManager: ConnectionManagerProtocol) {
+  init(
+    networkManager: NetworkManagerProtocol,
+    connectionManager: ConnectionManagerProtocol,
+    pairedDeviceRegistry: WAPairedDeviceRegistryProtocol = WAPairedDeviceRegistry.inMemory()
+  ) {
     self.networkManager = networkManager
     self.connectionManager = connectionManager
+    self.pairedDeviceRegistry = pairedDeviceRegistry
 
     eventHandlerTasks.append(setupEventHandler(for: networkManager.localEvents))
     eventHandlerTasks.append(setupEventHandler(for: networkManager.networkEvents))
@@ -228,6 +236,7 @@ extension NetworkService {
     switch event {
     case .ready(let device, let connectionDetail):
       deviceConnections[device] = connectionDetail
+      await pairedDeviceRegistry.recordConnection(to: device)
       if mode == .viewer {
         networkTask?.cancel()
         networkTask = nil

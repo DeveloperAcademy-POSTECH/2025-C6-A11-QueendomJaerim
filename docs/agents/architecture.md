@@ -62,3 +62,15 @@ final class DependencyContainer {
   )
 }
 ```
+
+## Repository와 Service 책임
+
+- 구체적인 Repository 구현체는 `Network`와 동등한 외부 데이터 계층인 `QueenCam/QueenCam/Repositories`에 둔다. 상세한 배치 및 의존성 규칙은 [Repositories](repositories.md)를 참고한다.
+- Repository를 사용하는 유즈케이스와 도메인 정책은 `Services`에 두고, 서비스는 Repository 프로토콜에 의존한다.
+- Repository는 영속 모델과 영속 컨텍스트를 직접 다루는 데이터 계층이다.
+- Repository의 공개 메서드는 `find`, `insert`, `update`, `upsert`처럼 조회·저장 동작이 드러나는 로우레벨 원자 작업으로 제한한다.
+- 새 항목 판정, 메타데이터 갱신, 연결 이력 기록처럼 도메인 의미가 있는 유즈케이스는 Repository를 참조하는 Service에서 구성한다.
+- 여러 읽기·쓰기의 원자성이 필요하면 도메인 메서드를 Repository에 추가하지 않는다. 대신 충돌 해결 클로저를 받는 `upsert` 등 도메인 중립적인 원자 작업을 Repository가 제공하고, Service가 병합 정책을 주입한다.
+- SwiftData `@Model`처럼 영속 컨텍스트에 격리된 참조 타입은 Repository 밖으로 직접 반환하지 않는다. 필요한 경우 불변 `Sendable` 스냅샷으로 변환해 전달한다.
+
+예시: Wi-Fi Aware 기기 이력에서는 [DeviceRepository](../../QueenCam/QueenCam/Repositories/DeviceRepository.swift)가 식별자 조회와 원자적 upsert만 담당한다. 신규 기기 판정, OS 메타데이터 병합, 최근 연결 시각 갱신은 `WAPairedDeviceRegistry`가 구성한다.
