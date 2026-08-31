@@ -10,6 +10,7 @@
 ### Added
 
 - FAQ에 사진 서버에 보내지 않는다고 밝히는 내용 추가
+- GitHub Actions와 Fastlane 기반 TestFlight 업로드 자동화 및 릴리즈 이슈의 `/testflight` 실행 명령 추가
 - Wi-Fi Aware 페어링 기기의 발견 및 최근 연결 이력 저장 기능 추가
 
 ### Changed

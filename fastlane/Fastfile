@@ -1,0 +1,34 @@
+default_platform(:ios)
+
+platform :ios do
+  desc "Archive QueenCam and upload the resulting IPA to TestFlight"
+  lane :testflight do
+    build_app(
+      project: "QueenCam/QueenCam.xcodeproj",
+      scheme: "QueenCam",
+      configuration: "Release",
+      export_method: "app-store",
+      export_options: {
+        provisioningProfiles: {
+          "com.queendom.QueenCam" => "QueenCamAppStore"
+        }
+      },
+      output_directory: "build",
+      output_name: "QueenCam.ipa",
+      clean: true
+    )
+
+    api_key = app_store_connect_api_key(
+      key_id: ENV.fetch("APP_STORE_CONNECT_KEY_ID"),
+      issuer_id: ENV.fetch("APP_STORE_CONNECT_ISSUER_ID"),
+      key_content: ENV.fetch("APP_STORE_CONNECT_PRIVATE_KEY")
+    )
+
+    upload_to_testflight(
+      api_key: api_key,
+      ipa: lane_context[SharedValues::IPA_OUTPUT_PATH],
+      skip_waiting_for_build_processing: true,
+      skip_submission: true
+    )
+  end
+end
