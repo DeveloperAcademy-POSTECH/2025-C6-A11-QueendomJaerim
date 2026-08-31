@@ -24,7 +24,7 @@ final class ConnectionViewModel {
       }
     }
   }
-  private(set) var pairedDevices: [WAPairedDevice] = []
+  private(set) var pairedDevices: [ExtendedWAPairedDevice] = []
   private(set) var selectedPairedDevice: WAPairedDevice?
 
   var networkState: NetworkState? {
@@ -62,7 +62,9 @@ final class ConnectionViewModel {
   private let myLWWActorId: String = UUID().uuidString
 
   private let networkService: NetworkServiceProtocol
+  private let pairedDeviceRegistry: WAPairedDeviceRegistryProtocol
   private var cancellables: Set<AnyCancellable> = []
+  private var pairedDevicesTask: Task<Void, Never>?
 
   var isConnecting: Bool {
     !(networkState == nil || networkState == .host(.stopped) || networkState == .viewer(.stopped))
@@ -79,9 +81,14 @@ final class ConnectionViewModel {
 
   private let logger = QueenLogger(category: "ConnectionViewModel")
 
-  init(networkService: NetworkServiceProtocol, notificationService: NotificationServiceProtocol) {
+  init(
+    networkService: NetworkServiceProtocol,
+    notificationService: NotificationServiceProtocol,
+    pairedDeviceRegistry: WAPairedDeviceRegistryProtocol
+  ) {
     self.networkService = networkService
     self.notificationService = notificationService
+    self.pairedDeviceRegistry = pairedDeviceRegistry
     bind()
 
     // @Observable ViewModel은 두 번 초기화될 수 있음
@@ -90,6 +97,10 @@ final class ConnectionViewModel {
     if notificationService.currentNotification == nil {
       notificationService.registerBaseNotification(DomainNotification.make(type: .ready))
     }
+  }
+
+  isolated deinit {
+    pairedDevicesTask?.cancel()
   }
 
   private func bind() {
@@ -153,17 +164,13 @@ final class ConnectionViewModel {
         self?.connectionError = error
       }
       .store(in: &cancellables)
-  }
 
-  private func updatePairedDevices() async {
-    do {
-      for try await updatedDeviceList in WAPairedDevice.allDevices {
-        let devices = Array(updatedDeviceList.values)
-        self.pairedDevices = devices
-        logger.info("pairedDevices updated.\n\(devices)")
+    pairedDevicesTask = Task { [weak self, pairedDeviceRegistry] in
+      for await devices in pairedDeviceRegistry.devices {
+        guard let self else { return }
+        pairedDevices = devices
+        logger.debug("확장 페어링 기기 목록 갱신 count=\(devices.count)")
       }
-    } catch {
-      logger.error("Failed to get paired devices: \(error)")
     }
   }
 }
@@ -206,10 +213,6 @@ extension ConnectionViewModel {
     connectionLost = false
     reconnectingDeviceName = nil
     notificationService.registerNotification(.make(type: .disconnected))
-  }
-
-  func viewDidAppearTask() async {
-    await updatePairedDevices()
   }
 
   func pingButtonDidTap() {

@@ -11,10 +11,13 @@
 
 - FAQ에 사진 서버에 보내지 않는다고 밝히는 내용 추가
 - GitHub Actions와 Fastlane 기반 TestFlight 업로드 자동화 및 릴리즈 이슈의 `/testflight` 실행 명령 추가
+- Wi-Fi Aware 페어링 기기의 발견 및 최근 연결 이력 저장 기능 추가
 
 ### Changed
 
+- SwiftData 기반 `DeviceRepository` 구현을 `Network`와 동등한 `Repositories` 데이터 레이어로 분리하고 레이어 책임 및 의존성 가이드 추가
 - 설정 화면의 펜 가이드 저장 옵션에 촬영자 설정 기준 안내 문구 추가
+- 페어링 기기 목록을 신규 기기 우선, 이후 최근 연결 순으로 정렬
 
 ### Deprecated
 

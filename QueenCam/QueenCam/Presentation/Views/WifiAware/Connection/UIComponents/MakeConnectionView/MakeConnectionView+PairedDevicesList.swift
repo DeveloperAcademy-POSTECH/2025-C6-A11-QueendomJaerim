@@ -10,7 +10,7 @@ import WiFiAware
 
 extension MakeConnectionView {
   struct PairedDevicesList {
-    let pairedDevices: [WAPairedDevice]
+    let pairedDevices: [ExtendedWAPairedDevice]
     let isPairing: Bool
     let isConnected: Bool
     /// 특정 디바이스가 선택된 디바이스인지 여부를 반환하는 클로져.. true를 반환하면 프로그레스 뷰를 해당 디바이스 옆에 띄운다.
@@ -125,9 +125,10 @@ extension MakeConnectionView.PairedDevicesList: View {
       )
   }
 
-  func pairedDeviceRowView(for device: WAPairedDevice) -> some View {
+  func pairedDeviceRowView(for item: ExtendedWAPairedDevice) -> some View {
     let controlsContainerWidth: CGFloat = LocaleUtils.currentLocale == .korean ? 57 : 100
     let controlsContainerHeight: CGFloat = 33
+    let device = item.device
 
     return HStack(alignment: .center) {
       Text(device.pairingInfo?.pairingName ?? "알 수 없는 이름")
@@ -192,7 +193,7 @@ extension MakeConnectionView.PairedDevicesList: View {
 }
 
 /// 프리뷰를 위한 테스트 데이터 팩토리
-private func createTestDevice(id: Int, name: String) -> WAPairedDevice? {
+private func createTestDevice(id: Int, name: String) -> ExtendedWAPairedDevice? {
   // 테스트할 WAPairedDevice의 JSON 형태를 문자열로 정의합니다.
   let deviceJSON =
     """
@@ -210,7 +211,14 @@ private func createTestDevice(id: Int, name: String) -> WAPairedDevice? {
   // JSON 문자열을 Data로 변환
   if let jsonData = deviceJSON.data(using: .utf8) {
     do {
-      return try JSONDecoder().decode(WAPairedDevice.self, from: jsonData)
+      let device = try JSONDecoder().decode(WAPairedDevice.self, from: jsonData)
+      let record = StoredDeviceSnapshot(
+        id: UUID(),
+        device: device,
+        createdAt: Date(),
+        lastConnectedAt: nil
+      )
+      return ExtendedWAPairedDevice(device: device, record: record, isNew: false)
     } catch {
       // swiftlint:disable:next no_print_in_production
       print("디코딩 실패: \(error)")
