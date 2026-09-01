@@ -9,6 +9,20 @@
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [1.1.11] - 2026-09-01
+
+### Added
+
 - FAQ에 사진 서버에 보내지 않는다고 밝히는 내용 추가
 - GitHub Actions와 Fastlane 기반 TestFlight 업로드 자동화 및 릴리즈 이슈의 `/testflight` 실행 명령 추가
 - Wi-Fi Aware 페어링 기기의 발견 및 최근 연결 이력 저장 기능 추가
@@ -474,7 +488,8 @@
 - Wi-Fi Aware 연결 후, 라이브 포토 촬영 시 앱이 크래시되는 문제
 - 레퍼런스 삭제 후 재등록에 관한 상태 초기화 문제
 
-[Unreleased]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.10...HEAD
+[Unreleased]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.11...HEAD
+[1.1.11]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.10...v1.1.11
 [1.1.10]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.9...v1.1.10
 [1.1.9]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.8...v1.1.9
 [1.1.8]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.7...v1.1.8
