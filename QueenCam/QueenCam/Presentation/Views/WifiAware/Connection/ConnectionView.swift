@@ -39,9 +39,6 @@ extension ConnectionView: View {
       }
     }
     .trackScreen(.connectionSheet, Self.self)
-    .task {
-      await connectionViewModel.viewDidAppearTask()
-    }
     .onAppear {
       connectionViewModel.connectionViewAppear()
     }
@@ -139,7 +136,8 @@ extension ConnectionView {
   struct ConnectionViewPeviewContainer: View {
     @State var viewModel: ConnectionViewModel = .init(
       networkService: NetworkService(),
-      notificationService: NotificationService()
+      notificationService: NotificationService(),
+      pairedDeviceRegistry: WAPairedDeviceRegistry.inMemory()
     )
 
     @State var connectionGuideViewModel: ConnectionGuideViewModel = .init(

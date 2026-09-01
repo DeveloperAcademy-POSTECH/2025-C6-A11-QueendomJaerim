@@ -73,11 +73,13 @@ extension SettingsMainView: View {
 
         SettingSection(title: "실험실") {
           SettingToggleSectionItem(
-            title: "펜 가이드 함께 저장",
+            title: "사진에 펜 가이드 함께 저장",
+            supplementaryText: "촬영자 기준으로 적용되는 설정이에요",
             isOn: $settings.saveGuidingOverlayImageOn
           )
         }
-        .padding(.horizontal, 20)
+        .padding(.leading, 20)
+        .padding(.trailing, 26)
 
         SettingSection(title: "고객센터") {
           SettingSectionItem {
@@ -105,7 +107,7 @@ extension SettingsMainView: View {
         }
         .padding(.horizontal, 20)
 
-        Text("© 2025. 팀 퀸덤. 문승찬, 엄태형, 윤보라, 이재림, 임영택, 차정인.")
+        Text("© 2025-2026. 팀 퀸덤. 문승찬, 신지현, 엄태형, 윤보라, 이재림, 임영택, 차정인.")
           .font(.pretendard(.medium, size: 11))
           .foregroundStyle(.gray900)
           .padding(.top, 18)

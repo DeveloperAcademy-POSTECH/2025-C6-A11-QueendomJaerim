@@ -7,11 +7,12 @@
 - 기존 아키텍처와 네이밍을 우선한다.
 - 변경 범위는 요청된 기능과 직접 관련된 파일로 좁게 유지한다.
 - 사용자 또는 다른 작업자가 만든 변경 사항을 되돌리지 않는다.
-- 새 규칙을 만들기보다 이미 있는 `Presentation`, `Services`, `Common`, `DesignSystem` 패턴을 따른다.
+- 새 규칙을 만들기보다 이미 있는 `Presentation`, `Services`, `Repositories`, `Network`, `Common`, `DesignSystem` 패턴을 따른다.
 
 ## 작업 가이드
 
 - 클린 아키텍처 지향과 DI 정책은 [Architecture](docs/agents/architecture.md)를 참고한다.
+- 영속 데이터 접근 구현의 배치와 Repository 책임은 [Repositories](docs/agents/repositories.md)를 참고한다.
 - 프레젠테이션 레이어의 MVVM 기준, View/ViewModel 역할 분리, 순수 함수 예외는 [Presentation](docs/agents/presentation.md)을 참고한다.
 - 피쳐 단위 디렉토리, `~View` 네이밍, `UIComponents`와 `DesignSystem` 구분은 [UI Structure](docs/agents/ui-structure.md)를 참고한다.
 - 컬러, 폰트, 디자인 토큰 사용 방식은 [Design System](docs/agents/design-system.md)을 참고한다.
@@ -28,6 +29,7 @@
 
 - 관련 피쳐 디렉토리와 `DesignSystem`을 먼저 확인했는가?
 - 새 의존성이 DI 컨테이너 또는 기존 주입 경로에 맞는가?
+- 영속 저장 기술을 직접 다루는 구현이 `Repositories` 레이어에 있고, 서비스는 Repository 프로토콜에 의존하는가?
 - 페이지 뷰에서 반복 UI를 직접 조립하지 않고 컴포넌트화했는가?
 - UI 문구가 국제화 가능한 타입으로 표현되어 있는가?
 - 컬러와 폰트가 디자인 시스템을 우선 참조하는가?

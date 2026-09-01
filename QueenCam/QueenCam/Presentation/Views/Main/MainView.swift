@@ -11,7 +11,8 @@ import WiFiAware
 struct MainView: View {
   @State private var connectionViewModel = ConnectionViewModel(
     networkService: DependencyContainer.defaultContainer.networkService,
-    notificationService: DependencyContainer.defaultContainer.notificationService
+    notificationService: DependencyContainer.defaultContainer.notificationService,
+    pairedDeviceRegistry: DependencyContainer.defaultContainer.pairedDeviceRegistry
   )
   
   @State private var guideViewModel = ConnectionGuideViewModel(
