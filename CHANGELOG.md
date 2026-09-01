@@ -26,6 +26,9 @@
 ### Fixed
 
 - 설정 - 실험실 패딩을 다자인에 맞게 수정
+- `/testflight` 워크플로의 시작·성공·실패 댓글이 Checkout 이전에 저장소를 찾지 못해 실패하던 문제 수정
+- `/testflight` Archive가 CI에 없는 `QueenCamDis` 프로파일을 참조하던 문제를 `QueenCamAppStore` 기준으로 보정
+- Xcode 16 이후 변경된 프로비저닝 프로파일 경로에도 프로파일을 설치하도록 수정
 
 ### Security
 

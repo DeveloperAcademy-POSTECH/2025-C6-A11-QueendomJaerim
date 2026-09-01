@@ -19,6 +19,9 @@ jobs:
       contents: read
       issues: write
     env:
+      # 댓글 단계는 Checkout 이전에도 실행되므로, gh가 저장소를 git remote로 추론하지 못한다.
+      # 저장소를 환경 변수로 고정해 Checkout 성공 여부와 무관하게 댓글이 남도록 한다.
+      GH_REPO: ${{ github.repository }}
       BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
       P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
       KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
@@ -65,10 +68,25 @@ jobs:
           security list-keychain -d user -s "$KEYCHAIN_PATH"
           security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
 
-          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
-          cp "$PROVISIONING_PROFILE_PATH" "$HOME/Library/MobileDevice/Provisioning Profiles"
+          # Xcode 16부터 프로비저닝 프로파일 경로가 바뀌었다. 어느 쪽을 읽든 찾도록 두 곳 모두에 설치한다.
+          LEGACY_PROFILE_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
+          CURRENT_PROFILE_DIR="$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles"
+          mkdir -p "$LEGACY_PROFILE_DIR" "$CURRENT_PROFILE_DIR"
+          cp "$PROVISIONING_PROFILE_PATH" "$LEGACY_PROFILE_DIR"
+          cp "$PROVISIONING_PROFILE_PATH" "$CURRENT_PROFILE_DIR"
 
       - name: Archive and upload to TestFlight
+        env:
+          # Xcode 프로젝트의 Release 구성은 로컬 수동 배포용 QueenCamDis를 가리킨다.
+          # QueenCamDis는 등록 기기가 포함된 Ad Hoc 프로파일이고 CI에는 설치되지 않으므로,
+          # Archive 시점 서명 설정을 App Store용 QueenCamAppStore로 덮어쓴다.
+          # Fastfile은 환경 중립으로 두고, CI 전용 값만 여기서 주입한다.
+          GYM_XCARGS: >-
+            CODE_SIGN_STYLE=Manual
+            DEVELOPMENT_TEAM=D22ZM93S77
+            PROVISIONING_PROFILE_SPECIFIER=QueenCamAppStore
+            CODE_SIGN_IDENTITY="Apple Distribution"
+          GYM_EXPORT_TEAM_ID: D22ZM93S77
         run: bundle exec fastlane ios testflight
 
       - name: Post TestFlight Success Comment
@@ -98,3 +116,5 @@ jobs:
         run: |
           security delete-keychain "$RUNNER_TEMP/app-signing.keychain-db" || true
           rm -f "$RUNNER_TEMP/build_certificate.p12" "$RUNNER_TEMP/QueenCamAppStore.mobileprovision"
+          rm -f "$HOME/Library/MobileDevice/Provisioning Profiles/QueenCamAppStore.mobileprovision"
+          rm -f "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles/QueenCamAppStore.mobileprovision"
