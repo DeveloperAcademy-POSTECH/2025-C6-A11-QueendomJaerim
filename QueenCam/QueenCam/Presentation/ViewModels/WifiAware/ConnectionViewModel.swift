@@ -13,6 +13,9 @@ import WiFiAware
 @Observable
 @MainActor
 final class ConnectionViewModel {
+  private(set) var connectionV2Step: ConnectionV2Step = .roleSelection
+  private(set) var pendingRole: Role?
+
   private(set) var role: Role? {
     didSet {
       if let role {
@@ -70,6 +73,21 @@ final class ConnectionViewModel {
     !(networkState == nil || networkState == .host(.stopped) || networkState == .viewer(.stopped))
   }
 
+  var connectionAttemptState: ConnectionAttemptState {
+    if connectionError != nil {
+      return .failed
+    }
+
+    guard isConnecting, let selectedPairedDevice else {
+      return .idle
+    }
+
+    let deviceName = selectedPairedDevice.pairingInfo?.pairingName
+      ?? selectedPairedDevice.name
+      ?? String(localized: "알 수 없는 기기")
+    return .connecting(deviceName: deviceName)
+  }
+
   /// State Toast
   private let notificationService: NotificationServiceProtocol
 
@@ -116,7 +134,7 @@ final class ConnectionViewModel {
           reconnectingDeviceName = lastConnectedDevice?.name
           tryReconnect()
         }
-        
+
         if state == .host(.cancelled) || state == .viewer(.cancelled) {
           lastStopReason = networkService.lastStopReason
         }
@@ -195,15 +213,41 @@ extension ConnectionViewModel {
         networkService.mode = .host
       }
 
-      if networkState == .host(.stopped) || networkState == .viewer(.stopped) {
+      if !isConnecting {
         networkService.run(for: device)
       }
     }
   }
 
+  func pendingRoleDidSelect(_ selectedRole: Role) {
+    pendingRole = pendingRole == selectedRole ? nil : selectedRole
+  }
+
+  func pendingRoleDidConfirm() {
+    guard let pendingRole else { return }
+    selectRole(for: pendingRole)
+    connectionV2Step = .deviceList
+  }
+
+  func connectionV2BackButtonDidTap() {
+    let previousRole = role
+    connectionError = nil
+    selectRole(for: nil)
+    pendingRole = previousRole
+    connectionV2Step = .roleSelection
+  }
+
+  func swapConnectionRoleButtonDidTap() {
+    guard let role else { return }
+    let newRole = role.counterpart
+    selectRole(for: newRole)
+    pendingRole = newRole
+  }
+
   func stopConnectingButtonDidTap() {
     networkService.stop(byUser: true, userReason: nil)
     selectedPairedDevice = nil
+    connectionError = nil
   }
 
   func disconnectButtonDidTap() {
@@ -224,12 +268,16 @@ extension ConnectionViewModel {
   func connectionViewAppear() {
     selectedPairedDevice = nil  // 연결에 앞서 선택된 페어링 디바이스를 초기화한다
     connectionError = nil // 연결에 앞서 이전 오류를 초기화한다. 초기화하지 않으면 이전에 발생한 에러가 연결하기 뷰에 노출된다
+    pendingRole = role
+    connectionV2Step = role == nil ? .roleSelection : .deviceList
   }
 
   func connectionViewDisappear() {
     if connections.isEmpty {  // 연결 중인 경우 연결 뷰에서 벗어나면 연결을 취소한다
       networkService.stop(byUser: true, userReason: nil)
       role = nil
+      pendingRole = nil
+      connectionV2Step = .roleSelection
     }
   }
 
@@ -344,7 +392,7 @@ extension ConnectionViewModel {
 
     self.notificationService.registerNotification(.make(type: .swapRole))
   }
-  
+
   private func handleReceivedWillDisconnect() {
     // 상대로부터 연결 종료 예정 통보를 받으면 세션 종료 오버레이 노출
     needReportSessionFinished = true

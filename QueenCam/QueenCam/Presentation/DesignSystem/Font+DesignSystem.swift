@@ -66,6 +66,7 @@ enum TypographyStyle: CaseIterable {
   case m10
   case m13
   case m14
+  case m14Line22
   case m15
   case m18
   case m22
@@ -74,6 +75,7 @@ enum TypographyStyle: CaseIterable {
   case sb15
   case sb16
   case sb17
+  case sb17Line26
   case sb20
   case b22
   case sfRoundedR15
@@ -92,6 +94,7 @@ enum TypographyStyle: CaseIterable {
     case .m10: return "M_10"
     case .m13: return "M_13"
     case .m14: return "M_14"
+    case .m14Line22: return "M_14_22"
     case .m15: return "M_15"
     case .m18: return "M_18"
     case .m22: return "M_22"
@@ -100,6 +103,7 @@ enum TypographyStyle: CaseIterable {
     case .sb15: return "SB_15"
     case .sb16: return "SB_16"
     case .sb17: return "SB_17"
+    case .sb17Line26: return "SB_17_26"
     case .sb20: return "SB_20"
     case .b22: return "B_22"
     case .sfRoundedR15: return "SF_Rounded_R_15"
@@ -120,6 +124,7 @@ enum TypographyStyle: CaseIterable {
     case .m10: return .pretendard(.medium, size: 10)
     case .m13: return .pretendard(.medium, size: 13)
     case .m14: return .pretendard(.medium, size: 14)
+    case .m14Line22: return .pretendard(.medium, size: 14)
     case .m15: return .pretendard(.medium, size: 15)
     case .m18: return .pretendard(.medium, size: 18)
     case .m22: return .pretendard(.medium, size: 22)
@@ -128,6 +133,7 @@ enum TypographyStyle: CaseIterable {
     case .sb15: return .pretendard(.semibold, size: 15)
     case .sb16: return .pretendard(.semibold, size: 16)
     case .sb17: return .pretendard(.semibold, size: 17)
+    case .sb17Line26: return .pretendard(.semibold, size: 17)
     case .sb20: return .pretendard(.semibold, size: 20)
     case .b22: return .pretendard(.bold, size: 22)
     case .sfRoundedR15: return .system(size: 15, weight: .regular, design: .rounded)
@@ -148,6 +154,7 @@ enum TypographyStyle: CaseIterable {
     case .m10: return .pretendard(.medium, size: 10)
     case .m13: return .pretendard(.medium, size: 13)
     case .m14: return .pretendard(.medium, size: 14)
+    case .m14Line22: return .pretendard(.medium, size: 14)
     case .m15: return .pretendard(.medium, size: 15)
     case .m18: return .pretendard(.medium, size: 18)
     case .m22: return .pretendard(.medium, size: 22)
@@ -156,6 +163,7 @@ enum TypographyStyle: CaseIterable {
     case .sb15: return .pretendard(.medium, size: 15)
     case .sb16: return .pretendard(.medium, size: 16)
     case .sb17: return .pretendard(.medium, size: 17)
+    case .sb17Line26: return .pretendard(.semibold, size: 17)
     case .sb20: return .pretendard(.medium, size: 20)
     case .b22: return .pretendard(.bold, size: 22)
     case .sfRoundedR15: return .rounded(ofSize: 15, weight: .regular)
@@ -176,6 +184,7 @@ enum TypographyStyle: CaseIterable {
     case .m10: return 12
     case .m13: return 16
     case .m14: return 21
+    case .m14Line22: return 22
     case .m15: return 23
     case .m18: return 27
     case .m22: return 33
@@ -184,6 +193,7 @@ enum TypographyStyle: CaseIterable {
     case .sb15: return 22
     case .sb16: return 24
     case .sb17: return 20
+    case .sb17Line26: return 26
     case .sb20: return 30
     case .b22: return 33
     case .sfRoundedR15: return 18

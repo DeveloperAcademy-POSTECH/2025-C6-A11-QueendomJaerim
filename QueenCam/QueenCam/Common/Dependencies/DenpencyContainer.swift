@@ -27,8 +27,6 @@ final class DependencyContainer {
   lazy var previewCaptureService = PreviewCaptureService()
   lazy var cameraSettingServcice: CameraSettingsServiceProtocol = CameraSettingsService()
   lazy var notificationService = NotificationService()
-  lazy var onboardingSettingService: OnboardingSettingsServiceProtocol = OnboardingSettingsService()
-
   private lazy var analyticsScreenContext = AnalyticsScreenContext()
   private lazy var analyticsSettingsContext = AnalyticsSettingsContext(
     cameraSettingsService: cameraSettingServcice
