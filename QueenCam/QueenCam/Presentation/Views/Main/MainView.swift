@@ -15,10 +15,6 @@ struct MainView: View {
     pairedDeviceRegistry: DependencyContainer.defaultContainer.pairedDeviceRegistry
   )
   
-  @State private var guideViewModel = ConnectionGuideViewModel(
-    onboardingSettingService: DependencyContainer.defaultContainer.onboardingSettingService
-  )
-
   @State private var previewModel = PreviewModel(
     previewCaptureService: DependencyContainer.defaultContainer.previewCaptureService,
     networkService: DependencyContainer.defaultContainer.networkService
@@ -44,7 +40,6 @@ struct MainView: View {
       cameraViewModel: cameraViewModel,
       previewModel: previewModel,
       connectionViewModel: connectionViewModel,
-      guideViewModel: guideViewModel,
       referenceViewModel: referenceViewModel,
       penViewModel: penViewModel,
       frameViewModel: frameViewModel,

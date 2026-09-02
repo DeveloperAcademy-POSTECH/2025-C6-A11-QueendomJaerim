@@ -38,7 +38,6 @@ struct CameraView {
   let cameraViewModel: CameraViewModel
   let previewModel: PreviewModel
   let connectionViewModel: ConnectionViewModel
-  let guideViewModel: ConnectionGuideViewModel
   let referenceViewModel: ReferenceViewModel
   let penViewModel: PenViewModel
   let frameViewModel: FrameViewModel
@@ -333,11 +332,7 @@ extension CameraView: View {
       .dynamicTypeSize(.medium)  // FIXME: Dynamic Type 정책 결정 후 수정
     }
     .fullScreenCover(isPresented: $isShowConnectionView) {
-      ConnectionView(
-        connectionViewModel: connectionViewModel,
-        guideViewModel: guideViewModel,
-        previewStreamingViewModel: previewModel
-      )
+      ConnectionV2View(connectionViewModel: connectionViewModel)
         .dynamicTypeSize(.medium) // FIXME: Dynamic Type 정책 결정 후 수정
     }
     .onChange(of: connectionViewModel.connections) { oldValue, newValue in

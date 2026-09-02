@@ -29,6 +29,7 @@ struct ColorRow: View {
     VStack(spacing: 12) {
 
       ColorRow(color: .systemBlack, name: "black")
+      ColorRow(color: .connectionBackground, name: "connectionBackground (#121212)")
       ColorRow(color: .disabled, name: "disabled")
 
       Divider()
@@ -52,6 +53,7 @@ struct ColorRow: View {
       Divider()
 
       ColorRow(color: .systemWhite, name: "white")
+      ColorRow(color: .contentPrimary, name: "contentPrimary (#FAFAFA)")
       ColorRow(color: .offWhite, name: "offWhite")
     }
     .padding()

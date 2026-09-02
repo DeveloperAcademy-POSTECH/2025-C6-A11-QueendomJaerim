@@ -9,11 +9,18 @@
 
 ### Added
 
+- Wi-Fi Aware Connection V2 역할 선택, 등록 기기 연결, 연결 상태 오버레이, 페어링 가이드 화면 추가
+- Connection V2 전용 화면 배경·주요 콘텐츠 색상과 14/22, 17/26 타이포그래피 토큰 추가
+
 ### Changed
+
+- 카메라와 설정의 Wi-Fi Aware 연결·페어링 진입점을 Connection V2로 전환
 
 ### Deprecated
 
 ### Removed
+
+- 기존 Connection V1 화면, 온보딩 상태 서비스, 가이드 동영상과 전환 애니메이션 자산 제거
 
 ### Fixed
 
