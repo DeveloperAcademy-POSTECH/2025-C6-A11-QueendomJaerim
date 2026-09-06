@@ -17,6 +17,7 @@
 
 - `actions/checkout`을 v7로 상향해 Node 20 deprecation 경고 제거
 - 역할 선택 화면을 최신 Figma 디자인 기반 V2로 교체하고 기존 선택·전환 동작 유지
+- 친구 연결 화면을 최신 Figma 디자인 기반 V2로 교체하고 페어링·연결 동작 유지
 
 ### Deprecated
 

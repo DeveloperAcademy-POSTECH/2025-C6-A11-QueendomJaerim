@@ -62,7 +62,7 @@ extension ConnectionView {
   @ViewBuilder
   var makeConnectionView: some View {
     if let selectedRole = connectionViewModel.role {
-      MakeConnectionView(
+      MakeConnectionViewV2(
         role: selectedRole,
         networkState: connectionViewModel.networkState,
         selectedPairedDevice: connectionViewModel.selectedPairedDevice,
