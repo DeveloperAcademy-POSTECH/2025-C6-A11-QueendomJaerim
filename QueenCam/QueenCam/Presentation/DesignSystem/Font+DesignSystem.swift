@@ -76,6 +76,7 @@ enum TypographyStyle: CaseIterable {
   case sb17
   case sb20
   case b22
+  case b24
   case sfRoundedR15
   case sfR10
   case sfR11
@@ -102,6 +103,7 @@ enum TypographyStyle: CaseIterable {
     case .sb17: return "SB_17"
     case .sb20: return "SB_20"
     case .b22: return "B_22"
+    case .b24: return "B_24"
     case .sfRoundedR15: return "SF_Rounded_R_15"
     case .sfR10: return "SF R_10"
     case .sfR11: return "SF R_11"
@@ -130,6 +132,7 @@ enum TypographyStyle: CaseIterable {
     case .sb17: return .pretendard(.semibold, size: 17)
     case .sb20: return .pretendard(.semibold, size: 20)
     case .b22: return .pretendard(.bold, size: 22)
+    case .b24: return .pretendard(.bold, size: 24)
     case .sfRoundedR15: return .system(size: 15, weight: .regular, design: .rounded)
     case .sfR10: return .system(size: 10, weight: .regular)
     case .sfR11: return .system(size: 11, weight: .regular)
@@ -158,6 +161,7 @@ enum TypographyStyle: CaseIterable {
     case .sb17: return .pretendard(.medium, size: 17)
     case .sb20: return .pretendard(.medium, size: 20)
     case .b22: return .pretendard(.bold, size: 22)
+    case .b24: return .pretendard(.bold, size: 24)
     case .sfRoundedR15: return .rounded(ofSize: 15, weight: .regular)
     case .sfR10: return .systemFont(ofSize: 10, weight: .regular)
     case .sfR11: return .systemFont(ofSize: 11, weight: .regular)
@@ -186,6 +190,7 @@ enum TypographyStyle: CaseIterable {
     case .sb17: return 20
     case .sb20: return 30
     case .b22: return 33
+    case .b24: return 35
     case .sfRoundedR15: return 18
     case .sfR10: return 12
     case .sfR11: return 13
