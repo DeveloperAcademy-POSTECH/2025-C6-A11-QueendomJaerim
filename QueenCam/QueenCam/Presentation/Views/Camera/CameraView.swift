@@ -30,8 +30,8 @@ struct CameraView {
 
   @State private var isShowWifiAwareUnsupportedAlert: Bool = false
 
-  /// 릴리즈 노트 노출 여부
-  @State private var isShowReleaseNote: Bool = false
+  /// 노출 중인 릴리즈 노트
+  @State private var releaseNoteItem: ReleaseNote?
 
   /// 릴리즈 노트를 닫은 뒤 설정 화면으로 이동할지 여부
   @State private var isOpeningSettingsFromReleaseNote: Bool = false
@@ -49,6 +49,7 @@ struct CameraView {
   let penViewModel: PenViewModel
   let frameViewModel: FrameViewModel
   let thumbsUpViewModel: ThumbsUpViewModel
+  let releaseNoteViewModel: ReleaseNoteViewModel
 }
 
 extension CameraView {
@@ -412,21 +413,26 @@ extension CameraView: View {
     .sheet(isPresented: $isShowLogExportingSheet) {
       LogExportingView()
     }
-    .fullScreenCover(isPresented: $isShowReleaseNote) {
+    .fullScreenCover(item: $releaseNoteItem) {
       // 릴리즈 노트가 완전히 내려간 뒤에 설정 화면으로 이동한다
       guard isOpeningSettingsFromReleaseNote else { return }
       isOpeningSettingsFromReleaseNote = false
       navigationRouter.push(
         .settings(.main(role: connectionViewModel.role, highlight: .saveGuidingOverlayImage))
       )
-    } content: {
-      ReleaseNoteView(releaseNote: .penGuideOverlay) {
+    } content: { releaseNote in
+      ReleaseNoteView(releaseNote: releaseNote) {
         isOpeningSettingsFromReleaseNote = true
-        isShowReleaseNote = false
+        releaseNoteViewModel.releaseNoteDidFinish(releaseNote)
+        releaseNoteItem = nil
       } onClose: {
-        isShowReleaseNote = false
+        releaseNoteViewModel.releaseNoteDidFinish(releaseNote)
+        releaseNoteItem = nil
       }
       .dynamicTypeSize(.medium)  // FIXME: Dynamic Type 정책 결정 후 수정
+    }
+    .onAppear {
+      releaseNoteItem = releaseNoteViewModel.getReleaseNoteToShow()
     }
     .task {
       await cameraViewModel.checkPermissions()
