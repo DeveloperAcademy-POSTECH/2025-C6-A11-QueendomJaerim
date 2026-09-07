@@ -10,6 +10,7 @@ extension ReleaseNoteView {
 
     @State private var player: AVQueuePlayer?
     @State private var looper: AVPlayerLooper?
+    @State private var pauseObservation: NSKeyValueObservation?
     @State private var isError = false
 
     private let cornerRadius: CGFloat = 12
@@ -25,23 +26,41 @@ extension ReleaseNoteView.VideoPlayerView {
     isError = false
 
     guard let videoURL else {
-      QueenLogger(category: "ReleaseNoteVideoPlayerView")
+      QueenLogger(category: "ReleaseNoteVideoPlayer")
         .error("안내 영상을 찾을 수 없습니다.")
       isError = true
       return
     }
 
     let playerItem = AVPlayerItem(url: videoURL)
-    let player = AVQueuePlayer(playerItem: playerItem)
+
+    // AVPlayerLooper가 큐를 직접 관리하므로 플레이어는 비어 있는 상태로 만든다
+    let player = AVQueuePlayer()
     player.isMuted = true
 
     self.player = player
     self.looper = AVPlayerLooper(player: player, templateItem: playerItem)
 
+    observeUnexpectedPause(player: player)
+
     player.play()
   }
 
+  /// 카메라 세션이 오디오 세션을 재구성하면서 재생이 멈추면 다시 시작한다
+  ///
+  /// 안내 영상은 소리가 없어 재개해도 촬영에 영향을 주지 않는다.
+  private func observeUnexpectedPause(player: AVQueuePlayer) {
+    pauseObservation = player.observe(\.timeControlStatus, options: [.new]) { player, _ in
+      guard player.timeControlStatus == .paused else { return }
+
+      player.play()
+    }
+  }
+
   private func tearDownPlayer() {
+    pauseObservation?.invalidate()
+    pauseObservation = nil
+
     player?.pause()
     player = nil
     looper = nil
@@ -73,7 +92,6 @@ extension ReleaseNoteView.VideoPlayerView: View {
     .onDisappear { tearDownPlayer() }
   }
 }
-
 
 #Preview {
   ZStack {
