@@ -10,6 +10,7 @@ import SwiftUI
 struct SettingsMainView {
   let navigationRouter: NavigationRouter
   let role: Role?
+  let highlight: SettingsHighlight?
   private let cameraSettingsService: CameraSettingsServiceProtocol
 
   @State private var safariSheetItem: SafariSheetItem?
@@ -36,10 +37,12 @@ struct SettingsMainView {
   init(
     navigationRouter: NavigationRouter,
     role: Role?,
+    highlight: SettingsHighlight? = nil,
     cameraSettingsService: CameraSettingsServiceProtocol = DependencyContainer.defaultContainer.cameraSettingServcice
   ) {
     self.navigationRouter = navigationRouter
     self.role = role
+    self.highlight = highlight
     self.cameraSettingsService = cameraSettingsService
     self._settings = State(
       initialValue: SettingsState(
@@ -75,6 +78,7 @@ extension SettingsMainView: View {
           SettingToggleSectionItem(
             title: "사진에 펜 가이드 함께 저장",
             supplementaryText: "촬영자 기준으로 적용되는 설정이에요",
+            isHighlight: highlight == .saveGuidingOverlayImage,
             isOn: $settings.saveGuidingOverlayImageOn
           )
         }

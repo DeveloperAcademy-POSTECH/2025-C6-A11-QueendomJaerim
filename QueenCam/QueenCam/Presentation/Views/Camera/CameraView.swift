@@ -254,7 +254,7 @@ extension CameraView: View {
 
         ToolbarItem(placement: .topBarTrailing) {
           Button("설정", systemImage: "gearshape") {
-            navigationRouter.push(.settings(.main(role: connectionViewModel.role)))
+            navigationRouter.push(.settings(.main(role: connectionViewModel.role, highlight: nil)))
           }
         }
       }
