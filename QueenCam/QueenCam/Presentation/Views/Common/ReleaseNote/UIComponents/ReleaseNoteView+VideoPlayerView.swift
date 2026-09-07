@@ -6,7 +6,7 @@ extension ReleaseNoteView {
   ///
   /// 소리 없이 무한 반복 재생하며, 화면을 벗어나면 플레이어를 정리한다.
   struct VideoPlayerView {
-    let video: ReleaseNoteVideo
+    let videoURL: URL?
 
     @State private var player: AVQueuePlayer?
     @State private var looper: AVPlayerLooper?
@@ -24,7 +24,7 @@ extension ReleaseNoteView.VideoPlayerView {
 
     isError = false
 
-    guard let videoURL = video.videoFileURL else {
+    guard let videoURL else {
       QueenLogger(category: "ReleaseNoteVideoPlayerView")
         .error("안내 영상을 찾을 수 없습니다.")
       isError = true
@@ -79,7 +79,7 @@ extension ReleaseNoteView.VideoPlayerView: View {
   ZStack {
     Color.gray950
 
-    ReleaseNoteView.VideoPlayerView(video: .penGuideOverlay)
+    ReleaseNoteView.VideoPlayerView(videoURL: ReleaseNote.current.videoFileURL)
       .aspectRatio(241.0 / 321.0, contentMode: .fit)
       .frame(maxWidth: 241)
   }

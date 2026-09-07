@@ -25,7 +25,7 @@ extension ReleaseNoteView {
         .foregroundStyle(.gray400)
         .padding(.top, 12)
 
-      VideoPlayerView(video: releaseNote.video)
+      VideoPlayerView(videoURL: releaseNote.videoFileURL)
         .aspectRatio(videoAspectRatio, contentMode: .fit)
         .frame(maxWidth: videoMaxWidth)
         .padding(.top, 54)
@@ -87,7 +87,7 @@ extension ReleaseNoteView: View {
 }
 
 #Preview {
-  ReleaseNoteView(releaseNote: .penGuideOverlay) {
+  ReleaseNoteView(releaseNote: .current) {
     //
   } onClose: {
     //
