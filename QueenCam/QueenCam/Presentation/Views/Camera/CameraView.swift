@@ -29,6 +29,12 @@ struct CameraView {
   @State private var isShowConnectionView: Bool = false
 
   @State private var isShowWifiAwareUnsupportedAlert: Bool = false
+
+  /// 릴리즈 노트 노출 여부
+  @State private var isShowReleaseNote: Bool = false
+
+  /// 릴리즈 노트를 닫은 뒤 설정 화면으로 이동할지 여부
+  @State private var isOpeningSettingsFromReleaseNote: Bool = false
   @State private var navigationRouter = NavigationRouter()
 
   @State var isReferenceLarge: Bool = false  // 레퍼런스 확대 축소 프로퍼티
@@ -405,6 +411,22 @@ extension CameraView: View {
     }
     .sheet(isPresented: $isShowLogExportingSheet) {
       LogExportingView()
+    }
+    .fullScreenCover(isPresented: $isShowReleaseNote) {
+      // 릴리즈 노트가 완전히 내려간 뒤에 설정 화면으로 이동한다
+      guard isOpeningSettingsFromReleaseNote else { return }
+      isOpeningSettingsFromReleaseNote = false
+      navigationRouter.push(
+        .settings(.main(role: connectionViewModel.role, highlight: .saveGuidingOverlayImage))
+      )
+    } content: {
+      ReleaseNoteView(releaseNote: .penGuideOverlay) {
+        isOpeningSettingsFromReleaseNote = true
+        isShowReleaseNote = false
+      } onClose: {
+        isShowReleaseNote = false
+      }
+      .dynamicTypeSize(.medium)  // FIXME: Dynamic Type 정책 결정 후 수정
     }
     .task {
       await cameraViewModel.checkPermissions()
