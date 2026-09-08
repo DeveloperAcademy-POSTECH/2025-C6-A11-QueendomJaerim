@@ -9,13 +9,21 @@
 
 ### Added
 
+- CI 사전 검증 절차와 CD 작업 기준 문서 추가 (빌드 번호를 소모하지 않는 업로드 경로 검증 방법 포함)
+
 ### Changed
+
+- `actions/checkout`을 v7로 상향해 Node 20 deprecation 경고 제거
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
+
+- `/testflight` 워크플로의 시작·성공·실패 댓글이 Checkout 이전에 저장소를 찾지 못해 실패하던 문제 수정
+- `/testflight` Archive 실패 수정: fastlane 의존성 `multi_json` 선언, SwiftLint 플러그인 검증 건너뛰기, 빌드 설정 조회 타임아웃 상향, Archive 시점 서명을 export 단계로 이동, 러너 Xcode 선택 단계 추가
+- 프로비저닝 프로파일을 Xcode 16 이후 경로에 설치하도록 수정
 
 ### Security
 
@@ -40,9 +48,6 @@
 ### Fixed
 
 - 설정 - 실험실 패딩을 다자인에 맞게 수정
-- `/testflight` 워크플로의 시작·성공·실패 댓글이 Checkout 이전에 저장소를 찾지 못해 실패하던 문제 수정
-- `/testflight` Archive가 CI에 없는 `QueenCamDis` 프로파일을 참조하던 문제를 `QueenCamAppStore` 기준으로 보정
-- Xcode 16 이후 변경된 프로비저닝 프로파일 경로에도 프로파일을 설치하도록 수정
 
 ### Security
 

@@ -24,6 +24,7 @@
 - `CHANGELOG.md` 갱신 기준은 [Changelog](docs/agents/changelog.md)를 참고한다.
 - 커밋, 브랜치, 이슈, PR 컨벤션과 금지 사항은 [Git And Collaboration](docs/agents/git-and-collaboration.md)을 참고한다.
 - 릴리즈 이슈 생성 스킬의 호출법과 범위는 [Release Skill](docs/agents/release-skill.md)을 참고한다.
+- CI/CD 워크플로 검증과 파일별 반영 경로는 [Deployment](docs/agents/deployment.md)를 참고한다.
 
 ## 작업 전 체크리스트
 
@@ -39,4 +40,5 @@
 - 파일 헤더의 작성자가 LLM 또는 도구 이름으로 들어가지 않았는가?
 - 복잡도가 있는 로직을 새로 구현했다면 사용자에게 테스트 작성 여부를 물었는가?
 - 작업 완료 후 `CHANGELOG.md`의 `[Unreleased]` 섹션에 내용을 정리했는가?
+- CI/CD 워크플로를 바꿨다면 실제 실행으로 성공을 확인했는가?
 - 커밋, 이슈, PR 작성 전 최근 컨벤션을 확인했는가?
