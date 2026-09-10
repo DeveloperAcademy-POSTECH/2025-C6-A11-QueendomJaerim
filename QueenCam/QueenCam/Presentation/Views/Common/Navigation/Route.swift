@@ -11,7 +11,7 @@ enum Route: Hashable {
   case settings(SettingsRoute)
 
   enum SettingsRoute: Hashable {
-    case main(role: Role?)
+    case main(role: Role?, highlight: SettingsHighlight?)
     case faq
   }
 }

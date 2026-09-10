@@ -48,7 +48,7 @@ struct VersionUtils {
     return "\(majorVersion).\(minorVersion).\(patchVersion)"
   }
 
-  private static func getVersionNumber(from versionString: String) -> Int {
+  static func getVersionNumber(from versionString: String) -> Int {
     let versions = versionString.split(separator: ".").compactMap { Int($0) }
     guard versions.count == 3 else {
       logger.warning("버전을 파싱할 수 없었습니다. input=\(versionString)")
