@@ -9,21 +9,20 @@ import SwiftUI
 
 struct SelectRoleViewV2 {
   enum RoleButtonMetrics {
+    /// 역할 이미지 버튼 한 변의 길이입니다.
     static let size: CGFloat = 160
-    static let overlap: CGFloat = 15
-    static let buttonsTopOffset: CGFloat = 342
-    static let descriptionSpacing: CGFloat = 33
-    static let labelSpacing: CGFloat = 1
-    static let buttonCount = 2
 
-    static let stride = size - overlap
-    static let centersSpan = stride * CGFloat(buttonCount - 1)
-    static let selectedOffset = centersSpan / 2
-    static let buttonsCenterY = buttonsTopOffset + size / 2
-    static let descriptionTopOffset = buttonsTopOffset + size + descriptionSpacing
-    static let labelsWidth = stride * CGFloat(buttonCount)
-      + labelSpacing * CGFloat(buttonCount - 1)
-    static let unconstrainedButtonsWidth = size * CGFloat(buttonCount)
+    /// 나란히 배치된 두 역할 이미지가 서로 겹치는 너비입니다.
+    static let overlap: CGFloat = 15
+
+    /// 화면 상단에서 역할 이미지 영역까지의 거리입니다.
+    static let buttonsTopOffset: CGFloat = 342
+
+    /// 역할 이미지 영역과 선택된 역할 설명 사이의 간격입니다.
+    static let descriptionSpacing: CGFloat = 33
+
+    /// 역할을 선택하지 않았을 때 두 역할 이름 사이의 간격입니다.
+    static let labelSpacing: CGFloat = 1
   }
 
   @Environment(\.dismiss) private var dismiss
@@ -84,7 +83,11 @@ extension SelectRoleViewV2: View {
 
         roleDescription
           .frame(width: proxy.size.width)
-          .offset(y: RoleButtonMetrics.descriptionTopOffset)
+          .offset(
+            y: RoleButtonMetrics.buttonsTopOffset
+              + RoleButtonMetrics.size
+              + RoleButtonMetrics.descriptionSpacing
+          )
 
         primaryButton
           .frame(width: max(proxy.size.width - 32, 0), height: 56)
@@ -125,25 +128,14 @@ private extension SelectRoleViewV2 {
     .animation(.linear, value: roleSelectButtonsOffset)
   }
 
-  var roleSelectButtonsOffset: CGFloat {
-    guard !willShowLoadingAnimation else { return .zero }
-
-    return switch selectedRole {
-    case .photographer: RoleButtonMetrics.selectedOffset
-    case .model: -RoleButtonMetrics.selectedOffset
-    case nil: .zero
-    }
-  }
-
   func roleButton(for role: Role) -> some View {
-    Button {
-      didRoleSelect(role)
-    } label: {
-      Image(role == .photographer ? .zzikPhotographer : .zzikModel)
-        .resizable()
-        .frame(width: RoleButtonMetrics.size, height: RoleButtonMetrics.size)
-        .opacity(!willShowLoadingAnimation && selectedRole == role ? 1 : 0.5)
-    }
+    Image(role == .photographer ? .zzikPhotographer : .zzikModel)
+      .resizable()
+      .frame(width: RoleButtonMetrics.size, height: RoleButtonMetrics.size)
+      .opacity(!willShowLoadingAnimation && selectedRole == role ? 1 : 0.5)
+      .onTapGesture {
+        didRoleSelect(role)
+      }
     .buttonStyle(.plain)
     .accessibilityLabel(role.displayName)
     .accessibilityIdentifier(
@@ -177,7 +169,10 @@ private extension SelectRoleViewV2 {
         roleLabelButton(for: .photographer)
         roleLabelButton(for: .model)
       }
-      .frame(width: RoleButtonMetrics.labelsWidth)
+      .frame(
+        width: (RoleButtonMetrics.size - RoleButtonMetrics.overlap) * 2
+          + RoleButtonMetrics.labelSpacing
+      )
     }
   }
 
@@ -188,7 +183,7 @@ private extension SelectRoleViewV2 {
       Text(role.displayName)
         .typo(.sb20)
         .foregroundStyle(.systemWhite)
-        .frame(width: RoleButtonMetrics.stride)
+        .frame(width: RoleButtonMetrics.size - RoleButtonMetrics.overlap)
     }
     .buttonStyle(.plain)
     .accessibilityIdentifier(
@@ -262,6 +257,20 @@ private extension SelectRoleViewV2 {
         didSwipe(direction: value.translation.width)
       }
   }
+}
+
+extension SelectRoleViewV2 {
+  var roleSelectButtonsOffset: CGFloat {
+    guard !willShowLoadingAnimation else { return .zero }
+
+    let selectedOffset = (RoleButtonMetrics.size - RoleButtonMetrics.overlap) / 2
+
+    return switch selectedRole {
+    case .photographer: selectedOffset
+    case .model: -selectedOffset
+    case nil: .zero
+    }
+  }
 
   func didSwipe(direction: CGFloat) {
     guard selectedRole != nil else { return }
@@ -277,31 +286,37 @@ private extension SelectRoleViewV2 {
 }
 
 private struct RoleSelectButtonsLayout: Layout {
+  /// 제안된 너비를 유지하고, 높이는 역할 이미지 크기에 맞춥니다.
   func sizeThatFits(
     proposal: ProposedViewSize,
     subviews: Subviews,
     cache: inout ()
   ) -> CGSize {
     CGSize(
-      width: proposal.width ?? SelectRoleViewV2.RoleButtonMetrics.unconstrainedButtonsWidth,
+      width: proposal.width
+        ?? SelectRoleViewV2.RoleButtonMetrics.size * CGFloat(subviews.count),
       height: SelectRoleViewV2.RoleButtonMetrics.size
     )
   }
 
+  /// 두 역할 이미지가 지정된 너비만큼 겹치도록 컨테이너 중앙에 배치합니다.
   func placeSubviews(
     in bounds: CGRect,
     proposal: ProposedViewSize,
     subviews: Subviews,
     cache: inout ()
   ) {
-    guard subviews.count == SelectRoleViewV2.RoleButtonMetrics.buttonCount else { return }
+    guard subviews.count == 2 else { return }
 
-    let firstCenterX = bounds.midX - SelectRoleViewV2.RoleButtonMetrics.selectedOffset
+    // 버튼 중심 사이의 거리는 이미지 크기에서 겹치는 너비를 뺀 값입니다.
+    let itemStride = SelectRoleViewV2.RoleButtonMetrics.size
+      - SelectRoleViewV2.RoleButtonMetrics.overlap
+    let firstCenterX = bounds.midX - itemStride / 2
 
     for (index, subview) in subviews.enumerated() {
       subview.place(
         at: CGPoint(
-          x: firstCenterX + CGFloat(index) * SelectRoleViewV2.RoleButtonMetrics.stride,
+          x: firstCenterX + CGFloat(index) * itemStride,
           y: bounds.midY
         ),
         anchor: .center,
