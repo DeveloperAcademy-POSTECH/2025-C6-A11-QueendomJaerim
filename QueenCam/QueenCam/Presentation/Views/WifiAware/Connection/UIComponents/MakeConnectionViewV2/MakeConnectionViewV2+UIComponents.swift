@@ -12,16 +12,18 @@ import WiFiAware
 extension MakeConnectionViewV2 {
   var navigationControls: some View {
     HStack {
-      dismissButton(
+      navigationButton(
         systemName: "chevron.left",
-        identifier: "make-connection-v2.back-button"
+        identifier: "make-connection-v2.back-button",
+        action: backButtonDidTap
       )
 
       Spacer()
 
-      dismissButton(
+      navigationButton(
         systemName: "xmark",
-        identifier: "make-connection-v2.close-button"
+        identifier: "make-connection-v2.close-button",
+        action: closeButtonDidTap
       )
     }
     .padding(.horizontal, 8.5)
