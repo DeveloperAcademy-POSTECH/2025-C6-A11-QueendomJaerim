@@ -43,20 +43,7 @@ struct MainView: View {
     onboardingSettingService: DependencyContainer.defaultContainer.onboardingSettingService
   )
 
-  @ViewBuilder
   var body: some View {
-    #if DEBUG
-    if ProcessInfo.processInfo.arguments.contains("--ui-testing-select-role-v2") {
-      SelectRoleViewV2UITestHost()
-    } else {
-      cameraView
-    }
-    #else
-    cameraView
-    #endif
-  }
-
-  private var cameraView: some View {
     CameraView(
       cameraViewModel: cameraViewModel,
       previewModel: previewModel,
@@ -88,38 +75,3 @@ struct MainView: View {
     #endif
   }
 }
-
-#if DEBUG
-private struct SelectRoleViewV2UITestHost: View {
-  @State private var isPresented = true
-  @State private var selectedRole: Role?
-  @State private var result = "presented"
-
-  var body: some View {
-    ZStack {
-      Color.black.ignoresSafeArea()
-
-      Text(result)
-        .foregroundStyle(.white)
-        .accessibilityIdentifier("select-role-v2.test-result")
-    }
-    .fullScreenCover(isPresented: $isPresented) {
-      SelectRoleViewV2(
-        selectedRole: selectedRole,
-        didRoleSelect: { role in
-          selectedRole = selectedRole == role ? nil : role
-        },
-        didRoleSubmit: {
-          result = "submitted"
-          isPresented = false
-        }
-      )
-    }
-    .onChange(of: isPresented) { _, isPresented in
-      if !isPresented && result != "submitted" {
-        result = "dismissed"
-      }
-    }
-  }
-}
-#endif
