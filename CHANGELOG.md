@@ -28,7 +28,6 @@
 
 ### Fixed
 
-- 친구 연결 화면 V2의 뒤로가기 버튼이 연결 시트를 닫지 않고 역할 선택 화면으로 이동하도록 수정
 - `/testflight` 워크플로의 시작·성공·실패 댓글이 Checkout 이전에 저장소를 찾지 못해 실패하던 문제 수정
 - `/testflight` Archive 실패 수정: fastlane 의존성 `multi_json` 선언, SwiftLint 플러그인 검증 건너뛰기, 빌드 설정 조회 타임아웃 상향, Archive 시점 서명을 export 단계로 이동, 러너 Xcode 선택 단계 추가
 - 프로비저닝 프로파일을 Xcode 16 이후 경로에 설치하도록 수정

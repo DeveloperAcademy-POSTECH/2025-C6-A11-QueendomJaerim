@@ -72,12 +72,6 @@ extension ConnectionView {
         errorWasConsumeByUser: {
           connectionViewModel.errorConfirmedByUser()
         },
-        backButtonDidTap: {
-          connectionViewModel.selectRole(for: nil)
-        },
-        closeButtonDidTap: {
-          dismiss()
-        },
         changeRoleButtonDidTap: {
           connectionViewModel.selectRole(for: selectedRole.counterpart)
         },

@@ -9,6 +9,8 @@ import SwiftUI
 import WiFiAware
 
 struct MakeConnectionViewV2 {
+  @Environment(\.dismiss) private var dismiss
+
   let role: Role
   let networkState: NetworkState?
   let selectedPairedDevice: WAPairedDevice?
@@ -17,8 +19,6 @@ struct MakeConnectionViewV2 {
   let pairingButtonContent: AnyView?
   var lastConnectionError: Error?
   let errorWasConsumeByUser: () -> Void
-  let backButtonDidTap: () -> Void
-  let closeButtonDidTap: () -> Void
   let changeRoleButtonDidTap: () -> Void
   let connectButtonDidTap: (WAPairedDevice) -> Void
   let stopConnectingButtonDidTap: () -> Void
@@ -37,8 +37,6 @@ struct MakeConnectionViewV2 {
     pairingButtonContent: AnyView? = nil,
     lastConnectionError: Error? = nil,
     errorWasConsumeByUser: @escaping () -> Void,
-    backButtonDidTap: @escaping () -> Void,
-    closeButtonDidTap: @escaping () -> Void,
     changeRoleButtonDidTap: @escaping () -> Void,
     connectButtonDidTap: @escaping (WAPairedDevice) -> Void,
     stopConnectingButtonDidTap: @escaping () -> Void
@@ -51,8 +49,6 @@ struct MakeConnectionViewV2 {
     self.pairingButtonContent = pairingButtonContent
     self.lastConnectionError = lastConnectionError
     self.errorWasConsumeByUser = errorWasConsumeByUser
-    self.backButtonDidTap = backButtonDidTap
-    self.closeButtonDidTap = closeButtonDidTap
     self.changeRoleButtonDidTap = changeRoleButtonDidTap
     self.connectButtonDidTap = connectButtonDidTap
     self.stopConnectingButtonDidTap = stopConnectingButtonDidTap
@@ -144,12 +140,10 @@ extension MakeConnectionViewV2: View {
 }
 
 extension MakeConnectionViewV2 {
-  func navigationButton(
-    systemName: String,
-    identifier: String,
-    action: @escaping () -> Void
-  ) -> some View {
-    Button(action: action) {
+  func dismissButton(systemName: String, identifier: String) -> some View {
+    Button {
+      dismiss()
+    } label: {
       Image(systemName: systemName)
         .font(.system(size: 24, weight: .regular))
         .foregroundStyle(.offWhite)
@@ -170,8 +164,6 @@ extension MakeConnectionViewV2 {
     pairedDevices: [],
     isConnected: false,
     errorWasConsumeByUser: { },
-    backButtonDidTap: { },
-    closeButtonDidTap: { },
     changeRoleButtonDidTap: { },
     connectButtonDidTap: { _ in },
     stopConnectingButtonDidTap: { }
