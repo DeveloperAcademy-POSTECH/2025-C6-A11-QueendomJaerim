@@ -110,7 +110,13 @@ extension MakeConnectionViewV2 {
         .accessibilityIdentifier("make-connection-v2.pairing-help-button")
       }
 
-      PairingButton(role: role)
+      Group {
+        if let pairingButtonContent {
+          pairingButtonContent
+        } else {
+          PairingButton(role: role)
+        }
+      }
         .frame(height: 56)
         .padding(.horizontal, 16)
         .accessibilityIdentifier("make-connection-v2.pairing-button")

@@ -43,20 +43,7 @@ struct MainView: View {
     onboardingSettingService: DependencyContainer.defaultContainer.onboardingSettingService
   )
 
-  @ViewBuilder
   var body: some View {
-    #if DEBUG
-    if ProcessInfo.processInfo.arguments.contains("--ui-testing-make-connection-v2") {
-      MakeConnectionViewV2UITestHost()
-    } else {
-      cameraView
-    }
-    #else
-    cameraView
-    #endif
-  }
-
-  private var cameraView: some View {
     CameraView(
       cameraViewModel: cameraViewModel,
       previewModel: previewModel,

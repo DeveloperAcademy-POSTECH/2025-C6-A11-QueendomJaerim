@@ -16,6 +16,7 @@ struct MakeConnectionViewV2 {
   let selectedPairedDevice: WAPairedDevice?
   let pairedDevices: [ExtendedWAPairedDevice]
   let isConnected: Bool
+  let pairingButtonContent: AnyView?
   var lastConnectionError: Error?
   let errorWasConsumeByUser: () -> Void
   let changeRoleButtonDidTap: () -> Void
@@ -26,6 +27,32 @@ struct MakeConnectionViewV2 {
 
   let backgroundColor = Color(red: 18 / 255, green: 18 / 255, blue: 18 / 255)
   let maximumContentWidth: CGFloat = 560
+
+  init(
+    role: Role,
+    networkState: NetworkState?,
+    selectedPairedDevice: WAPairedDevice?,
+    pairedDevices: [ExtendedWAPairedDevice],
+    isConnected: Bool,
+    pairingButtonContent: AnyView? = nil,
+    lastConnectionError: Error? = nil,
+    errorWasConsumeByUser: @escaping () -> Void,
+    changeRoleButtonDidTap: @escaping () -> Void,
+    connectButtonDidTap: @escaping (WAPairedDevice) -> Void,
+    stopConnectingButtonDidTap: @escaping () -> Void
+  ) {
+    self.role = role
+    self.networkState = networkState
+    self.selectedPairedDevice = selectedPairedDevice
+    self.pairedDevices = pairedDevices
+    self.isConnected = isConnected
+    self.pairingButtonContent = pairingButtonContent
+    self.lastConnectionError = lastConnectionError
+    self.errorWasConsumeByUser = errorWasConsumeByUser
+    self.changeRoleButtonDidTap = changeRoleButtonDidTap
+    self.connectButtonDidTap = connectButtonDidTap
+    self.stopConnectingButtonDidTap = stopConnectingButtonDidTap
+  }
 
   var isPairing: Bool {
     networkState == .host(.publishing)
