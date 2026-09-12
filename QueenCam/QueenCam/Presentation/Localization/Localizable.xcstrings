@@ -383,6 +383,16 @@
         }
       }
     },
+    "모델로 시작하기" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start as Model"
+          }
+        }
+      }
+    },
     "버전 정보" : {
       "localizations" : {
         "en" : {
@@ -455,6 +465,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Only devices with different roles\ncan connect to each other"
+          }
+        }
+      }
+    },
+    "서로 다른 역할의 기기끼리만 연결할 수 있어요.\n친구와 다른 역할을 선택해주세요." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only devices with different roles can connect.\nChoose a different role from your friend."
           }
         }
       }
@@ -931,6 +951,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Photograph"
+          }
+        }
+      }
+    },
+    "촬영으로 시작하기" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start as Photographer"
           }
         }
       }

@@ -109,7 +109,7 @@ extension ConnectionView {
   }
 
   var selectRoleView: some View {
-    SelectRoleView(
+    SelectRoleViewV2(
       selectedRole: activeRole,
       didRoleSelect: { role in
         if role == activeRole {
