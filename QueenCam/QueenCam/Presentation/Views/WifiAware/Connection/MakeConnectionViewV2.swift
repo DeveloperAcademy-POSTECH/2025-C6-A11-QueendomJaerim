@@ -76,6 +76,20 @@ struct MakeConnectionViewV2 {
       ? "페어링을 통해 기기를 등록해야 연결할 수 있어요.\n먼저 친구의 기기와 페어링해 주세요."
       : "등록된 기기와는 바로 연결할 수 있어요.\n목록에 없는 기기와는 페어링을 먼저 진행해주세요."
   }
+
+  var connectionStatusOverlayState: ConnectionStatusOverlayView.State? {
+    if lastConnectionError != nil {
+      return .failed
+    }
+
+    guard isPairing, let selectedPairedDevice else {
+      return nil
+    }
+
+    return .connecting(
+      deviceName: selectedPairedDevice.pairingInfo?.pairingName ?? selectedPairedDevice.name ?? ""
+    )
+  }
 }
 
 extension MakeConnectionViewV2: View {
@@ -110,23 +124,12 @@ extension MakeConnectionViewV2: View {
         .frame(maxWidth: contentMaxWidth)
     }
     .toolbar(.hidden, for: .navigationBar)
-    .alert(
-      "연결에 실패했습니다",
-      isPresented: .init(
-        get: { lastConnectionError != nil },
-        set: { isPresented in
-          if !isPresented {
-            errorWasConsumeByUser()
-          }
-        }
-      )
-    ) {
-      Button("확인", role: .cancel) { }
-    } message: {
-      if lastConnectionError?.localizedDescription.isEmpty == false {
-        Text("설정 앱에서 Wi-Fi 기능을 활성화하고 다시 시도해주세요.")
-      } else {
-        Text("연결하던 중 오류가 발생했습니다. 문제가 반복되면 퀸덤 팀에 문의해주세요. \(lastConnectionError?.localizedDescription ?? "")")
+    .overlay {
+      if let connectionStatusOverlayState {
+        ConnectionStatusOverlayView(
+          state: connectionStatusOverlayState,
+          actionButtonDidTap: connectionStatusActionButtonDidTap
+        )
       }
     }
     .sheet(isPresented: $isShowingPairingHelp) {
@@ -140,6 +143,14 @@ extension MakeConnectionViewV2: View {
 }
 
 extension MakeConnectionViewV2 {
+  func connectionStatusActionButtonDidTap() {
+    if lastConnectionError != nil {
+      errorWasConsumeByUser()
+    } else {
+      stopConnectingButtonDidTap()
+    }
+  }
+
   func dismissButton(systemName: String, identifier: String) -> some View {
     Button {
       dismiss()

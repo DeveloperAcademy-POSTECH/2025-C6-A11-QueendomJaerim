@@ -80,10 +80,8 @@ extension MakeConnectionViewV2 {
             PairedDeviceRow(
               item: item,
               isSelected: item.device == selectedPairedDevice,
-              isPairing: isPairing,
               isConnected: isConnected,
-              connectButtonDidTap: connectButtonDidTap,
-              stopConnectingButtonDidTap: stopConnectingButtonDidTap
+              connectButtonDidTap: connectButtonDidTap
             )
           }
         }
@@ -137,10 +135,8 @@ extension MakeConnectionViewV2 {
   struct PairedDeviceRow: View {
     let item: ExtendedWAPairedDevice
     let isSelected: Bool
-    let isPairing: Bool
     let isConnected: Bool
     let connectButtonDidTap: (WAPairedDevice) -> Void
-    let stopConnectingButtonDidTap: () -> Void
 
     private let connectedColor = Color(
       red: 39 / 255,
@@ -206,14 +202,6 @@ extension MakeConnectionViewV2 {
           .frame(width: 29, height: 29)
           .background(connectedColor, in: Circle())
           .accessibilityLabel("연결 완료")
-      } else if isSelected && isPairing {
-        Button(action: stopConnectingButtonDidTap) {
-          ProgressView()
-            .tint(.offWhite)
-            .frame(width: 32, height: 32)
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel("연결 중단")
       } else {
         Button {
           connectButtonDidTap(item.device)

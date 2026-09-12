@@ -144,16 +144,14 @@ struct ConnectionStatusOverlayView: View {
 
 #Preview("연결 중") {
   ConnectionStatusOverlayView(
-    state: .connecting(deviceName: "임영택의 iPhone 16"),
-    actionButtonDidTap: { }
-  )
+    state: .connecting(deviceName: "임영택의 iPhone 16")
+  ) { }
   .background(Color(red: 18 / 255, green: 18 / 255, blue: 18 / 255))
 }
 
 #Preview("연결 실패") {
   ConnectionStatusOverlayView(
-    state: .failed,
-    actionButtonDidTap: { }
-  )
+    state: .failed
+  ) { }
   .background(Color(red: 18 / 255, green: 18 / 255, blue: 18 / 255))
 }
