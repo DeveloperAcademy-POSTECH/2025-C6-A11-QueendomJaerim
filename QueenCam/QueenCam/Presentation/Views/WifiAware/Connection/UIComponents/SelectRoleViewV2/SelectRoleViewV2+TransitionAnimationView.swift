@@ -18,8 +18,8 @@ extension SelectRoleViewV2 {
         Image(phase == .off ? .loadingAnimationOff : .loadingAnimationOn)
           .resizable()
           .scaledToFit()
-          .frame(height: 160)
-          .position(x: proxy.size.width / 2, y: 422)
+          .frame(height: RoleButtonMetrics.size)
+          .position(x: proxy.size.width / 2, y: RoleButtonMetrics.buttonsCenterY)
           .accessibilityIdentifier("select-role-v2.transition-animation")
       }
       .onAppear {

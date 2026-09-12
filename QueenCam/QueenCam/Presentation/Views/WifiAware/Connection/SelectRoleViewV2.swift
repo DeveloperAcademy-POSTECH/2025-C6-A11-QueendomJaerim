@@ -8,6 +8,24 @@
 import SwiftUI
 
 struct SelectRoleViewV2 {
+  enum RoleButtonMetrics {
+    static let size: CGFloat = 160
+    static let overlap: CGFloat = 15
+    static let buttonsTopOffset: CGFloat = 342
+    static let descriptionSpacing: CGFloat = 33
+    static let labelSpacing: CGFloat = 1
+    static let buttonCount = 2
+
+    static let stride = size - overlap
+    static let centersSpan = stride * CGFloat(buttonCount - 1)
+    static let selectedOffset = centersSpan / 2
+    static let buttonsCenterY = buttonsTopOffset + size / 2
+    static let descriptionTopOffset = buttonsTopOffset + size + descriptionSpacing
+    static let labelsWidth = stride * CGFloat(buttonCount)
+      + labelSpacing * CGFloat(buttonCount - 1)
+    static let unconstrainedButtonsWidth = size * CGFloat(buttonCount)
+  }
+
   @Environment(\.dismiss) private var dismiss
 
   let selectedRole: Role?
@@ -61,12 +79,12 @@ extension SelectRoleViewV2: View {
           .offset(x: 20, y: 155)
 
         roleSelectButtons
-          .frame(width: proxy.size.width, height: 160)
-          .offset(y: 342)
+          .frame(width: proxy.size.width, height: RoleButtonMetrics.size)
+          .offset(y: RoleButtonMetrics.buttonsTopOffset)
 
         roleDescription
           .frame(width: proxy.size.width)
-          .offset(y: 535)
+          .offset(y: RoleButtonMetrics.descriptionTopOffset)
 
         primaryButton
           .frame(width: max(proxy.size.width - 32, 0), height: 56)
@@ -111,8 +129,8 @@ private extension SelectRoleViewV2 {
     guard !willShowLoadingAnimation else { return .zero }
 
     return switch selectedRole {
-    case .photographer: 72.5
-    case .model: -72.5
+    case .photographer: RoleButtonMetrics.selectedOffset
+    case .model: -RoleButtonMetrics.selectedOffset
     case nil: .zero
     }
   }
@@ -123,7 +141,7 @@ private extension SelectRoleViewV2 {
     } label: {
       Image(role == .photographer ? .zzikPhotographer : .zzikModel)
         .resizable()
-        .frame(width: 160, height: 160)
+        .frame(width: RoleButtonMetrics.size, height: RoleButtonMetrics.size)
         .opacity(!willShowLoadingAnimation && selectedRole == role ? 1 : 0.5)
     }
     .buttonStyle(.plain)
@@ -155,11 +173,11 @@ private extension SelectRoleViewV2 {
       .buttonStyle(.plain)
       .accessibilityIdentifier("select-role-v2.selected-role-description")
     } else {
-      HStack(spacing: 1) {
+      HStack(spacing: RoleButtonMetrics.labelSpacing) {
         roleLabelButton(for: .photographer)
         roleLabelButton(for: .model)
       }
-      .frame(width: 291)
+      .frame(width: RoleButtonMetrics.labelsWidth)
     }
   }
 
@@ -170,7 +188,7 @@ private extension SelectRoleViewV2 {
       Text(role.displayName)
         .typo(.sb20)
         .foregroundStyle(.systemWhite)
-        .frame(width: 145)
+        .frame(width: RoleButtonMetrics.stride)
     }
     .buttonStyle(.plain)
     .accessibilityIdentifier(
@@ -259,15 +277,15 @@ private extension SelectRoleViewV2 {
 }
 
 private struct RoleSelectButtonsLayout: Layout {
-  private let itemSize: CGFloat = 160
-  private let itemStride: CGFloat = 145
-
   func sizeThatFits(
     proposal: ProposedViewSize,
     subviews: Subviews,
     cache: inout ()
   ) -> CGSize {
-    CGSize(width: proposal.width ?? itemSize * 2, height: itemSize)
+    CGSize(
+      width: proposal.width ?? SelectRoleViewV2.RoleButtonMetrics.unconstrainedButtonsWidth,
+      height: SelectRoleViewV2.RoleButtonMetrics.size
+    )
   }
 
   func placeSubviews(
@@ -276,15 +294,21 @@ private struct RoleSelectButtonsLayout: Layout {
     subviews: Subviews,
     cache: inout ()
   ) {
-    guard subviews.count == 2 else { return }
+    guard subviews.count == SelectRoleViewV2.RoleButtonMetrics.buttonCount else { return }
 
-    let firstCenterX = bounds.midX - itemStride / 2
+    let firstCenterX = bounds.midX - SelectRoleViewV2.RoleButtonMetrics.selectedOffset
 
     for (index, subview) in subviews.enumerated() {
       subview.place(
-        at: CGPoint(x: firstCenterX + CGFloat(index) * itemStride, y: bounds.midY),
+        at: CGPoint(
+          x: firstCenterX + CGFloat(index) * SelectRoleViewV2.RoleButtonMetrics.stride,
+          y: bounds.midY
+        ),
         anchor: .center,
-        proposal: ProposedViewSize(width: itemSize, height: itemSize)
+        proposal: ProposedViewSize(
+          width: SelectRoleViewV2.RoleButtonMetrics.size,
+          height: SelectRoleViewV2.RoleButtonMetrics.size
+        )
       )
     }
   }
