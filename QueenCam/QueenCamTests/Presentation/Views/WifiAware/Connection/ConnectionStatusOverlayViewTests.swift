@@ -98,6 +98,33 @@ final class ConnectionStatusOverlayViewTests: XCTestCase {
     XCTAssertGreaterThanOrEqual(mountedView.screenSize.height, 278)
   }
 
+  func testConnectingModalGrowsAroundCenterForLongDeviceName() async throws {
+    let modalColor = UIColor(red: 42 / 255, green: 42 / 255, blue: 42 / 255, alpha: 1)
+    var mountedView = mount(
+      role: .photographer,
+      state: .connecting(deviceName: "임영택의 iPhone 16")
+    )
+    await mountedView.waitForRendering()
+    let defaultModalFrame = try XCTUnwrap(
+      mountedView.snapshotImage().pixelBounds(matching: modalColor)
+    )
+
+    mountedView = mount(
+      role: .photographer,
+      state: .connecting(
+        deviceName: "This is a deliberately long paired device name for layout verification"
+      )
+    )
+    await mountedView.waitForRendering()
+    let grownModalFrame = try XCTUnwrap(
+      mountedView.snapshotImage().pixelBounds(matching: modalColor)
+    )
+
+    XCTAssertEqual(defaultModalFrame.height, 278, accuracy: 1)
+    XCTAssertGreaterThan(grownModalFrame.height, defaultModalFrame.height)
+    XCTAssertEqual(grownModalFrame.midY, defaultModalFrame.midY, accuracy: 1)
+  }
+
   func testActionButtonRemainsInsideWindowBounds() async throws {
     for size in [CGSize(width: 393, height: 852), CGSize(width: 1024, height: 1366)] {
       let mountedView = mount(role: .model, state: .failed, size: size)
