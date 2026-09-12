@@ -19,6 +19,10 @@ struct ConnectionStatusOverlayView: View {
   private let modalWidth: CGFloat = 311
   private let connectingModalHeight: CGFloat = 278
   private let failedModalHeight: CGFloat = 166
+  private let connectingContentSpacing: CGFloat = 35
+  private let failedContentSpacing: CGFloat = 23
+  private let progressIndicatorSize: CGFloat = 30
+  private let progressIndicatorScale: CGFloat = 1.5
   private let buttonBackgroundColor = Color(
     red: 51 / 255,
     green: 51 / 255,
@@ -33,7 +37,8 @@ struct ConnectionStatusOverlayView: View {
         .accessibilityIdentifier("connection-status-overlay.dimmed-background")
 
       modalContent
-        .frame(width: modalWidth, height: modalHeight)
+        .frame(width: modalWidth)
+        .frame(minHeight: modalMinimumHeight)
         .background(Color.gray900, in: RoundedRectangle(cornerRadius: 32))
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("connection-status-overlay.modal")
@@ -41,7 +46,7 @@ struct ConnectionStatusOverlayView: View {
     .frame(maxWidth: .infinity, maxHeight: .infinity)
   }
 
-  private var modalHeight: CGFloat {
+  private var modalMinimumHeight: CGFloat {
     switch state {
     case .connecting:
       connectingModalHeight
@@ -62,34 +67,34 @@ struct ConnectionStatusOverlayView: View {
 
   private func connectingContent(deviceName: String) -> some View {
     VStack(spacing: 0) {
-      ScrollView(showsIndicators: false) {
-        VStack(alignment: .leading, spacing: 8) {
-          Text("‘\(deviceName)’(와)과\n연결 중이에요.")
-            .typo(.sb17)
-            .foregroundStyle(.systemWhite)
-            .accessibilityIdentifier("connection-status-overlay.title")
+      VStack(alignment: .leading, spacing: 8) {
+        Text("‘\(deviceName)’(와)과\n연결 중이에요.")
+          .typo(.sb17)
+          .foregroundStyle(.systemWhite)
+          .accessibilityIdentifier("connection-status-overlay.title")
 
-          Text("상대방 기기에서도 '연결' 버튼을 눌렀는지 확인해 주세요.")
-            .typo(.m14)
-            .foregroundStyle(.gray400)
-            .accessibilityIdentifier("connection-status-overlay.message")
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        Text("상대방 기기에서도 '연결' 버튼을 눌렀는지 확인해 주세요.")
+          .typo(.m14)
+          .foregroundStyle(.gray400)
+          .accessibilityIdentifier("connection-status-overlay.message")
       }
-      .scrollBounceBehavior(.basedOnSize)
-      .frame(maxHeight: 112)
+      .frame(maxWidth: .infinity, alignment: .leading)
       .padding(.top, 20)
       .padding(.horizontal, 24)
 
-      Spacer(minLength: 0)
+      Spacer()
+        .frame(height: connectingContentSpacing)
 
       ProgressView()
         .controlSize(.regular)
+        .scaleEffect(progressIndicatorScale)
+        .frame(width: progressIndicatorSize, height: progressIndicatorSize)
         .tint(.gray400)
         .accessibilityLabel("연결 중")
         .accessibilityIdentifier("connection-status-overlay.progress")
 
-      Spacer(minLength: 0)
+      Spacer()
+        .frame(height: connectingContentSpacing)
 
       actionButton(title: "연결 중단하기", foregroundColor: .gray600)
         .padding(.horizontal, 16)
@@ -99,25 +104,23 @@ struct ConnectionStatusOverlayView: View {
 
   private var failedContent: some View {
     VStack(alignment: .leading, spacing: 0) {
-      ScrollView(showsIndicators: false) {
-        VStack(alignment: .leading, spacing: 14) {
-          Text("연결에 실패했어요.")
-            .typo(.sb17)
-            .foregroundStyle(.systemWhite)
-            .accessibilityIdentifier("connection-status-overlay.title")
+      VStack(alignment: .leading, spacing: 14) {
+        Text("연결에 실패했어요.")
+          .typo(.sb17)
+          .foregroundStyle(.systemWhite)
+          .accessibilityIdentifier("connection-status-overlay.title")
 
-          Text("상대방과 함께 다시 시도해 주세요.")
-            .typo(.m14)
-            .foregroundStyle(.gray400)
-            .accessibilityIdentifier("connection-status-overlay.message")
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        Text("상대방과 함께 다시 시도해 주세요.")
+          .typo(.m14)
+          .foregroundStyle(.gray400)
+          .accessibilityIdentifier("connection-status-overlay.message")
       }
-      .scrollBounceBehavior(.basedOnSize)
+      .frame(maxWidth: .infinity, alignment: .leading)
       .padding(.top, 20)
       .padding(.horizontal, 24)
 
-      Spacer(minLength: 0)
+      Spacer()
+        .frame(height: failedContentSpacing)
 
       actionButton(title: "닫기", foregroundColor: .gray400)
         .padding(.horizontal, 16)
