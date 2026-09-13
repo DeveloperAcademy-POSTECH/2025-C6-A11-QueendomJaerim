@@ -16,7 +16,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "‘Find Nearby Devices’"
+            "value" : "“Find Nearby Devices”"
           }
         }
       }
@@ -27,7 +27,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Start with ‘Find Nearby Devices’\nand wait a moment."
+            "value" : "Start “Find Nearby Devices,”\nthen wait a moment."
           }
         }
       }
@@ -38,7 +38,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Start with ‘Find Nearby Devices’ \nand ask your friend to pair with you."
+            "value" : "Start “Find Nearby Devices,”\nthen ask your friend to pair."
           }
         }
       }
@@ -82,7 +82,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Once the 6-digit code appears, \nshare it with your freind."
+            "value" : "When the 6-digit code appears,\nshare it with your friend."
           }
         }
       }
@@ -183,7 +183,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "An error occurred while loading the guiding video."
+            "value" : "We couldn’t load the guide video."
           }
         }
       }
@@ -257,7 +257,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Take a photo with my phone"
+            "value" : "Shoot with My Device"
           }
         }
       }
@@ -406,7 +406,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Guide for model"
+            "value" : "Model Guide"
           }
         }
       }
@@ -501,7 +501,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "I want to register a new friend."
+            "value" : "I want to add a new friend."
           }
         }
       }
@@ -512,7 +512,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Only devices with different roles\ncan connect to each other"
+            "value" : "You can only connect devices\nwith different roles."
           }
         }
       }
@@ -553,7 +553,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Activate Wi-Fi in settings and retry."
+            "value" : "Turn on Wi-Fi in Settings and try again."
           }
         }
       }
@@ -607,7 +607,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Every time you press the gearshape button,\nyou can see how to pair the devices."
+            "value" : "You can revisit the pairing guide anytime\nby tapping the gear button."
           }
         }
       }
@@ -668,7 +668,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Start to connect"
+            "value" : "Start Connecting"
           }
         }
       }
@@ -718,7 +718,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Connection failed"
+            "value" : "Failed to Connect"
           }
         }
       }
@@ -773,7 +773,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "An error occurred during the connection. If the problem persists, please contact the Queendom team. %@"
+            "value" : "Something went wrong while connecting. If this keeps happening, please contact the Queendom team. %@"
           }
         }
       }
@@ -820,7 +820,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "When this screen appears,\nclose the window and connect!"
+            "value" : "When you see this screen, registration is complete.\nClose the window to get ready to connect!"
           }
         }
       }
@@ -864,7 +864,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Guide for photograph"
+            "value" : "Photographer Guide"
           }
         }
       }
@@ -947,7 +947,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "How to use ZZikZZa"
+            "value" : "ZZikZZa User Guide"
           }
         }
       }
@@ -1018,7 +1018,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "close the window"
+            "value" : "Close the Window"
           }
         }
       }
@@ -1134,7 +1134,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Enter the 6-digit code\nprovided by your friend."
+            "value" : "Enter the 6-digit code\nyour friend gives you."
           }
         }
       }
@@ -1225,7 +1225,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Connect with your friend"
+            "value" : "Connect with a Friend"
           }
         }
       }
@@ -1236,7 +1236,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Please register your friend first\nvia ‘Find Nearby Devices’ to connect with them."
+            "value" : "To connect with a friend, register them first\nusing “Find Nearby Devices.”"
           }
         }
       }
@@ -1270,7 +1270,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "View your friend’s screen"
+            "value" : "View Your Friend’s Screen"
           }
         }
       }
@@ -1284,7 +1284,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "share it with your freind."
+            "value" : "Share the code with your friend."
           }
         }
       }
@@ -1306,7 +1306,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wondering how to pair devices?"
+            "value" : "Need help pairing?"
           }
         }
       }
@@ -1333,7 +1333,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "pair"
+            "value" : "Request Pairing"
           }
         }
       }
@@ -1430,7 +1430,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Model** mode"
+            "value" : "You’re currently in **Model Mode**."
           }
         }
       }
@@ -1441,7 +1441,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Photograph** mode"
+            "value" : "You’re currently in **Photographer Mode**."
           }
         }
       }
