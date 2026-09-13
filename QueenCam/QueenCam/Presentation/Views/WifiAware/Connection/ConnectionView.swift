@@ -18,9 +18,6 @@ struct ConnectionView {
   /// 사용자가 선택중인 역할 (아직 확정된 것은 아님)
   @State private var activeRole: Role?
 
-  /// 가이드를 보여줘야하는지 여부
-  @State private var shouldGuideShow: Bool = false
-
   /// 하위 뷰로 전파할 연결 여부
   @State private var isConnected: Bool = false
 }
@@ -31,11 +28,7 @@ extension ConnectionView: View {
       if connectionViewModel.role != nil {
         makeConnectionView
       } else {
-        if shouldGuideShow && activeRole != nil {
-          connectionGuideView
-        } else {
-          selectRoleView
-        }
+        selectRoleView
       }
     }
     .trackScreen(.connectionSheet, Self.self)
@@ -62,7 +55,7 @@ extension ConnectionView {
   @ViewBuilder
   var makeConnectionView: some View {
     if let selectedRole = connectionViewModel.role {
-      MakeConnectionView(
+      MakeConnectionViewV2(
         role: selectedRole,
         networkState: connectionViewModel.networkState,
         selectedPairedDevice: connectionViewModel.selectedPairedDevice,
@@ -87,27 +80,6 @@ extension ConnectionView {
     }
   }
 
-  @ViewBuilder
-  var connectionGuideView: some View {
-    if let activeRole {
-      ConnectionGuideView(
-        role: activeRole,
-        referer: .selectRole,
-        didGuideComplete: {
-          shouldGuideShow = false
-          connectionViewModel.selectRole(for: activeRole)  // 가이드가 끝나면 역할 확정
-          guideViewModel.onboardingDidFinish(currentRole: activeRole)
-        },
-        backButtonDidTap: {
-          shouldGuideShow = false
-          connectionViewModel.selectRole(for: nil)
-        }
-      )
-    } else {
-      Text("역할이 선택되지 않았습니다")
-    }
-  }
-
   var selectRoleView: some View {
     SelectRoleViewV2(
       selectedRole: activeRole,
@@ -120,13 +92,7 @@ extension ConnectionView {
       },
       didRoleSubmit: {
         guard let activeRole else { return }
-
-        if guideViewModel.getShouldShowConnectionGuide(currentRole: activeRole) {
-          shouldGuideShow = true  // 역할 선택 버튼을 누르면 가이드를 보여줌
-        } else {
-          // 이미 가이드를 본 경우 바로 역할 선택
-          connectionViewModel.selectRole(for: activeRole)
-        }
+        connectionViewModel.selectRole(for: activeRole)
       }
     )
   }

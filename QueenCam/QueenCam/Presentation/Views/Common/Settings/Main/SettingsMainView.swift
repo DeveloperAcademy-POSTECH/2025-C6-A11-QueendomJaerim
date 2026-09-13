@@ -14,8 +14,6 @@ struct SettingsMainView {
   private let cameraSettingsService: CameraSettingsServiceProtocol
 
   @State private var safariSheetItem: SafariSheetItem?
-  @State private var guideSheetItem: GuideSheetItem?
-  @State private var isConfirmingRole = false
   @State private var settings: SettingsState
 
   /// 강조 표시를 끝냈는지 여부
@@ -59,26 +57,6 @@ extension SettingsMainView: View {
   var body: some View {
     ScrollView {
       VStack(alignment: .leading, spacing: 0) {
-        SettingSection(title: "찍자 이용 가이드") {
-          SettingBanner {
-            finishHighlight()
-
-            if let role {
-              guideSheetItem = GuideSheetItem(role: role)
-            } else {
-              isConfirmingRole.toggle()
-            }
-          }
-          .title("페어링 방법이 궁금하신가요?")
-          .subtitle("새로운 친구를 등록하고 싶어요.")
-          .image(.pairGuide)
-        }
-        .spacing(top: 16, titleToItem: 12, bottom: 20)
-        .showSeparator(false)
-        .padding(.horizontal, 20)
-
-        HeaderSeparator()
-
         SettingSection(title: "실험실") {
           SettingToggleSectionItem(
             title: "사진에 펜 가이드 함께 저장",
@@ -137,24 +115,6 @@ extension SettingsMainView: View {
       SFSafariView(url: sheetItem.url)
         .ignoresSafeArea()
     }
-    .fullScreenCover(item: $guideSheetItem) { sheetItem in
-      NavigationStack {
-        ConnectionGuideView(role: sheetItem.role, referer: .settings) {
-          guideSheetItem = nil
-        } backButtonDidTap: {
-          guideSheetItem = nil
-        }
-      }
-    }
-    .confirmationDialog("", isPresented: $isConfirmingRole) {
-      Button("작가 가이드") {
-        guideSheetItem = GuideSheetItem(role: .photographer)
-      }
-      Button("모델 가이드") {
-        guideSheetItem = GuideSheetItem(role: .model)
-      }
-      Button("취소", role: .cancel) {}
-    }
     .onChange(of: settings) { previousSettings, newSettings in
       persist(newSettings)
       analyticsChanges(from: previousSettings, to: newSettings).forEach { change in
@@ -188,13 +148,6 @@ extension SettingsMainView {
     cameraSettingsService.saveGuidingOverlayImageOn = settings.saveGuidingOverlayImageOn
   }
 
-  private struct HeaderSeparator: View {
-    var body: some View {
-      Rectangle()
-        .foregroundStyle(SettingsColors.headerSeparator)
-        .frame(height: 6)
-    }
-  }
 }
 
 extension SettingsMainView {
@@ -216,13 +169,6 @@ private struct SafariSheetItem: Identifiable {
   let url: URL
   var id: String {
     url.absoluteString
-  }
-}
-
-private struct GuideSheetItem: Identifiable {
-  let role: Role
-  var id: String {
-    role.displayName
   }
 }
 

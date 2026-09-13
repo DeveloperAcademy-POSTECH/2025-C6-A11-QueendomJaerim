@@ -4,38 +4,41 @@
     "" : {
 
     },
-    "\n" : {
+    "‘%@’(와)과\n연결 중이에요." : {
 
     },
     "‘사진에 펜 가이드 함께 저장’ 기능을 설정해보세요." : {
 
     },
     "‘주변 기기 찾기’" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "‘Find Nearby Devices’"
+            "value" : "“Find Nearby Devices”"
           }
         }
       }
     },
     "‘주변 기기 찾기’를 시작하고\n잠시 기다려주세요." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Start with ‘Find Nearby Devices’\nand wait a moment."
+            "value" : "Start “Find Nearby Devices,”\nthen wait a moment."
           }
         }
       }
     },
     "‘주변 기기 찾기’를 시작해\n친구에게 페어링을 요청해주세요." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Start with ‘Find Nearby Devices’ \nand ask your friend to pair with you."
+            "value" : "Start “Find Nearby Devices,”\nthen ask your friend to pair."
           }
         }
       }
@@ -49,6 +52,9 @@
           }
         }
       }
+    },
+    "%lld" : {
+
     },
     "%lld / %lld" : {
       "localizations" : {
@@ -71,11 +77,12 @@
       }
     },
     "6자리 코드가 나오면\n친구에게 코드를 알려주세요." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Once the 6-digit code appears, \nshare it with your freind."
+            "value" : "When the 6-digit code appears,\nshare it with your friend."
           }
         }
       }
@@ -143,7 +150,11 @@
         }
       }
     },
+    "Ping 메시지 도착" : {
+
+    },
     "Unavailable" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -152,6 +163,9 @@
           }
         }
       }
+    },
+    "가이드 이미지 준비 중" : {
+
     },
     "가이드 프레임을 생성했어요." : {
       "localizations" : {
@@ -164,11 +178,12 @@
       }
     },
     "가이딩 비디오를 불러오는 중 문제가 발생했습니다." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "An error occurred while loading the guiding video."
+            "value" : "We couldn’t load the guide video."
           }
         }
       }
@@ -192,6 +207,9 @@
           }
         }
       }
+    },
+    "기기 간 연결을 위해, 먼저 페어링을 통해\n기기를 등록하는 과정이 필요해요." : {
+
     },
     "기기 검색(페어링)이 잘 안 돼요." : {
       "localizations" : {
@@ -234,11 +252,12 @@
       }
     },
     "내 기기로 찍고 있어요" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Take a photo with my phone"
+            "value" : "Shoot with My Device"
           }
         }
       }
@@ -284,6 +303,7 @@
       }
     },
     "뒤로가기" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -303,6 +323,9 @@
         }
       }
     },
+    "등록된 기기가 없습니다" : {
+
+    },
     "등록된 기기를 삭제하고 싶어요." : {
       "localizations" : {
         "en" : {
@@ -313,7 +336,11 @@
         }
       }
     },
+    "등록된 기기와는 바로 연결할 수 있어요.\n목록에 없는 기기와는 페어링을 먼저 진행해주세요." : {
+
+    },
     "등록된 친구" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -374,14 +401,21 @@
       }
     },
     "모델 가이드" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Guide for model"
+            "value" : "Model Guide"
           }
         }
       }
+    },
+    "모델 모드" : {
+
+    },
+    "모델과 촬영, 양 방향에서 동시에 페어링을 시도해주세요." : {
+
     },
     "모델로 시작하기" : {
       "localizations" : {
@@ -439,6 +473,18 @@
         }
       }
     },
+    "상대방 기기에서도 '연결' 버튼을 눌렀는지 확인해 주세요." : {
+
+    },
+    "상대방과 함께 다시 시도해 주세요." : {
+
+    },
+    "새로 등록된 기기" : {
+
+    },
+    "새로운 기기 페어링하기" : {
+
+    },
     "새로운 참고 이미지를 등록했어요." : {
       "localizations" : {
         "en" : {
@@ -450,21 +496,23 @@
       }
     },
     "새로운 친구를 등록하고 싶어요." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "I want to register a new friend."
+            "value" : "I want to add a new friend."
           }
         }
       }
     },
     "서로 다른 역할의 기기끼리만\n연결할 수 있어요" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Only devices with different roles\ncan connect to each other"
+            "value" : "You can only connect devices\nwith different roles."
           }
         }
       }
@@ -500,11 +548,12 @@
       }
     },
     "설정 앱에서 Wi-Fi 기능을 활성화하고 다시 시도해주세요." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Activate Wi-Fi in settings and retry."
+            "value" : "Turn on Wi-Fi in Settings and try again."
           }
         }
       }
@@ -549,12 +598,16 @@
         }
       }
     },
+    "양쪽에서 동시에 시도해주세요." : {
+
+    },
     "언제든지 gearshape 버튼으로\n페어링하는 법을 다시 볼 수 있어요." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Every time you press the gearshape button,\nyou can see how to pair the devices."
+            "value" : "You can revisit the pairing guide anytime\nby tapping the gear button."
           }
         }
       }
@@ -610,14 +663,18 @@
       }
     },
     "연결 시작하기" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Start to connect"
+            "value" : "Start Connecting"
           }
         }
       }
+    },
+    "연결 완료" : {
+
     },
     "연결 종료하기" : {
       "localizations" : {
@@ -628,6 +685,12 @@
           }
         }
       }
+    },
+    "연결 중" : {
+
+    },
+    "연결 중단하기" : {
+
     },
     "연결 취소하기" : {
       "localizations" : {
@@ -650,14 +713,18 @@
       }
     },
     "연결에 실패했습니다" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Connection failed"
+            "value" : "Failed to Connect"
           }
         }
       }
+    },
+    "연결에 실패했어요." : {
+
     },
     "연결을 종료합니다." : {
       "localizations" : {
@@ -690,6 +757,7 @@
       }
     },
     "연결하기" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -700,11 +768,12 @@
       }
     },
     "연결하던 중 오류가 발생했습니다. 문제가 반복되면 퀸덤 팀에 문의해주세요. %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "An error occurred during the connection. If the problem persists, please contact the Queendom team. %@"
+            "value" : "Something went wrong while connecting. If this keeps happening, please contact the Queendom team. %@"
           }
         }
       }
@@ -746,11 +815,12 @@
       }
     },
     "이 화면이 뜨면 등록 완료에요.\n창을 닫으면 연결 준비 완료!" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "When this screen appears,\nclose the window and connect!"
+            "value" : "When you see this screen, registration is complete.\nClose the window to get ready to connect!"
           }
         }
       }
@@ -775,6 +845,9 @@
         }
       }
     },
+    "이해했어요" : {
+
+    },
     "자주하는 질문" : {
       "localizations" : {
         "en" : {
@@ -786,16 +859,18 @@
       }
     },
     "작가 가이드" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Guide for photograph"
+            "value" : "Photographer Guide"
           }
         }
       }
     },
     "잘못된 범위" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -816,6 +891,7 @@
       }
     },
     "주변 기기 찾기" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -866,11 +942,12 @@
       }
     },
     "찍자 이용 가이드" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "How to use ZZikZZa"
+            "value" : "ZZikZZa User Guide"
           }
         }
       }
@@ -936,14 +1013,18 @@
       }
     },
     "창을 닫으면" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "close the window"
+            "value" : "Close the Window"
           }
         }
       }
+    },
+    "창이 자동으로 닫히지 않아요.\n페어링이 완료되었다면, 직접 창을 닫아주세요." : {
+
     },
     "촬영" : {
       "localizations" : {
@@ -955,6 +1036,9 @@
         }
       }
     },
+    "촬영 모드" : {
+
+    },
     "촬영으로 시작하기" : {
       "localizations" : {
         "en" : {
@@ -964,6 +1048,9 @@
           }
         }
       }
+    },
+    "촬영자 기기에 나오는 코드를 모델 기기에 입력해주세요." : {
+
     },
     "촬영자 기준으로 적용되는 설정이에요" : {
       "localizations" : {
@@ -994,6 +1081,12 @@
           }
         }
       }
+    },
+    "최근 연결 기록이 없어요." : {
+
+    },
+    "최근 연결: %@" : {
+
     },
     "취소" : {
       "localizations" : {
@@ -1036,11 +1129,12 @@
       }
     },
     "친구가 알려주는\n6자리 코드를 입력해주세요." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Enter the 6-digit code\nprovided by your friend."
+            "value" : "Enter the 6-digit code\nyour friend gives you."
           }
         }
       }
@@ -1126,21 +1220,23 @@
       }
     },
     "친구와 연결하기" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Connect with your friend"
+            "value" : "Connect with a Friend"
           }
         }
       }
     },
     "친구와 연결하기 위해 먼저\n‘주변 기기 찾기’를 통해 친구를 등록해주세요." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Please register your friend first\nvia ‘Find Nearby Devices’ to connect with them."
+            "value" : "To connect with a friend, register them first\nusing “Find Nearby Devices.”"
           }
         }
       }
@@ -1165,27 +1261,36 @@
         }
       }
     },
+    "친구의 기기와 연결해주세요" : {
+
+    },
     "친구의 화면을 함께 볼 수 있어요" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "View your friend’s screen"
+            "value" : "View Your Friend’s Screen"
           }
         }
       }
     },
+    "코드 번호를 입력해주세요." : {
+
+    },
     "코드를 알려주세요." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "share it with your freind."
+            "value" : "Share the code with your friend."
           }
         }
       }
     },
     "코드를 입력" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1196,21 +1301,39 @@
       }
     },
     "페어링 방법이 궁금하신가요?" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wondering how to pair devices?"
+            "value" : "Need help pairing?"
+          }
+        }
+      }
+    },
+    "페어링을 시작할게요" : {
+
+    },
+    "페어링이 처음이라면?" : {
+
+    },
+    "펜" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pen"
           }
         }
       }
     },
     "페어링을 요청" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "pair"
+            "value" : "Request Pairing"
           }
         }
       }
@@ -1225,15 +1348,11 @@
         }
       }
     },
-    "펜" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pen"
-          }
-        }
-      }
+    "페어링을 통해 기기를 등록해야 연결할 수 있어요.\n먼저 친구의 기기와 페어링해 주세요." : {
+
+    },
+    "페어링이 끝나면 직접 창을 닫아주세요." : {
+
     },
     "펜으로 가이드를 그립니다." : {
       "localizations" : {
@@ -1306,21 +1425,23 @@
       }
     },
     "현재 **모델 모드** 입니다." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Model** mode"
+            "value" : "You’re currently in **Model Mode**."
           }
         }
       }
     },
     "현재 **촬영 모드** 입니다." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Photograph** mode"
+            "value" : "You’re currently in **Photographer Mode**."
           }
         }
       }
