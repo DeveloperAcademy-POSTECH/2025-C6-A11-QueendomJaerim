@@ -133,11 +133,10 @@ extension MakeConnectionViewV2: View {
       }
     }
     .sheet(isPresented: $isShowingPairingHelp) {
-      Color.clear
-        .presentationDetents([.medium])
-        .accessibilityElement()
-        .accessibilityLabel("페어링 도움말")
-        .accessibilityIdentifier("make-connection-v2.pairing-help-sheet")
+      PairingGuideSheetView(role: role) {
+        isShowingPairingHelp = false
+      }
+      .pairingSheetPresentationStyle()
     }
   }
 }
