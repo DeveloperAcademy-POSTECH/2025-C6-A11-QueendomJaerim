@@ -2,9 +2,48 @@
 
 ## 현재 상태
 
-**설정·Secret 등록·정적 검증은 완료했고, 실제 main Archive와 TestFlight 업로드는 다음 릴리즈에서 처음 검증한다.**
+**Archive, 코드 서명, App Store Connect 인증, 애플의 IPA 검사까지 실제 실행으로 검증했다. 실제 파일 전송만 아직 확인되지 않았다.**
 
-이 문서는 실제 업로드가 아직 성공했다고 주장하지 않는다. 첫 실행 결과와 Actions 링크는 성공 확인 후 이 문서에 추가한다.
+| 단계 | 검증 |
+| --- | --- |
+| 의존성 설치, 컴파일 | 확인 |
+| 코드 서명, IPA 생성 | 확인 |
+| App Store Connect 인증 (API Key 3종) | 확인 |
+| 애플의 IPA 형식 검사 | 확인 |
+| 실제 파일 전송 및 빌드 등록 | 미확인 |
+
+마지막 항목을 검증하지 않은 이유는 **업로드가 빌드 번호를 소모하기 때문**이다. v1.1.11은 이 수정이 main에 반영되기 전이라 Xcode 수동 업로드로 배포해야 하고, 거기에 빌드 24가 필요하다. 검증으로 24를 써버리면 수동 배포에 쓸 번호가 없어진다. 그래서 번호를 소모하지 않는 `altool --validate-app`까지만 수행했다. 방법은 [CI 사전 검증](ci-verification.md)에 정리했다.
+
+`Gemfile` 수정이 다음 `/start` 릴리즈로 main에 반영되기 전까지 `/testflight`는 동작하지 않는다. v1.1.11은 기존 Xcode 수동 업로드로 배포한다. 자동화의 첫 실제 업로드는 v1.1.12에서 시도한다.
+
+### 1차 도입 기록
+
+PR #467이 실행 검증 없이 머지되어, 첫 실제 실행(v1.1.11, 이슈 #468)에서 문제 7가지가 한꺼번에 드러났다. 이후 검증 브랜치에서 `workflow_dispatch`로 8회 실행하며 순차적으로 해결했다.
+
+관련 이슈는 #470(댓글 누락)과 #471(Archive 실패)이다. 재발 방지를 위한 사전 검증 절차는 [CI 사전 검증](ci-verification.md)에 정리했다.
+
+## 설정별 존재 이유
+
+아래 설정은 모두 실제 실패 로그를 보고 추가한 것이다. 근거 없이 제거하면 다시 깨진다.
+
+| 설정 | 파일 | 없으면 생기는 일 |
+| --- | --- | --- |
+| `GH_REPO` | `testflight.yml` | 댓글 단계가 Checkout보다 먼저 실행되어 `gh`가 저장소를 찾지 못한다. 시작·성공·실패 댓글이 모두 실패한다. |
+| `Select Xcode` 단계 | `testflight.yml` | 러너 기본 Xcode(16.4)가 선택되어 프로젝트 배포 타겟 26.0을 지원하지 못한다. |
+| `-skipPackagePluginValidation` | `testflight.yml` | SwiftLint 빌드 툴 플러그인의 신뢰 승인이 CI에 없어 Archive가 실패한다. |
+| `GYM_SKIP_CODESIGNING` | `testflight.yml` | Archive 시점 서명 설정이 SPM 패키지 타겟에까지 전역 적용되어 실패한다. |
+| `GYM_EXPORT_TEAM_ID` | `testflight.yml` | export 시 팀 식별자가 없어 서명하지 못한다. |
+| `FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT` | `testflight.yml` | SPM 패키지가 16개라 빌드 설정 조회가 기본 3초 안에 끝나지 않는다. |
+| `gem "multi_json"` | `Gemfile` | fastlane이 로딩 단계에서 `Gem::LoadError`로 실패한다. 어느 gemspec에도 선언되지 않은 soft dependency라 락을 새로 만들어도 들어오지 않는다. |
+
+서명은 Archive가 아니라 export 단계에서 이뤄진다. `Fastfile`의 `export_options`에 `provisioningProfiles`가 있으면 gym이 `signingStyle: manual`을 자동으로 넣고, `teamID`는 `GYM_EXPORT_TEAM_ID`에서 가져온다. 따라서 `Fastfile`에 이 두 값을 직접 적을 필요는 없다.
+
+### 알아둘 제약
+
+- `QueenCamAppStore` 프로파일 만료일은 **2026-10-19**다. 그 전에 갱신하고 `BUILD_PROVISION_PROFILE_BASE64`를 다시 등록해야 한다.
+- 이 팀에는 폐기된 Apple Distribution 인증서가 함께 존재한다. 현재 시크릿에 든 인증서는 유효함을 실행으로 확인했다. 유효한 인증서의 SHA-1은 `8B53BBBE8DF73E8F70C8A24D5C902D8B079AD220`이며 `QueenCamAppStore`와 `QueenCamDis` 모두 이 인증서를 포함한다.
+- 프로젝트 Release 구성이 지정하는 `QueenCamDis`는 등록 기기가 포함된 Ad Hoc 프로파일이다. 로컬 Xcode는 Organizer가 배포 시점에 App Store용으로 재서명해 주지만 CI에는 그 단계가 없다.
+- 파일마다 읽어오는 브랜치가 다르다. 댓글 이벤트는 기본 브랜치(develop)의 `testflight.yml`을 실행하지만, `Gemfile`·`Fastfile`·Xcode 프로젝트는 Checkout이 가져오는 main 기준이다. 워크플로 수정은 develop 머지로 즉시 반영되지만, 나머지는 다음 `/start` 릴리즈로 main에 반영되기 전까지 적용되지 않는다.
 
 ## 자동화 범위
 
@@ -94,15 +133,26 @@ GitHub Actions는 실행 때마다 임시 macOS에 인증서와 `QueenCamAppStor
 
 ## 실패 시 대응
 
-| 관찰한 상황 | 먼저 확인할 것 |
-| --- | --- |
-| job이 건너뛰어짐 | 이슈 제목, 댓글이 정확히 `/testflight`인지, 작성자 권한, main 반영 여부 |
-| 서명 실패 | 인증서·프로파일 Secret 이름, 만료일, `QueenCamAppStore` 매핑 |
-| Apple 인증 실패 | API Key 관련 3개 Secret 이름과 App Store Connect API Key 상태 |
-| 재실행이 필요한 상황 | App Store Connect에 같은 빌드 번호가 이미 올라갔는지 먼저 확인 |
-| 배포가 급함 | 기존 Xcode 수동 Archive·TestFlight 업로드를 사용 |
+로그의 에러 문구로 아래 표를 찾는다.
 
-같은 버전·빌드 번호는 다시 업로드할 수 없으므로, 실패로 보이더라도 App Store Connect에서 업로드 여부를 먼저 확인한다.
+| 로그 문구 | 원인과 대처 |
+| --- | --- |
+| `failed to run git: fatal: not a git repository` | 댓글 단계에 `GH_REPO`가 없다. job 레벨 env를 확인한다. |
+| `multi_json is not part of the bundle` | main의 `Gemfile`에 `multi_json` 선언이 없다. develop에는 있어도 Checkout은 main을 가져온다. |
+| `Validate plug-in "SwiftLintBuildToolPlugin"` | `GYM_XCARGS`의 `-skipPackagePluginValidation`이 빠졌다. |
+| `xcodebuild -showBuildSettings timed out` | `FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT`이 빠졌거나 값이 낮다. |
+| `does not support provisioning profiles` | 서명 설정이 xcargs로 전역 적용되고 있다. `GYM_SKIP_CODESIGNING`으로 Archive 시점 서명을 끈다. |
+| `deployment target ... but the range of supported deployment target versions is` | 러너 Xcode가 프로젝트 배포 타겟보다 낮다. `Select Xcode` 단계 로그에서 어떤 버전이 선택됐는지 확인한다. 러너 이미지에 필요한 Xcode가 아직 없으면 수동 업로드를 사용한다. |
+| job이 건너뛰어짐 | 이슈 제목, 댓글이 정확히 `/testflight`인지, 작성자 권한을 확인한다. |
+| 이슈에 아무 댓글도 남지 않음 | `GH_REPO` 설정을 확인한다. |
+| 서명 실패 | 인증서·프로파일 Secret과 만료일을 확인한다. 폐기된 인증서가 등록됐을 수 있다. |
+| Apple 인증 실패 | App Store Connect API Key 관련 3개 Secret과 키 상태를 확인한다. |
+| 재실행이 필요한 상황 | App Store Connect에 같은 빌드 번호가 이미 올라갔는지 먼저 확인한다. |
+| 배포가 급함 | 기존 Xcode 수동 Archive·TestFlight 업로드를 사용한다. |
+
+같은 버전·빌드 번호는 다시 업로드할 수 없으므로, 실패로 보이더라도 App Store Connect에서 업로드 여부를 먼저 확인한다. 다만 Archive 단계 실패는 애플 서버에 아무것도 보내지 않으므로 빌드 번호를 소모하지 않는다.
+
+워크플로를 고칠 때는 [CI 사전 검증](ci-verification.md) 절차를 따른다.
 
 ## 이후 방향
 

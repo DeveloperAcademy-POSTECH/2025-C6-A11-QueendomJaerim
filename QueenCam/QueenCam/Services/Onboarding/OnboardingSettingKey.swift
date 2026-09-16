@@ -10,6 +10,7 @@ import Foundation
 enum OnboardingSettingKey: String, CaseIterable {
   case hasShownPhotographerOnboarding
   case hasShownModelOnboarding
+  case lastShownReleaseNoteVersion
 
   var valueType: Any.Type {
     switch self {
@@ -17,6 +18,8 @@ enum OnboardingSettingKey: String, CaseIterable {
       return Bool.self
     case .hasShownModelOnboarding:
       return Bool.self
+    case .lastShownReleaseNoteVersion:
+      return Int.self
     }
   }
 
@@ -26,6 +29,8 @@ enum OnboardingSettingKey: String, CaseIterable {
       return false
     case .hasShownModelOnboarding:
       return false
+    case .lastShownReleaseNoteVersion:
+      return 0
     }
   }
 

@@ -39,6 +39,10 @@ struct MainView: View {
 
   @State private var thumbsUpViewModel = ThumbsUpViewModel()
 
+  @State private var releaseNoteViewModel = ReleaseNoteViewModel(
+    onboardingSettingService: DependencyContainer.defaultContainer.onboardingSettingService
+  )
+
   var body: some View {
     CameraView(
       cameraViewModel: cameraViewModel,
@@ -48,7 +52,8 @@ struct MainView: View {
       referenceViewModel: referenceViewModel,
       penViewModel: penViewModel,
       frameViewModel: frameViewModel,
-      thumbsUpViewModel: thumbsUpViewModel
+      thumbsUpViewModel: thumbsUpViewModel,
+      releaseNoteViewModel: releaseNoteViewModel
     )
     .dynamicTypeSize(.medium) // FIXME: Dynamic Type 정책 결정 후 수정
     #if DEBUG

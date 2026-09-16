@@ -29,6 +29,9 @@ struct CameraView {
   @State private var isShowConnectionView: Bool = false
 
   @State private var isShowWifiAwareUnsupportedAlert: Bool = false
+
+  /// 릴리즈 노트를 닫은 뒤 설정 화면으로 이동할지 여부
+  @State private var isOpeningSettingsFromReleaseNote: Bool = false
   @State private var navigationRouter = NavigationRouter()
 
   @State var isReferenceLarge: Bool = false  // 레퍼런스 확대 축소 프로퍼티
@@ -43,6 +46,7 @@ struct CameraView {
   let penViewModel: PenViewModel
   let frameViewModel: FrameViewModel
   let thumbsUpViewModel: ThumbsUpViewModel
+  let releaseNoteViewModel: ReleaseNoteViewModel
 }
 
 extension CameraView {
@@ -111,6 +115,16 @@ extension CameraView {
 
   private var isAvailableWifiAware: Bool {
     WACapabilities.supportedFeatures.contains(.wifiAware)
+  }
+
+  private var releaseNoteItemBinding: Binding<ReleaseNote?> {
+    Binding(
+      get: { releaseNoteViewModel.releaseNoteItem },
+      set: { new in
+        guard new == nil else { return }
+        releaseNoteViewModel.closeReleaseNote()
+      }
+    )
   }
 }
 
@@ -254,7 +268,7 @@ extension CameraView: View {
 
         ToolbarItem(placement: .topBarTrailing) {
           Button("설정", systemImage: "gearshape") {
-            navigationRouter.push(.settings(.main(role: connectionViewModel.role)))
+            navigationRouter.push(.settings(.main(role: connectionViewModel.role, highlight: nil)))
           }
         }
       }
@@ -405,6 +419,25 @@ extension CameraView: View {
     }
     .sheet(isPresented: $isShowLogExportingSheet) {
       LogExportingView()
+    }
+    .fullScreenCover(item: releaseNoteItemBinding) {
+      // 릴리즈 노트가 완전히 내려간 뒤에 설정 화면으로 이동한다
+      guard isOpeningSettingsFromReleaseNote else { return }
+      isOpeningSettingsFromReleaseNote = false
+      navigationRouter.push(
+        .settings(.main(role: connectionViewModel.role, highlight: .saveGuidingOverlayImage))
+      )
+    } content: { releaseNote in
+      ReleaseNoteView(releaseNote: releaseNote) {
+        isOpeningSettingsFromReleaseNote = true
+        releaseNoteViewModel.closeReleaseNote()
+      } onClose: {
+        releaseNoteViewModel.closeReleaseNote()
+      }
+      .dynamicTypeSize(.medium)  // FIXME: Dynamic Type 정책 결정 후 수정
+    }
+    .onAppear {
+      releaseNoteViewModel.checkReleaseNote()
     }
     .task {
       await cameraViewModel.checkPermissions()

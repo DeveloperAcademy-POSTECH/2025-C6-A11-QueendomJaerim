@@ -32,6 +32,15 @@ final class OnboardingSettingsService: OnboardingSettingsServiceProtocol {
     }
   }
 
+  var lastShownReleaseNoteVersion: Int {
+    get {
+      OnboardingSettingKey.lastShownReleaseNoteVersion.getValue() ?? .zero
+    }
+    set {
+      OnboardingSettingKey.lastShownReleaseNoteVersion.setValue(newValue)
+    }
+  }
+
   func registerDefaultValues() {
     let defaultValues: [String: Any] = keys.reduce([:]) { partialResult, key in
       var copy = partialResult

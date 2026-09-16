@@ -140,7 +140,7 @@ extension MakeConnectionView {
 
       ToolbarItem(placement: .topBarTrailing) {
         Button("설정", systemImage: "gearshape") {
-          navigationRouter.push(.settings(.main(role: role)))
+          navigationRouter.push(.settings(.main(role: role, highlight: nil)))
         }
       }
     }

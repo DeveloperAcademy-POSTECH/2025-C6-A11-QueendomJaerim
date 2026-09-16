@@ -19,6 +19,9 @@ jobs:
       contents: read
       issues: write
     env:
+      # 댓글 단계는 Checkout 이전에도 실행되므로, gh가 저장소를 git remote로 추론하지 못한다.
+      # 저장소를 환경 변수로 고정해 Checkout 성공 여부와 무관하게 댓글이 남도록 한다.
+      GH_REPO: ${{ github.repository }}
       BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
       P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
       KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
@@ -39,9 +42,20 @@ jobs:
           - **Actions:** $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: main
+
+      # 러너 기본 Xcode는 프로젝트 배포 타겟(iOS 26)을 지원하지 않을 수 있다.
+      - name: Select Xcode
+        run: |
+          echo "사용 가능한 Xcode:"
+          ls -d /Applications/Xcode*.app
+          LATEST=$(ls -d /Applications/Xcode*.app | sort -V | tail -1)
+          echo "선택: $LATEST"
+          sudo xcode-select -s "$LATEST"
+          echo "DEVELOPER_DIR=$LATEST/Contents/Developer" >> "$GITHUB_ENV"
+          xcodebuild -version
 
       - name: Set up Ruby and Fastlane
         uses: ruby/setup-ruby@v1
@@ -65,10 +79,24 @@ jobs:
           security list-keychain -d user -s "$KEYCHAIN_PATH"
           security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
 
-          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
-          cp "$PROVISIONING_PROFILE_PATH" "$HOME/Library/MobileDevice/Provisioning Profiles"
+          # Xcode 16부터 프로비저닝 프로파일 경로가 바뀌었다.
+          PROFILE_DIR="$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles"
+          mkdir -p "$PROFILE_DIR"
+          cp "$PROVISIONING_PROFILE_PATH" "$PROFILE_DIR"
 
       - name: Archive and upload to TestFlight
+        env:
+          # SwiftLint 빌드 툴 플러그인은 Xcode에서 사용자 신뢰 승인이 필요한데
+          # CI에는 그 상태가 없어 Archive가 실패한다.
+          GYM_XCARGS: -skipPackagePluginValidation
+          # 프로젝트 Release 구성은 로컬 수동 배포용 QueenCamDis(Ad Hoc)를 가리키고
+          # CI에는 QueenCamAppStore만 설치된다. 서명 설정을 xcargs로 넘기면 SPM 패키지
+          # 타겟에까지 전역 적용되어 실패하므로, Archive는 서명 없이 수행하고
+          # export 단계에서 Fastfile의 export_options로 서명한다.
+          GYM_SKIP_CODESIGNING: "true"
+          GYM_EXPORT_TEAM_ID: D22ZM93S77
+          # SPM 패키지가 16개라 xcodebuild -showBuildSettings가 기본 3초 안에 끝나지 않는다.
+          FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT: "180"
         run: bundle exec fastlane ios testflight
 
       - name: Post TestFlight Success Comment
@@ -98,3 +126,4 @@ jobs:
         run: |
           security delete-keychain "$RUNNER_TEMP/app-signing.keychain-db" || true
           rm -f "$RUNNER_TEMP/build_certificate.p12" "$RUNNER_TEMP/QueenCamAppStore.mobileprovision"
+          rm -f "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles/QueenCamAppStore.mobileprovision"

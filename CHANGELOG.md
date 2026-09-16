@@ -19,6 +19,29 @@
 
 ### Security
 
+## [1.1.12] - 2026-09-16
+
+### Added
+
+- 앱 업데이트 후 첫 실행 시 새 기능을 안내하는 릴리즈 노트 화면 추가
+- CI 사전 검증 절차와 CD 작업 기준 문서 추가 (빌드 번호를 소모하지 않는 업로드 경로 검증 방법 포함)
+
+### Changed
+
+- `actions/checkout`을 v7로 상향해 Node 20 deprecation 경고 제거
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+- `/testflight` 워크플로의 시작·성공·실패 댓글이 Checkout 이전에 저장소를 찾지 못해 실패하던 문제 수정
+- `/testflight` Archive 실패 수정: fastlane 의존성 `multi_json` 선언, SwiftLint 플러그인 검증 건너뛰기, 빌드 설정 조회 타임아웃 상향, Archive 시점 서명을 export 단계로 이동, 러너 Xcode 선택 단계 추가
+- 프로비저닝 프로파일을 Xcode 16 이후 경로에 설치하도록 수정
+
+### Security
+
 ## [1.1.11] - 2026-09-01
 
 ### Added
@@ -488,7 +511,8 @@
 - Wi-Fi Aware 연결 후, 라이브 포토 촬영 시 앱이 크래시되는 문제
 - 레퍼런스 삭제 후 재등록에 관한 상태 초기화 문제
 
-[Unreleased]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.11...HEAD
+[Unreleased]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.12...HEAD
+[1.1.12]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.11...v1.1.12
 [1.1.11]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.10...v1.1.11
 [1.1.10]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.9...v1.1.10
 [1.1.9]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.8...v1.1.9

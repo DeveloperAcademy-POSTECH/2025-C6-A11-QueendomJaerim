@@ -13,8 +13,8 @@ struct SettingsRouteView: View {
 
   var body: some View {
     switch currentRoute {
-    case let .main(role):
-      SettingsMainView(navigationRouter: navigationRouter, role: role)
+    case let .main(role, highlight):
+      SettingsMainView(navigationRouter: navigationRouter, role: role, highlight: highlight)
     case .faq:
       FAQView()
     }
@@ -23,7 +23,7 @@ struct SettingsRouteView: View {
 
 #Preview {
   SettingsRouteView(
-    currentRoute: .main(role: .photographer),
+    currentRoute: .main(role: .photographer, highlight: nil),
     navigationRouter: NavigationRouter()
   )
 }
