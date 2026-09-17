@@ -18,6 +18,14 @@ platform :ios do
       clean: true
     )
 
+    # 설정 파일이 번들에 실제로 들어갔는지 업로드 전에 확인한다.
+    # 빠진 채로 올라가면 앱이 실행 즉시 크래시하고, 그 빌드 번호는 다시 쓸 수 없다.
+    ipa_path = lane_context[SharedValues::IPA_OUTPUT_PATH]
+    bundled = sh("unzip -Z1 '#{ipa_path}'", log: false).split("\n")
+    unless bundled.any? { |entry| entry.end_with?("/GoogleService-Info.plist") }
+      UI.user_error!("IPA에 GoogleService-Info.plist가 없습니다. 업로드를 중단합니다.")
+    end
+
     api_key = app_store_connect_api_key(
       key_id: ENV.fetch("APP_STORE_CONNECT_KEY_ID"),
       issuer_id: ENV.fetch("APP_STORE_CONNECT_ISSUER_ID"),
