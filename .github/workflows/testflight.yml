@@ -1,14 +1,28 @@
 name: TestFlight
 
+# 실행 목록에서 이 실행이 시험이었는지 실제 업로드였는지 한 줄로 보이게 한다.
+run-name: >-
+  TestFlight · ${{ github.event_name == 'workflow_dispatch'
+    && format('{0} · {1}', inputs.mode, github.ref_name)
+    || '업로드 · main' }}
+
 on:
   workflow_dispatch:
+    inputs:
+      mode:
+        description: "검증만 = Archive와 번들 검사까지 (애플에 전송하지 않음). 업로드 = TestFlight 전송까지"
+        type: choice
+        default: 검증만
+        options:
+          - 검증만
+          - 업로드
   issue_comment:
     types: [created]
 
 jobs:
   archive-and-upload:
     if: |
-      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+      github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'issue_comment' &&
         !github.event.issue.pull_request &&
         startsWith(github.event.issue.title, '🎤 [Release]') &&
@@ -45,7 +59,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
         with:
-          ref: main
+          # 댓글 실행은 배포 대상인 main을, 수동 실행은 시험하려는 브랜치를 가져온다.
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.ref || 'main' }}
 
       # GoogleService-Info.plist는 .gitignore 대상이라 러너의 체크아웃에는 없다.
       # 없는 채로 Archive하면 FirebaseApp.configure()가 실패해 실행 즉시 죽는 앱이 만들어진다.
@@ -112,7 +127,12 @@ jobs:
           GYM_EXPORT_TEAM_ID: D22ZM93S77
           # SPM 패키지가 16개라 xcodebuild -showBuildSettings가 기본 3초 안에 끝나지 않는다.
           FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT: "180"
-        run: bundle exec fastlane ios testflight
+        run: |
+          if [ "${{ inputs.mode }}" = "검증만" ]; then
+            bundle exec fastlane ios verify
+          else
+            bundle exec fastlane ios testflight
+          fi
 
       - name: Post TestFlight Success Comment
         if: success() && github.event_name == 'issue_comment'
