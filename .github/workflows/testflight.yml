@@ -1,14 +1,28 @@
 name: TestFlight
 
+# 실행 목록에서 이 실행이 시험이었는지 실제 업로드였는지 한 줄로 보이게 한다.
+run-name: >-
+  TestFlight · ${{ github.event_name == 'workflow_dispatch'
+    && format('{0} · {1}', inputs.mode, github.ref_name)
+    || '업로드 · main' }}
+
 on:
   workflow_dispatch:
+    inputs:
+      mode:
+        description: "검증만 = Archive와 번들 검사까지 (애플에 전송하지 않음). 업로드 = TestFlight 전송까지"
+        type: choice
+        default: 검증만
+        options:
+          - 검증만
+          - 업로드
   issue_comment:
     types: [created]
 
 jobs:
   archive-and-upload:
     if: |
-      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+      github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'issue_comment' &&
         !github.event.issue.pull_request &&
         startsWith(github.event.issue.title, '🎤 [Release]') &&
@@ -29,6 +43,7 @@ jobs:
       APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
       APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
       APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+      GOOGLE_SERVICE_INFO_PLIST_BASE64: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST_BASE64 }}
 
     steps:
       - name: Post TestFlight Start Comment
@@ -44,7 +59,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
         with:
-          ref: main
+          # 댓글 실행은 배포 대상인 main을, 수동 실행은 시험하려는 브랜치를 가져온다.
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.ref || 'main' }}
+
+      # GoogleService-Info.plist는 .gitignore 대상이라 러너의 체크아웃에는 없다.
+      # 없는 채로 Archive하면 FirebaseApp.configure()가 실패해 실행 즉시 죽는 앱이 만들어진다.
+      # 프로젝트가 동기화 그룹을 쓰므로 제자리에 쓰기만 하면 번들에 자동 포함된다.
+      - name: Restore Firebase config
+        run: |
+          if [ -z "$GOOGLE_SERVICE_INFO_PLIST_BASE64" ]; then
+            echo "::error::GOOGLE_SERVICE_INFO_PLIST_BASE64 시크릿이 비어 있습니다. 그대로 빌드하면 실행 즉시 크래시하는 앱이 올라갑니다."
+            exit 1
+          fi
+
+          PLIST_PATH="QueenCam/QueenCam/GoogleService-Info.plist"
+          echo -n "$GOOGLE_SERVICE_INFO_PLIST_BASE64" | base64 -D > "$PLIST_PATH"
+          plutil -lint "$PLIST_PATH"
 
       # 러너 기본 Xcode는 프로젝트 배포 타겟(iOS 26)을 지원하지 않을 수 있다.
       - name: Select Xcode
@@ -97,7 +127,12 @@ jobs:
           GYM_EXPORT_TEAM_ID: D22ZM93S77
           # SPM 패키지가 16개라 xcodebuild -showBuildSettings가 기본 3초 안에 끝나지 않는다.
           FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT: "180"
-        run: bundle exec fastlane ios testflight
+        run: |
+          if [ "${{ inputs.mode }}" = "검증만" ]; then
+            bundle exec fastlane ios verify
+          else
+            bundle exec fastlane ios testflight
+          fi
 
       - name: Post TestFlight Success Comment
         if: success() && github.event_name == 'issue_comment'
@@ -127,3 +162,4 @@ jobs:
           security delete-keychain "$RUNNER_TEMP/app-signing.keychain-db" || true
           rm -f "$RUNNER_TEMP/build_certificate.p12" "$RUNNER_TEMP/QueenCamAppStore.mobileprovision"
           rm -f "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles/QueenCamAppStore.mobileprovision"
+          rm -f QueenCam/QueenCam/GoogleService-Info.plist
