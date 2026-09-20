@@ -1,6 +1,5 @@
 name: TestFlight
 
-# 실행 목록에서 이 실행이 시험이었는지 실제 업로드였는지 한 줄로 보이게 한다.
 run-name: >-
   TestFlight · ${{ github.event_name == 'workflow_dispatch'
     && format('{0} · {1}', inputs.mode, github.ref_name)
@@ -33,13 +32,13 @@ jobs:
       contents: read
       issues: write
     env:
-      # 댓글 단계는 Checkout 이전에도 실행되므로, gh가 저장소를 git remote로 추론하지 못한다.
-      # 저장소를 환경 변수로 고정해 Checkout 성공 여부와 무관하게 댓글이 남도록 한다.
+      # 댓글 단계는 Checkout 이전에 실행되어 gh가 저장소를 추론하지 못한다.
       GH_REPO: ${{ github.repository }}
       BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
       P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
       KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
       BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}
+      BUILD_PROVISION_PROFILE_ADHOC_BASE64: ${{ secrets.BUILD_PROVISION_PROFILE_ADHOC_BASE64 }}
       APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
       APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
       APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
@@ -62,9 +61,8 @@ jobs:
           # 댓글 실행은 배포 대상인 main을, 수동 실행은 시험하려는 브랜치를 가져온다.
           ref: ${{ github.event_name == 'workflow_dispatch' && github.ref || 'main' }}
 
-      # GoogleService-Info.plist는 .gitignore 대상이라 러너의 체크아웃에는 없다.
-      # 없는 채로 Archive하면 FirebaseApp.configure()가 실패해 실행 즉시 죽는 앱이 만들어진다.
-      # 프로젝트가 동기화 그룹을 쓰므로 제자리에 쓰기만 하면 번들에 자동 포함된다.
+      # 저장소에 없는 파일이라, 빠지면 FirebaseApp.configure()에서 실행 즉시 죽는다.
+      # 동기화 그룹이라 제자리에 쓰기만 하면 번들에 자동 포함된다.
       - name: Restore Firebase config
         run: |
           if [ -z "$GOOGLE_SERVICE_INFO_PLIST_BASE64" ]; then
@@ -96,11 +94,13 @@ jobs:
       - name: Install signing assets
         run: |
           CERTIFICATE_PATH="$RUNNER_TEMP/build_certificate.p12"
-          PROVISIONING_PROFILE_PATH="$RUNNER_TEMP/QueenCamAppStore.mobileprovision"
+          APPSTORE_PROFILE_PATH="$RUNNER_TEMP/QueenCamAppStore.mobileprovision"
+          ADHOC_PROFILE_PATH="$RUNNER_TEMP/QueenCamDis.mobileprovision"
           KEYCHAIN_PATH="$RUNNER_TEMP/app-signing.keychain-db"
 
           echo -n "$BUILD_CERTIFICATE_BASE64" | base64 -D > "$CERTIFICATE_PATH"
-          echo -n "$BUILD_PROVISION_PROFILE_BASE64" | base64 -D > "$PROVISIONING_PROFILE_PATH"
+          echo -n "$BUILD_PROVISION_PROFILE_BASE64" | base64 -D > "$APPSTORE_PROFILE_PATH"
+          echo -n "$BUILD_PROVISION_PROFILE_ADHOC_BASE64" | base64 -D > "$ADHOC_PROFILE_PATH"
 
           security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
           security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
@@ -110,20 +110,18 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
 
           # Xcode 16부터 프로비저닝 프로파일 경로가 바뀌었다.
+          # 로컬과 같은 흐름을 재현하려면 둘 다 필요하다. 아카이브는 프로젝트 설정대로
+          # QueenCamDis로 서명하고, export에서 QueenCamAppStore로 재서명한다.
           PROFILE_DIR="$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles"
           mkdir -p "$PROFILE_DIR"
-          cp "$PROVISIONING_PROFILE_PATH" "$PROFILE_DIR"
+          cp "$APPSTORE_PROFILE_PATH" "$ADHOC_PROFILE_PATH" "$PROFILE_DIR"
 
       - name: Archive and upload to TestFlight
         env:
-          # SwiftLint 빌드 툴 플러그인은 Xcode에서 사용자 신뢰 승인이 필요한데
-          # CI에는 그 상태가 없어 Archive가 실패한다.
+          # SwiftLint 플러그인은 Xcode 신뢰 승인이 필요한데 CI에는 그 상태가 없다.
+          # 서명 설정은 여기 넣지 않는다. xcargs는 SPM 타겟에도 전역 적용되어 실패하고,
+          # 서명을 끄면 권한 처리 단계가 통째로 빠져 Wi-Fi Aware 권한이 앱에서 사라진다.
           GYM_XCARGS: -skipPackagePluginValidation
-          # 프로젝트 Release 구성은 로컬 수동 배포용 QueenCamDis(Ad Hoc)를 가리키고
-          # CI에는 QueenCamAppStore만 설치된다. 서명 설정을 xcargs로 넘기면 SPM 패키지
-          # 타겟에까지 전역 적용되어 실패하므로, Archive는 서명 없이 수행하고
-          # export 단계에서 Fastfile의 export_options로 서명한다.
-          GYM_SKIP_CODESIGNING: "true"
           GYM_EXPORT_TEAM_ID: D22ZM93S77
           # SPM 패키지가 16개라 xcodebuild -showBuildSettings가 기본 3초 안에 끝나지 않는다.
           FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT: "180"
@@ -160,6 +158,7 @@ jobs:
         if: always()
         run: |
           security delete-keychain "$RUNNER_TEMP/app-signing.keychain-db" || true
-          rm -f "$RUNNER_TEMP/build_certificate.p12" "$RUNNER_TEMP/QueenCamAppStore.mobileprovision"
-          rm -f "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles/QueenCamAppStore.mobileprovision"
+          rm -f "$RUNNER_TEMP/build_certificate.p12"
+          rm -f "$RUNNER_TEMP"/*.mobileprovision
+          rm -f "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles"/QueenCam*.mobileprovision
           rm -f QueenCam/QueenCam/GoogleService-Info.plist

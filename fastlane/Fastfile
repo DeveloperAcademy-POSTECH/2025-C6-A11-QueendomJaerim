@@ -1,3 +1,5 @@
+require "tmpdir"
+
 default_platform(:ios)
 
 platform :ios do
@@ -25,11 +27,8 @@ platform :ios do
     )
   end
 
-  # Archive한 뒤, 설정 파일이 번들에 실제로 들어갔는지 확인한다.
-  #
-  # GoogleService-Info.plist가 빠지면 앱이 FirebaseApp.configure()에서 실행 즉시
-  # 종료되는데, Archive 자체는 성공하므로 빌드 성공 여부만으로는 잡히지 않는다.
-  # 업로드가 끝나면 그 빌드 번호는 다시 쓸 수 없으므로 업로드 전에 확인한다.
+  # 설정 파일이 빠져도 Archive는 성공하고 앱만 실행 즉시 죽는다. 업로드한 빌드 번호는
+  # 다시 쓸 수 없으므로 업로드 전에 확인한다.
   private_lane :build_and_check do
     build_app(
       project: "QueenCam/QueenCam.xcodeproj",
@@ -54,5 +53,48 @@ platform :ios do
     end
 
     UI.success("GoogleService-Info.plist가 번들에 포함되었습니다.")
+
+    check_entitlements(ipa_path: ipa_path)
+  end
+
+  # 서명 없이 Archive하므로 권한 주입이 조용히 누락될 수 있다. 빠져도 빌드와 업로드는
+  # 성공하고 해당 기능만 동작하지 않아, 실기기에서 써보기 전에는 드러나지 않는다.
+  private_lane :check_entitlements do |options|
+    ipa_path = options[:ipa_path]
+    required = ["com.apple.developer.wifi-aware"]
+
+    Dir.mktmpdir do |dir|
+      sh("unzip -q -o '#{ipa_path}' -d '#{dir}'", log: false)
+      app = Dir.glob("#{dir}/Payload/*.app").first
+      UI.user_error!("IPA에서 .app을 찾지 못했습니다.") if app.nil?
+
+      entitlements = sh("codesign -d --entitlements :- '#{app}' 2>/dev/null || true", log: false)
+
+      missing = required.reject { |key| entitlements.include?(key) }
+      unless missing.empty?
+        UI.error("앱에 들어간 권한:\n#{entitlements}")
+        UI.user_error!("다음 권한이 앱에 없습니다: #{missing.join(', ')}. 업로드를 중단합니다.")
+      end
+
+      UI.success("필요한 권한이 모두 포함되었습니다: #{required.join(', ')}")
+
+      # 로컬 빌드와 달라질 수 있는 값을 한눈에 볼 수 있게 남긴다.
+      UI.message("── 빌드 산출물 점검 ──")
+      UI.message("권한 전체:\n#{entitlements}")
+      info = "#{app}/Info.plist"
+      %w[
+        CFBundleShortVersionString CFBundleVersion CFBundleIdentifier
+        MinimumOSVersion QueenCamCompatibleMinimumVersion VOCPageURL
+      ].each do |key|
+        value = sh("plutil -extract #{key} raw '#{info}' 2>/dev/null || echo '(없음)'", log: false).strip
+        UI.message("  #{key} = #{value}")
+      end
+      has_wa = sh("plutil -extract WiFiAwareServices xml1 -o - '#{info}' >/dev/null 2>&1 && echo yes || echo no", log: false).strip
+      UI.message("  WiFiAwareServices = #{has_wa}")
+      fonts = sh("ls '#{app}' | grep -c '\\.ttf$' || true", log: false).strip
+      UI.message("  번들 폰트 = #{fonts}개")
+      profile = sh("test -f '#{app}/embedded.mobileprovision' && security cms -D -i '#{app}/embedded.mobileprovision' 2>/dev/null | plutil -extract Name raw - 2>/dev/null || echo '(없음)'", log: false).strip
+      UI.message("  embedded 프로파일 = #{profile}")
+    end
   end
 end
