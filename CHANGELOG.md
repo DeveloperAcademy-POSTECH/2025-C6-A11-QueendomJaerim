@@ -9,6 +9,9 @@
 
 ### Added
 
+- 확인용 빌드 워크플로 `/qa` 추가. `🧪 [QA]` 이슈에 `/qa` 코멘트를 달면 develop을 Archive해 TestFlight에 올린다. 버전은 올리지 않고 빌드 번호만 증가시키므로, 릴리즈 절차를 밟지 않고도 디자이너·PM에게 확인을 요청할 수 있다
+- `🧪 [QA]` 이슈 템플릿 추가
+
 ### Changed
 
 ### Deprecated
