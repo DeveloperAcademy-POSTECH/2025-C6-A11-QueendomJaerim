@@ -36,6 +36,30 @@ struct ConnectionViewModelTests {
 
     #expect(receivedSecond)
   }
+
+  @Test("역할을 초기화하면 연결 시도와 선택 기기를 정리한다")
+  func resettingRoleStopsConnectionAndClearsSelectedDevice() async throws {
+    let networkService = FakeNetworkService()
+    let viewModel = ConnectionViewModel(
+      networkService: networkService,
+      notificationService: FakeNotificationService(),
+      pairedDeviceRegistry: FakePairedDeviceRegistry(devices: AsyncStream { _ in })
+    )
+    let device = makeExtendedDevice(id: 1001, pairingName: "테스트 기기").device
+
+    viewModel.selectRole(for: .photographer)
+    viewModel.connectButtonDidTap(for: device)
+    try await Task.sleep(for: .milliseconds(150))
+
+    #expect(viewModel.selectedPairedDevice == device)
+    let stopCallCountBeforeReset = networkService.stopCallCount
+
+    viewModel.selectRole(for: nil)
+
+    #expect(viewModel.role == nil)
+    #expect(viewModel.selectedPairedDevice == nil)
+    #expect(networkService.stopCallCount == stopCallCountBeforeReset + 1)
+  }
 }
 
 private final class FakePairedDeviceRegistry: WAPairedDeviceRegistryProtocol, @unchecked Sendable {
@@ -52,6 +76,7 @@ private final class FakeNetworkService: NetworkServiceProtocol {
   var mode: NetworkType?
   var networkState: NetworkState?
   var lastStopReason: String?
+  private(set) var stopCallCount = 0
 
   var deviceConnectionsPublisher: AnyPublisher<[WAPairedDevice: ConnectionDetail], Never> {
     Empty().eraseToAnyPublisher()
@@ -75,7 +100,9 @@ private final class FakeNetworkService: NetworkServiceProtocol {
 
   func run(for device: WAPairedDevice) {}
   func reconnect(for device: WAPairedDevice) {}
-  func stop(byUser: Bool, userReason: String?) {}
+  func stop(byUser: Bool, userReason: String?) {
+    stopCallCount += 1
+  }
   func disconnect() {}
   func send(for event: NetworkEvent) async {}
 }
