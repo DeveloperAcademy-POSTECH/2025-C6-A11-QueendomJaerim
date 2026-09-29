@@ -48,6 +48,16 @@ final class MakeConnectionViewV2Tests: XCTestCase {
     XCTAssertNotEqual(mountedView.snapshotData(), photographerSnapshot)
   }
 
+  func testNavigationCallbacksUpdateSpyState() {
+    let mountedView = mount(role: .photographer, scenario: .deviceList)
+
+    mountedView.makeConnectionView.backButtonDidTap()
+    XCTAssertEqual(mountedView.state.result, .backRequested)
+
+    mountedView.makeConnectionView.closeButtonDidTap()
+    XCTAssertEqual(mountedView.state.result, .closeRequested)
+  }
+
   func testConnectAndStopCallbacksUpdateSpyState() async throws {
     let mountedView = mount(role: .photographer, scenario: .deviceList)
     let device = try XCTUnwrap(mountedView.state.devices.first?.device)
@@ -129,6 +139,8 @@ private final class MountedMakeConnectionView {
       isConnected: state.isConnected,
       pairingButtonContent: AnyView(Color.clear),
       errorWasConsumeByUser: state.consumeError,
+      backButtonDidTap: state.goBack,
+      closeButtonDidTap: state.close,
       changeRoleButtonDidTap: state.changeRole,
       connectButtonDidTap: state.connect,
       stopConnectingButtonDidTap: state.stopConnecting
@@ -229,6 +241,8 @@ private final class MakeConnectionViewV2TestState {
     case connecting(UInt64)
     case stopped
     case errorConsumed
+    case backRequested
+    case closeRequested
   }
 
   var role: Role
@@ -250,6 +264,14 @@ private final class MakeConnectionViewV2TestState {
 
   func consumeError() {
     result = .errorConsumed
+  }
+
+  func goBack() {
+    result = .backRequested
+  }
+
+  func close() {
+    result = .closeRequested
   }
 
   func changeRole() {
@@ -371,6 +393,8 @@ private struct MakeConnectionViewV2TestHost: View {
       isConnected: state.isConnected,
       pairingButtonContent: AnyView(Color.clear),
       errorWasConsumeByUser: state.consumeError,
+      backButtonDidTap: state.goBack,
+      closeButtonDidTap: state.close,
       changeRoleButtonDidTap: state.changeRole,
       connectButtonDidTap: state.connect,
       stopConnectingButtonDidTap: state.stopConnecting
