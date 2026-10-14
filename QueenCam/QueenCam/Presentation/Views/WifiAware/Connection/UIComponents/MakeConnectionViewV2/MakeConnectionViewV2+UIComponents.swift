@@ -102,7 +102,7 @@ extension MakeConnectionViewV2 {
         Button {
           isShowingPairingHelp = true
         } label: {
-          Text("페어링이 처음이라면?")
+          Text("페어링이 어렵다면?")
             .typo(.m14)
             .underline()
             .foregroundStyle(.gray400)

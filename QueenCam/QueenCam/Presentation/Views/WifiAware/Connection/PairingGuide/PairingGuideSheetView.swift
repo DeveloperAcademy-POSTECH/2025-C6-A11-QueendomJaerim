@@ -9,30 +9,39 @@ import SwiftUI
 
 struct PairingGuideItem: Identifiable {
   let id: Int
-  let title: LocalizedStringKey
-  let description: LocalizedStringKey
-  let imageAsset: ImageResource?
+  let title: LocalizedStringResource
+  let description: LocalizedStringResource
 
-  static let defaults: [Self] = [
-    .init(
-      id: 1,
-      title: "양쪽에서 동시에 시도해주세요.",
-      description: "모델과 촬영, 양 방향에서 동시에 페어링을 시도해주세요.",
-      imageAsset: nil
-    ),
-    .init(
-      id: 2,
-      title: "코드 번호를 입력해주세요.",
-      description: "촬영자 기기에 나오는 코드를 모델 기기에 입력해주세요.",
-      imageAsset: nil
-    ),
-    .init(
-      id: 3,
-      title: "페어링이 끝나면 직접 창을 닫아주세요.",
-      description: "창이 자동으로 닫히지 않아요.\n페어링이 완료되었다면, 직접 창을 닫아주세요.",
-      imageAsset: nil
-    )
-  ]
+  static func defaults(for role: Role) -> [Self] {
+    let secondItem: Self = switch role {
+    case .photographer:
+      .init(
+        id: 2,
+        title: "모델에게 코드 번호를 알려주세요.",
+        description: "6자리 코드가 나오면 친구에게 코드를 알려주세요."
+      )
+    case .model:
+      .init(
+        id: 2,
+        title: "코드 번호를 입력해주세요.",
+        description: "촬영자 기기에 나오는 코드를 모델 기기에 입력해주세요."
+      )
+    }
+
+    return [
+      .init(
+        id: 1,
+        title: "양쪽에서 동시에 시도해주세요.",
+        description: "모델과 촬영, 양 방향에서 동시에 페어링을 시도해주세요."
+      ),
+      secondItem,
+      .init(
+        id: 3,
+        title: "페어링이 끝나면 직접 창을 닫아주세요.",
+        description: "창이 자동으로 닫히지 않아요.\n페어링이 완료되었다면, 직접 창을 닫아주세요."
+      )
+    ]
+  }
 }
 
 struct PairingGuideSheetView {
@@ -46,19 +55,14 @@ struct PairingGuideSheetView {
     green: 172 / 255,
     blue: 172 / 255
   )
-  let placeholderColor = Color(
-    red: 43 / 255,
-    green: 43 / 255,
-    blue: 43 / 255
-  )
 
   init(
     role: Role,
-    items: [PairingGuideItem] = PairingGuideItem.defaults,
+    items: [PairingGuideItem]? = nil,
     dismissAction: @escaping () -> Void
   ) {
     self.role = role
-    self.items = items
+    self.items = items ?? PairingGuideItem.defaults(for: role)
     self.dismissAction = dismissAction
   }
 
