@@ -15,6 +15,7 @@
 ### Changed
 
 - 설정 화면의 `실험실` 섹션 레이블을 `촬영`으로 변경
+- FAQ의 Instagram 문의 계정을 `@zzik.mg`로 변경하고 프로필 링크를 연결
 
 ### Deprecated
 

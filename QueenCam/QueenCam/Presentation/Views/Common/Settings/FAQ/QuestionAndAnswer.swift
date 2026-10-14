@@ -89,7 +89,7 @@ struct QuestionAndAnswer: Identifiable {
       question: "찍자를 사용하다가 발생하는 문제나 오류는 어디로 신고를 하면 되나요?",
       answer: """
         찍자 앱 설정 〉 의견 보내기에서 바로 알려주세요! 또는 아래 채널로도 문의할 수 있어요.
-        - Instagram DM: @zzikzza.kr
+        - Instagram DM: [@zzik.mg](https://www.instagram.com/zzik.mg/)
         - 이메일: zzikzza@gmail.com
         """
     )
