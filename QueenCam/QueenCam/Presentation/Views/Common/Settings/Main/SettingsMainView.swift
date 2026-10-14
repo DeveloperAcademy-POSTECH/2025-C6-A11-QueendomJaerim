@@ -57,7 +57,7 @@ extension SettingsMainView: View {
   var body: some View {
     ScrollView {
       VStack(alignment: .leading, spacing: 0) {
-        SettingSection(title: "실험실") {
+        SettingSection(title: "촬영") {
           SettingToggleSectionItem(
             title: "사진에 펜 가이드 함께 저장",
             supplementaryText: "촬영자 기준으로 적용되는 설정이에요",
