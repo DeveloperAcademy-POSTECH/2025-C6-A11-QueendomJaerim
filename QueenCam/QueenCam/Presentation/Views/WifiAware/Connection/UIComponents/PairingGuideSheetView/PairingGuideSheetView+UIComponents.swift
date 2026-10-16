@@ -36,7 +36,7 @@ extension PairingGuideSheetView {
       Spacer()
         .frame(height: 16)
 
-      Text("페어링을 시작할게요")
+      Text("페어링 가이드")
         .pairingGuideTypography(.pretendard(.bold, size: 23), lineHeight: 34.5)
         .foregroundStyle(.systemWhite)
         .accessibilityIdentifier("pairing-guide-sheet.title")
@@ -47,13 +47,12 @@ extension PairingGuideSheetView {
       Text("기기 간 연결을 위해, 먼저 페어링을 통해\n기기를 등록하는 과정이 필요해요.")
         .pairingGuideTypography(.pretendard(.medium, size: 14), lineHeight: 22)
         .foregroundStyle(introductionTextColor)
-        .fixedSize(horizontal: false, vertical: true)
         .accessibilityIdentifier("pairing-guide-sheet.subtitle")
 
       Spacer()
-        .frame(height: 24)
+        .frame(height: 22)
 
-      LazyVStack(spacing: 40) {
+      LazyVStack(alignment: .leading, spacing: 32) {
         ForEach(items) { item in
           guideItem(item)
         }
@@ -75,55 +74,29 @@ extension PairingGuideSheetView {
   }
 
   func guideItem(_ item: PairingGuideItem) -> some View {
-    VStack(alignment: .leading, spacing: 0) {
-      HStack(alignment: .top, spacing: 12) {
-        Text("\(item.id)")
-          .pairingGuideTypography(.pretendard(.bold, size: 14), lineHeight: 21)
-          .foregroundStyle(.gray950)
-          .frame(width: 23, height: 23)
-          .background(roleStepColor, in: RoundedRectangle(cornerRadius: 6))
-          .accessibilityIdentifier("pairing-guide-sheet.step-number-\(item.id)")
+    HStack(alignment: .top, spacing: 12) {
+      Text("\(item.id)")
+        .pairingGuideTypography(.pretendard(.bold, size: 14), lineHeight: 21)
+        .foregroundStyle(.gray950)
+        .frame(width: 23, height: 23)
+        .background(roleStepColor, in: RoundedRectangle(cornerRadius: 6))
+        .padding(.top, 2)
+        .accessibilityIdentifier("pairing-guide-sheet.step-number-\(item.id)")
 
+      VStack(alignment: .leading, spacing: 4) {
         Text(item.title)
           .pairingGuideTypography(.pretendard(.bold, size: 16), lineHeight: 24)
           .foregroundStyle(.systemWhite)
-          .fixedSize(horizontal: false, vertical: true)
           .accessibilityIdentifier("pairing-guide-sheet.step-title-\(item.id)")
+
+        Text(item.description)
+          .pairingGuideTypography(.pretendard(.medium, size: 13), lineHeight: 20)
+          .foregroundStyle(.gray500)
+          .accessibilityIdentifier("pairing-guide-sheet.step-description-\(item.id)")
       }
-
-      Text(item.description)
-        .pairingGuideTypography(.pretendard(.medium, size: 13), lineHeight: 20)
-        .foregroundStyle(.gray500)
-        .fixedSize(horizontal: false, vertical: true)
-        .padding(.top, 4)
-        .padding(.leading, 35)
-        .accessibilityIdentifier("pairing-guide-sheet.step-description-\(item.id)")
-
-      guideImage(for: item)
-        .padding(.top, 16)
     }
     .accessibilityElement(children: .contain)
     .accessibilityIdentifier("pairing-guide-sheet.step-\(item.id)")
-  }
-
-  @ViewBuilder
-  func guideImage(for item: PairingGuideItem) -> some View {
-    if let imageAsset = item.imageAsset {
-      Image(imageAsset)
-        .resizable()
-        .scaledToFill()
-        .frame(maxWidth: .infinity)
-        .aspectRatio(353 / 213, contentMode: .fit)
-        .clipShape(RoundedRectangle(cornerRadius: 20))
-        .accessibilityIdentifier("pairing-guide-sheet.step-image-\(item.id)")
-    } else {
-      RoundedRectangle(cornerRadius: 20)
-        .fill(placeholderColor)
-        .frame(maxWidth: .infinity)
-        .aspectRatio(353 / 213, contentMode: .fit)
-        .accessibilityLabel("가이드 이미지 준비 중")
-        .accessibilityIdentifier("pairing-guide-sheet.step-placeholder-\(item.id)")
-    }
   }
 
   var bottomControls: some View {
@@ -152,7 +125,10 @@ extension PairingGuideSheetView {
 
 private extension PairingGuideSheetView {
   var modeTitle: LocalizedStringKey {
-    "모델 모드"
+    switch role {
+    case .photographer: "촬영 모드"
+    case .model: "모델 모드"
+    }
   }
 
   var rolePrimaryColor: Color {

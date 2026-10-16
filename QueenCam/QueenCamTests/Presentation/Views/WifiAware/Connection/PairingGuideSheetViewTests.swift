@@ -27,11 +27,22 @@ final class PairingGuideSheetViewTests: XCTestCase {
     super.tearDown()
   }
 
-  func testDefaultItemsContainThreeOrderedPlaceholders() {
-    let items = PairingGuideItem.defaults
+  func testDefaultItemsContainThreeOrderedRoleSpecificSteps() {
+    let photographerItems = PairingGuideItem.defaults(for: .photographer)
+    let modelItems = PairingGuideItem.defaults(for: .model)
 
-    XCTAssertEqual(items.map(\.id), [1, 2, 3])
-    XCTAssertTrue(items.allSatisfy { $0.imageAsset == nil })
+    XCTAssertEqual(photographerItems.map(\.id), [1, 2, 3])
+    XCTAssertEqual(modelItems.map(\.id), [1, 2, 3])
+    XCTAssertEqual(String(localized: photographerItems[1].title), "모델에게 코드 번호를 알려주세요.")
+    XCTAssertEqual(
+      String(localized: photographerItems[1].description),
+      "6자리 코드가 나오면 친구에게 코드를 알려주세요."
+    )
+    XCTAssertEqual(String(localized: modelItems[1].title), "코드 번호를 입력해주세요.")
+    XCTAssertEqual(
+      String(localized: modelItems[1].description),
+      "촬영자 기기에 나오는 코드를 모델 기기에 입력해주세요."
+    )
   }
 
   func testCloseAndConfirmActionsInvokeCallback() {
@@ -55,11 +66,11 @@ final class PairingGuideSheetViewTests: XCTestCase {
     for scenario in scenarios {
       let mountedView = mount(
         role: scenario.role,
-        size: CGSize(width: 393, height: 1459)
+        size: CGSize(width: 393, height: 876)
       )
       await mountedView.waitForPresentation()
 
-      XCTAssertEqual(mountedView.screenSize, CGSize(width: 393, height: 1459))
+      XCTAssertEqual(mountedView.screenSize, CGSize(width: 393, height: 876))
       let image = mountedView.snapshotImage()
       XCTAssertEqual(image.size, mountedView.screenSize)
       if let data = image.pngData() {
@@ -67,7 +78,7 @@ final class PairingGuideSheetViewTests: XCTestCase {
       }
 
       let attachment = XCTAttachment(image: image)
-      attachment.name = "App-Pairing-Guide-\(scenario.attachmentName)-393x1459"
+      attachment.name = "App-Pairing-Guide-\(scenario.attachmentName)-393x876"
       attachment.lifetime = .keepAlways
       add(attachment)
     }
@@ -87,27 +98,9 @@ final class PairingGuideSheetViewTests: XCTestCase {
     XCTAssertEqual(presentationController.preferredCornerRadius, 38)
   }
 
-  func testPlaceholdersRenderWithFigmaDimensions() async throws {
-    let mountedView = mount(
-      role: .model,
-      size: CGSize(width: 393, height: 1024)
-    )
-    await mountedView.waitForPresentation()
-
-    let placeholderBounds = try XCTUnwrap(
-      mountedView.snapshotImage().pixelBounds(
-        matching: UIColor(red: 43 / 255, green: 43 / 255, blue: 43 / 255, alpha: 1),
-        tolerance: 4
-      )
-    )
-
-    XCTAssertEqual(placeholderBounds.width, 353, accuracy: 2)
-    XCTAssertGreaterThanOrEqual(placeholderBounds.height, 213)
-  }
-
   func testConfirmButtonRemainsInsideWindowBounds() async throws {
     for size in [
-      CGSize(width: 393, height: 852),
+      CGSize(width: 393, height: 876),
       CGSize(width: 1024, height: 1366)
     ] {
       let mountedView = mount(role: .photographer, size: size)
