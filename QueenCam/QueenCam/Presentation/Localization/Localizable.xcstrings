@@ -930,12 +930,12 @@
         }
       }
     },
-    "찍자 앱 설정 〉 의견 보내기에서 바로 알려주세요! 또는 아래 채널로도 문의할 수 있어요.\n- Instagram DM: @zzikzza.kr\n- 이메일: zzikzza@gmail.com" : {
+    "찍자 앱 설정 〉 의견 보내기에서 바로 알려주세요! 또는 아래 채널로도 문의할 수 있어요.\n- Instagram DM: [@zzik.mg](https://www.instagram.com/zzik.mg/)\n- 이메일: zzikzza@gmail.com" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "You can use the “Send Feedback” option on the ZZikZZa settings page.\nYou can also contact us via Instagram DM ([@zzikzza.kr](https://www.instagram.com/zzikzza.kr)) or email ([zzikzza@gmail.com](mailto:zzikzza@gmail.com))."
+            "value" : "You can use the “Send Feedback” option on the ZZikZZa settings page.\nYou can also contact us via Instagram DM ([@zzik.mg](https://www.instagram.com/zzik.mg/)) or email ([zzikzza@gmail.com](mailto:zzikzza@gmail.com))."
           }
         }
       }
