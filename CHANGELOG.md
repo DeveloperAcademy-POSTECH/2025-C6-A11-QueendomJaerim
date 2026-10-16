@@ -9,6 +9,20 @@
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [1.2.0] - 2026-10-16
+
+### Added
+
 - 확인용 빌드 워크플로 `/qa` 추가. `🧪 [QA]` 이슈에 `/qa` 코멘트를 달면 develop을 Archive해 TestFlight에 올린다. 버전은 올리지 않고 빌드 번호만 증가시키므로, 릴리즈 절차를 밟지 않고도 디자이너·PM에게 확인을 요청할 수 있다
 - `🧪 [QA]` 이슈 템플릿 추가
 
@@ -526,7 +540,8 @@
 - Wi-Fi Aware 연결 후, 라이브 포토 촬영 시 앱이 크래시되는 문제
 - 레퍼런스 삭제 후 재등록에 관한 상태 초기화 문제
 
-[Unreleased]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.12...HEAD
+[Unreleased]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.12...v1.2.0
 [1.1.12]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.11...v1.1.12
 [1.1.11]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.10...v1.1.11
 [1.1.10]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.9...v1.1.10
