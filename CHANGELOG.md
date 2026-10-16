@@ -19,20 +19,49 @@
 
 ### Security
 
+## [1.2.0] - 2026-10-16
+
+### Added
+
+- 확인용 빌드 워크플로 `/qa` 추가. `🧪 [QA]` 이슈에 `/qa` 코멘트를 달면 develop을 Archive해 TestFlight에 올린다. 버전은 올리지 않고 빌드 번호만 증가시키므로, 릴리즈 절차를 밟지 않고도 디자이너·PM에게 확인을 요청할 수 있다
+- `🧪 [QA]` 이슈 템플릿 추가
+
+### Changed
+
+- 설정 화면의 `실험실` 섹션 레이블을 `촬영`으로 변경
+- FAQ의 Instagram 문의 계정을 `@zzik.mg`로 변경하고 프로필 링크를 연결
+- 연결 화면의 페어링 도움말과 역할별 페어링 가이드를 최신 디자인에 맞게 변경하고 이미지 플레이스홀더 제거
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+- 친구 연결 화면의 뒤로가기 버튼이 역할과 연결 시도를 초기화하고 역할 선택 화면으로 이동하도록 수정
+
+### Security
+
 ## [1.1.12] - 2026-09-16
 
 ### Added
 
 - 앱 업데이트 후 첫 실행 시 새 기능을 안내하는 릴리즈 노트 화면 추가
 - CI 사전 검증 절차와 CD 작업 기준 문서 추가 (빌드 번호를 소모하지 않는 업로드 경로 검증 방법 포함)
+- 역할 선택 화면 V2의 상태·레이아웃·전환·현지화 UI 단위 테스트 추가
+- 친구 연결 화면 V2의 상태·콜백·레이아웃 UI 단위 테스트 추가
 
 ### Changed
 
 - `actions/checkout`을 v7로 상향해 Node 20 deprecation 경고 제거
+- 역할 선택 화면을 최신 Figma 디자인 기반 V2로 교체하고 기존 선택·전환 동작 유지
+- 친구 연결 화면을 최신 Figma 디자인 기반 V2로 교체하고 페어링·연결 동작 유지
 
 ### Deprecated
 
 ### Removed
+
+- 메인 앱 모듈의 친구 연결 화면 V2 UI 테스트 전용 진입점 제거
 
 ### Fixed
 
@@ -511,7 +540,8 @@
 - Wi-Fi Aware 연결 후, 라이브 포토 촬영 시 앱이 크래시되는 문제
 - 레퍼런스 삭제 후 재등록에 관한 상태 초기화 문제
 
-[Unreleased]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.12...HEAD
+[Unreleased]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.12...v1.2.0
 [1.1.12]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.11...v1.1.12
 [1.1.11]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.10...v1.1.11
 [1.1.10]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.9...v1.1.10

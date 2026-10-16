@@ -31,7 +31,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		3D2DCCAA2F1A100000000001 /* Shared.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config/Shared.xcconfig; sourceTree = "<group>"; };
+		3D2DCCAA2F1A100000000001 /* Config/Shared.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config/Shared.xcconfig; sourceTree = "<group>"; };
 		3D5E6BEE2E7D687300A0E03A /* QueenCam.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = QueenCam.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3D5E6BFB2E7D687300A0E03A /* QueenCamTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = QueenCamTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3D5E6C052E7D687300A0E03A /* QueenCamUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = QueenCamUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -102,7 +102,7 @@
 			isa = PBXGroup;
 			children = (
 				3D6CDA632E8E1DF1006C445A /* .swiftlint.yml */,
-				3D2DCCAA2F1A100000000001 /* Shared.xcconfig */,
+				3D2DCCAA2F1A100000000001 /* Config/Shared.xcconfig */,
 				3D5E6BF02E7D687300A0E03A /* QueenCam */,
 				3D5E6BFE2E7D687300A0E03A /* QueenCamTests */,
 				3D5E6C082E7D687300A0E03A /* QueenCamUITests */,
@@ -457,7 +457,7 @@
 		};
 		3D5E6C102E7D687300A0E03A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 3D2DCCAA2F1A100000000001 /* Shared.xcconfig */;
+			baseConfigurationReference = 3D2DCCAA2F1A100000000001 /* Config/Shared.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = ZZikZZa;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -465,7 +465,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 28;
+				CURRENT_PROJECT_VERSION = 31;
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = D22ZM93S77;
 				ENABLE_PREVIEWS = YES;
@@ -488,7 +488,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.12;
+				MARKETING_VERSION = 1.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.queendom.QueenCam;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -509,14 +509,14 @@
 		};
 		3D5E6C112E7D687300A0E03A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 3D2DCCAA2F1A100000000001 /* Shared.xcconfig */;
+			baseConfigurationReference = 3D2DCCAA2F1A100000000001 /* Config/Shared.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = ZZikZZa;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = QueenCam/QueenCam.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 28;
+				CURRENT_PROJECT_VERSION = 31;
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = D22ZM93S77;
 				ENABLE_PREVIEWS = YES;
@@ -539,7 +539,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.12;
+				MARKETING_VERSION = 1.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.queendom.QueenCam;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -563,10 +563,10 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 28;
+				CURRENT_PROJECT_VERSION = 31;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.1.12;
+				MARKETING_VERSION = 1.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.queendom.QueenCamTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
@@ -584,10 +584,10 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 28;
+				CURRENT_PROJECT_VERSION = 31;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.1.12;
+				MARKETING_VERSION = 1.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.queendom.QueenCamTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
@@ -604,9 +604,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 28;
+				CURRENT_PROJECT_VERSION = 31;
 				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.1.12;
+				MARKETING_VERSION = 1.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.queendom.QueenCamUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
@@ -623,9 +623,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 28;
+				CURRENT_PROJECT_VERSION = 31;
 				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.1.12;
+				MARKETING_VERSION = 1.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.queendom.QueenCamUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
