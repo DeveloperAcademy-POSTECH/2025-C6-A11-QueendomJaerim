@@ -14,6 +14,8 @@
 
 ### Changed
 
+- 설정 화면의 `실험실` 섹션 레이블을 `촬영`으로 변경
+
 ### Deprecated
 
 ### Removed
