@@ -162,7 +162,6 @@ extension MakeConnectionViewV2 {
         .frame(maxWidth: .infinity, alignment: .leading)
 
         connectionControl
-          .frame(width: LocaleUtils.currentLocale == .korean ? 75 : 100)
       }
       .padding(.horizontal, 20)
       .frame(height: 75)
@@ -205,6 +204,7 @@ extension MakeConnectionViewV2 {
           .foregroundStyle(.originalWhite)
           .frame(width: 29, height: 29)
           .background(connectedColor, in: Circle())
+          .padding(.trailing, 8)
           .accessibilityLabel("연결 완료")
       } else {
         Button {
@@ -213,7 +213,8 @@ extension MakeConnectionViewV2 {
           Text("연결")
             .typo(.sb14)
             .foregroundStyle(.systemWhite)
-            .frame(maxWidth: .infinity, minHeight: 32)
+            .padding(.horizontal, 24)
+            .frame(minHeight: 32)
             .background(Color.gray700, in: Capsule())
         }
         .buttonStyle(.plain)
