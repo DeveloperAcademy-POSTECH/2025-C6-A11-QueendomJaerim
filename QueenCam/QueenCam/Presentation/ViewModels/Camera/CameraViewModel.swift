@@ -22,6 +22,7 @@ final class CameraViewModel {
   var isLivePhotoOn: Bool
   var isShowGrid: Bool
   var isFlashMode: FlashMode
+  var photoAspectRatio: PhotoAspectRatio
   
   var cameraPostion: AVCaptureDevice.Position?
   
@@ -60,6 +61,7 @@ final class CameraViewModel {
     self.isLivePhotoOn = cameraSettingsService.livePhotoOn
     self.isShowGrid = cameraSettingsService.gridOn
     self.isFlashMode = cameraSettingsService.flashMode
+    self.photoAspectRatio = cameraSettingsService.photoAspectRatio
     
     self.notificationService = notificationService
  
@@ -203,6 +205,11 @@ final class CameraViewModel {
     cameraManager.isLivePhotoOn = isLivePhotoOn
   }
   
+  func switchPhotoAspectRatio() {
+    photoAspectRatio = photoAspectRatio.next()
+    cameraSettingsService.photoAspectRatio = photoAspectRatio
+  }
+
   func setFocus(point: CGPoint) {
     cameraManager.focusAndExpose(at: point)
   }

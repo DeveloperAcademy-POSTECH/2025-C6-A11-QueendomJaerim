@@ -266,6 +266,19 @@ extension CameraView: View {
           )
         }
 
+        // 임시 위치. #497 새 상단 툴바 배치(T11)에서 정식 위치로 옮긴다.
+        if currentMode == .photographer {
+          ToolbarItem(placement: .topBarTrailing) {
+            Button {
+              cameraViewModel.switchPhotoAspectRatio()
+            } label: {
+              Text(verbatim: cameraViewModel.photoAspectRatio.rawValue)
+                .typo(.m15)
+            }
+            .accessibilityLabel("사진 비율")
+          }
+        }
+
         ToolbarItem(placement: .topBarTrailing) {
           Button("설정", systemImage: "gearshape") {
             navigationRouter.push(.settings(.main(role: connectionViewModel.role, highlight: nil)))
