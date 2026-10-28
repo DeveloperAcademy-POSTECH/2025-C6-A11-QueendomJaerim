@@ -24,6 +24,7 @@ final class CameraManager: NSObject {
   // 네트워크 송수신
   let networkService: NetworkServiceProtocol
   private let photoOverlayCompositingService: PhotoOverlayCompositingServiceProtocol
+  private let photoAspectRatioCroppingService: PhotoAspectRatioCroppingServiceProtocol
   var cancellables: Set<AnyCancellable> = []
 
   var position: AVCaptureDevice.Position = .back
@@ -49,11 +50,13 @@ final class CameraManager: NSObject {
   init(
     previewCaptureService: PreviewCaptureService,
     networkService: NetworkServiceProtocol,
-    photoOverlayCompositingService: PhotoOverlayCompositingServiceProtocol = PhotoOverlayCompositingService()
+    photoOverlayCompositingService: PhotoOverlayCompositingServiceProtocol = PhotoOverlayCompositingService(),
+    photoAspectRatioCroppingService: PhotoAspectRatioCroppingServiceProtocol = PhotoAspectRatioCroppingService()
   ) {
     self.previewCaptureService = previewCaptureService
     self.networkService = networkService
     self.photoOverlayCompositingService = photoOverlayCompositingService
+    self.photoAspectRatioCroppingService = photoAspectRatioCroppingService
 
     super.init()
 
@@ -98,18 +101,25 @@ final class CameraManager: NSObject {
     }
   }
 
-  func capturePhoto(drawableStrokes: [DrawableStroke] = []) {
+  func capturePhoto(aspectRatio: PhotoAspectRatio, drawableStrokes: [DrawableStroke] = []) {
+    // 지연 처리된 사진은 나중에 시스템이 최종 사진으로 바꿔 넣어 가공 결과가 사라지므로, 가공할 때는 끈다.
+    let allowsDeferredPhotoDelivery = aspectRatio == .ratio4x3 && drawableStrokes.isEmpty
+
     guard !drawableStrokes.isEmpty else {
-      performCapturePhoto(allowsDeferredPhotoDelivery: true)
+      performCapturePhoto(aspectRatio: aspectRatio, allowsDeferredPhotoDelivery: allowsDeferredPhotoDelivery)
       return
     }
 
-    performCapturePhoto(allowsDeferredPhotoDelivery: false) { [photoOverlayCompositingService] photoOutput in
+    performCapturePhoto(
+      aspectRatio: aspectRatio,
+      allowsDeferredPhotoDelivery: allowsDeferredPhotoDelivery
+    ) { [photoOverlayCompositingService] photoOutput in
       photoOverlayCompositingService.composite(photoOutput: photoOutput, strokes: drawableStrokes)
     }
   }
 
   private func performCapturePhoto(
+    aspectRatio: PhotoAspectRatio,
     allowsDeferredPhotoDelivery: Bool,
     photoOutputProcessor: ((PhotoOuput) -> PhotoOuput)? = nil
   ) {
@@ -149,6 +159,8 @@ final class CameraManager: NSObject {
       // 2
       let delegate = CameraDelegate(
         isCameraPosition: self.position,
+        aspectRatio: aspectRatio,
+        aspectRatioCroppingService: self.photoAspectRatioCroppingService,
         willCaptureLivePhoto: { [weak self] in
           self?.onWillCaptureLivePhoto?()
         },

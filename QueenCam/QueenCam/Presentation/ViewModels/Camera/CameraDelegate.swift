@@ -6,6 +6,8 @@ import UIKit
 final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
   private let logger = QueenLogger(category: "CameraDelegate")
   private let isCameraPosition: AVCaptureDevice.Position
+  private let aspectRatio: PhotoAspectRatio
+  private let aspectRatioCroppingService: PhotoAspectRatioCroppingServiceProtocol
 
   private let photoOutputProcessor: ((PhotoOuput) -> PhotoOuput)?
   private let completion: ((PhotoOuput?, [PhotoOuput]) -> Void)
@@ -19,11 +21,15 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
 
   init(
     isCameraPosition: AVCaptureDevice.Position,
+    aspectRatio: PhotoAspectRatio,
+    aspectRatioCroppingService: PhotoAspectRatioCroppingServiceProtocol,
     willCaptureLivePhoto: (() -> Void)? = nil,
     photoOutputProcessor: ((PhotoOuput) -> PhotoOuput)? = nil,
     completion: @escaping (PhotoOuput?, [PhotoOuput]) -> Void
   ) {
     self.isCameraPosition = isCameraPosition
+    self.aspectRatio = aspectRatio
+    self.aspectRatioCroppingService = aspectRatioCroppingService
     self.willCaptureLivePhoto = willCaptureLivePhoto
     self.photoOutputProcessor = photoOutputProcessor
     self.completion = completion
@@ -74,7 +80,9 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
         completion(photoOutput, sendOutputs(original: originalPhotoOutput, processed: photoOutput))
       }
     } else {
-      let originalPhotoOutput = PhotoOuput.basicPhoto(thumbnail: UIImage(data: imageData) ?? .init(), imageData: imageData)
+      let originalPhotoOutput = applyAspectRatio(
+        to: PhotoOuput.basicPhoto(thumbnail: UIImage(data: imageData) ?? .init(), imageData: imageData)
+      )
       let photoOutput = process(originalPhotoOutput)
       saveOriginalIfNeeded(originalPhotoOutput, isDeferredPhoto: true)
       PhotoLibraryHelpers.saveProxyToPhotoLibrary(photoOutput.imageData)
@@ -106,7 +114,7 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
     lastStillImageData = imageData
 
     if !isLivePhoto {
-      let originalPhotoOutput = PhotoOuput.basicPhoto(thumbnail: image, imageData: imageData)
+      let originalPhotoOutput = applyAspectRatio(to: PhotoOuput.basicPhoto(thumbnail: image, imageData: imageData))
       let photoOutput = process(originalPhotoOutput)
       saveOriginalIfNeeded(originalPhotoOutput)
       PhotoLibraryHelpers.saveToPhotoLibrary(photoOutput.imageData)
@@ -172,6 +180,38 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
       completion(photoOutput, sendOutputs(original: originalPhotoOutput, processed: photoOutput))
       return
     }
+  }
+}
+
+// 비율 적용은 자르기 실패 시 원본 사용 규칙을 단위 테스트로 확인하기 위해 private으로 두지 않는다.
+extension CameraDelegate {
+  /// 셔터 순간의 비율로 자른 사진을 기본본으로 쓴다. 자르지 못하면 원본을 그대로 쓴다.
+  /// Live Photo는 사진과 영상을 함께 잘라야 하므로 아직 원본을 유지한다.
+  func applyAspectRatio(to photoOutput: PhotoOuput) -> PhotoOuput {
+    guard case .basicPhoto(let thumbnail, let imageData) = photoOutput else { return photoOutput }
+
+    let clock = ContinuousClock()
+    let startedAt = clock.now
+    guard let croppedData = aspectRatioCroppingService.crop(imageData: imageData, to: aspectRatio) else {
+      logger.error("[AspectRatio] \(aspectRatio.rawValue) 촬영 → 자르기 실패, 원본 저장")
+      return photoOutput
+    }
+    let elapsed = clock.now - startedAt
+
+    let before = PhotoImageDataSummary.make(from: imageData)
+    let after = PhotoImageDataSummary.make(from: croppedData)
+    logger.debug(
+      """
+      [AspectRatio] \(PhotoImageDataSummary.verdict(ratio: aspectRatio, before: before, after: after)) \
+      | before=\(before?.description ?? "unknown") \
+      after=\(after?.description ?? "unknown") \
+      elapsed=\(elapsed.formatted(.units(allowed: [.milliseconds])))
+      """
+    )
+
+    guard croppedData != imageData else { return photoOutput }
+
+    return .basicPhoto(thumbnail: UIImage(data: croppedData) ?? thumbnail, imageData: croppedData)
   }
 }
 

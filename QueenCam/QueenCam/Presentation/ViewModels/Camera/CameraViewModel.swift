@@ -147,11 +147,14 @@ final class CameraViewModel {
   func capturePhoto() {
     traceShutterPressedEvent()
     guard cameraSettingsService.saveGuidingOverlayImageOn else {
-      cameraManager.capturePhoto()
+      cameraManager.capturePhoto(aspectRatio: photoAspectRatio)
       return
     }
 
-    cameraManager.capturePhoto(drawableStrokes: guidingStrokeRepository.captureDrawableStrokes())
+    cameraManager.capturePhoto(
+      aspectRatio: photoAspectRatio,
+      drawableStrokes: guidingStrokeRepository.captureDrawableStrokes()
+    )
   }
   
   func setZoom(factor: CGFloat, ramp: Bool) {
