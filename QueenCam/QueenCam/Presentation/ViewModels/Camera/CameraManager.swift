@@ -82,6 +82,8 @@ final class CameraManager: NSObject {
           self.setupPreviewCaptureOutput()
 
           self.session.commitConfiguration()
+          self.enableLivePhotoCaptureIfSupported()
+
           self.startSession()
           isSessionConfigured = true
           continuation.resume()
@@ -148,6 +150,7 @@ final class CameraManager: NSObject {
       if self.isLivePhotoOn, self.photoOutput.isLivePhotoCaptureEnabled {
         photoSettings.livePhotoMovieFileURL = URL.movieFileURL
       }
+      self.logLivePhotoCaptureState()
 
       if self.photoOutput.isAutoDeferredPhotoDeliverySupported {
         self.photoOutput.isAutoDeferredPhotoDeliveryEnabled = allowsDeferredPhotoDelivery
@@ -207,6 +210,17 @@ final class CameraManager: NSObject {
 
 // MARK: Session 구성
 extension CameraManager {
+  /// 실기기 확인용. 셔터 순간의 Live 설정·Live 기능·마이크 연결 상태를 남긴다.
+  private func logLivePhotoCaptureState() {
+    logger.debug(
+      """
+      [LivePhoto] capture -> livePhotoOn: \(isLivePhotoOn), \
+      enabled: \(photoOutput.isLivePhotoCaptureEnabled), \
+      hasAudioInput: \(audioDeviceInput != nil)
+      """
+    )
+  }
+
   private func setupVideoInput() throws {
     let deviceTypeList: [AVCaptureDevice.DeviceType] = [
       .builtInTripleCamera,  // 프로 시리즈
@@ -284,6 +298,17 @@ extension CameraManager {
     }
   }
 
+  /// 세션 구성을 확정하면 Live 촬영 기능이 꺼질 수 있으므로, 확정할 때마다 다시 켠다.
+  private func enableLivePhotoCaptureIfSupported() {
+    photoOutput.isLivePhotoCaptureEnabled = photoOutput.isLivePhotoCaptureSupported
+  }
+
+  private func removeAudioInput() {
+    guard let audioDeviceInput else { return }
+    session.removeInput(audioDeviceInput)
+    self.audioDeviceInput = nil
+  }
+
   private func setupAudioInput() throws {
     guard isLivePhotoOn else { return }
 
@@ -305,7 +330,6 @@ extension CameraManager {
     guard session.canAddOutput(photoOutput) else { return }
     session.addOutput(photoOutput)
 
-    photoOutput.isLivePhotoCaptureEnabled = photoOutput.isLivePhotoCaptureSupported
     photoOutput.maxPhotoQualityPrioritization = .quality
 
     if photoOutput.isResponsiveCaptureSupported {
@@ -397,6 +421,31 @@ extension CameraManager {
   }
 }
 
+// MARK: - Live Photo
+extension CameraManager {
+  /// 바구니의 LIVE 설정을 반영한다. 소리는 LIVE에서만 쓰므로 켤 때만 마이크를 연결한다.
+  func setLivePhotoOn(_ isOn: Bool) {
+    isLivePhotoOn = isOn
+
+    captureSessionQueue.async { [weak self] in
+      guard let self, self.isSessionConfigured else { return }
+
+      self.session.beginConfiguration()
+      if isOn {
+        do {
+          try self.setupAudioInput()
+        } catch {
+          self.logger.error("Failed to add audio input for Live Photo: \(error.localizedDescription)")
+        }
+      } else {
+        self.removeAudioInput()
+      }
+      self.session.commitConfiguration()
+      self.enableLivePhotoCaptureIfSupported()
+    }
+  }
+}
+
 extension CameraManager {
   func switchCamera() async throws {
     try await withCheckedThrowingContinuation { continuation in
@@ -416,8 +465,7 @@ extension CameraManager {
           setupPhotoOutput()
 
           session.commitConfiguration()
-
-          photoOutput.isLivePhotoCaptureEnabled = photoOutput.isLivePhotoCaptureSupported
+          enableLivePhotoCaptureIfSupported()
 
           logger.info("Switch -> photoOutput.isLivePhotoCaptureSupported: \(photoOutput.isLivePhotoCaptureSupported)")
           logger.info("Switch -> photoOutput.isLivePhotoCaptureEnabled: \(photoOutput.isLivePhotoCaptureEnabled)")
