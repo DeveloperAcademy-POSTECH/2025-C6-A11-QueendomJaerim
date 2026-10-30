@@ -239,6 +239,7 @@ extension PhotoAspectRatioCroppingService {
   }
 
   /// Y면과 CbCr면을 각각 같은 영역만큼 줄 단위로 복사한다. 색 변환이 없어 원본 색을 그대로 유지한다.
+  /// 카메라 영상은 실제 그림이 표시 영역보다 크고 크롭 영역은 표시 영역 기준이므로, 표시 영역의 시작점을 더해 복사한다.
   private static func copyCroppedPlanes(from source: CVPixelBuffer, to destination: CVPixelBuffer, cropRect: CGRect) -> Bool {
     let pixelFormat = CVPixelBufferGetPixelFormatType(source)
     guard
@@ -249,6 +250,9 @@ extension PhotoAspectRatioCroppingService {
     // 8비트는 Y 1바이트·CbCr 2바이트, 10비트는 2배를 쓴다. CbCr면은 가로·세로 절반 크기다.
     let componentBytes = pixelFormat == kCVPixelFormatType_420YpCbCr10BiPlanarVideoRange ? 2 : 1
     let planes = [(scale: 1, bytesPerPixel: componentBytes), (scale: 2, bytesPerPixel: componentBytes * 2)]
+    let cleanRect = CVImageBufferGetCleanRect(source)
+    let sourceOriginX = Int(cleanRect.minX) / 2 * 2 + Int(cropRect.minX)
+    let sourceOriginY = Int(cleanRect.minY) / 2 * 2 + Int(cropRect.minY)
 
     CVPixelBufferLockBaseAddress(source, .readOnly)
     CVPixelBufferLockBaseAddress(destination, [])
@@ -267,10 +271,14 @@ extension PhotoAspectRatioCroppingService {
       let destinationBytesPerRow = CVPixelBufferGetBytesPerRowOfPlane(destination, index)
       let rowBytes = CVPixelBufferGetWidthOfPlane(destination, index) * plane.bytesPerPixel
       let rowCount = CVPixelBufferGetHeightOfPlane(destination, index)
-      let originX = Int(cropRect.minX) / plane.scale * plane.bytesPerPixel
-      let originY = Int(cropRect.minY) / plane.scale
+      let originX = sourceOriginX / plane.scale * plane.bytesPerPixel
+      let originY = sourceOriginY / plane.scale
 
-      guard rowBytes <= destinationBytesPerRow, originX + rowBytes <= sourceBytesPerRow else { return false }
+      guard
+        rowBytes <= destinationBytesPerRow,
+        originX + rowBytes <= sourceBytesPerRow,
+        originY + rowCount <= CVPixelBufferGetHeightOfPlane(source, index)
+      else { return false }
 
       for row in 0..<rowCount {
         memcpy(

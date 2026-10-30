@@ -46,6 +46,16 @@ struct LivePhotoMovieCroppingTests {
     #expect(try await LivePhotoMovieFixture.Info.load(from: croppedURL).videoSize == CGSize(width: 480, height: 480))
   }
 
+  @Test("실제 그림이 표시 영역보다 큰 영상은 표시 영역 안에서 가운데를 자른다", arguments: [PhotoAspectRatio.ratio16x9, .ratio1x1])
+  func cropsInsideCleanAperture(ratio: PhotoAspectRatio) async throws {
+    let source = try await LivePhotoMovieFixture.make(hasCleanAperture: true)
+
+    let croppedURL = try #require(await service.crop(livePhotoMovieURL: source.url, to: ratio))
+
+    #expect(source.info.videoSize == CGSize(width: 560, height: 420))
+    #expect(try await LivePhotoMovieFixture.darkestCornerLuma(of: croppedURL) > LivePhotoMovieFixture.brightLumaThreshold)
+  }
+
   @Test("소리·대표 사진 시점 정보·짝 식별자를 원본 그대로 옮긴다")
   func keepsLivePhotoInformation() async throws {
     let source = try await LivePhotoMovieFixture.make()
@@ -79,6 +89,10 @@ enum LivePhotoMovieFixture {
   static let frameCount = 10
   static let frameRate: Int32 = 30
   static let sampleRate = 44_100.0
+  static let brightLumaThreshold: UInt8 = 200
+
+  /// 카메라 영상처럼 실제 그림은 640×480이고 가운데 560×420만 표시하는 영역. 표시 영역 밖은 검게 칠한다.
+  private static let cleanAperture = CGRect(x: 40, y: 30, width: 560, height: 420)
 
   struct Source {
     let url: URL
@@ -114,7 +128,7 @@ enum LivePhotoMovieFixture {
     }
   }
 
-  static func make() async throws -> Source {
+  static func make(hasCleanAperture: Bool = false) async throws -> Source {
     let url = FileManager.default.temporaryDirectory
       .appendingPathComponent(UUID().uuidString)
       .appendingPathExtension("mov")
@@ -126,10 +140,7 @@ enum LivePhotoMovieFixture {
     identifier.dataType = kCMMetadataBaseDataType_UTF8 as String
     writer.metadata = [identifier]
 
-    let videoInput = AVAssetWriterInput(
-      mediaType: .video,
-      outputSettings: [AVVideoCodecKey: AVVideoCodecType.h264, AVVideoWidthKey: width, AVVideoHeightKey: height]
-    )
+    let videoInput = AVAssetWriterInput(mediaType: .video, outputSettings: videoSettings(hasCleanAperture: hasCleanAperture))
     videoInput.transform = CGAffineTransform(rotationAngle: .pi / 2)
     let pixelAdaptor = AVAssetWriterInputPixelBufferAdaptor(
       assetWriterInput: videoInput,
@@ -167,7 +178,7 @@ enum LivePhotoMovieFixture {
     for index in 0..<frameCount {
       let time = CMTime(value: CMTimeValue(index), timescale: frameRate)
       while !videoInput.isReadyForMoreMediaData { try await Task.sleep(for: .milliseconds(5)) }
-      #expect(pixelAdaptor.append(try makePixelBuffer(), withPresentationTime: time))
+      #expect(pixelAdaptor.append(try makePixelBuffer(hasCleanAperture: hasCleanAperture), withPresentationTime: time))
     }
     videoInput.markAsFinished()
 
@@ -185,6 +196,19 @@ enum LivePhotoMovieFixture {
     try #require(writer.status == .completed)
 
     return Source(url: url, info: try await Info.load(from: url))
+  }
+
+  private static func videoSettings(hasCleanAperture: Bool) -> [String: Any] {
+    var settings: [String: Any] = [AVVideoCodecKey: AVVideoCodecType.h264, AVVideoWidthKey: width, AVVideoHeightKey: height]
+    if hasCleanAperture {
+      settings[AVVideoCleanApertureKey] = [
+        AVVideoCleanApertureWidthKey: Int(cleanAperture.width),
+        AVVideoCleanApertureHeightKey: Int(cleanAperture.height),
+        AVVideoCleanApertureHorizontalOffsetKey: 0,
+        AVVideoCleanApertureVerticalOffsetKey: 0
+      ]
+    }
+    return settings
   }
 
   private static func makeStillImageTimeGroup() -> AVTimedMetadataGroup {
@@ -219,15 +243,56 @@ enum LivePhotoMovieFixture {
     return try #require(description)
   }
 
-  private static func makePixelBuffer() throws -> CVPixelBuffer {
+  /// 영상 첫 장면의 네 모서리 밝기 중 가장 어두운 값. 표시 영역 밖의 검은 부분이 섞여 있으면 낮게 나온다.
+  static func darkestCornerLuma(of url: URL) async throws -> UInt8 {
+    let asset = AVURLAsset(url: url)
+    let track = try #require(try await asset.loadTracks(withMediaType: .video).first)
+    let reader = try AVAssetReader(asset: asset)
+    let output = AVAssetReaderTrackOutput(
+      track: track,
+      outputSettings: [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange]
+    )
+    reader.add(output)
+    #expect(reader.startReading())
+    let sampleBuffer = try #require(output.copyNextSampleBuffer())
+    let buffer = try #require(CMSampleBufferGetImageBuffer(sampleBuffer))
+    reader.cancelReading()
+
+    CVPixelBufferLockBaseAddress(buffer, .readOnly)
+    defer { CVPixelBufferUnlockBaseAddress(buffer, .readOnly) }
+
+    let baseAddress = try #require(CVPixelBufferGetBaseAddressOfPlane(buffer, 0))
+    let bytesPerRow = CVPixelBufferGetBytesPerRowOfPlane(buffer, 0)
+    let lastColumn = CVPixelBufferGetWidthOfPlane(buffer, 0) - 8
+    let lastRow = CVPixelBufferGetHeightOfPlane(buffer, 0) - 8
+    let corners = [(8, 8), (lastColumn, 8), (8, lastRow), (lastColumn, lastRow)].map { column, row in
+      baseAddress.load(fromByteOffset: row * bytesPerRow + column, as: UInt8.self)
+    }
+    return try #require(corners.min())
+  }
+
+  private static func makePixelBuffer(hasCleanAperture: Bool) throws -> CVPixelBuffer {
     var pixelBuffer: CVPixelBuffer?
     CVPixelBufferCreate(kCFAllocatorDefault, width, height, kCVPixelFormatType_32BGRA, nil, &pixelBuffer)
     let buffer = try #require(pixelBuffer)
     CVPixelBufferLockBaseAddress(buffer, [])
-    if let baseAddress = CVPixelBufferGetBaseAddress(buffer) {
+    defer { CVPixelBufferUnlockBaseAddress(buffer, []) }
+
+    let baseAddress = try #require(CVPixelBufferGetBaseAddress(buffer))
+    guard hasCleanAperture else {
       memset(baseAddress, 0x80, CVPixelBufferGetDataSize(buffer))
+      return buffer
     }
-    CVPixelBufferUnlockBaseAddress(buffer, [])
+
+    let bytesPerRow = CVPixelBufferGetBytesPerRow(buffer)
+    memset(baseAddress, 0x00, CVPixelBufferGetDataSize(buffer))
+    for row in Int(cleanAperture.minY)..<Int(cleanAperture.maxY) {
+      memset(
+        baseAddress.advanced(by: row * bytesPerRow + Int(cleanAperture.minX) * 4),
+        0xFF,
+        Int(cleanAperture.width) * 4
+      )
+    }
     return buffer
   }
 
