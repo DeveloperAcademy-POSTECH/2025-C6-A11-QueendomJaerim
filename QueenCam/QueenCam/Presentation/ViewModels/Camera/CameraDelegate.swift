@@ -3,7 +3,7 @@ import OSLog
 import Photos
 import UIKit
 
-final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
+nonisolated final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
   private let logger = QueenLogger(category: "CameraDelegate")
   private let isCameraPosition: AVCaptureDevice.Position
   private let aspectRatio: PhotoAspectRatio
@@ -184,7 +184,7 @@ final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate {
 }
 
 // 비율 적용은 자르기 실패 시 원본 사용 규칙을 단위 테스트로 확인하기 위해 private으로 두지 않는다.
-extension CameraDelegate {
+nonisolated extension CameraDelegate {
   /// 셔터 순간의 비율로 자른 사진을 기본본으로 쓴다. 자르지 못하면 원본을 그대로 쓴다.
   /// Live Photo는 사진과 영상을 함께 잘라야 하므로 아직 원본을 유지한다.
   func applyAspectRatio(to photoOutput: PhotoOuput) -> PhotoOuput {
@@ -215,7 +215,7 @@ extension CameraDelegate {
   }
 }
 
-private extension CameraDelegate {
+nonisolated private extension CameraDelegate {
   func process(_ photoOutput: PhotoOuput) -> PhotoOuput {
     photoOutputProcessor?(photoOutput) ?? photoOutput
   }

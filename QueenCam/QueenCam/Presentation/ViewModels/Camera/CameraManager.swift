@@ -566,7 +566,7 @@ extension CameraManager {
 
 extension URL {
   /// 라이브 포토의 mov 파일을 위한 고유한 임시 경로 생성
-  static var movieFileURL: URL {
+  nonisolated static var movieFileURL: URL {
     FileManager.default.temporaryDirectory
       .appendingPathComponent(UUID().uuidString)
       .appendingPathExtension(for: .quickTimeMovie)
