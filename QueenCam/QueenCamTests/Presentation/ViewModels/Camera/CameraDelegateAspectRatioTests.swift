@@ -69,16 +69,20 @@ struct CameraDelegateAspectRatioTests {
   }
 }
 
-private extension CameraDelegateAspectRatioTests {
-  struct CroppingServiceStub: PhotoAspectRatioCroppingServiceProtocol {
+extension CameraDelegateAspectRatioTests {
+  private struct CroppingServiceStub: PhotoAspectRatioCroppingServiceProtocol {
     let result: Data?
 
     func crop(imageData: Data, to ratio: PhotoAspectRatio) -> Data? {
       result
     }
+
+    func crop(livePhotoMovieURL: URL, to ratio: PhotoAspectRatio) async -> URL? {
+      nil
+    }
   }
 
-  func makeDelegate(cropResult: Data?) -> CameraDelegate {
+  private func makeDelegate(cropResult: Data?) -> CameraDelegate {
     CameraDelegate(
       isCameraPosition: .back,
       aspectRatio: .ratio16x9,
@@ -86,12 +90,12 @@ private extension CameraDelegateAspectRatioTests {
     ) { _, _ in }
   }
 
-  func makeBasicPhoto(width: Int, height: Int) throws -> PhotoOuput {
+  private func makeBasicPhoto(width: Int, height: Int) throws -> PhotoOuput {
     let data = try makeJPEGData(width: width, height: height)
     return .basicPhoto(thumbnail: try #require(UIImage(data: data)), imageData: data)
   }
 
-  func makeJPEGData(width: Int, height: Int) throws -> Data {
+  private func makeJPEGData(width: Int, height: Int) throws -> Data {
     let format = UIGraphicsImageRendererFormat()
     format.scale = 1
     let image = UIGraphicsImageRenderer(size: CGSize(width: width, height: height), format: format).image { context in
