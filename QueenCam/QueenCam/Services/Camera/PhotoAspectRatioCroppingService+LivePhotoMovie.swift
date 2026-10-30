@@ -83,11 +83,15 @@ extension PhotoAspectRatioCroppingService {
 
     guard reader.status == .completed else {
       writer.cancelWriting()
+      try? FileManager.default.removeItem(at: croppedMovieURL)
       throw MovieCroppingError.readingFailed(reader.error)
     }
     writer.endSession(atSourceTime: try await asset.load(.duration))
     await writer.finishWriting()
-    guard writer.status == .completed else { throw MovieCroppingError.writingFailed(writer.error) }
+    guard writer.status == .completed else {
+      try? FileManager.default.removeItem(at: croppedMovieURL)
+      throw MovieCroppingError.writingFailed(writer.error)
+    }
 
     return croppedMovieURL
   }

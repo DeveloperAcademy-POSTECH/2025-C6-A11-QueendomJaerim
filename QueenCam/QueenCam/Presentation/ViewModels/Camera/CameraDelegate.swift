@@ -160,6 +160,22 @@ nonisolated final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate 
       return
     }
 
+    // 비율을 적용하는 라이브 포토. 4:3은 자를 것이 없어 아래 일반 경로를 그대로 쓴다.
+    if aspectRatio != .ratio4x3,
+      let lastStillImageData = self.lastStillImageData,
+      let lastThumbnailImage = self.lastThumbnailImage
+    {
+      logger.info("Live Photo: Saving \(aspectRatio.rawValue) live photo (Movie delegate).")
+      Task {
+        await saveLivePhotoInAspectRatio(
+          imageData: lastStillImageData,
+          thumbnail: lastThumbnailImage,
+          livePhotoMovieURL: outputFileURL
+        )
+      }
+      return
+    }
+
     // 일반 라이브 포토
     if let lastStillImageData = self.lastStillImageData,
       let lastThumbnailImage = self.lastThumbnailImage,
@@ -186,7 +202,7 @@ nonisolated final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate 
 // 비율 적용은 자르기 실패 시 원본 사용 규칙을 단위 테스트로 확인하기 위해 private으로 두지 않는다.
 nonisolated extension CameraDelegate {
   /// 셔터 순간의 비율로 자른 사진을 기본본으로 쓴다. 자르지 못하면 원본을 그대로 쓴다.
-  /// Live Photo는 사진과 영상을 함께 잘라야 하므로 아직 원본을 유지한다.
+  /// Live Photo는 사진과 영상을 함께 잘라야 하므로 `applyAspectRatio(toLivePhotoImageData:)`에서 다룬다.
   func applyAspectRatio(to photoOutput: PhotoOuput) -> PhotoOuput {
     guard case .basicPhoto(let thumbnail, let imageData) = photoOutput else { return photoOutput }
 
@@ -213,9 +229,84 @@ nonisolated extension CameraDelegate {
 
     return .basicPhoto(thumbnail: UIImage(data: croppedData) ?? thumbnail, imageData: croppedData)
   }
+
+  /// Live Photo의 사진과 영상을 셔터 순간의 비율로 함께 자른다. 하나라도 자르지 못하면 짝이 깨지지 않게 원본 쌍을 쓴다.
+  /// 원본 영상을 읽지 못하면 nil을 돌려준다.
+  func applyAspectRatio(
+    toLivePhotoImageData imageData: Data,
+    thumbnail: UIImage,
+    livePhotoMovieURL: URL
+  ) async -> (photoOutput: PhotoOuput, livePhotoMovieURL: URL)? {
+    guard let croppedImageData = aspectRatioCroppingService.crop(imageData: imageData, to: aspectRatio) else {
+      logger.error("[AspectRatio] Live \(aspectRatio.rawValue) 촬영 → 사진 자르기 실패, 원본 쌍 저장")
+      return originalLivePhoto(imageData: imageData, thumbnail: thumbnail, livePhotoMovieURL: livePhotoMovieURL)
+    }
+
+    guard let croppedMovieURL = await aspectRatioCroppingService.crop(livePhotoMovieURL: livePhotoMovieURL, to: aspectRatio)
+    else {
+      logger.error("[AspectRatio] Live \(aspectRatio.rawValue) 촬영 → 영상 자르기 실패, 원본 쌍 저장")
+      return originalLivePhoto(imageData: imageData, thumbnail: thumbnail, livePhotoMovieURL: livePhotoMovieURL)
+    }
+
+    guard croppedMovieURL != livePhotoMovieURL else {
+      return originalLivePhoto(imageData: imageData, thumbnail: thumbnail, livePhotoMovieURL: livePhotoMovieURL)
+    }
+
+    guard let croppedMovieData = try? Data(contentsOf: croppedMovieURL) else {
+      logger.error("[AspectRatio] Live \(aspectRatio.rawValue) 촬영 → 자른 영상 읽기 실패, 원본 쌍 저장")
+      try? FileManager.default.removeItem(at: croppedMovieURL)
+      return originalLivePhoto(imageData: imageData, thumbnail: thumbnail, livePhotoMovieURL: livePhotoMovieURL)
+    }
+
+    // 사진 보관함에는 자른 영상 파일이 옮겨지므로 쓰지 않는 원본 영상 파일을 지운다.
+    try? FileManager.default.removeItem(at: livePhotoMovieURL)
+
+    return (
+      .livePhoto(
+        thumbnail: UIImage(data: croppedImageData) ?? thumbnail,
+        imageData: croppedImageData,
+        videoData: croppedMovieData
+      ),
+      croppedMovieURL
+    )
+  }
 }
 
 nonisolated private extension CameraDelegate {
+  /// 영상 자르기는 오래 걸리므로 카메라 콜백 스레드와 상관없이 백그라운드에서 자르고 저장한다.
+  @concurrent
+  func saveLivePhotoInAspectRatio(imageData: Data, thumbnail: UIImage, livePhotoMovieURL: URL) async {
+    guard
+      let livePhoto = await applyAspectRatio(
+        toLivePhotoImageData: imageData,
+        thumbnail: thumbnail,
+        livePhotoMovieURL: livePhotoMovieURL
+      )
+    else {
+      logger.error("[AspectRatio] Live \(aspectRatio.rawValue) 촬영 → 원본 영상 읽기 실패")
+      completion(nil, [])
+      return
+    }
+
+    let photoOutput = process(livePhoto.photoOutput)
+    saveOriginalIfNeeded(livePhoto.photoOutput)
+    PhotoLibraryHelpers.saveLivePhotoToPhotosLibrary(
+      stillImageData: photoOutput.imageData,
+      livePhotoMovieURL: livePhoto.livePhotoMovieURL
+    )
+    completion(photoOutput, sendOutputs(original: livePhoto.photoOutput, processed: photoOutput))
+  }
+
+  func originalLivePhoto(
+    imageData: Data,
+    thumbnail: UIImage,
+    livePhotoMovieURL: URL
+  ) -> (photoOutput: PhotoOuput, livePhotoMovieURL: URL)? {
+    guard let movieData = try? Data(contentsOf: livePhotoMovieURL) else { return nil }
+
+    return (.livePhoto(thumbnail: thumbnail, imageData: imageData, videoData: movieData), livePhotoMovieURL)
+  }
+
   func process(_ photoOutput: PhotoOuput) -> PhotoOuput {
     photoOutputProcessor?(photoOutput) ?? photoOutput
   }

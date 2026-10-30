@@ -39,6 +39,16 @@ struct PhotoAspectRatioCroppingServiceTests {
     #expect(info.height == 225)
   }
 
+  @Test("자른 사진에 Live Photo 짝 식별자가 그대로 남는다", arguments: [UTType.jpeg, .heic])
+  func keepsLivePhotoIdentifier(type: UTType) throws {
+    let identifier = UUID().uuidString
+    let data = try addingLivePhotoIdentifier(identifier, to: try makeCameraLikeImageData(type: type), type: type)
+
+    let cropped = try #require(service.crop(imageData: data, to: .ratio16x9))
+
+    #expect(try livePhotoIdentifier(in: cropped) == identifier)
+  }
+
   @Test("1:1로 자르면 정사각형으로 가운데를 자른다")
   func cropsTo1x1() throws {
     let cropped = try #require(service.crop(imageData: try makeCameraLikeImageData(), to: .ratio1x1))
@@ -94,6 +104,26 @@ struct PhotoAspectRatioCroppingServiceTests {
 }
 
 private extension PhotoAspectRatioCroppingServiceTests {
+  func addingLivePhotoIdentifier(_ identifier: String, to data: Data, type: UTType) throws -> Data {
+    let source = try #require(CGImageSourceCreateWithData(data as CFData, nil))
+    let image = try #require(CGImageSourceCreateImageAtIndex(source, 0, nil))
+    var properties = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [String: Any] ?? [:]
+    properties[kCGImagePropertyMakerAppleDictionary as String] = ["17": identifier]
+
+    let output = NSMutableData()
+    let destination = try #require(CGImageDestinationCreateWithData(output, type.identifier as CFString, 1, nil))
+    CGImageDestinationAddImage(destination, image, properties as CFDictionary)
+    try #require(CGImageDestinationFinalize(destination))
+    return output as Data
+  }
+
+  func livePhotoIdentifier(in data: Data) throws -> String? {
+    let source = try #require(CGImageSourceCreateWithData(data as CFData, nil))
+    let properties = try #require(CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [String: Any])
+    let makerApple = properties[kCGImagePropertyMakerAppleDictionary as String] as? [String: Any]
+    return makerApple?["17"] as? String
+  }
+
   struct ImageInfo {
     let width: Int
     let height: Int
