@@ -206,24 +206,10 @@ nonisolated extension CameraDelegate {
   func applyAspectRatio(to photoOutput: PhotoOuput) -> PhotoOuput {
     guard case .basicPhoto(let thumbnail, let imageData) = photoOutput else { return photoOutput }
 
-    let clock = ContinuousClock()
-    let startedAt = clock.now
     guard let croppedData = aspectRatioCroppingService.crop(imageData: imageData, to: aspectRatio) else {
       logger.error("[AspectRatio] \(aspectRatio.rawValue) 촬영 → 자르기 실패, 원본 저장")
       return photoOutput
     }
-    let elapsed = clock.now - startedAt
-
-    let before = PhotoImageDataSummary.make(from: imageData)
-    let after = PhotoImageDataSummary.make(from: croppedData)
-    logger.debug(
-      """
-      [AspectRatio] \(PhotoImageDataSummary.verdict(ratio: aspectRatio, before: before, after: after)) \
-      | before=\(before?.description ?? "unknown") \
-      after=\(after?.description ?? "unknown") \
-      elapsed=\(elapsed.formatted(.units(allowed: [.milliseconds])))
-      """
-    )
 
     guard croppedData != imageData else { return photoOutput }
 

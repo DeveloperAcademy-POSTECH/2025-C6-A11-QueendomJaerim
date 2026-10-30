@@ -150,7 +150,6 @@ final class CameraManager: NSObject {
       if self.isLivePhotoOn, self.photoOutput.isLivePhotoCaptureEnabled {
         photoSettings.livePhotoMovieFileURL = URL.movieFileURL
       }
-      self.logLivePhotoCaptureState()
 
       if self.photoOutput.isAutoDeferredPhotoDeliverySupported {
         self.photoOutput.isAutoDeferredPhotoDeliveryEnabled = allowsDeferredPhotoDelivery
@@ -210,17 +209,6 @@ final class CameraManager: NSObject {
 
 // MARK: Session 구성
 extension CameraManager {
-  /// 실기기 확인용. 셔터 순간의 Live 설정·Live 기능·마이크 연결 상태를 남긴다.
-  private func logLivePhotoCaptureState() {
-    logger.debug(
-      """
-      [LivePhoto] capture -> livePhotoOn: \(isLivePhotoOn), \
-      enabled: \(photoOutput.isLivePhotoCaptureEnabled), \
-      hasAudioInput: \(audioDeviceInput != nil)
-      """
-    )
-  }
-
   private func setupVideoInput() throws {
     let deviceTypeList: [AVCaptureDevice.DeviceType] = [
       .builtInTripleCamera,  // 프로 시리즈
