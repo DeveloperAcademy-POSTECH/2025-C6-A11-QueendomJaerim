@@ -88,6 +88,39 @@ struct PhotoAspectRatioGeometryTests {
     #expect(isClose(point.y, (1 - wideVisibleHeight) / 2 + 1.2 * wideVisibleHeight))
   }
 
+  // MARK: - 카메라 영상 표시 크기
+
+  @Test("저장될 사진의 너비가 프리뷰 너비와 같도록 3:4 카메라 영상 크기를 정한다")
+  func cameraFeedSizeByRatio() {
+    let width: CGFloat = 393
+
+    #expect(PhotoAspectRatioGeometry.cameraFeedSize(previewWidth: width, ratio: .ratio4x3) == CGSize(width: 393, height: 524))
+    #expect(PhotoAspectRatioGeometry.cameraFeedSize(previewWidth: width, ratio: .ratio1x1) == CGSize(width: 393, height: 524))
+
+    let wide = PhotoAspectRatioGeometry.cameraFeedSize(previewWidth: width, ratio: .ratio16x9)
+    #expect(isClose(wide.width, 524))
+    #expect(isClose(wide.height, 524 * 4 / 3))
+  }
+
+  @Test("프리뷰 너비가 0 이하이면 카메라 영상 크기 0을 반환한다")
+  func cameraFeedSizeForInvalidWidth() {
+    #expect(PhotoAspectRatioGeometry.cameraFeedSize(previewWidth: 0, ratio: .ratio4x3) == .zero)
+    #expect(PhotoAspectRatioGeometry.cameraFeedSize(previewWidth: -10, ratio: .ratio16x9) == .zero)
+  }
+
+  @Test("카메라 영상에서 프리뷰에 보이는 범위가 저장 크롭과 보이는 범위 규칙에 맞다", arguments: PhotoAspectRatio.allCases)
+  func cameraFeedMatchesCropAndVisibleRect(ratio: PhotoAspectRatio) throws {
+    let imageSize = CGSize(width: 3024, height: 4032)
+    let crop = try #require(PhotoAspectRatioGeometry.centerCropRect(imageSize: imageSize, ratio: ratio))
+    let visibleRect = PhotoAspectRatioGeometry.visibleOutputRect(for: ratio)
+
+    let feed = PhotoAspectRatioGeometry.cameraFeedSize(previewWidth: 393, ratio: ratio)
+    let preview = PhotoAspectRatioGeometry.previewSize(width: 393, ratio: ratio)
+
+    #expect(isClose(preview.width / feed.width, crop.width / imageSize.width))
+    #expect(isClose(preview.height / feed.height, visibleRect.height * crop.height / imageSize.height))
+  }
+
   // MARK: - 중앙 크롭
 
   @Test("세로 이미지를 비율별로 중앙에서 자른다")

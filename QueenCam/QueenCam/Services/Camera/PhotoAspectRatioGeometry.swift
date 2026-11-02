@@ -12,12 +12,25 @@ import CoreGraphics
 nonisolated enum PhotoAspectRatioGeometry {
   /// 16:9 프리뷰는 저장 비율보다 세로를 약 5% 줄인 15.23:9 영역에 표시한다.
   private static let widePreviewLongSide: CGFloat = 15.23
+  /// 세션 프리셋 `.photo`의 세로 영상은 너비:높이 3:4다.
+  private static let cameraFeedHeightPerWidth: CGFloat = 4.0 / 3.0
 
   /// 프리뷰 너비에 대한 비율별 표시 크기
   static func previewSize(width: CGFloat, ratio: PhotoAspectRatio) -> CGSize {
     guard width.isFinite, width > 0 else { return .zero }
 
     return CGSize(width: width, height: width * previewLongSide(for: ratio) / CGFloat(ratio.shortSide))
+  }
+
+  /// 저장될 사진의 너비가 프리뷰 너비와 같아지도록 키운 카메라 영상 크기
+  static func cameraFeedSize(previewWidth: CGFloat, ratio: PhotoAspectRatio) -> CGSize {
+    guard previewWidth.isFinite, previewWidth > 0 else { return .zero }
+
+    let outputHeightPerWidth = CGFloat(ratio.longSide) / CGFloat(ratio.shortSide)
+    let outputWidthInFeed = min(1, cameraFeedHeightPerWidth / outputHeightPerWidth)
+    let feedWidth = previewWidth / outputWidthInFeed
+
+    return CGSize(width: feedWidth, height: feedWidth * cameraFeedHeightPerWidth)
   }
 
   /// 프리뷰에 보이는 범위를 세로 저장 이미지 기준 정규화 영역으로 나타낸다.
