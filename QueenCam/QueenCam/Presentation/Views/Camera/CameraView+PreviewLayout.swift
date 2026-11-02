@@ -12,6 +12,8 @@ extension CameraView {
   static let topToolBarHeight: CGFloat = 34
   static let previewTopSpacing: CGFloat = 16
   static let bottomContainerBottomInset: CGFloat = 8
+  // Figma 16:9는 다이내믹 아일랜드를 피해 안전 영역 위 끝보다 6 위에서 시작한다.
+  static let widePreviewTopOffset: CGFloat = -6
 
   static var previewTopOffset: CGFloat {
     topToolBarTopInset + topToolBarHeight + previewTopSpacing
@@ -22,13 +24,15 @@ extension CameraView {
     min(safeAreaSize.width, (safeAreaSize.height - Self.previewTopOffset) * 3 / 4)
   }
 
-  func previewCenterY(previewWidth: CGFloat) -> CGFloat {
-    let height = PhotoAspectRatioGeometry.previewSize(width: previewWidth, ratio: .ratio4x3).height
-    return Self.previewTopOffset + height / 2
+  func previewTop(previewWidth: CGFloat, ratio: PhotoAspectRatio) -> CGFloat {
+    guard ratio != .ratio16x9 else { return Self.widePreviewTopOffset }
+
+    let baseHeight = PhotoAspectRatioGeometry.previewSize(width: previewWidth, ratio: .ratio4x3).height
+    let height = PhotoAspectRatioGeometry.previewSize(width: previewWidth, ratio: ratio).height
+    return Self.previewTopOffset + (baseHeight - height) / 2
   }
 
-  func topToolBarOverlap(previewWidth: CGFloat, previewHeight: CGFloat) -> CGFloat {
-    let previewTop = previewCenterY(previewWidth: previewWidth) - previewHeight / 2
-    return max(0, Self.topToolBarTopInset + Self.topToolBarHeight - previewTop)
+  func topToolBarOverlap(previewTop: CGFloat) -> CGFloat {
+    max(0, Self.topToolBarTopInset + Self.topToolBarHeight - previewTop)
   }
 }

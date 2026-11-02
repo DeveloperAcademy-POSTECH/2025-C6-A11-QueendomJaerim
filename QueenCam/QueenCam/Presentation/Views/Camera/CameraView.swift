@@ -241,6 +241,7 @@ extension CameraView: View {
       GeometryReader { proxy in
         let baseWidth = previewWidth(in: proxy.size)
         let previewSize = PhotoAspectRatioGeometry.previewSize(width: baseWidth, ratio: previewRatio)
+        let previewTopY = previewTop(previewWidth: baseWidth, ratio: previewRatio)
 
         ZStack {
           Color.black.ignoresSafeArea()
@@ -257,7 +258,7 @@ extension CameraView: View {
             isShowCameraSettingTool: $isShowCameraSettingTool,
             isRemoteGuideHidden: $isRemoteGuideHidden,
             isReferenceLarge: $isReferenceLarge,
-            topToolBarOverlap: topToolBarOverlap(previewWidth: baseWidth, previewHeight: previewSize.height),
+            topToolBarOverlap: topToolBarOverlap(previewTop: previewTopY),
             isGuidingToolBarInPreview: isGuidingToolBarInPreview,
             guidingToolToggle: toggleGuidingTool,
             currentRole: connectionViewModel.role,
@@ -267,7 +268,7 @@ extension CameraView: View {
           )
           .padding(DynamicModelUtils.isiPad ? 32 : 0)
           .frame(width: previewSize.width, height: previewSize.height)
-          .position(x: proxy.size.width / 2, y: previewCenterY(previewWidth: baseWidth))
+          .position(x: proxy.size.width / 2, y: previewTopY + previewSize.height / 2)
 
           CameraBottomContainer(
             currentRole: connectionViewModel.role,
