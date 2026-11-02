@@ -13,38 +13,49 @@ extension CameraView.CameraPreviewArea {
   @ViewBuilder
   var previewContent: some View {
     if currentMode == .photographer {  // 작가 + Default
-      CameraPreview(session: cameraViewModel.cameraManager.session)
-        .onCameraCaptureEvent { event in
-          if event.phase == .ended {
-            if cameraViewModel.isCaptureButtonEnabled {
-              shutterActionEffect()
-              cameraViewModel.capturePhoto()
+      GeometryReader { proxy in
+        let feedSize = PhotoAspectRatioGeometry.cameraFeedSize(
+          previewWidth: proxy.size.width,
+          ratio: cameraViewModel.photoAspectRatio
+        )
+
+        CameraPreview(session: cameraViewModel.cameraManager.session)
+          .frame(width: feedSize.width, height: feedSize.height)
+          .onCameraCaptureEvent { event in
+            if event.phase == .ended {
+              if cameraViewModel.isCaptureButtonEnabled {
+                shutterActionEffect()
+                cameraViewModel.capturePhoto()
+              }
             }
           }
-        }
-        .opacity(isShowShutterFlash ? 0 : 1)
-        .onTapGesture { location in  // 초점
-          isFocused = true
-          focusLocation = location
-          cameraViewModel.setFocus(point: location)
-        }
-        .gesture(
-          magnificationGesture,
-          including: activeTool == .frame ? .none : .all
-        )
-        .overlay {  // 초점
-          if isFocused {
-            CameraView.FocusView(position: $focusLocation)
-              .onAppear {
-                withAnimation {
-                  DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-                    self.isFocused = false
+          .opacity(isShowShutterFlash ? 0 : 1)
+          .onTapGesture { location in  // 초점
+            isFocused = true
+            focusLocation = location
+            cameraViewModel.setFocus(point: location)
+          }
+          .gesture(
+            magnificationGesture,
+            including: activeTool == .frame ? .none : .all
+          )
+          .overlay {  // 초점
+            if isFocused {
+              CameraView.FocusView(position: $focusLocation)
+                .onAppear {
+                  withAnimation {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                      self.isFocused = false
 
+                    }
                   }
                 }
-              }
+            }
           }
-        }
+          .position(x: proxy.size.width / 2, y: proxy.size.height / 2)
+      }
+      .clipped()
+      .contentShape(.rect)
     } else {  // 모델
       #if DEBUG
       DebugPreviewPlayerView(previewModel: previewModel)

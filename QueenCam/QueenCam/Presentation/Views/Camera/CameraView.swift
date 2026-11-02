@@ -132,6 +132,10 @@ extension CameraView {
     min(safeAreaSize.width, (safeAreaSize.height - Self.previewTopOffset) * 3 / 4)
   }
 
+  private var previewRatio: PhotoAspectRatio {
+    currentMode == .photographer ? cameraViewModel.photoAspectRatio : .ratio4x3
+  }
+
   private func previewCenterY(previewWidth: CGFloat) -> CGFloat {
     let height = PhotoAspectRatioGeometry.previewSize(width: previewWidth, ratio: .ratio4x3).height
     return Self.previewTopOffset + height / 2
@@ -248,7 +252,7 @@ extension CameraView: View {
     NavigationStack(path: $navigationRouter.path) {
       GeometryReader { proxy in
         let baseWidth = previewWidth(in: proxy.size)
-        let previewSize = PhotoAspectRatioGeometry.previewSize(width: baseWidth, ratio: .ratio4x3)
+        let previewSize = PhotoAspectRatioGeometry.previewSize(width: baseWidth, ratio: previewRatio)
 
         ZStack {
           Color.black.ignoresSafeArea()
