@@ -68,7 +68,8 @@ extension CameraView.CameraBottomContainer: View {
   }
 
   var body: some View {
-    VStack(spacing: 20) {
+    // 화면 아래에 고정되는 부품. 간격은 Figma 새 4:3 시안 기준이다.
+    VStack(spacing: 18) {
 
       Group {
         // 가이드를 선택했을 때 나오는 툴 별 서브 툴바
@@ -98,12 +99,11 @@ extension CameraView.CameraBottomContainer: View {
 
         captureButton
       }
-      .padding(.bottom, 51)
       .padding(.horizontal, 36)
     }
-    .padding(.top, 19)
-    .frame(maxWidth: isMinimize ? 300 : .infinity, maxHeight: isMinimize ? 120 : .infinity)
-    .background(.black)
+    .frame(maxWidth: isMinimize ? 300 : .infinity, maxHeight: isMinimize ? 120 : nil)
+    // 배경 없이 프리뷰 위에 올라가므로, 위로 밀어 바구니를 여는 영역을 직접 지정한다.
+    .contentShape(.rect)
     .gesture(dragGesture)
     .animation(.easeInOut, value: activeTool)
     // 툴 사용중 레퍼런스 확대시 가이드 툴 해제

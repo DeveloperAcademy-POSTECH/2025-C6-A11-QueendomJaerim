@@ -103,16 +103,9 @@ extension CameraView.CameraPreviewArea: View {
         ReconnectingView(didCancelButtonTap: reconnectCancelButtonDidTap)
       }
     }
-    .aspectRatio(3 / 4, contentMode: .fill)
+    // 크기는 CameraView의 화면 틀이 정한다.
     .clipped()
-    .clipShape(.rect(cornerRadius: 5))
     // MARK: Overlays
-    // MARK: Overlays - 테두리 그래픽 요소
-    .overlay {
-      RoundedRectangle(cornerRadius: 5)
-        .inset(by: 0.5)
-        .stroke(Color.gray900, lineWidth: 1)
-    }
     // MARK: Overlays - 토스트 오버레이
     .overlay(alignment: .center) {
       if !connectionLost {
@@ -126,6 +119,5 @@ extension CameraView.CameraPreviewArea: View {
       ThumbsUpView(trigger: $thumbsUpViewModel.animationTriger)
         .opacity(thumbsUpViewModel.isShowInitialView ? 1 : .zero)
     }
-    .padding(.horizontal, 16)
   }
 }

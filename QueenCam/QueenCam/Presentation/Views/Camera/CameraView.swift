@@ -117,6 +117,30 @@ extension CameraView {
     WACapabilities.supportedFeatures.contains(.wifiAware)
   }
 
+  // MARK: 화면 틀
+  // 프리뷰를 맨 뒤에 깔고, 툴바와 하단 부품은 화면 가장자리에 고정한다.
+  // 값의 기준은 Figma 새 4:3 시안이다. 상단 툴바는 위 안전 영역에서 6 아래에 높이 34로 놓이고,
+  // 4:3 프리뷰는 툴바 아래 16에서 시작한다. 하단 부품은 아래 안전 영역에서 8 위에 놓인다.
+  private static let topToolBarTopInset: CGFloat = 6
+  private static let topToolBarHeight: CGFloat = 34
+  private static let previewTopSpacing: CGFloat = 16
+  private static let bottomContainerBottomInset: CGFloat = 8
+
+  private static var previewTopOffset: CGFloat {
+    topToolBarTopInset + topToolBarHeight + previewTopSpacing
+  }
+
+  /// 프리뷰 너비. 화면 너비를 채우고, 화면이 넓은 기기(iPad)에서는 안전 영역 높이 안에 들어오도록 줄인다.
+  private func previewWidth(in safeAreaSize: CGSize) -> CGFloat {
+    min(safeAreaSize.width, (safeAreaSize.height - Self.previewTopOffset) * 3 / 4)
+  }
+
+  /// 프리뷰 중앙선의 y 좌표(안전 영역 기준). 4:3 프리뷰 자리의 가운데이며, 비율이 바뀌어도 움직이지 않는다.
+  private func previewCenterY(previewWidth: CGFloat) -> CGFloat {
+    let height = PhotoAspectRatioGeometry.previewSize(width: previewWidth, ratio: .ratio4x3).height
+    return Self.previewTopOffset + height / 2
+  }
+
   private var releaseNoteItemBinding: Binding<ReleaseNote?> {
     Binding(
       get: { releaseNoteViewModel.releaseNoteItem },
@@ -159,12 +183,96 @@ extension CameraView: View {
     .glassEffect(.clear.tint(Color.hex333333), in: .rect(cornerRadius: 59))
   }
 
+  private var topToolBar: some View {
+    HStack {
+      // 연결 상태 뷰
+      TopToolBarView(
+        connectedDeviceName: connectionViewModel.connectedDeviceName,
+        reconnectingDeviceName: connectionViewModel.reconnectingDeviceName,
+        indicatorMenuContent: {
+          Button("역할 바꾸기") {
+            changeRoleButtonDidTap()
+          }
+
+          Button("연결 종료하기", role: .destructive) {
+            isShowDisconnectAlert = true
+          }
+        },
+        connectedWithButtonDidTap: {
+          if isAvailableWifiAware {
+            isShowConnectionView = true
+          } else {
+            isShowWifiAwareUnsupportedAlert = true
+          }
+        }
+      )
+      .alert(
+        "연결이 불가능한 기기입니다.",
+        isPresented: $isShowWifiAwareUnsupportedAlert,
+        actions: {
+          Button(role: .cancel) {
+          } label: {
+            Text("확인했어요")
+          }
+        },
+        message: {
+          Text("이 기기는 다른 기기와의 연결이 어려워요. 대신 찍자의 여러 가이드 기능은 이용할 수 있어요.")
+        }
+      )
+      .alert(
+        "연결을 종료합니다.",
+        isPresented: $isShowDisconnectAlert,
+        actions: {
+          Button(role: .destructive) {
+            connectionViewModel.disconnectButtonDidTap()
+          } label: {
+            Text("연결 종료하기")
+          }
+
+          Button(role: .cancel) {
+          } label: {
+            Text("취소하기")
+          }
+        },
+        message: {
+          Text("친구와 연결을 끊고 촬영을 마칩니다.")
+        }
+      )
+
+      Spacer()
+
+      // 버튼 모양은 #497 T11-2에서 Figma 시안대로 바꾼다.
+      HStack(spacing: 12) {
+        if currentMode == .photographer {
+          Button {
+            cameraViewModel.switchPhotoAspectRatio()
+          } label: {
+            Text(verbatim: cameraViewModel.photoAspectRatio.rawValue)
+              .typo(.m15)
+          }
+          .buttonStyle(.glass)
+          .accessibilityLabel("사진 비율")
+        }
+
+        Button("설정", systemImage: "gearshape") {
+          navigationRouter.push(.settings(.main(role: connectionViewModel.role, highlight: nil)))
+        }
+        .labelStyle(.iconOnly)
+        .buttonStyle(.glass)
+      }
+    }
+  }
+
   var body: some View {
     NavigationStack(path: $navigationRouter.path) {
-      ZStack {
-        Color.black.ignoresSafeArea()
+      GeometryReader { proxy in
+        let baseWidth = previewWidth(in: proxy.size)
+        let previewSize = PhotoAspectRatioGeometry.previewSize(width: baseWidth, ratio: .ratio4x3)
 
-        VStack(spacing: .zero) {
+        ZStack {
+          Color.black.ignoresSafeArea()
+
+          // 맨 뒤: 프리뷰. 중앙선에 가운데를 맞춘다.
           CameraPreviewArea(
             cameraViewModel: cameraViewModel,
             previewModel: previewModel,
@@ -183,7 +291,10 @@ extension CameraView: View {
             shutterActionEffect: flashScreen
           )
           .padding(DynamicModelUtils.isiPad ? 32 : 0)
+          .frame(width: previewSize.width, height: previewSize.height)
+          .position(x: proxy.size.width / 2, y: previewCenterY(previewWidth: baseWidth))
 
+          // 하단 부품: 아래 안전 영역에 고정
           CameraBottomContainer(
             currentRole: connectionViewModel.role,
             cameraViewModel: cameraViewModel,
@@ -203,88 +314,18 @@ extension CameraView: View {
             activeTool = activeTool == targetTool ? nil : targetTool
           }
           .minimize(DynamicModelUtils.isiPad)
+          .padding(.bottom, Self.bottomContainerBottomInset)
+          .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+
+          // 상단 툴바: 위 안전 영역에 고정
+          topToolBar
+            .padding(.horizontal, 12)
+            .padding(.top, Self.topToolBarTopInset)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
       }
-      .padding(.top, 21)
-      .navigationBarTitleDisplayMode(.inline)
+      .toolbar(.hidden, for: .navigationBar)
       .trackScreen(.camera, Self.self)
-      .toolbar {
-        ToolbarItem(placement: .principal) {
-          // 제일 위 연결 상태 뷰
-          TopToolBarView(
-            connectedDeviceName: connectionViewModel.connectedDeviceName,
-            reconnectingDeviceName: connectionViewModel.reconnectingDeviceName,
-            indicatorMenuContent: {
-              Button("역할 바꾸기") {
-                changeRoleButtonDidTap()
-              }
-
-              Button("연결 종료하기", role: .destructive) {
-                isShowDisconnectAlert = true
-              }
-            },
-            connectedWithButtonDidTap: {
-              if isAvailableWifiAware {
-                isShowConnectionView = true
-              } else {
-                isShowWifiAwareUnsupportedAlert = true
-              }
-            }
-          )
-          //        .padding() // 툴바로 들어가면서 안 먹힘
-          .alert(
-            "연결이 불가능한 기기입니다.",
-            isPresented: $isShowWifiAwareUnsupportedAlert,
-            actions: {
-              Button(role: .cancel) {
-              } label: {
-                Text("확인했어요")
-              }
-            },
-            message: {
-              Text("이 기기는 다른 기기와의 연결이 어려워요. 대신 찍자의 여러 가이드 기능은 이용할 수 있어요.")
-            }
-          )
-          .alert(
-            "연결을 종료합니다.",
-            isPresented: $isShowDisconnectAlert,
-            actions: {
-              Button(role: .destructive) {
-                connectionViewModel.disconnectButtonDidTap()
-              } label: {
-                Text("연결 종료하기")
-              }
-
-              Button(role: .cancel) {
-              } label: {
-                Text("취소하기")
-              }
-            },
-            message: {
-              Text("친구와 연결을 끊고 촬영을 마칩니다.")
-            }
-          )
-        }
-
-        // 임시 위치. #497 새 상단 툴바 배치(T11)에서 정식 위치로 옮긴다.
-        if currentMode == .photographer {
-          ToolbarItem(placement: .topBarTrailing) {
-            Button {
-              cameraViewModel.switchPhotoAspectRatio()
-            } label: {
-              Text(verbatim: cameraViewModel.photoAspectRatio.rawValue)
-                .typo(.m15)
-            }
-            .accessibilityLabel("사진 비율")
-          }
-        }
-
-        ToolbarItem(placement: .topBarTrailing) {
-          Button("설정", systemImage: "gearshape") {
-            navigationRouter.push(.settings(.main(role: connectionViewModel.role, highlight: nil)))
-          }
-        }
-      }
       .navigationDestination(for: Route.self) { route in
         switch route {
         case let .settings(settingsRoute):
