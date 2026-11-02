@@ -74,9 +74,12 @@ extension PhotoAspectRatioCroppingService {
       }
     }
 
+    // 파일이 만들어지는 쓰기 시작 전에 읽어 둔다. 읽다가 실패해도 정리할 파일이 없다.
+    let timeRange = try await videoTrack.load(.timeRange)
+    let duration = try await asset.load(.duration)
+
     guard reader.startReading() else { throw MovieCroppingError.readingFailed(reader.error) }
     guard writer.startWriting() else { throw MovieCroppingError.writingFailed(writer.error) }
-    let timeRange = try await videoTrack.load(.timeRange)
     writer.startSession(atSourceTime: timeRange.start)
 
     await copyAll(copies, reader: reader)
@@ -86,7 +89,7 @@ extension PhotoAspectRatioCroppingService {
       try? FileManager.default.removeItem(at: croppedMovieURL)
       throw MovieCroppingError.readingFailed(reader.error)
     }
-    writer.endSession(atSourceTime: try await asset.load(.duration))
+    writer.endSession(atSourceTime: duration)
     await writer.finishWriting()
     guard writer.status == .completed else {
       try? FileManager.default.removeItem(at: croppedMovieURL)
