@@ -114,11 +114,9 @@ nonisolated final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate 
     lastStillImageData = imageData
 
     if !isLivePhoto {
-      let originalPhotoOutput = applyAspectRatio(to: PhotoOuput.basicPhoto(thumbnail: image, imageData: imageData))
-      let photoOutput = process(originalPhotoOutput)
-      saveOriginalIfNeeded(originalPhotoOutput)
-      PhotoLibraryHelpers.saveToPhotoLibrary(photoOutput.imageData)
-      completion(photoOutput, sendOutputs(original: originalPhotoOutput, processed: photoOutput))
+      Task {
+        await saveBasicPhoto(imageData: imageData, thumbnail: image)
+      }
     }
   }
 
@@ -259,6 +257,16 @@ nonisolated extension CameraDelegate {
 }
 
 nonisolated private extension CameraDelegate {
+  /// 사진 자르기와 펜 합성이 화면을 멈추지 않게 카메라 콜백 스레드와 상관없이 백그라운드에서 처리하고 저장한다.
+  @concurrent
+  func saveBasicPhoto(imageData: Data, thumbnail: UIImage) async {
+    let originalPhotoOutput = applyAspectRatio(to: PhotoOuput.basicPhoto(thumbnail: thumbnail, imageData: imageData))
+    let photoOutput = process(originalPhotoOutput)
+    saveOriginalIfNeeded(originalPhotoOutput)
+    PhotoLibraryHelpers.saveToPhotoLibrary(photoOutput.imageData)
+    completion(photoOutput, sendOutputs(original: originalPhotoOutput, processed: photoOutput))
+  }
+
   /// 영상 자르기는 오래 걸리므로 카메라 콜백 스레드와 상관없이 백그라운드에서 자르고 저장한다.
   @concurrent
   func saveLivePhotoInAspectRatio(imageData: Data, thumbnail: UIImage, livePhotoMovieURL: URL) async {
