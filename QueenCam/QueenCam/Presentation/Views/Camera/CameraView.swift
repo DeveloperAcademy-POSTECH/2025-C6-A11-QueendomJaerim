@@ -184,83 +184,67 @@ extension CameraView: View {
   }
 
   private var topToolBar: some View {
-    HStack {
-      // 연결 상태 뷰
-      TopToolBarView(
-        connectedDeviceName: connectionViewModel.connectedDeviceName,
-        reconnectingDeviceName: connectionViewModel.reconnectingDeviceName,
-        indicatorMenuContent: {
-          Button("역할 바꾸기") {
-            changeRoleButtonDidTap()
-          }
-
-          Button("연결 종료하기", role: .destructive) {
-            isShowDisconnectAlert = true
-          }
-        },
-        connectedWithButtonDidTap: {
-          if isAvailableWifiAware {
-            isShowConnectionView = true
-          } else {
-            isShowWifiAwareUnsupportedAlert = true
-          }
-        }
-      )
-      .alert(
-        "연결이 불가능한 기기입니다.",
-        isPresented: $isShowWifiAwareUnsupportedAlert,
-        actions: {
-          Button(role: .cancel) {
-          } label: {
-            Text("확인했어요")
-          }
-        },
-        message: {
-          Text("이 기기는 다른 기기와의 연결이 어려워요. 대신 찍자의 여러 가이드 기능은 이용할 수 있어요.")
-        }
-      )
-      .alert(
-        "연결을 종료합니다.",
-        isPresented: $isShowDisconnectAlert,
-        actions: {
-          Button(role: .destructive) {
-            connectionViewModel.disconnectButtonDidTap()
-          } label: {
-            Text("연결 종료하기")
-          }
-
-          Button(role: .cancel) {
-          } label: {
-            Text("취소하기")
-          }
-        },
-        message: {
-          Text("친구와 연결을 끊고 촬영을 마칩니다.")
-        }
-      )
-
-      Spacer()
-
-      // 버튼 모양은 #497 T11-2에서 Figma 시안대로 바꾼다.
-      HStack(spacing: 12) {
-        if currentMode == .photographer {
-          Button {
-            cameraViewModel.switchPhotoAspectRatio()
-          } label: {
-            Text(verbatim: cameraViewModel.photoAspectRatio.rawValue)
-              .typo(.m15)
-          }
-          .buttonStyle(.glass)
-          .accessibilityLabel("사진 비율")
+    TopToolBarView(
+      connectedDeviceName: connectionViewModel.connectedDeviceName,
+      reconnectingDeviceName: connectionViewModel.reconnectingDeviceName,
+      role: connectionViewModel.role,
+      // 비율은 작가만 바꾼다.
+      aspectRatioTitle: currentMode == .photographer ? cameraViewModel.photoAspectRatio.rawValue : nil,
+      indicatorMenuContent: {
+        Button("역할 바꾸기") {
+          changeRoleButtonDidTap()
         }
 
-        Button("설정", systemImage: "gearshape") {
-          navigationRouter.push(.settings(.main(role: connectionViewModel.role, highlight: nil)))
+        Button("연결 종료하기", role: .destructive) {
+          isShowDisconnectAlert = true
         }
-        .labelStyle(.iconOnly)
-        .buttonStyle(.glass)
+      },
+      connectedWithButtonDidTap: {
+        if isAvailableWifiAware {
+          isShowConnectionView = true
+        } else {
+          isShowWifiAwareUnsupportedAlert = true
+        }
+      },
+      aspectRatioButtonDidTap: {
+        cameraViewModel.switchPhotoAspectRatio()
+      },
+      settingsButtonDidTap: {
+        navigationRouter.push(.settings(.main(role: connectionViewModel.role, highlight: nil)))
       }
-    }
+    )
+    .alert(
+      "연결이 불가능한 기기입니다.",
+      isPresented: $isShowWifiAwareUnsupportedAlert,
+      actions: {
+        Button(role: .cancel) {
+        } label: {
+          Text("확인했어요")
+        }
+      },
+      message: {
+        Text("이 기기는 다른 기기와의 연결이 어려워요. 대신 찍자의 여러 가이드 기능은 이용할 수 있어요.")
+      }
+    )
+    .alert(
+      "연결을 종료합니다.",
+      isPresented: $isShowDisconnectAlert,
+      actions: {
+        Button(role: .destructive) {
+          connectionViewModel.disconnectButtonDidTap()
+        } label: {
+          Text("연결 종료하기")
+        }
+
+        Button(role: .cancel) {
+        } label: {
+          Text("취소하기")
+        }
+      },
+      message: {
+        Text("친구와 연결을 끊고 촬영을 마칩니다.")
+      }
+    )
   }
 
   var body: some View {
