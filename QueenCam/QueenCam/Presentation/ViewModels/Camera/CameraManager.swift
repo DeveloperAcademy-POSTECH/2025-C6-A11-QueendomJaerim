@@ -191,10 +191,11 @@ final class CameraManager: NSObject {
             self.onPhotoCapture?(thumbnail)
           }
           self.onDidFinishCapture?()
-        }
 
-        photoOutputsToSend.forEach {
-          self.sendPhoto($0)
+          // 연결 상태는 메인에서만 읽을 수 있어 같은 블록에서 전송한다.
+          photoOutputsToSend.forEach {
+            self.sendPhoto($0)
+          }
         }
       }
 
