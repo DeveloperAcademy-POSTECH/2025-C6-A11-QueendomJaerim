@@ -7,7 +7,7 @@ struct GuidingToggleButton {
   let buttonSize: CGFloat
   let tapAction: () -> Void
 
-  init(role: Role?, systemName: String, isActive: Bool, buttonSize: CGFloat = 40, tapAction: @escaping () -> Void) {
+  init(role: Role?, systemName: String, isActive: Bool, buttonSize: CGFloat = 34, tapAction: @escaping () -> Void) {
     self.role = role
     self.systemName = systemName
     self.isActive = isActive
@@ -23,13 +23,13 @@ extension GuidingToggleButton: View {
       case .model:
         Button(action: { tapAction() }) {
           Circle()
-            .fill(.black.opacity(0.6))
+            .fill(.black.opacity(0.5))
             .frame(width: buttonSize, height: buttonSize)
             .overlay {
               Image(systemName: systemName)
                 .resizable()
                 .aspectRatio(contentMode: .fill)
-                .frame(width: 22.5, height: 13.5)
+                .frame(width: 20, height: 12)
                 .foregroundStyle(isActive ? .modelPrimary : .offWhite)
             }
         }
@@ -37,13 +37,13 @@ extension GuidingToggleButton: View {
       case .photographer:
         Button(action: { tapAction() }) {
           Circle()
-            .fill(.black.opacity(0.6))
+            .fill(.black.opacity(0.5))
             .frame(width: buttonSize, height: buttonSize)
             .overlay {
               Image(systemName: systemName)
                 .resizable()
                 .aspectRatio(contentMode: .fill)
-                .frame(width: 22.5, height: 13.5)
+                .frame(width: 20, height: 12)
                 .foregroundStyle(isActive ? .photographerPrimary : .offWhite)
             }
         }
@@ -51,13 +51,13 @@ extension GuidingToggleButton: View {
       case .none:
         Button(action: { tapAction() }) {
           Circle()
-            .fill(.black.opacity(0.6))
+            .fill(.black.opacity(0.5))
             .frame(width: buttonSize, height: buttonSize)
             .overlay {
               Image(systemName: systemName)
                 .resizable()
                 .aspectRatio(contentMode: .fill)
-                .frame(width: 22.5, height: 13.5)
+                .frame(width: 20, height: 12)
                 .foregroundStyle(isActive ? .photographerPrimary : .offWhite)
             }
         }

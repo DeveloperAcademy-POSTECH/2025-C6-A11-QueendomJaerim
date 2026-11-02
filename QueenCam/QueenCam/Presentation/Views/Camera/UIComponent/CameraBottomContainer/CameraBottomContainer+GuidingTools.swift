@@ -4,7 +4,7 @@ extension CameraView.CameraBottomContainer {
   /// 어떤 가이딩 툴도 선택하지 않았을 때 나오는 툴바
   var guidingTools: some View {
     let disabledByPeer = frameViewModel.isFrameEnabled && frameViewModel.frameOwnerRole != currentRole
-    return HStack(alignment: .center, spacing: 30) {
+    return HStack(alignment: .center, spacing: 32) {
       // 프레임
       GuidingButton(
         role: currentRole,

@@ -9,13 +9,13 @@ import SwiftUI
 
 extension CameraView {
   struct ToggleToolboxButton: View {
-    let size: CGFloat = 40
+    let size: CGFloat = 34
     let action: () -> Void
 
     var body: some View {
       Button(action: action) {
         Circle()
-          .fill(.black.opacity(0.6))
+          .fill(.black.opacity(0.5))
           .frame(width: size, height: size)
           .overlay {
             Image(.toolbox)
@@ -23,7 +23,7 @@ extension CameraView {
               .renderingMode(.template)
               .foregroundStyle(.originalWhite)
               .scaledToFit()
-              .frame(width: 15)
+              .frame(width: 13)
           }
       }
     }

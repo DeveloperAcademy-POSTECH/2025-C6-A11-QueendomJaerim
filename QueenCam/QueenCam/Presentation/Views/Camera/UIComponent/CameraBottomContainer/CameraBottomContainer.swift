@@ -88,7 +88,8 @@ extension CameraView.CameraBottomContainer: View {
         }
       }
       .padding(.horizontal, 24)
-      .padding(.vertical, 12)
+      .padding(.top, 10)
+      .padding(.bottom, 12)
       .glassEffect(.clear, in: .rect(cornerRadius: 99))
 
       // 썸네일, 촬영 버튼, 따봉 or 셀카
