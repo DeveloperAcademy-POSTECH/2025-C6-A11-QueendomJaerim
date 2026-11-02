@@ -103,7 +103,6 @@ extension CameraView.CameraPreviewArea: View {
         ReconnectingView(didCancelButtonTap: reconnectCancelButtonDidTap)
       }
     }
-    // 크기는 CameraView의 화면 틀이 정한다.
     .clipped()
     // MARK: Overlays
     // MARK: Overlays - 토스트 오버레이

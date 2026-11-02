@@ -68,7 +68,6 @@ extension CameraView.CameraBottomContainer: View {
   }
 
   var body: some View {
-    // 화면 아래에 고정되는 부품. 간격은 Figma 새 4:3 시안 기준이다.
     VStack(spacing: 18) {
 
       Group {
@@ -103,7 +102,6 @@ extension CameraView.CameraBottomContainer: View {
       .padding(.horizontal, 36)
     }
     .frame(maxWidth: isMinimize ? 300 : .infinity, maxHeight: isMinimize ? 120 : nil)
-    // 배경 없이 프리뷰 위에 올라가므로, 위로 밀어 바구니를 여는 영역을 직접 지정한다.
     .contentShape(.rect)
     .gesture(dragGesture)
     .animation(.easeInOut, value: activeTool)

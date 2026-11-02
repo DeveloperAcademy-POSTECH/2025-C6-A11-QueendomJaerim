@@ -16,7 +16,7 @@ struct GuidingButton {
   let tapAction: () -> Void
   let guidingButtonType: GuidingButtonType
 
-  // 기존 아이콘(21pt 캔버스)을 Figma 시안 아이콘(19pt 캔버스)과 같은 그림 크기로 줄인 값
+  // Figma 아이콘과 같은 그림 크기가 되는 높이
   private let symbolHeight: CGFloat = 18.5
   private let symbolLabelSpacing: CGFloat = 4
 }
