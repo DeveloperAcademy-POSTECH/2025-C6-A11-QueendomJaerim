@@ -89,6 +89,43 @@ struct CameraDelegateAspectRatioTests {
     #expect(!FileManager.default.fileExists(atPath: movieURL.path))
   }
 
+  @Test("촬영마다 셔터 순간의 비율로 자르고 처리 순서가 뒤바뀌어도 섞이지 않는다")
+  func eachShotCropsWithItsOwnRatio() async throws {
+    let still = try makeJPEGData(width: 4, height: 3)
+    let thumbnail = try #require(UIImage(data: still))
+    let service = RatioEchoCroppingServiceStub()
+    let squareDelegate = makeDelegate(aspectRatio: .ratio1x1, croppingService: service)
+    let wideDelegate = makeDelegate(aspectRatio: .ratio16x9, croppingService: service)
+    let photo = PhotoOuput.basicPhoto(thumbnail: thumbnail, imageData: still)
+
+    // 1:1을 먼저 찍었지만 16:9의 처리가 먼저 끝나는 순서로 처리한다.
+    let wideResult = wideDelegate.applyAspectRatio(to: photo)
+    let squareResult = squareDelegate.applyAspectRatio(to: photo)
+
+    #expect(wideResult.imageData == Data("16:9".utf8))
+    #expect(squareResult.imageData == Data("1:1".utf8))
+
+    let wideLive = try #require(
+      await wideDelegate.applyAspectRatio(
+        toLivePhotoImageData: still,
+        thumbnail: thumbnail,
+        livePhotoMovieURL: makeMovieFile("original")
+      )
+    )
+    let squareLive = try #require(
+      await squareDelegate.applyAspectRatio(
+        toLivePhotoImageData: still,
+        thumbnail: thumbnail,
+        livePhotoMovieURL: makeMovieFile("original")
+      )
+    )
+
+    #expect(wideLive.photoOutput.imageData == Data("16:9".utf8))
+    #expect(videoData(of: wideLive.photoOutput) == Data("16:9".utf8))
+    #expect(squareLive.photoOutput.imageData == Data("1:1".utf8))
+    #expect(videoData(of: squareLive.photoOutput) == Data("1:1".utf8))
+  }
+
   @Test("Live Photo 사진을 자르지 못하면 원본 쌍을 쓴다")
   func usesOriginalPairWhenImageCropFails() async throws {
     try await expectOriginalPair(cropResult: nil, movieCropResult: makeMovieFile("cropped"))
@@ -155,11 +192,36 @@ extension CameraDelegateAspectRatioTests {
     }
   }
 
+  /// 전달받은 비율 이름을 결과로 돌려줘서 어떤 비율로 잘랐는지 확인하게 한다.
+  private struct RatioEchoCroppingServiceStub: PhotoAspectRatioCroppingServiceProtocol {
+    func crop(imageData: Data, to ratio: PhotoAspectRatio) -> Data? {
+      Data(ratio.rawValue.utf8)
+    }
+
+    func crop(livePhotoMovieURL: URL, to ratio: PhotoAspectRatio) async -> URL? {
+      let url = FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString)
+        .appendingPathExtension("mov")
+      try? Data(ratio.rawValue.utf8).write(to: url)
+      return url
+    }
+  }
+
   private func makeDelegate(cropResult: Data?, movieCropResult: URL? = nil) -> CameraDelegate {
+    makeDelegate(
+      aspectRatio: .ratio16x9,
+      croppingService: CroppingServiceStub(result: cropResult, movieResult: movieCropResult)
+    )
+  }
+
+  private func makeDelegate(
+    aspectRatio: PhotoAspectRatio,
+    croppingService: PhotoAspectRatioCroppingServiceProtocol
+  ) -> CameraDelegate {
     CameraDelegate(
       isCameraPosition: .back,
-      aspectRatio: .ratio16x9,
-      aspectRatioCroppingService: CroppingServiceStub(result: cropResult, movieResult: movieCropResult)
+      aspectRatio: aspectRatio,
+      aspectRatioCroppingService: croppingService
     ) { _, _ in }
   }
 
