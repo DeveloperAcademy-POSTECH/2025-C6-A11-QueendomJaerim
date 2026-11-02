@@ -33,6 +33,8 @@ extension CameraView {
     @Binding var isRemoteGuideHidden: Bool
     @Binding var isReferenceLarge: Bool  // 레퍼런스 확대 축소 프로퍼티
 
+    let topToolBarOverlap: CGFloat
+
     // connectionViewModel -> 프로퍼티 변환
     let currentRole: Role?
     let connectionLost: Bool

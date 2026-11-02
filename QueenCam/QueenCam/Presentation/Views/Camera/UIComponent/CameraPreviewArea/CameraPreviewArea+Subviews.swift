@@ -94,6 +94,7 @@ extension CameraView.CameraPreviewArea {
           }
         }
         .padding(12)
+        .padding(.top, topToolBarOverlap)
       }
 
       Spacer()

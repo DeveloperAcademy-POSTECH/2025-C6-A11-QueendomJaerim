@@ -141,6 +141,11 @@ extension CameraView {
     return Self.previewTopOffset + height / 2
   }
 
+  private func topToolBarOverlap(previewWidth: CGFloat, previewHeight: CGFloat) -> CGFloat {
+    let previewTop = previewCenterY(previewWidth: previewWidth) - previewHeight / 2
+    return max(0, Self.topToolBarTopInset + Self.topToolBarHeight - previewTop)
+  }
+
   private var releaseNoteItemBinding: Binding<ReleaseNote?> {
     Binding(
       get: { releaseNoteViewModel.releaseNoteItem },
@@ -269,6 +274,7 @@ extension CameraView: View {
             isShowCameraSettingTool: $isShowCameraSettingTool,
             isRemoteGuideHidden: $isRemoteGuideHidden,
             isReferenceLarge: $isReferenceLarge,
+            topToolBarOverlap: topToolBarOverlap(previewWidth: baseWidth, previewHeight: previewSize.height),
             currentRole: connectionViewModel.role,
             connectionLost: connectionViewModel.connectionLost,
             reconnectCancelButtonDidTap: connectionViewModel.reconnectCancelButtonDidTap,
