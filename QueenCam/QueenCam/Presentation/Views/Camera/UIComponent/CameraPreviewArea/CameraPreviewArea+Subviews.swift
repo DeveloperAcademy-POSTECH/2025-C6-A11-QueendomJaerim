@@ -79,6 +79,28 @@ extension CameraView.CameraPreviewArea {
     }
   }
 
+  var verticalGuidingToolLayer: some View {
+    VStack {
+      Spacer()
+
+      HStack {
+        CameraView.GuidingToolBar(
+          axis: .vertical,
+          currentRole: currentRole,
+          penViewModel: penViewModel,
+          frameViewModel: frameViewModel,
+          activeTool: $activeTool,
+          isRemoteGuideHidden: $isRemoteGuideHidden,
+          guidingToolToggle: guidingToolToggle
+        )
+
+        Spacer()
+      }
+    }
+    .padding(12)
+    .animation(.easeInOut, value: activeTool)
+  }
+
   /// 카메라 바구니 토글 버튼과 눈까리 버튼
   var toggleButtonsLayer: some View {
     VStack {

@@ -117,33 +117,16 @@ extension CameraView {
     WACapabilities.supportedFeatures.contains(.wifiAware)
   }
 
-  // MARK: 화면 틀
-  private static let topToolBarTopInset: CGFloat = 6
-  private static let topToolBarHeight: CGFloat = 34
-  private static let previewTopSpacing: CGFloat = 16
-  private static let bottomContainerBottomInset: CGFloat = 8
-
-  private static var previewTopOffset: CGFloat {
-    topToolBarTopInset + topToolBarHeight + previewTopSpacing
-  }
-
-  /// iPad처럼 넓은 화면에서는 높이 안에 들어오도록 줄인다.
-  private func previewWidth(in safeAreaSize: CGSize) -> CGFloat {
-    min(safeAreaSize.width, (safeAreaSize.height - Self.previewTopOffset) * 3 / 4)
-  }
-
   private var previewRatio: PhotoAspectRatio {
     currentMode == .photographer ? cameraViewModel.photoAspectRatio : .ratio4x3
   }
 
-  private func previewCenterY(previewWidth: CGFloat) -> CGFloat {
-    let height = PhotoAspectRatioGeometry.previewSize(width: previewWidth, ratio: .ratio4x3).height
-    return Self.previewTopOffset + height / 2
+  private var isGuidingToolBarInPreview: Bool {
+    previewRatio == .ratio16x9
   }
 
-  private func topToolBarOverlap(previewWidth: CGFloat, previewHeight: CGFloat) -> CGFloat {
-    let previewTop = previewCenterY(previewWidth: previewWidth) - previewHeight / 2
-    return max(0, Self.topToolBarTopInset + Self.topToolBarHeight - previewTop)
+  private func toggleGuidingTool(_ tool: ActiveTool) {
+    activeTool = activeTool == tool ? nil : tool
   }
 
   private var releaseNoteItemBinding: Binding<ReleaseNote?> {
@@ -275,6 +258,8 @@ extension CameraView: View {
             isRemoteGuideHidden: $isRemoteGuideHidden,
             isReferenceLarge: $isReferenceLarge,
             topToolBarOverlap: topToolBarOverlap(previewWidth: baseWidth, previewHeight: previewSize.height),
+            isGuidingToolBarInPreview: isGuidingToolBarInPreview,
+            guidingToolToggle: toggleGuidingTool,
             currentRole: connectionViewModel.role,
             connectionLost: connectionViewModel.connectionLost,
             reconnectCancelButtonDidTap: connectionViewModel.reconnectCancelButtonDidTap,
@@ -298,10 +283,10 @@ extension CameraView: View {
             isRemoteGuideHidden: $isRemoteGuideHidden,
             isShowPhotoPicker: $isShowPhotoPicker,
             isReferenceLarge: $isReferenceLarge,
-            shutterActionEffect: flashScreen
-          ) { targetTool in
-            activeTool = activeTool == targetTool ? nil : targetTool
-          }
+            shutterActionEffect: flashScreen,
+            isGuidingToolBarHidden: isGuidingToolBarInPreview,
+            guidingToolToggle: toggleGuidingTool
+          )
           .minimize(DynamicModelUtils.isiPad)
           .padding(.bottom, Self.bottomContainerBottomInset)
           .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)

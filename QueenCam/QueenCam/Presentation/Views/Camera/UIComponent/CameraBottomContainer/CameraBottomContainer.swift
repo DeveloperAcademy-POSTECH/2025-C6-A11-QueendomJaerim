@@ -26,12 +26,11 @@ extension CameraView {
     // 캡처시 화면 깜빡임 액션관리
     let shutterActionEffect: () -> Void
 
+    let isGuidingToolBarHidden: Bool
+
     let guidingToolToggle: (_ selectedTool: ActiveTool) -> Void
     // 비율이 작은 기기를 위한 모드. true면 뷰 크기 조정
     var isMinimize = false
-
-    // 도구 버튼 토글 애니메이션을 위한 네임스페이스
-    @Namespace var toggledToolNamespace
   }
 }
 
@@ -42,14 +41,6 @@ extension CameraView.CameraBottomContainer {
 
   var isFrameActive: Bool {
     activeTool == .frame
-  }
-
-  var isPenActive: Bool {
-    activeTool == .pen
-  }
-
-  var isMagicPenActive: Bool {
-    activeTool == .maginPen
   }
 }
 
@@ -70,26 +61,17 @@ extension CameraView.CameraBottomContainer: View {
   var body: some View {
     VStack(spacing: 18) {
 
-      Group {
-        // 가이드를 선택했을 때 나오는 툴 별 서브 툴바
-        if let activeTool {
-          switch activeTool {
-          case .frame:
-            frameSubToolBar
-          case .pen:
-            penSubToolBar
-          case .maginPen:
-            magicPenSubToolBar
-          }
-        } else {
-          // 가이드를 아무것도 선택하지 않았을때
-          guidingTools
-        }
+      if !isGuidingToolBarHidden {
+        CameraView.GuidingToolBar(
+          axis: .horizontal,
+          currentRole: currentRole,
+          penViewModel: penViewModel,
+          frameViewModel: frameViewModel,
+          activeTool: $activeTool,
+          isRemoteGuideHidden: $isRemoteGuideHidden,
+          guidingToolToggle: guidingToolToggle
+        )
       }
-      .padding(.horizontal, 24)
-      .padding(.top, 10)
-      .padding(.bottom, 12)
-      .glassEffect(.clear, in: .rect(cornerRadius: 99))
 
       // 썸네일, 촬영 버튼, 따봉 or 셀카
       HStack {

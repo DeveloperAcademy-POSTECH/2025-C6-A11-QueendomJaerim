@@ -15,6 +15,7 @@ struct GuidingButton {
   let isDisabled: Bool
   let tapAction: () -> Void
   let guidingButtonType: GuidingButtonType
+  var isLabelHidden = false
 
   // Figma 아이콘과 같은 그림 크기가 되는 높이
   private let symbolHeight: CGFloat = 18.5
@@ -70,8 +71,10 @@ extension GuidingButton: View {
               .scaledToFit()
               .frame(height: symbolHeight)
 
-            Text(title)
-              .typo(.sfR10)
+            if !isLabelHidden {
+              Text(title)
+                .typo(.sfR10)
+            }
           }
           .foregroundStyle(
             isDisabled
@@ -89,8 +92,10 @@ extension GuidingButton: View {
               .scaledToFit()
               .frame(height: symbolHeight)
 
-            Text(title)
-              .typo(.sfR10)
+            if !isLabelHidden {
+              Text(title)
+                .typo(.sfR10)
+            }
           }
           .foregroundStyle(
             isDisabled
@@ -108,8 +113,10 @@ extension GuidingButton: View {
               .scaledToFit()
               .frame(height: symbolHeight)
 
-            Text(title)
-              .typo(.sfR10)
+            if !isLabelHidden {
+              Text(title)
+                .typo(.sfR10)
+            }
           }
           .foregroundStyle(
             isDisabled
@@ -119,6 +126,7 @@ extension GuidingButton: View {
         }
       }
     }
+    .accessibilityLabel(title)
   }
 }
 

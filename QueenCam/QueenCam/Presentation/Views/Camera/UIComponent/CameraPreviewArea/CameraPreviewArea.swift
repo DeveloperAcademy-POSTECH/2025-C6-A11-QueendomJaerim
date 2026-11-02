@@ -34,6 +34,8 @@ extension CameraView {
     @Binding var isReferenceLarge: Bool  // 레퍼런스 확대 축소 프로퍼티
 
     let topToolBarOverlap: CGFloat
+    let isGuidingToolBarInPreview: Bool
+    let guidingToolToggle: (_ selectedTool: ActiveTool) -> Void
 
     // connectionViewModel -> 프로퍼티 변환
     let currentRole: Role?
@@ -90,6 +92,11 @@ extension CameraView.CameraPreviewArea: View {
 
       // MARK: 카메라 바구니 토글 버튼과 눈까리 버튼
       toggleButtonsLayer
+
+      // MARK: 16:9 세로 가이드 도구 모음
+      if isGuidingToolBarInPreview {
+        verticalGuidingToolLayer
+      }
 
       // MARK: 레퍼런스 이미지가 isLarge 모드일 때 뒤에 깔리는 디밍
       largeReferenceImageDimmingLayer
