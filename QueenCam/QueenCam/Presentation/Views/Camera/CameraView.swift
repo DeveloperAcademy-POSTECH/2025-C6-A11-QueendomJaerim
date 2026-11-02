@@ -118,9 +118,6 @@ extension CameraView {
   }
 
   // MARK: 화면 틀
-  // 프리뷰를 맨 뒤에 깔고, 툴바와 하단 부품은 화면 가장자리에 고정한다.
-  // 값의 기준은 Figma 새 4:3 시안이다. 상단 툴바는 위 안전 영역에서 6 아래에 높이 34로 놓이고,
-  // 4:3 프리뷰는 툴바 아래 16에서 시작한다. 하단 부품은 아래 안전 영역에서 8 위에 놓인다.
   private static let topToolBarTopInset: CGFloat = 6
   private static let topToolBarHeight: CGFloat = 34
   private static let previewTopSpacing: CGFloat = 16
@@ -130,12 +127,11 @@ extension CameraView {
     topToolBarTopInset + topToolBarHeight + previewTopSpacing
   }
 
-  /// 프리뷰 너비. 화면 너비를 채우고, 화면이 넓은 기기(iPad)에서는 안전 영역 높이 안에 들어오도록 줄인다.
+  /// iPad처럼 넓은 화면에서는 높이 안에 들어오도록 줄인다.
   private func previewWidth(in safeAreaSize: CGSize) -> CGFloat {
     min(safeAreaSize.width, (safeAreaSize.height - Self.previewTopOffset) * 3 / 4)
   }
 
-  /// 프리뷰 중앙선의 y 좌표(안전 영역 기준). 4:3 프리뷰 자리의 가운데이며, 비율이 바뀌어도 움직이지 않는다.
   private func previewCenterY(previewWidth: CGFloat) -> CGFloat {
     let height = PhotoAspectRatioGeometry.previewSize(width: previewWidth, ratio: .ratio4x3).height
     return Self.previewTopOffset + height / 2
@@ -180,7 +176,9 @@ extension CameraView: View {
       )
     }
     .frame(width: 377, height: 192)
-    .glassEffect(.clear.tint(Color.hex333333), in: .rect(cornerRadius: 59))
+    // tint만 쓰면 검은 화면 위에서 너무 어두워져 채움을 따로 둔다.
+    .background(Color.hex333333.opacity(0.9), in: .rect(cornerRadius: 59))
+    .glassEffect(.regular, in: .rect(cornerRadius: 59))
   }
 
   private var topToolBar: some View {
@@ -188,7 +186,6 @@ extension CameraView: View {
       connectedDeviceName: connectionViewModel.connectedDeviceName,
       reconnectingDeviceName: connectionViewModel.reconnectingDeviceName,
       role: connectionViewModel.role,
-      // 비율은 작가만 바꾼다.
       aspectRatioTitle: currentMode == .photographer ? cameraViewModel.photoAspectRatio.rawValue : nil,
       indicatorMenuContent: {
         Button("역할 바꾸기") {
@@ -256,7 +253,6 @@ extension CameraView: View {
         ZStack {
           Color.black.ignoresSafeArea()
 
-          // 맨 뒤: 프리뷰. 중앙선에 가운데를 맞춘다.
           CameraPreviewArea(
             cameraViewModel: cameraViewModel,
             previewModel: previewModel,
@@ -278,7 +274,6 @@ extension CameraView: View {
           .frame(width: previewSize.width, height: previewSize.height)
           .position(x: proxy.size.width / 2, y: previewCenterY(previewWidth: baseWidth))
 
-          // 하단 부품: 아래 안전 영역에 고정
           CameraBottomContainer(
             currentRole: connectionViewModel.role,
             cameraViewModel: cameraViewModel,
@@ -301,7 +296,6 @@ extension CameraView: View {
           .padding(.bottom, Self.bottomContainerBottomInset)
           .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
 
-          // 상단 툴바: 위 안전 영역에 고정
           topToolBar
             .padding(.horizontal, 12)
             .padding(.top, Self.topToolBarTopInset)
