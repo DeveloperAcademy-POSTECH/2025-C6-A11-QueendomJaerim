@@ -9,7 +9,7 @@ nonisolated final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate 
   private let aspectRatio: PhotoAspectRatio
   private let aspectRatioCroppingService: PhotoAspectRatioCroppingServiceProtocol
 
-  private let photoOutputProcessor: ((PhotoOuput) -> PhotoOuput)?
+  private let photoOutputProcessor: ((PhotoOuput) -> PhotoOuput?)?
   private let completion: ((PhotoOuput?, [PhotoOuput]) -> Void)
   private var lastThumbnailImage: UIImage?
   private var lastStillImageData: Data?
@@ -24,7 +24,7 @@ nonisolated final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate 
     aspectRatio: PhotoAspectRatio,
     aspectRatioCroppingService: PhotoAspectRatioCroppingServiceProtocol,
     willCaptureLivePhoto: (() -> Void)? = nil,
-    photoOutputProcessor: ((PhotoOuput) -> PhotoOuput)? = nil,
+    photoOutputProcessor: ((PhotoOuput) -> PhotoOuput?)? = nil,
     completion: @escaping (PhotoOuput?, [PhotoOuput]) -> Void
   ) {
     self.isCameraPosition = isCameraPosition
@@ -70,23 +70,25 @@ nonisolated final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate 
       {
         logger.info("Live Photo: Saving deferred live photo (Proxy delegate).")
         let originalPhotoOutput = PhotoOuput.livePhoto(thumbnail: thumbnail, imageData: imageData, videoData: movieData)
-        let photoOutput = process(originalPhotoOutput)
-        saveOriginalIfNeeded(originalPhotoOutput, isDeferredLivePhoto: true)
+        let outputs = resolveOutputs(for: originalPhotoOutput)
+        let photoOutput = outputs.final
+        saveOriginalIfNeeded(outputs.separateOriginal, isDeferredLivePhoto: true)
         PhotoLibraryHelpers.saveDeferredLivePhotoToPhotosLibrary(
           proxyData: photoOutput.imageData,
           livePhotoMovieURL: livePhotoMovieURL
         )
 
-        completion(photoOutput, sendOutputs(original: originalPhotoOutput, processed: photoOutput))
+        completion(photoOutput, sendOutputs(outputs))
       }
     } else {
       let originalPhotoOutput = applyAspectRatio(
         to: PhotoOuput.basicPhoto(thumbnail: UIImage(data: imageData) ?? .init(), imageData: imageData)
       )
-      let photoOutput = process(originalPhotoOutput)
-      saveOriginalIfNeeded(originalPhotoOutput, isDeferredPhoto: true)
+      let outputs = resolveOutputs(for: originalPhotoOutput)
+      let photoOutput = outputs.final
+      saveOriginalIfNeeded(outputs.separateOriginal, isDeferredPhoto: true)
       PhotoLibraryHelpers.saveProxyToPhotoLibrary(photoOutput.imageData)
-      completion(photoOutput, sendOutputs(original: originalPhotoOutput, processed: photoOutput))
+      completion(photoOutput, sendOutputs(outputs))
     }
   }
 
@@ -148,13 +150,14 @@ nonisolated final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate 
         imageData: deferredPhotoProxyData,
         videoData: movieData
       )
-      let photoOutput = process(originalPhotoOutput)
-      saveOriginalIfNeeded(originalPhotoOutput, isDeferredLivePhoto: true)
+      let outputs = resolveOutputs(for: originalPhotoOutput)
+      let photoOutput = outputs.final
+      saveOriginalIfNeeded(outputs.separateOriginal, isDeferredLivePhoto: true)
       PhotoLibraryHelpers.saveDeferredLivePhotoToPhotosLibrary(
         proxyData: photoOutput.imageData,
         livePhotoMovieURL: outputFileURL
       )
-      completion(photoOutput, sendOutputs(original: originalPhotoOutput, processed: photoOutput))
+      completion(photoOutput, sendOutputs(outputs))
       return
     }
 
@@ -185,16 +188,23 @@ nonisolated final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate 
         imageData: lastStillImageData,
         videoData: movieData
       )
-      let photoOutput = process(originalPhotoOutput)
-      saveOriginalIfNeeded(originalPhotoOutput)
+      let outputs = resolveOutputs(for: originalPhotoOutput)
+      let photoOutput = outputs.final
+      saveOriginalIfNeeded(outputs.separateOriginal)
       PhotoLibraryHelpers.saveLivePhotoToPhotosLibrary(
         stillImageData: photoOutput.imageData,
         livePhotoMovieURL: outputFileURL
       )
-      completion(photoOutput, sendOutputs(original: originalPhotoOutput, processed: photoOutput))
+      completion(photoOutput, sendOutputs(outputs))
       return
     }
   }
+}
+
+/// 저장·썸네일·전송에 쓸 사진. `separateOriginal`은 합성본과 따로 저장·전송할 기본본이다.
+nonisolated struct ProcessedOutputs {
+  let final: PhotoOuput
+  let separateOriginal: PhotoOuput?
 }
 
 // 비율 적용은 자르기 실패 시 원본 사용 규칙을 단위 테스트로 확인하기 위해 private으로 두지 않는다.
@@ -212,6 +222,25 @@ nonisolated extension CameraDelegate {
     guard croppedData != imageData else { return photoOutput }
 
     return .basicPhoto(thumbnail: UIImage(data: croppedData) ?? thumbnail, imageData: croppedData)
+  }
+
+  /// 펜 합성이 켜져 있으면 합성본이 최종본이고 기본본은 따로 저장·전송한다.
+  /// 합성이 없거나 실패하면 기본본 한 장만 최종본으로 쓴다.
+  func resolveOutputs(for original: PhotoOuput) -> ProcessedOutputs {
+    guard let photoOutputProcessor else { return ProcessedOutputs(final: original, separateOriginal: nil) }
+
+    guard let processed = photoOutputProcessor(original) else {
+      logger.error("[PenComposite] 펜 합성 실패 → 기본본 한 장만 저장·전송")
+      return ProcessedOutputs(final: original, separateOriginal: nil)
+    }
+
+    return ProcessedOutputs(final: processed, separateOriginal: original)
+  }
+
+  /// 최종본 앞에 기본본이 있으면 함께 상대에게 보낸다.
+  func sendOutputs(_ outputs: ProcessedOutputs) -> [PhotoOuput] {
+    guard let separateOriginal = outputs.separateOriginal else { return [outputs.final] }
+    return [separateOriginal, outputs.final]
   }
 
   /// Live Photo의 사진과 영상을 셔터 순간의 비율로 함께 자른다. 하나라도 자르지 못하면 짝이 깨지지 않게 원본 쌍을 쓴다.
@@ -261,10 +290,11 @@ nonisolated private extension CameraDelegate {
   @concurrent
   func saveBasicPhoto(imageData: Data, thumbnail: UIImage) async {
     let originalPhotoOutput = applyAspectRatio(to: PhotoOuput.basicPhoto(thumbnail: thumbnail, imageData: imageData))
-    let photoOutput = process(originalPhotoOutput)
-    saveOriginalIfNeeded(originalPhotoOutput)
+    let outputs = resolveOutputs(for: originalPhotoOutput)
+    let photoOutput = outputs.final
+    saveOriginalIfNeeded(outputs.separateOriginal)
     PhotoLibraryHelpers.saveToPhotoLibrary(photoOutput.imageData)
-    completion(photoOutput, sendOutputs(original: originalPhotoOutput, processed: photoOutput))
+    completion(photoOutput, sendOutputs(outputs))
   }
 
   /// 영상 자르기는 오래 걸리므로 카메라 콜백 스레드와 상관없이 백그라운드에서 자르고 저장한다.
@@ -282,13 +312,14 @@ nonisolated private extension CameraDelegate {
       return
     }
 
-    let photoOutput = process(livePhoto.photoOutput)
-    saveOriginalIfNeeded(livePhoto.photoOutput)
+    let outputs = resolveOutputs(for: livePhoto.photoOutput)
+    let photoOutput = outputs.final
+    saveOriginalIfNeeded(outputs.separateOriginal)
     PhotoLibraryHelpers.saveLivePhotoToPhotosLibrary(
       stillImageData: photoOutput.imageData,
       livePhotoMovieURL: livePhoto.livePhotoMovieURL
     )
-    completion(photoOutput, sendOutputs(original: livePhoto.photoOutput, processed: photoOutput))
+    completion(photoOutput, sendOutputs(outputs))
   }
 
   func originalLivePhoto(
@@ -301,21 +332,12 @@ nonisolated private extension CameraDelegate {
     return (.livePhoto(thumbnail: thumbnail, imageData: imageData, videoData: movieData), livePhotoMovieURL)
   }
 
-  func process(_ photoOutput: PhotoOuput) -> PhotoOuput {
-    photoOutputProcessor?(photoOutput) ?? photoOutput
-  }
-
-  func sendOutputs(original: PhotoOuput, processed: PhotoOuput) -> [PhotoOuput] {
-    guard photoOutputProcessor != nil else { return [processed] }
-    return [original, processed]
-  }
-
   func saveOriginalIfNeeded(
-    _ photoOutput: PhotoOuput,
+    _ photoOutput: PhotoOuput?,
     isDeferredPhoto: Bool = false,
     isDeferredLivePhoto: Bool = false
   ) {
-    guard photoOutputProcessor != nil else { return }
+    guard let photoOutput else { return }
 
     switch photoOutput {
     case .basicPhoto(_, let imageData):

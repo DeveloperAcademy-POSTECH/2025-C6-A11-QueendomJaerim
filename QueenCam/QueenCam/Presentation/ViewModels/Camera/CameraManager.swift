@@ -131,7 +131,7 @@ final class CameraManager: NSObject {
   private func performCapturePhoto(
     aspectRatio: PhotoAspectRatio,
     allowsDeferredPhotoDelivery: Bool,
-    makePhotoOutputProcessor: ((_ quarterTurns: Int) -> (PhotoOuput) -> PhotoOuput)? = nil
+    makePhotoOutputProcessor: ((_ quarterTurns: Int) -> (PhotoOuput) -> PhotoOuput?)? = nil
   ) {
     captureSessionQueue.async { [weak self] in
       guard let self else { return }

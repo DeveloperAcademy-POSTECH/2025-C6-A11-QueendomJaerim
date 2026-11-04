@@ -24,7 +24,7 @@ final class PhotoOverlayCompositingService: PhotoOverlayCompositingServiceProtoc
     aspectRatio: PhotoAspectRatio,
     previewWidth: CGFloat,
     quarterTurns: Int
-  ) -> PhotoOuput {
+  ) -> PhotoOuput? {
     guard !strokes.isEmpty else { return photoOutput }
 
     let makeImage = { (imageData: Data) in
@@ -42,7 +42,7 @@ final class PhotoOverlayCompositingService: PhotoOverlayCompositingServiceProtoc
       guard
         let image = makeImage(imageData),
         let compositeData = Self.makeJPEGData(from: image, originalImageData: imageData)
-      else { return photoOutput }
+      else { return nil }
 
       return .basicPhoto(thumbnail: image, imageData: compositeData)
     case .livePhoto(_, let imageData, let videoData):
@@ -60,7 +60,7 @@ final class PhotoOverlayCompositingService: PhotoOverlayCompositingServiceProtoc
           originalImageData: imageData,
           livePhotoAssetIdentifier: assetIdentifier
         )
-      else { return photoOutput }
+      else { return nil }
 
       return .livePhoto(thumbnail: image, imageData: compositeData, videoData: videoData)
     }

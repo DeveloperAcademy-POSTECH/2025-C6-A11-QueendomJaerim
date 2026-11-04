@@ -110,7 +110,27 @@ struct PhotoOverlayCompositingServiceTests {
       quarterTurns: 0
     )
 
-    #expect(result.imageData == imageData)
+    #expect(result?.imageData == imageData)
+  }
+
+  @Test("사진을 읽을 수 없으면 합성에 실패해 nil을 돌려준다")
+  func returnsNilWhenImageCannotBeRead() {
+    let unreadable = PhotoOuput.basicPhoto(thumbnail: UIImage(), imageData: Data("not an image".utf8))
+    let stroke = DrawableStroke(
+      id: UUID(),
+      points: [CGPoint(x: 0.2, y: 0.2), CGPoint(x: 0.8, y: 0.8)],
+      author: .photographer
+    )
+
+    let result = service.composite(
+      photoOutput: unreadable,
+      strokes: [stroke],
+      aspectRatio: .ratio4x3,
+      previewWidth: 300,
+      quarterTurns: 0
+    )
+
+    #expect(result == nil)
   }
 }
 
@@ -136,7 +156,7 @@ private extension PhotoOverlayCompositingServiceTests {
       quarterTurns: quarterTurns
     )
 
-    return result.thumbnail
+    return result?.thumbnail
   }
 
   func makeImage(size: CGSize) -> UIImage {
