@@ -306,15 +306,8 @@ extension CameraManager {
     photoOutput.isLivePhotoCaptureEnabled = photoOutput.isLivePhotoCaptureSupported
   }
 
-  private func removeAudioInput() {
-    guard let audioDeviceInput else { return }
-    session.removeInput(audioDeviceInput)
-    self.audioDeviceInput = nil
-  }
-
+  /// 실행 중에 마이크를 붙이면 세션을 다시 구성해 프리뷰가 멈추므로, LIVE 설정과 관계없이 세션 구성 때 붙여 둔다.
   private func setupAudioInput() throws {
-    guard isLivePhotoOn else { return }
-
     guard audioDeviceInput == nil else { return }
 
     guard let audioDevice = AVCaptureDevice.default(for: .audio) else {
@@ -420,31 +413,6 @@ extension CameraManager {
       } catch {
         logger.error("Failed to configure zoom: \(error.localizedDescription)")
       }
-    }
-  }
-}
-
-// MARK: - Live Photo
-extension CameraManager {
-  /// 바구니의 LIVE 설정을 반영한다. 소리는 LIVE에서만 쓰므로 켤 때만 마이크를 연결한다.
-  func setLivePhotoOn(_ isOn: Bool) {
-    isLivePhotoOn = isOn
-
-    captureSessionQueue.async { [weak self] in
-      guard let self, self.isSessionConfigured else { return }
-
-      self.session.beginConfiguration()
-      if isOn {
-        do {
-          try self.setupAudioInput()
-        } catch {
-          self.logger.error("Failed to add audio input for Live Photo: \(error.localizedDescription)")
-        }
-      } else {
-        self.removeAudioInput()
-      }
-      self.session.commitConfiguration()
-      self.enableLivePhotoCaptureIfSupported()
     }
   }
 }

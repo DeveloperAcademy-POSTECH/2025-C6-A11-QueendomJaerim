@@ -209,7 +209,7 @@ final class CameraViewModel {
     }
     
     cameraSettingsService.livePhotoOn = isLivePhotoOn
-    cameraManager.setLivePhotoOn(isLivePhotoOn)
+    cameraManager.isLivePhotoOn = isLivePhotoOn
   }
   
   func switchPhotoAspectRatio() {
