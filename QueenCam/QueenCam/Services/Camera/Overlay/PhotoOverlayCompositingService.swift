@@ -41,7 +41,7 @@ final class PhotoOverlayCompositingService: PhotoOverlayCompositingServiceProtoc
     switch photoOutput {
     case .basicPhoto(_, let imageData):
       guard let image = makeImage(imageData) else {
-        logger.error("[PenComposite] 사진 합성 실패 원인: 사진을 읽거나 그리지 못함")
+        logger.error("[PenComposite] 사진 합성 실패 원인: 사진을 읽지 못했거나 그리지 못함(비율이 맞지 않아 건너뛴 경우는 위 로그)")
         return nil
       }
       guard let compositeData = Self.makeJPEGData(from: image, originalImageData: imageData) else {
@@ -62,7 +62,7 @@ final class PhotoOverlayCompositingService: PhotoOverlayCompositingServiceProtoc
         return nil
       }
       guard let image = makeImage(imageData) else {
-        logger.error("[PenComposite] Live 합성 실패 원인: 정지 사진을 읽거나 그리지 못함")
+        logger.error("[PenComposite] Live 합성 실패 원인: 정지 사진을 읽지 못했거나 그리지 못함(비율이 맞지 않아 건너뛴 경우는 위 로그)")
         return nil
       }
       guard
@@ -90,6 +90,12 @@ private extension PhotoOverlayCompositingService {
     quarterTurns: Int
   ) -> UIImage? {
     guard let image = UIImage(data: imageData) else { return nil }
+
+    // 펜 좌표는 사진이 선택한 비율로 잘려 있다는 전제로 계산한다. 자르기가 실패해 원본이 왔다면 위치가 어긋나므로 합성하지 않는다.
+    guard PhotoAspectRatioGeometry.matches(imageSize: image.size, ratio: aspectRatio) else {
+      logger.error("[PenComposite] 합성 건너뜀 원인: 사진 크기 \(image.size)가 \(aspectRatio.rawValue) 비율과 다름(자르기 실패한 원본일 수 있음)")
+      return nil
+    }
 
     let format = UIGraphicsImageRendererFormat()
     format.scale = image.scale

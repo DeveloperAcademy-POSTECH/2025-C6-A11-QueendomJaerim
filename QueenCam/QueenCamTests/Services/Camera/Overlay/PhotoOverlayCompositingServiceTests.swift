@@ -135,6 +135,40 @@ struct PhotoOverlayCompositingServiceTests {
     #expect(result == nil)
   }
 
+  @Test("선택한 비율로 잘리지 않은 사진은 합성하지 않고 nil을 돌려준다")
+  func returnsNilWhenPhotoIsNotInSelectedRatio() throws {
+    // 자르기가 실패해 원본(3:4)이 온 경우를 1:1·16:9 선택으로 합성하려는 상황
+    for ratio in [PhotoAspectRatio.ratio1x1, .ratio16x9] {
+      let imageData = try #require(makeImage(size: CGSize(width: 300, height: 400)).jpegData(compressionQuality: 1))
+      let original = PhotoOuput.basicPhoto(thumbnail: UIImage(data: imageData) ?? .init(), imageData: imageData)
+
+      let result = service.composite(
+        photoOutput: original,
+        strokes: [DrawableStroke(id: UUID(), points: [CGPoint(x: 0.5, y: 0.25), CGPoint(x: 0.5, y: 0.75)], author: .photographer)],
+        aspectRatio: ratio,
+        previewWidth: 300,
+        quarterTurns: 0
+      )
+
+      #expect(result == nil)
+    }
+  }
+
+  @Test("Live 사진도 선택한 비율로 잘리지 않았으면 합성하지 않고 nil을 돌려준다")
+  func returnsNilForLivePhotoNotInSelectedRatio() throws {
+    let original = try makeLivePhoto(stillIdentifier: UUID().uuidString, videoData: Data("video".utf8))
+
+    let result = service.composite(
+      photoOutput: original,
+      strokes: [DrawableStroke(id: UUID(), points: [CGPoint(x: 0.5, y: 0.25), CGPoint(x: 0.5, y: 0.75)], author: .photographer)],
+      aspectRatio: .ratio1x1,
+      previewWidth: 300,
+      quarterTurns: 0
+    )
+
+    #expect(result == nil)
+  }
+
   @Test("Live 합성본 사진에 입력 사진과 같은 짝 식별자가 들어간다")
   func keepsLivePhotoAssetIdentifierFromStill() throws {
     let identifier = UUID().uuidString

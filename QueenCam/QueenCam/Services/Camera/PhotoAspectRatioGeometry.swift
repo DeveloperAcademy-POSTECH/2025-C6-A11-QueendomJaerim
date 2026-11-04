@@ -14,6 +14,8 @@ nonisolated enum PhotoAspectRatioGeometry {
   private static let widePreviewLongSide: CGFloat = 15.23
   /// 세션 프리셋 `.photo`의 세로 영상은 너비:높이 3:4다.
   private static let cameraFeedHeightPerWidth: CGFloat = 4.0 / 3.0
+  /// 잘린 사진의 크기가 비율과 맞는지 볼 때 허용하는 상대 오차
+  private static let matchTolerance: CGFloat = 0.01
 
   /// 프리뷰 너비에 대한 비율별 표시 크기
   static func previewSize(width: CGFloat, ratio: PhotoAspectRatio) -> CGSize {
@@ -49,6 +51,20 @@ nonisolated enum PhotoAspectRatioGeometry {
       x: visibleRect.minX + point.x * visibleRect.width,
       y: visibleRect.minY + point.y * visibleRect.height
     )
+  }
+
+  /// 이미지 크기가 비율대로 잘린 크기인지 본다. 방향과 무관하게 긴 변÷짧은 변을 비교하고, 반올림 차이를 위해 1%까지 허용한다.
+  /// 세 비율의 긴 변÷짧은 변(1, 1.78, 1.33)은 서로 25% 넘게 떨어져 있어 다른 비율과 헷갈리지 않는다.
+  static func matches(imageSize: CGSize, ratio: PhotoAspectRatio) -> Bool {
+    guard
+      imageSize.width.isFinite, imageSize.height.isFinite,
+      imageSize.width >= 1, imageSize.height >= 1
+    else { return false }
+
+    let imageRatio = max(imageSize.width, imageSize.height) / min(imageSize.width, imageSize.height)
+    let expectedRatio = CGFloat(ratio.longSide) / CGFloat(ratio.shortSide)
+
+    return abs(imageRatio - expectedRatio) / expectedRatio <= matchTolerance
   }
 
   /// 방향이 적용된 이미지에서 비율에 맞는 가장 큰 중앙 영역을 정수 픽셀로 구한다.

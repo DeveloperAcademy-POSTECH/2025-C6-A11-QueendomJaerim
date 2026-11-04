@@ -181,6 +181,45 @@ struct PhotoAspectRatioGeometryTests {
     )
   }
 
+  // MARK: - 이미지가 비율대로 잘렸는지
+
+  @Test("비율대로 잘린 세로 사진은 그 비율과 맞다")
+  func matchesCroppedPortraitSizes() {
+    #expect(PhotoAspectRatioGeometry.matches(imageSize: CGSize(width: 3024, height: 4032), ratio: .ratio4x3))
+    #expect(PhotoAspectRatioGeometry.matches(imageSize: CGSize(width: 2268, height: 4032), ratio: .ratio16x9))
+    #expect(PhotoAspectRatioGeometry.matches(imageSize: CGSize(width: 3024, height: 3024), ratio: .ratio1x1))
+  }
+
+  @Test("가로 사진도 긴 변과 짧은 변으로 비교한다")
+  func matchesLandscapeSizes() {
+    #expect(PhotoAspectRatioGeometry.matches(imageSize: CGSize(width: 4032, height: 3024), ratio: .ratio4x3))
+    #expect(PhotoAspectRatioGeometry.matches(imageSize: CGSize(width: 4032, height: 2268), ratio: .ratio16x9))
+  }
+
+  @Test("자르지 않은 원본은 다른 비율과 맞지 않는다")
+  func rejectsOtherRatios() {
+    let original = CGSize(width: 3024, height: 4032)
+    #expect(!PhotoAspectRatioGeometry.matches(imageSize: original, ratio: .ratio1x1))
+    #expect(!PhotoAspectRatioGeometry.matches(imageSize: original, ratio: .ratio16x9))
+    #expect(!PhotoAspectRatioGeometry.matches(imageSize: CGSize(width: 2268, height: 4032), ratio: .ratio4x3))
+  }
+
+  @Test("1% 안의 크기 차이는 맞다고 보고 그보다 크면 맞지 않는다")
+  func toleratesSmallDifference() {
+    // 2316 ÷ 1302 = 1.7788, 16:9 = 1.7778 (0.06% 차이)
+    #expect(PhotoAspectRatioGeometry.matches(imageSize: CGSize(width: 1302, height: 2316), ratio: .ratio16x9))
+    // 4032 ÷ 3000 = 1.344, 4:3 = 1.333 (0.8% 차이)
+    #expect(PhotoAspectRatioGeometry.matches(imageSize: CGSize(width: 3000, height: 4032), ratio: .ratio4x3))
+    // 4032 ÷ 2950 = 1.367 (2.5% 차이)
+    #expect(!PhotoAspectRatioGeometry.matches(imageSize: CGSize(width: 2950, height: 4032), ratio: .ratio4x3))
+  }
+
+  @Test("크기가 잘못되면 맞지 않는다")
+  func rejectsInvalidSize() {
+    #expect(!PhotoAspectRatioGeometry.matches(imageSize: .zero, ratio: .ratio1x1))
+    #expect(!PhotoAspectRatioGeometry.matches(imageSize: CGSize(width: CGFloat.infinity, height: 10), ratio: .ratio1x1))
+  }
+
   private func isClose(_ lhs: CGFloat, _ rhs: CGFloat, tolerance: CGFloat = 0.000_001) -> Bool {
     abs(lhs - rhs) <= tolerance
   }

@@ -68,8 +68,70 @@ struct CameraDelegatePenCompositeTests {
     #expect(delegate.sendOutputs(outputs).count == 1)
   }
 
+  @Test("1:1에서 자르기가 실패해 원본이 오면 펜을 합성하지 않고 원본 한 장만 저장·전송한다")
+  func skipsCompositeWhenCropFails() throws {
+    let original = try makeJPEGPhoto(width: 300, height: 400)
+    let delegate = makeCompositingDelegate(ratio: .ratio1x1, cropResult: nil)
+
+    let outputs = delegate.resolveOutputs(for: delegate.applyAspectRatio(to: original))
+
+    #expect(outputs.separateOriginal == nil)
+    #expect(delegate.sendOutputs(outputs).map(\.imageData) == [original.imageData])
+  }
+
+  @Test("1:1로 자르기에 성공하면 실제 합성까지 거쳐 기본본과 합성본 두 장을 저장·전송한다")
+  func keepsBothWhenCropSucceedsWithRealCompositing() throws {
+    let original = try makeJPEGPhoto(width: 300, height: 400)
+    let cropped = try makeJPEGPhoto(width: 300, height: 300)
+    let delegate = makeCompositingDelegate(ratio: .ratio1x1, cropResult: cropped.imageData)
+
+    let outputs = delegate.resolveOutputs(for: delegate.applyAspectRatio(to: original))
+
+    #expect(outputs.separateOriginal?.imageData == cropped.imageData)
+    #expect(delegate.sendOutputs(outputs).count == 2)
+  }
+
   private func makePhoto(label: String) -> PhotoOuput {
     .basicPhoto(thumbnail: UIImage(), imageData: Data(label.utf8))
+  }
+
+  private func makeJPEGPhoto(width: Int, height: Int) throws -> PhotoOuput {
+    let format = UIGraphicsImageRendererFormat()
+    format.scale = 1
+    let image = UIGraphicsImageRenderer(size: CGSize(width: width, height: height), format: format).image { context in
+      UIColor.gray.setFill()
+      context.fill(CGRect(x: 0, y: 0, width: width, height: height))
+    }
+    let data = try #require(image.jpegData(compressionQuality: 1))
+    return .basicPhoto(thumbnail: try #require(UIImage(data: data)), imageData: data)
+  }
+
+  /// 촬영 때와 같이 실제 합성 서비스를 셔터 순간의 비율로 묶은 Delegate
+  private func makeCompositingDelegate(ratio: PhotoAspectRatio, cropResult: Data?) -> CameraDelegate {
+    let compositingService = PhotoOverlayCompositingService()
+    let stroke = DrawableStroke(id: UUID(), points: [CGPoint(x: 0.5, y: 0.25), CGPoint(x: 0.5, y: 0.75)], author: .photographer)
+
+    return CameraDelegate(
+      isCameraPosition: .back,
+      aspectRatio: ratio,
+      aspectRatioCroppingService: FixedCroppingService(result: cropResult),
+      photoOutputProcessor: { photoOutput in
+        compositingService.composite(
+          photoOutput: photoOutput,
+          strokes: [stroke],
+          aspectRatio: ratio,
+          previewWidth: 300,
+          quarterTurns: 0
+        )
+      }
+    ) { _, _ in }
+  }
+
+  private struct FixedCroppingService: PhotoAspectRatioCroppingServiceProtocol {
+    let result: Data?
+
+    func crop(imageData: Data, to ratio: PhotoAspectRatio) -> Data? { result }
+    func crop(livePhotoMovieURL: URL, to ratio: PhotoAspectRatio) async -> URL? { nil }
   }
 
   private func makeDelegate(processor: ((PhotoOuput) -> PhotoOuput?)?) -> CameraDelegate {
