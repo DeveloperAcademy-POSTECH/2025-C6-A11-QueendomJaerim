@@ -23,6 +23,9 @@ final class CameraViewModel {
   var isShowGrid: Bool
   var isFlashMode: FlashMode
   var photoAspectRatio: PhotoAspectRatio
+
+  /// 화면에 보이는 프리뷰 폭(pt). 펜 합성이 화면과 같은 두께로 그리는 데 쓴다.
+  var previewWidth: CGFloat = 0
   
   var cameraPostion: AVCaptureDevice.Position?
   
@@ -153,7 +156,8 @@ final class CameraViewModel {
 
     cameraManager.capturePhoto(
       aspectRatio: photoAspectRatio,
-      drawableStrokes: guidingStrokeRepository.captureDrawableStrokes()
+      drawableStrokes: guidingStrokeRepository.captureDrawableStrokes(),
+      previewWidth: previewWidth
     )
   }
   

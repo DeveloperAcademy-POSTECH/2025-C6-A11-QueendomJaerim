@@ -103,7 +103,7 @@ final class CameraManager: NSObject {
     }
   }
 
-  func capturePhoto(aspectRatio: PhotoAspectRatio, drawableStrokes: [DrawableStroke] = []) {
+  func capturePhoto(aspectRatio: PhotoAspectRatio, drawableStrokes: [DrawableStroke] = [], previewWidth: CGFloat = 0) {
     // 지연 처리된 사진은 나중에 시스템이 최종 사진으로 바꿔 넣어 가공 결과가 사라지므로, 가공할 때는 끈다.
     let allowsDeferredPhotoDelivery = aspectRatio == .ratio4x3 && drawableStrokes.isEmpty
 
@@ -115,18 +115,32 @@ final class CameraManager: NSObject {
     performCapturePhoto(
       aspectRatio: aspectRatio,
       allowsDeferredPhotoDelivery: allowsDeferredPhotoDelivery
-    ) { [photoOverlayCompositingService] photoOutput in
-      photoOverlayCompositingService.composite(photoOutput: photoOutput, strokes: drawableStrokes)
+    ) { [photoOverlayCompositingService] quarterTurns in
+      { photoOutput in
+        photoOverlayCompositingService.composite(
+          photoOutput: photoOutput,
+          strokes: drawableStrokes,
+          aspectRatio: aspectRatio,
+          previewWidth: previewWidth,
+          quarterTurns: quarterTurns
+        )
+      }
     }
   }
 
   private func performCapturePhoto(
     aspectRatio: PhotoAspectRatio,
     allowsDeferredPhotoDelivery: Bool,
-    photoOutputProcessor: ((PhotoOuput) -> PhotoOuput)? = nil
+    makePhotoOutputProcessor: ((_ quarterTurns: Int) -> (PhotoOuput) -> PhotoOuput)? = nil
   ) {
     captureSessionQueue.async { [weak self] in
       guard let self else { return }
+
+      // 펜 위치를 사진과 같은 방향으로 돌리려면 셔터 순간의 사진 각도가 필요하다. 세로 화면과 같은 90도가 기본값이다.
+      let photoRotationAngle = self.photoOutput.connection(with: .video)?.videoRotationAngle ?? 90
+      let photoOutputProcessor = makePhotoOutputProcessor?(
+        StrokeOverlayGeometry.quarterTurns(forVideoRotationAngle: photoRotationAngle)
+      )
 
       var photoSettings = AVCapturePhotoSettings()
 

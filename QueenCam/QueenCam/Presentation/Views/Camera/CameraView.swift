@@ -303,6 +303,9 @@ extension CameraView: View {
             .padding(.top, Self.topToolBarTopInset)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
+        .onChange(of: previewSize.width, initial: true) { _, width in
+          cameraViewModel.previewWidth = width
+        }
       }
       .toolbar(.hidden, for: .navigationBar)
       .trackScreen(.camera, Self.self)

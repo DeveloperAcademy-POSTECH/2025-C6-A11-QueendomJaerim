@@ -18,13 +18,29 @@ final class PhotoOverlayCompositingService: PhotoOverlayCompositingServiceProtoc
 
   // 호출부는 프로토콜을 통해 테스트 대역으로 교체할 수 있도록 인스턴스 메서드만 바라본다.
   // 실제 합성 과정 중 인스턴스 상태가 필요 없는 metadata/JPEG 변환 로직은 static helper로 분리한다.
-  func composite(photoOutput: PhotoOuput, strokes: [DrawableStroke]) -> PhotoOuput {
+  func composite(
+    photoOutput: PhotoOuput,
+    strokes: [DrawableStroke],
+    aspectRatio: PhotoAspectRatio,
+    previewWidth: CGFloat,
+    quarterTurns: Int
+  ) -> PhotoOuput {
     guard !strokes.isEmpty else { return photoOutput }
+
+    let makeImage = { (imageData: Data) in
+      self.makeCompositeImage(
+        from: imageData,
+        strokes: strokes,
+        aspectRatio: aspectRatio,
+        previewWidth: previewWidth,
+        quarterTurns: quarterTurns
+      )
+    }
 
     switch photoOutput {
     case .basicPhoto(_, let imageData):
       guard
-        let image = makeCompositeImage(from: imageData, strokes: strokes),
+        let image = makeImage(imageData),
         let compositeData = Self.makeJPEGData(from: image, originalImageData: imageData)
       else { return photoOutput }
 
@@ -38,7 +54,7 @@ final class PhotoOverlayCompositingService: PhotoOverlayCompositingServiceProtoc
 
       guard
         let assetIdentifier,
-        let image = makeCompositeImage(from: imageData, strokes: strokes),
+        let image = makeImage(imageData),
         let compositeData = Self.makeJPEGData(
           from: image,
           originalImageData: imageData,
@@ -52,7 +68,13 @@ final class PhotoOverlayCompositingService: PhotoOverlayCompositingServiceProtoc
 }
 
 private extension PhotoOverlayCompositingService {
-  func makeCompositeImage(from imageData: Data, strokes: [DrawableStroke]) -> UIImage? {
+  func makeCompositeImage(
+    from imageData: Data,
+    strokes: [DrawableStroke],
+    aspectRatio: PhotoAspectRatio,
+    previewWidth: CGFloat,
+    quarterTurns: Int
+  ) -> UIImage? {
     guard let image = UIImage(data: imageData) else { return nil }
 
     let format = UIGraphicsImageRendererFormat()
@@ -61,8 +83,7 @@ private extension PhotoOverlayCompositingService {
 
     let imageSize = image.size
     let imageRect = CGRect(origin: .zero, size: imageSize)
-    let overlayRect = StrokeOverlayGeometry.aspectFitRect(in: imageRect)
-    let lineScale = StrokeOverlayGeometry.lineScale(for: overlayRect)
+    let lineScale = StrokeOverlayGeometry.lineScale(imageSize: imageSize, previewWidth: previewWidth)
 
     return UIGraphicsImageRenderer(size: imageSize, format: format).image { rendererContext in
       image.draw(in: imageRect)
@@ -70,10 +91,12 @@ private extension PhotoOverlayCompositingService {
       let context = rendererContext.cgContext
       for stroke in strokes {
         drawNormalStroke(
-          points: stroke.points,
+          points: stroke.points.map {
+            StrokeOverlayGeometry.photoPoint(fromPreview: $0, ratio: aspectRatio, quarterTurns: quarterTurns)
+          },
           author: stroke.author,
           in: context,
-          overlayRect: overlayRect,
+          overlayRect: imageRect,
           lineScale: lineScale
         )
       }
