@@ -27,6 +27,8 @@ extension CameraView {
     let shutterActionEffect: () -> Void
 
     let isGuidingToolBarHidden: Bool
+    // 프리뷰 아래 빈 곳 어디서든 위로 쓸어 바구니를 열 수 있게 하는 최소 높이
+    let swipeAreaMinHeight: CGFloat
 
     let guidingToolToggle: (_ selectedTool: ActiveTool) -> Void
     // 비율이 작은 기기를 위한 모드. true면 뷰 크기 조정
@@ -84,6 +86,7 @@ extension CameraView.CameraBottomContainer: View {
       .padding(.horizontal, 36)
     }
     .frame(maxWidth: isMinimize ? 300 : .infinity, maxHeight: isMinimize ? 120 : nil)
+    .frame(minHeight: isMinimize ? nil : swipeAreaMinHeight, alignment: .bottom)
     .contentShape(.rect)
     .gesture(dragGesture)
     .animation(.easeInOut, value: activeTool)

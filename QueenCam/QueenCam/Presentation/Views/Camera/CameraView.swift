@@ -291,6 +291,7 @@ extension CameraView: View {
             isReferenceLarge: $isReferenceLarge,
             shutterActionEffect: flashScreen,
             isGuidingToolBarHidden: isGuidingToolBarInPreview,
+            swipeAreaMinHeight: max(0, proxy.size.height - Self.bottomContainerBottomInset - previewBottomY),
             guidingToolToggle: toggleGuidingTool
           )
           .minimize(DynamicModelUtils.isiPad)
