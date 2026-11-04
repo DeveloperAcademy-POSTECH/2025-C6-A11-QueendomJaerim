@@ -6,8 +6,10 @@
 //
 
 import CoreGraphics
+import ImageIO
 import Testing
 import UIKit
+import UniformTypeIdentifiers
 
 @testable import QueenCam
 
@@ -132,9 +134,91 @@ struct PhotoOverlayCompositingServiceTests {
 
     #expect(result == nil)
   }
+
+  @Test("Live 합성본 사진에 입력 사진과 같은 짝 식별자가 들어간다")
+  func keepsLivePhotoAssetIdentifierFromStill() throws {
+    let identifier = UUID().uuidString
+    let original = try makeLivePhoto(stillIdentifier: identifier, videoData: Data("not a movie".utf8))
+
+    let result = try #require(compositeLivePhoto(original))
+
+    #expect(assetIdentifier(in: result.imageData) == identifier)
+  }
+
+  @Test("Live 합성은 영상 데이터를 바꾸지 않는다")
+  func keepsLivePhotoVideoData() throws {
+    let videoData = Data("paired video".utf8)
+    let original = try makeLivePhoto(stillIdentifier: UUID().uuidString, videoData: videoData)
+
+    let result = try #require(compositeLivePhoto(original))
+
+    guard case .livePhoto(_, _, let resultVideoData) = result else {
+      Issue.record("Live Photo가 아닌 결과")
+      return
+    }
+    #expect(resultVideoData == videoData)
+  }
+
+  @Test("사진에 짝 식별자가 없으면 영상의 식별자를 넣는다")
+  func readsLivePhotoAssetIdentifierFromVideo() async throws {
+    let movie = try await LivePhotoMovieFixture.make()
+    let videoIdentifier = try #require(movie.info.contentIdentifier)
+    let original = try makeLivePhoto(stillIdentifier: nil, videoData: try Data(contentsOf: movie.url))
+
+    let result = try #require(compositeLivePhoto(original))
+
+    #expect(assetIdentifier(in: result.imageData) == videoIdentifier)
+  }
+
+  @Test("사진과 영상 모두 짝 식별자가 없으면 Live 합성에 실패해 nil을 돌려준다")
+  func returnsNilWhenLivePhotoAssetIdentifierIsMissing() throws {
+    let original = try makeLivePhoto(stillIdentifier: nil, videoData: Data("not a movie".utf8))
+
+    #expect(compositeLivePhoto(original) == nil)
+  }
 }
 
 private extension PhotoOverlayCompositingServiceTests {
+  func compositeLivePhoto(_ original: PhotoOuput) -> PhotoOuput? {
+    service.composite(
+      photoOutput: original,
+      strokes: [DrawableStroke(id: UUID(), points: [CGPoint(x: 0.5, y: 0.25), CGPoint(x: 0.5, y: 0.75)], author: .photographer)],
+      aspectRatio: .ratio4x3,
+      previewWidth: 300,
+      quarterTurns: 0
+    )
+  }
+
+  /// 실제 Live 사진처럼 MakerApple "17"에 짝 식별자를 넣은 JPEG를 만든다. nil이면 식별자 없는 사진이다.
+  func makeLivePhoto(stillIdentifier: String?, videoData: Data) throws -> PhotoOuput {
+    let cgImage = try #require(makeImage(size: CGSize(width: 300, height: 400)).cgImage)
+    let data = NSMutableData()
+    let destination = try #require(CGImageDestinationCreateWithData(data, UTType.jpeg.identifier as CFString, 1, nil))
+
+    var properties: [String: Any] = [:]
+    if let stillIdentifier {
+      properties[kCGImagePropertyMakerAppleDictionary as String] = ["17": stillIdentifier]
+    }
+    CGImageDestinationAddImage(destination, cgImage, properties as CFDictionary)
+    try #require(CGImageDestinationFinalize(destination))
+
+    let imageData = data as Data
+    if let stillIdentifier {
+      try #require(assetIdentifier(in: imageData) == stillIdentifier, "테스트 사진에 식별자를 쓰지 못함")
+    }
+    return .livePhoto(thumbnail: UIImage(data: imageData) ?? .init(), imageData: imageData, videoData: videoData)
+  }
+
+  func assetIdentifier(in imageData: Data) -> String? {
+    guard
+      let source = CGImageSourceCreateWithData(imageData as CFData, nil),
+      let properties = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [String: Any],
+      let makerApple = properties[kCGImagePropertyMakerAppleDictionary as String] as? [String: Any]
+    else { return nil }
+
+    return makerApple["17"] as? String
+  }
+
   func composite(
     imageSize: CGSize,
     points: [CGPoint],

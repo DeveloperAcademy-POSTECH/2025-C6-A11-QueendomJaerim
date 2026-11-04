@@ -12,6 +12,7 @@ import UIKit
 import UniformTypeIdentifiers
 
 final class PhotoOverlayCompositingService: PhotoOverlayCompositingServiceProtocol {
+  private let logger = QueenLogger(category: "PhotoOverlayCompositingService")
   private static let livePhotoMakerAppleAssetIdentifierKey = "17"
   private static let quickTimeContentIdentifierKey = "com.apple.quicktime.content.identifier"
   private static let jpegCompressionQuality = 0.95
@@ -39,10 +40,14 @@ final class PhotoOverlayCompositingService: PhotoOverlayCompositingServiceProtoc
 
     switch photoOutput {
     case .basicPhoto(_, let imageData):
-      guard
-        let image = makeImage(imageData),
-        let compositeData = Self.makeJPEGData(from: image, originalImageData: imageData)
-      else { return nil }
+      guard let image = makeImage(imageData) else {
+        logger.error("[PenComposite] 사진 합성 실패 원인: 사진을 읽거나 그리지 못함")
+        return nil
+      }
+      guard let compositeData = Self.makeJPEGData(from: image, originalImageData: imageData) else {
+        logger.error("[PenComposite] 사진 합성 실패 원인: JPEG로 쓰지 못함")
+        return nil
+      }
 
       return .basicPhoto(thumbnail: image, imageData: compositeData)
     case .livePhoto(_, let imageData, let videoData):
@@ -52,15 +57,24 @@ final class PhotoOverlayCompositingService: PhotoOverlayCompositingServiceProtoc
       let assetIdentifier = Self.livePhotoAssetIdentifier(from: imageData)
         ?? Self.livePhotoAssetIdentifier(fromVideoData: videoData)
 
+      guard let assetIdentifier else {
+        logger.error("[PenComposite] Live 합성 실패 원인: 사진과 영상 모두에서 짝 식별자를 찾지 못함")
+        return nil
+      }
+      guard let image = makeImage(imageData) else {
+        logger.error("[PenComposite] Live 합성 실패 원인: 정지 사진을 읽거나 그리지 못함")
+        return nil
+      }
       guard
-        let assetIdentifier,
-        let image = makeImage(imageData),
         let compositeData = Self.makeJPEGData(
           from: image,
           originalImageData: imageData,
           livePhotoAssetIdentifier: assetIdentifier
         )
-      else { return nil }
+      else {
+        logger.error("[PenComposite] Live 합성 실패 원인: 짝 식별자를 넣은 JPEG를 쓰지 못함")
+        return nil
+      }
 
       return .livePhoto(thumbnail: image, imageData: compositeData, videoData: videoData)
     }
