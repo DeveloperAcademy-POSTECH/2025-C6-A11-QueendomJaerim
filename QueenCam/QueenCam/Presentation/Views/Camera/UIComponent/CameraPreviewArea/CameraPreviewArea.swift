@@ -35,6 +35,7 @@ extension CameraView {
 
     let topToolBarOverlap: CGFloat
     let isGuidingToolBarInPreview: Bool
+    let bottomControlsOverlap: CGFloat
     let guidingToolToggle: (_ selectedTool: ActiveTool) -> Void
 
     // connectionViewModel -> 프로퍼티 변환

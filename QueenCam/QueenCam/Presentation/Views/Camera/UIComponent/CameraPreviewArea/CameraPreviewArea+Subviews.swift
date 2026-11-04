@@ -75,6 +75,7 @@ extension CameraView.CameraPreviewArea {
           }
         }
         .padding(.vertical, 12)
+        .padding(.bottom, bottomControlsOverlap)
       }
     }
   }
@@ -98,6 +99,7 @@ extension CameraView.CameraPreviewArea {
       }
     }
     .padding(12)
+    .padding(.bottom, bottomControlsOverlap)
     .animation(.easeInOut, value: activeTool)
   }
 
@@ -135,6 +137,7 @@ extension CameraView.CameraPreviewArea {
           }
         }
         .padding(12)
+        .padding(.bottom, bottomControlsOverlap)
       }
     }
   }

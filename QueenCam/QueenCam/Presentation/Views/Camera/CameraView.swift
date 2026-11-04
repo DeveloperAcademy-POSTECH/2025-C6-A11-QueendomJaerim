@@ -121,10 +121,6 @@ extension CameraView {
     currentMode == .photographer ? cameraViewModel.photoAspectRatio : .ratio4x3
   }
 
-  private var isGuidingToolBarInPreview: Bool {
-    previewRatio == .ratio16x9
-  }
-
   private func toggleGuidingTool(_ tool: ActiveTool) {
     activeTool = activeTool == tool ? nil : tool
   }
@@ -239,9 +235,17 @@ extension CameraView: View {
   var body: some View {
     NavigationStack(path: $navigationRouter.path) {
       GeometryReader { proxy in
-        let baseWidth = previewWidth(in: proxy.size)
+        let baseWidth = Self.previewWidth(in: proxy.size)
         let previewSize = PhotoAspectRatioGeometry.previewSize(width: baseWidth, ratio: previewRatio)
         let previewTopY = previewTop(previewWidth: baseWidth, ratio: previewRatio)
+        let previewBottomY = previewTopY + previewSize.height
+        // iPad는 하단 조작부를 줄여 쓰므로 지금처럼 16:9에서만 프리뷰 안에 두고 버튼도 올리지 않는다.
+        let isGuidingToolBarInPreview = DynamicModelUtils.isiPad
+          ? previewRatio == .ratio16x9
+          : Self.isGuidingToolBarInPreview(ratio: previewRatio, safeAreaSize: proxy.size)
+        let bottomControlsOverlap = DynamicModelUtils.isiPad
+          ? 0
+          : Self.bottomControlsOverlap(previewBottom: previewBottomY, safeAreaHeight: proxy.size.height)
 
         ZStack {
           Color.black.ignoresSafeArea()
@@ -260,6 +264,7 @@ extension CameraView: View {
             isReferenceLarge: $isReferenceLarge,
             topToolBarOverlap: topToolBarOverlap(previewTop: previewTopY),
             isGuidingToolBarInPreview: isGuidingToolBarInPreview,
+            bottomControlsOverlap: bottomControlsOverlap,
             guidingToolToggle: toggleGuidingTool,
             currentRole: connectionViewModel.role,
             connectionLost: connectionViewModel.connectionLost,

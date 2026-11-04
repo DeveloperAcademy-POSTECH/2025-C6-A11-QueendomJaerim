@@ -59,7 +59,7 @@ extension CameraView.CameraBottomContainer: View {
   }
 
   var body: some View {
-    VStack(spacing: 18) {
+    VStack(spacing: CameraView.bottomContainerSpacing) {
 
       if !isGuidingToolBarHidden {
         CameraView.GuidingToolBar(
