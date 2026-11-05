@@ -15,6 +15,8 @@ nonisolated final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate 
   private var lastStillImageData: Data?
   private var deferredPhotoProxyData: Data?
   private var livePhotoMovieURL: URL?
+  private var isLivePhotoMovieFailed = false
+  private var isLivePhotoSaved = false
 
   private var isLivePhoto: Bool = false
   private var willCaptureLivePhoto: (() -> Void)?
@@ -64,31 +66,9 @@ nonisolated final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate 
 
     if isLivePhoto {
       self.deferredPhotoProxyData = imageData
-      if let livePhotoMovieURL = self.livePhotoMovieURL,
-        let movieData = try? Data(contentsOf: livePhotoMovieURL),
-        let thumbnail = UIImage(data: imageData)
-      {
-        logger.info("Live Photo: Saving deferred live photo (Proxy delegate).")
-        let originalPhotoOutput = PhotoOuput.livePhoto(thumbnail: thumbnail, imageData: imageData, videoData: movieData)
-        let outputs = resolveOutputs(for: originalPhotoOutput)
-        let photoOutput = outputs.final
-        saveOriginalIfNeeded(outputs.separateOriginal, isDeferredLivePhoto: true)
-        PhotoLibraryHelpers.saveDeferredLivePhotoToPhotosLibrary(
-          proxyData: photoOutput.imageData,
-          livePhotoMovieURL: livePhotoMovieURL
-        )
-
-        completion(photoOutput, sendOutputs(outputs))
-      }
+      saveLivePhotoIfReady()
     } else {
-      let originalPhotoOutput = applyAspectRatio(
-        to: PhotoOuput.basicPhoto(thumbnail: UIImage(data: imageData) ?? .init(), imageData: imageData)
-      )
-      let outputs = resolveOutputs(for: originalPhotoOutput)
-      let photoOutput = outputs.final
-      saveOriginalIfNeeded(outputs.separateOriginal, isDeferredPhoto: true)
-      PhotoLibraryHelpers.saveProxyToPhotoLibrary(photoOutput.imageData)
-      completion(photoOutput, sendOutputs(outputs))
+      saveDeferredBasicPhoto(imageData: imageData)
     }
   }
 
@@ -119,6 +99,8 @@ nonisolated final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate 
       Task {
         await saveBasicPhoto(imageData: imageData, thumbnail: image)
       }
+    } else {
+      saveLivePhotoIfReady()
     }
   }
 
@@ -130,74 +112,27 @@ nonisolated final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate 
     resolvedSettings: AVCaptureResolvedPhotoSettings,
     error: Error?
   ) {
-
     guard error == nil else {
       logger.error("Error capturing Live Photo movie: \(error)")
-      completion(nil, [])
+      isLivePhotoMovieFailed = true
+      saveLivePhotoIfReady()
       return
     }
 
     self.livePhotoMovieURL = outputFileURL
+    saveLivePhotoIfReady()
+  }
 
-    // 지연 처리된 라이브 포토
-    if let deferredPhotoProxyData = self.deferredPhotoProxyData,
-      let movieData = try? Data(contentsOf: outputFileURL),
-      let thumbnail = UIImage(data: deferredPhotoProxyData)
-    {
-      logger.info("Live Photo: Saving deferred live photo (Movie delegate).")
-      let originalPhotoOutput = PhotoOuput.livePhoto(
-        thumbnail: thumbnail,
-        imageData: deferredPhotoProxyData,
-        videoData: movieData
-      )
-      let outputs = resolveOutputs(for: originalPhotoOutput)
-      let photoOutput = outputs.final
-      saveOriginalIfNeeded(outputs.separateOriginal, isDeferredLivePhoto: true)
-      PhotoLibraryHelpers.saveDeferredLivePhotoToPhotosLibrary(
-        proxyData: photoOutput.imageData,
-        livePhotoMovieURL: outputFileURL
-      )
-      completion(photoOutput, sendOutputs(outputs))
-      return
-    }
+  /// 촬영마다 맨 마지막에 오는 콜백이다. 영상이 끝내 오지 않거나 읽을 수 없어 저장하지 못했으면 정지 사진이라도 남긴다.
+  func photoOutput(
+    _ output: AVCapturePhotoOutput,
+    didFinishCaptureFor resolvedSettings: AVCaptureResolvedPhotoSettings,
+    error: (any Error)?
+  ) {
+    guard isLivePhoto, !isLivePhotoSaved else { return }
 
-    // 비율을 적용하는 라이브 포토. 4:3은 자를 것이 없어 아래 일반 경로를 그대로 쓴다.
-    if aspectRatio != .ratio4x3,
-      let lastStillImageData = self.lastStillImageData,
-      let lastThumbnailImage = self.lastThumbnailImage
-    {
-      logger.info("Live Photo: Saving \(aspectRatio.rawValue) live photo (Movie delegate).")
-      Task {
-        await saveLivePhotoInAspectRatio(
-          imageData: lastStillImageData,
-          thumbnail: lastThumbnailImage,
-          livePhotoMovieURL: outputFileURL
-        )
-      }
-      return
-    }
-
-    // 일반 라이브 포토
-    if let lastStillImageData = self.lastStillImageData,
-      let lastThumbnailImage = self.lastThumbnailImage,
-      let movieData = try? Data(contentsOf: outputFileURL)
-    {
-      logger.info("Live Photo: Saving standard live photo (Movie delegate).")
-      let originalPhotoOutput = PhotoOuput.livePhoto(
-        thumbnail: lastThumbnailImage,
-        imageData: lastStillImageData,
-        videoData: movieData
-      )
-      let outputs = resolveOutputs(for: originalPhotoOutput)
-      let photoOutput = outputs.final
-      saveOriginalIfNeeded(outputs.separateOriginal)
-      PhotoLibraryHelpers.saveLivePhotoToPhotosLibrary(
-        stillImageData: photoOutput.imageData,
-        livePhotoMovieURL: outputFileURL
-      )
-      completion(photoOutput, sendOutputs(outputs))
-      return
-    }
+    isLivePhotoMovieFailed = true
+    saveLivePhotoIfReady()
   }
 }
 
@@ -285,10 +220,115 @@ nonisolated extension CameraDelegate {
   }
 }
 
-nonisolated private extension CameraDelegate {
+nonisolated extension CameraDelegate {
+  /// 사진과 영상은 어느 순서로든 오므로 조각이 올 때마다 부른다. 둘 다 있으면 Live로 저장하고, 영상이 실패했으면 정지 사진만 저장한다.
+  private func saveLivePhotoIfReady() {
+    guard !isLivePhotoSaved else { return }
+
+    guard !isLivePhotoMovieFailed else {
+      saveStillPhotoOnly()
+      return
+    }
+
+    guard let livePhotoMovieURL = self.livePhotoMovieURL else { return }
+
+    // 지연 처리된 라이브 포토
+    if let deferredPhotoProxyData = self.deferredPhotoProxyData,
+      let movieData = try? Data(contentsOf: livePhotoMovieURL),
+      let thumbnail = UIImage(data: deferredPhotoProxyData)
+    {
+      isLivePhotoSaved = true
+      saveDeferredLivePhoto(
+        .livePhoto(thumbnail: thumbnail, imageData: deferredPhotoProxyData, videoData: movieData),
+        livePhotoMovieURL: livePhotoMovieURL
+      )
+      return
+    }
+
+    // 비율을 적용하는 라이브 포토. 4:3은 자를 것이 없어 아래 일반 경로를 그대로 쓴다.
+    if aspectRatio != .ratio4x3,
+      let lastStillImageData = self.lastStillImageData,
+      let lastThumbnailImage = self.lastThumbnailImage
+    {
+      isLivePhotoSaved = true
+      logger.info("Live Photo: Saving \(aspectRatio.rawValue) live photo.")
+      Task {
+        await saveLivePhotoInAspectRatio(
+          imageData: lastStillImageData,
+          thumbnail: lastThumbnailImage,
+          livePhotoMovieURL: livePhotoMovieURL
+        )
+      }
+      return
+    }
+
+    // 일반 라이브 포토
+    if let lastStillImageData = self.lastStillImageData,
+      let lastThumbnailImage = self.lastThumbnailImage,
+      let movieData = try? Data(contentsOf: livePhotoMovieURL)
+    {
+      isLivePhotoSaved = true
+      saveStandardLivePhoto(
+        .livePhoto(thumbnail: lastThumbnailImage, imageData: lastStillImageData, videoData: movieData),
+        livePhotoMovieURL: livePhotoMovieURL
+      )
+    }
+  }
+
+  private func saveDeferredLivePhoto(_ originalPhotoOutput: PhotoOuput, livePhotoMovieURL: URL) {
+    logger.info("Live Photo: Saving deferred live photo.")
+    let outputs = resolveOutputs(for: originalPhotoOutput)
+    let photoOutput = outputs.final
+    saveOriginalIfNeeded(outputs.separateOriginal, isDeferredLivePhoto: true)
+    PhotoLibraryHelpers.saveDeferredLivePhotoToPhotosLibrary(
+      proxyData: photoOutput.imageData,
+      livePhotoMovieURL: livePhotoMovieURL
+    )
+    completion(photoOutput, sendOutputs(outputs))
+  }
+
+  private func saveStandardLivePhoto(_ originalPhotoOutput: PhotoOuput, livePhotoMovieURL: URL) {
+    logger.info("Live Photo: Saving standard live photo.")
+    let outputs = resolveOutputs(for: originalPhotoOutput)
+    let photoOutput = outputs.final
+    saveOriginalIfNeeded(outputs.separateOriginal)
+    PhotoLibraryHelpers.saveLivePhotoToPhotosLibrary(
+      stillImageData: photoOutput.imageData,
+      livePhotoMovieURL: livePhotoMovieURL
+    )
+    completion(photoOutput, sendOutputs(outputs))
+  }
+
+  private func saveStillPhotoOnly() {
+    if let deferredPhotoProxyData = self.deferredPhotoProxyData {
+      isLivePhotoSaved = true
+      logger.error("[LivePhoto] 영상 녹화 실패 → 정지 사진만 저장")
+      saveDeferredBasicPhoto(imageData: deferredPhotoProxyData)
+    } else if let lastStillImageData = self.lastStillImageData,
+      let lastThumbnailImage = self.lastThumbnailImage
+    {
+      isLivePhotoSaved = true
+      logger.error("[LivePhoto] 영상 녹화 실패 → 정지 사진만 저장")
+      Task {
+        await saveBasicPhoto(imageData: lastStillImageData, thumbnail: lastThumbnailImage)
+      }
+    }
+  }
+
+  private func saveDeferredBasicPhoto(imageData: Data) {
+    let originalPhotoOutput = applyAspectRatio(
+      to: PhotoOuput.basicPhoto(thumbnail: UIImage(data: imageData) ?? .init(), imageData: imageData)
+    )
+    let outputs = resolveOutputs(for: originalPhotoOutput)
+    let photoOutput = outputs.final
+    saveOriginalIfNeeded(outputs.separateOriginal, isDeferredPhoto: true)
+    PhotoLibraryHelpers.saveProxyToPhotoLibrary(photoOutput.imageData)
+    completion(photoOutput, sendOutputs(outputs))
+  }
+
   /// 사진 자르기와 펜 합성이 화면을 멈추지 않게 카메라 콜백 스레드와 상관없이 백그라운드에서 처리하고 저장한다.
   @concurrent
-  func saveBasicPhoto(imageData: Data, thumbnail: UIImage) async {
+  private func saveBasicPhoto(imageData: Data, thumbnail: UIImage) async {
     let originalPhotoOutput = applyAspectRatio(to: PhotoOuput.basicPhoto(thumbnail: thumbnail, imageData: imageData))
     let outputs = resolveOutputs(for: originalPhotoOutput)
     let photoOutput = outputs.final
@@ -299,7 +339,7 @@ nonisolated private extension CameraDelegate {
 
   /// 영상 자르기는 오래 걸리므로 카메라 콜백 스레드와 상관없이 백그라운드에서 자르고 저장한다.
   @concurrent
-  func saveLivePhotoInAspectRatio(imageData: Data, thumbnail: UIImage, livePhotoMovieURL: URL) async {
+  private func saveLivePhotoInAspectRatio(imageData: Data, thumbnail: UIImage, livePhotoMovieURL: URL) async {
     guard
       let livePhoto = await applyAspectRatio(
         toLivePhotoImageData: imageData,
@@ -307,8 +347,8 @@ nonisolated private extension CameraDelegate {
         livePhotoMovieURL: livePhotoMovieURL
       )
     else {
-      logger.error("[AspectRatio] Live \(aspectRatio.rawValue) 촬영 → 원본 영상 읽기 실패")
-      completion(nil, [])
+      logger.error("[AspectRatio] Live \(aspectRatio.rawValue) 촬영 → 원본 영상 읽기 실패, 정지 사진만 저장")
+      await saveBasicPhoto(imageData: imageData, thumbnail: thumbnail)
       return
     }
 
@@ -322,7 +362,7 @@ nonisolated private extension CameraDelegate {
     completion(photoOutput, sendOutputs(outputs))
   }
 
-  func originalLivePhoto(
+  private func originalLivePhoto(
     imageData: Data,
     thumbnail: UIImage,
     livePhotoMovieURL: URL
@@ -332,7 +372,7 @@ nonisolated private extension CameraDelegate {
     return (.livePhoto(thumbnail: thumbnail, imageData: imageData, videoData: movieData), livePhotoMovieURL)
   }
 
-  func saveOriginalIfNeeded(
+  private func saveOriginalIfNeeded(
     _ photoOutput: PhotoOuput?,
     isDeferredPhoto: Bool = false,
     isDeferredLivePhoto: Bool = false
