@@ -49,9 +49,9 @@ struct ConnectionViewModelTests {
 
     viewModel.selectRole(for: .photographer)
     viewModel.connectButtonDidTap(for: device)
-    try await Task.sleep(for: .milliseconds(150))
+    let selectedDevice = await waitUntil { viewModel.selectedPairedDevice == device }
 
-    #expect(viewModel.selectedPairedDevice == device)
+    #expect(selectedDevice)
     let stopCallCountBeforeReset = networkService.stopCallCount
 
     viewModel.selectRole(for: nil)
@@ -132,10 +132,11 @@ private final class FakeNotificationService: NotificationServiceProtocol {
 }
 
 @MainActor
+/// 조건이 맞을 때까지 최대 2초 기다린다. 뷰모델이 일정 시간 기다린 뒤 값을 바꾸는 경우도 시간으로 기다려야 한다.
 private func waitUntil(_ condition: () -> Bool) async -> Bool {
-  for _ in 0..<100 {
+  for _ in 0..<200 {
     if condition() { return true }
-    await Task.yield()
+    try? await Task.sleep(for: .milliseconds(10))
   }
   return false
 }
