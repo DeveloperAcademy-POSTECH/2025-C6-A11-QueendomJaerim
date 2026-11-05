@@ -79,6 +79,14 @@ struct LivePhotoMovieCroppingTests {
 
     #expect(await service.crop(livePhotoMovieURL: url, to: .ratio16x9) == nil)
   }
+
+  @Test("영상 데이터가 중간에 망가져 있으면 멈추지 않고 nil을 돌려준다", .timeLimit(.minutes(1)), arguments: [0.3, 0.6, 0.9])
+  func returnsNilForCorruptedMovieData(fraction: Double) async throws {
+    let source = try await LivePhotoMovieFixture.make()
+    try LivePhotoMovieFixture.corruptMediaData(at: source.url, from: fraction)
+
+    #expect(await service.crop(livePhotoMovieURL: source.url, to: .ratio16x9) == nil)
+  }
 }
 
 /// 라이브 포토 영상과 같은 구성의 짧은 테스트 영상을 만든다.
@@ -126,6 +134,29 @@ enum LivePhotoMovieFixture {
         contentIdentifier: try await identifierItem?.load(.stringValue)
       )
     }
+  }
+
+  /// 영상 파일의 미디어 데이터(`mdat`) 중 `fraction` 위치부터 일부를 망가뜨린다.
+  static func corruptMediaData(at url: URL, from fraction: Double) throws {
+    var data = try Data(contentsOf: url)
+    var offset = 0
+    var mediaDataRange: Range<Int>?
+
+    while offset + 8 <= data.count {
+      let size = Int(data[offset..<offset + 4].reduce(0) { ($0 << 8) | UInt32($1) })
+      guard size > 0 else { break }
+      if String(bytes: data[offset + 4..<offset + 8], encoding: .utf8) == "mdat" {
+        mediaDataRange = (offset + 8)..<(offset + size)
+      }
+      offset += size
+    }
+
+    let range = try #require(mediaDataRange)
+    let start = range.lowerBound + Int(Double(range.count) * fraction)
+    for index in start..<min(start + 4000, range.upperBound) {
+      data[index] = 0xFF
+    }
+    try data.write(to: url)
   }
 
   static func make(hasCleanAperture: Bool = false) async throws -> Source {

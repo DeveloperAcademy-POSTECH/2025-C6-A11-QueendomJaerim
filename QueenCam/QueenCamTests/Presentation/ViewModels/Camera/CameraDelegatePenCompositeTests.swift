@@ -91,6 +91,63 @@ struct CameraDelegatePenCompositeTests {
     #expect(delegate.sendOutputs(outputs).count == 2)
   }
 
+  @Test(
+    "Live Photo를 1:1로 자르지 못하면(사진 실패·영상 실패·영상 읽기 실패) 펜을 합성하지 않고 원본 쌍 한 개만 저장·전송한다",
+    arguments: LiveCropFailure.allCases
+  )
+  func skipsCompositeWhenLiveCropFails(failure: LiveCropFailure) async throws {
+    let original = try makeJPEGPhoto(width: 300, height: 400)
+    let movieURL = try makeMovieFile()
+    let croppedImageData = try makeJPEGPhoto(width: 300, height: 300).imageData
+    let croppingService = LiveCroppingStub(
+      imageResult: failure == .image ? nil : croppedImageData,
+      movieResult: failure.movieResult(croppedMovieURL: try makeMovieFile())
+    )
+    let delegate = makeCompositingDelegate(ratio: .ratio1x1, croppingService: croppingService)
+
+    let livePhoto = try #require(
+      await delegate.applyAspectRatio(
+        toLivePhotoImageData: original.imageData,
+        thumbnail: original.thumbnail,
+        livePhotoMovieURL: movieURL
+      )
+    )
+    let outputs = delegate.resolveOutputs(for: livePhoto.photoOutput)
+
+    #expect(outputs.separateOriginal == nil)
+    #expect(delegate.sendOutputs(outputs).map(\.imageData) == [original.imageData])
+  }
+
+  enum LiveCropFailure: CaseIterable {
+    case image
+    case movie
+    case unreadableMovie
+
+    func movieResult(croppedMovieURL: URL) -> URL? {
+      switch self {
+      case .image: croppedMovieURL
+      case .movie: nil
+      case .unreadableMovie: FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+      }
+    }
+  }
+
+  private func makeMovieFile() throws -> URL {
+    let url = FileManager.default.temporaryDirectory
+      .appendingPathComponent(UUID().uuidString)
+      .appendingPathExtension("mov")
+    try Data("movie".utf8).write(to: url)
+    return url
+  }
+
+  private struct LiveCroppingStub: PhotoAspectRatioCroppingServiceProtocol {
+    let imageResult: Data?
+    let movieResult: URL?
+
+    func crop(imageData: Data, to ratio: PhotoAspectRatio) -> Data? { imageResult }
+    func crop(livePhotoMovieURL: URL, to ratio: PhotoAspectRatio) async -> URL? { movieResult }
+  }
+
   private func makePhoto(label: String) -> PhotoOuput {
     .basicPhoto(thumbnail: UIImage(), imageData: Data(label.utf8))
   }
@@ -108,13 +165,20 @@ struct CameraDelegatePenCompositeTests {
 
   /// 촬영 때와 같이 실제 합성 서비스를 셔터 순간의 비율로 묶은 Delegate
   private func makeCompositingDelegate(ratio: PhotoAspectRatio, cropResult: Data?) -> CameraDelegate {
+    makeCompositingDelegate(ratio: ratio, croppingService: FixedCroppingService(result: cropResult))
+  }
+
+  private func makeCompositingDelegate(
+    ratio: PhotoAspectRatio,
+    croppingService: PhotoAspectRatioCroppingServiceProtocol
+  ) -> CameraDelegate {
     let compositingService = PhotoOverlayCompositingService()
     let stroke = DrawableStroke(id: UUID(), points: [CGPoint(x: 0.5, y: 0.25), CGPoint(x: 0.5, y: 0.75)], author: .photographer)
 
     return CameraDelegate(
       isCameraPosition: .back,
       aspectRatio: ratio,
-      aspectRatioCroppingService: FixedCroppingService(result: cropResult),
+      aspectRatioCroppingService: croppingService,
       photoOutputProcessor: { photoOutput in
         compositingService.composite(
           photoOutput: photoOutput,
