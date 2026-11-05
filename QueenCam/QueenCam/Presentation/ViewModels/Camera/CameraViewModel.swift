@@ -24,7 +24,7 @@ final class CameraViewModel {
   var isFlashMode: FlashMode
   var photoAspectRatio: PhotoAspectRatio
 
-  /// 연결된 상대와의 관계에서 내 역할. 받은 비율은 모델일 때만 적용한다.
+  /// 비율은 작가만 바꿀 수 있어서, 보내기와 받기 모두 이 역할로 막는다.
   var currentRole: Role?
 
   /// 화면에 보이는 프리뷰 폭(pt). 펜 합성이 화면과 같은 두께로 그리는 데 쓴다.
