@@ -76,6 +76,7 @@ private final class FakeNetworkService: NetworkServiceProtocol {
   var mode: NetworkType?
   var networkState: NetworkState?
   var lastStopReason: String?
+  var isCounterpartVersionVerified = false
   private(set) var stopCallCount = 0
 
   var deviceConnectionsPublisher: AnyPublisher<[WAPairedDevice: ConnectionDetail], Never> {

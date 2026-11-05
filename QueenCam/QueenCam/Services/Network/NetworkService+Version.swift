@@ -43,6 +43,8 @@ extension NetworkService {
       )
       return
     }
+
+    isCounterpartVersionVerified = true
   }
 
   func handleVersionCheckTimer() {

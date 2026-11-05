@@ -129,6 +129,8 @@ final class NetworkService: NetworkServiceProtocol {
   // Checking Version Timer
   var versionCheckTimer: Timer?
   var versionChecked: Bool = false
+  // versionChecked는 검사에 실패해도 true가 되므로, 새 이벤트를 보내도 되는지는 이 값으로 판단한다.
+  var isCounterpartVersionVerified: Bool = false
 
   private let pairedDeviceRegistry: WAPairedDeviceRegistryProtocol
 
@@ -346,6 +348,8 @@ extension NetworkService {
   func run(for device: WAPairedDevice) {
     logger.debug("run() invoked")
 
+    isCounterpartVersionVerified = false
+
     networkTask = Task {
       _ = try await withTaskCancellationHandler {
         try await mode == .host ? networkManager.listen(to: device) : networkManager.browse(for: device)
@@ -376,6 +380,7 @@ extension NetworkService {
       }
 
       isReconnecting = true
+      isCounterpartVersionVerified = false
 
       networkTask?.cancel()
 
@@ -396,6 +401,7 @@ extension NetworkService {
   }
 
   func stop(byUser: Bool, userReason: String? = nil) {
+    isCounterpartVersionVerified = false
     stopMonitoring()
     networkTask?.cancel()
 

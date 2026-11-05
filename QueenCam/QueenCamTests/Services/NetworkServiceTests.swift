@@ -248,6 +248,94 @@ struct NetworkServiceTests {
 
     #expect(mockNM.sendToAllEvents.count == 1)
   }
+
+  @Test("연결 전에는 상대 버전 확인 통과 신호가 꺼져 있다")
+  func counterpartVersionNotVerifiedInitially() {
+    let service = NetworkService(networkManager: MockNetworkManager(), connectionManager: MockConnectionManager())
+
+    #expect(service.isCounterpartVersionVerified == false)
+  }
+
+  @Test("호환되는 버전을 받으면 통과 신호가 켜진다")
+  func compatibleVersionVerifiesCounterpart() async throws {
+    let mockNM = MockNetworkManager()
+    let service = NetworkService(networkManager: mockNM, connectionManager: MockConnectionManager())
+
+    let payload = VersionExchangePayload(version: VersionUtils.currentVersion, requiredMinimumVersion: 0)
+    mockNM.emitNetwork(.myVersion(payload))
+    try await Task.sleep(nanoseconds: 50_000_000)
+
+    #expect(service.isCounterpartVersionVerified)
+  }
+
+  @Test("상대 앱 버전이 최소 호환 버전보다 낮으면 통과 신호가 켜지지 않는다")
+  func outdatedCounterpartIsNotVerified() async throws {
+    let mockNM = MockNetworkManager()
+    let service = NetworkService(networkManager: mockNM, connectionManager: MockConnectionManager())
+
+    let payload = VersionExchangePayload(version: 0, requiredMinimumVersion: 0)
+    mockNM.emitNetwork(.myVersion(payload))
+    try await Task.sleep(nanoseconds: 50_000_000)
+
+    #expect(service.isCounterpartVersionVerified == false)
+  }
+
+  @Test("내 앱 버전이 상대가 요구하는 최소 버전보다 낮으면 통과 신호가 켜지지 않는다")
+  func outdatedMyAppIsNotVerified() async throws {
+    let mockNM = MockNetworkManager()
+    let service = NetworkService(networkManager: mockNM, connectionManager: MockConnectionManager())
+
+    let payload = VersionExchangePayload(version: VersionUtils.currentVersion, requiredMinimumVersion: Int.max)
+    mockNM.emitNetwork(.myVersion(payload))
+    try await Task.sleep(nanoseconds: 50_000_000)
+
+    #expect(service.isCounterpartVersionVerified == false)
+  }
+
+  @Test("stop()을 호출하면 통과 신호가 꺼진다")
+  func stopResetsVerification() async throws {
+    let mockNM = MockNetworkManager()
+    let service = NetworkService(networkManager: mockNM, connectionManager: MockConnectionManager())
+
+    mockNM.emitNetwork(.myVersion(VersionExchangePayload(version: VersionUtils.currentVersion, requiredMinimumVersion: 0)))
+    try await Task.sleep(nanoseconds: 50_000_000)
+    #expect(service.isCounterpartVersionVerified)
+
+    service.stop(byUser: true)
+
+    #expect(service.isCounterpartVersionVerified == false)
+  }
+
+  @Test("run(for:)로 새 연결을 시작하면 통과 신호가 꺼진다")
+  func runResetsVerification() async throws {
+    let mockNM = MockNetworkManager()
+    let service = NetworkService(networkManager: mockNM, connectionManager: MockConnectionManager())
+
+    mockNM.emitNetwork(.myVersion(VersionExchangePayload(version: VersionUtils.currentVersion, requiredMinimumVersion: 0)))
+    try await Task.sleep(nanoseconds: 50_000_000)
+    #expect(service.isCounterpartVersionVerified)
+
+    service.mode = .host
+    service.run(for: makeDummyDevice())
+
+    #expect(service.isCounterpartVersionVerified == false)
+  }
+
+  @Test("reconnect(for:)로 다시 연결하면 통과 신호가 꺼진다")
+  func reconnectResetsVerification() async throws {
+    let mockNM = MockNetworkManager()
+    let service = NetworkService(networkManager: mockNM, connectionManager: MockConnectionManager())
+
+    mockNM.emitNetwork(.myVersion(VersionExchangePayload(version: VersionUtils.currentVersion, requiredMinimumVersion: 0)))
+    try await Task.sleep(nanoseconds: 50_000_000)
+    #expect(service.isCounterpartVersionVerified)
+
+    service.mode = .host
+    service.reconnect(for: makeDummyDevice())
+    try await Task.sleep(nanoseconds: 50_000_000)
+
+    #expect(service.isCounterpartVersionVerified == false)
+  }
 }
 
 // 테스트 및 미리보기 전용 데이터를 관리하기 위한 확장
