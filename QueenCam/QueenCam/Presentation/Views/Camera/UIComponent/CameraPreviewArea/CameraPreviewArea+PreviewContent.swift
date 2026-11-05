@@ -57,12 +57,31 @@ extension CameraView.CameraPreviewArea {
       .clipped()
       .contentShape(.rect)
     } else {  // 모델
-      #if DEBUG
-      DebugPreviewPlayerView(previewModel: previewModel)
-      #else
-      PreviewPlayerView(previewModel: previewModel)
-      #endif
+      // 작가는 자르기 전 영상 전체를 보내므로, 작가 화면과 같은 크기로 키우고 잘라야 같은 범위가 보인다.
+      // 키운 영상이 프리뷰 영역(과 그 위 가이드 영역)을 넓히지 않도록 영역 크기의 바탕 위에 겹친다.
+      Color.clear
+        .overlay {
+          modelPreviewPlayer
+            .frame(width: modelFeedSize.width, height: modelFeedSize.height)
+        }
+        .clipped()
     }
+  }
+
+  @ViewBuilder
+  private var modelPreviewPlayer: some View {
+    #if DEBUG
+    DebugPreviewPlayerView(previewModel: previewModel)
+    #else
+    PreviewPlayerView(previewModel: previewModel)
+    #endif
+  }
+
+  private var modelFeedSize: CGSize {
+    PhotoAspectRatioGeometry.cameraFeedSize(
+      previewWidth: cameraViewModel.previewWidth,
+      ratio: cameraViewModel.photoAspectRatio
+    )
   }
 
   var magnificationGesture: some Gesture {

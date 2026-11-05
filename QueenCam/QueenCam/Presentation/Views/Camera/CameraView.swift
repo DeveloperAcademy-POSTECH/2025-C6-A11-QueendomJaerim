@@ -118,7 +118,7 @@ extension CameraView {
   }
 
   private var previewRatio: PhotoAspectRatio {
-    currentMode == .photographer ? cameraViewModel.photoAspectRatio : .ratio4x3
+    cameraViewModel.photoAspectRatio
   }
 
   private func toggleGuidingTool(_ tool: ActiveTool) {
