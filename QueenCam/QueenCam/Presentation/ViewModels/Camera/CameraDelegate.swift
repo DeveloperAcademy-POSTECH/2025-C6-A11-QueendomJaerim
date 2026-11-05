@@ -149,6 +149,11 @@ nonisolated final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate 
 
     isLivePhotoMovieFailed = true
     saveLivePhotoIfReady()
+
+    // 정지 사진도 없이 촬영이 끝났다. 완료를 알려야 셔터 잠금 기록과 delegate가 남지 않는다.
+    guard !isLivePhotoSaved else { return }
+    logger.error("[LivePhoto] 저장할 사진 없이 촬영 종료")
+    completion(nil, [])
   }
 }
 

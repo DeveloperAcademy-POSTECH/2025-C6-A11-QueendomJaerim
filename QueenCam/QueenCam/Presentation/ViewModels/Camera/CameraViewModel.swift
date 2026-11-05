@@ -38,7 +38,7 @@ final class CameraViewModel {
   var isLivePhotoMovieFinishing: Bool = false
 
   var isShutterEnabled: Bool {
-    isCaptureButtonEnabled && !isLivePhotoMovieFinishing
+    isCaptureButtonEnabled && !(isLivePhotoOn && isLivePhotoMovieFinishing)
   }
   
   // MARK: Thumbnail
