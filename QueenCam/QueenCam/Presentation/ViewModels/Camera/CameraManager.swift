@@ -37,6 +37,7 @@ final class CameraManager: NSObject {
 
   // 라이브 포토에 대한 컴플리션
   var onWillCaptureLivePhoto: (() -> Void)?
+  var onLivePhotoMovieFinishingChange: ((Bool) -> Void)?
   var onDidFinishCapture: (() -> Void)?
   var onPhotoCapture: ((UIImage) -> Void)?
   var onTapCameraSwitch: ((AVCaptureDevice.Position) -> Void)?
@@ -46,6 +47,10 @@ final class CameraManager: NSObject {
 
   // 렌즈 변경 상태를 관찰하기 위한 옵저버
   private var lensChangeObserver: NSKeyValueObservation?
+
+  // Live 영상이 녹화를 끝내고 마무리하는 동안 다음 Live를 찍으면 시스템이 그 영상을 실패시키므로 셔터를 잠근다.
+  private var recordingLivePhotoIDs: Set<Int64> = []
+  private var finishingLivePhotoIDs: Set<Int64> = []
 
   init(
     previewCaptureService: PreviewCaptureService,
@@ -179,7 +184,10 @@ final class CameraManager: NSObject {
         aspectRatioCroppingService: self.photoAspectRatioCroppingService,
         willCaptureLivePhoto: { [weak self] in
           self?.onWillCaptureLivePhoto?()
+          self?.livePhotoMovieDidStartRecording(uniqueID)
         },
+        didFinishRecordingLivePhotoMovie: { [weak self] in self?.livePhotoMovieDidFinishRecording(uniqueID) },
+        didFinishLivePhotoMovie: { [weak self] in self?.livePhotoMovieDidEnd(uniqueID) },
         photoOutputProcessor: photoOutputProcessor
       ) { [weak self] photoOutput, photoOutputsToSend in
         guard let self else { return }
@@ -188,6 +196,7 @@ final class CameraManager: NSObject {
         self.captureSessionQueue.async {
           self.inTrackingCameraDelegate.removeValue(forKey: uniqueID)
         }
+        self.livePhotoMovieDidEnd(uniqueID)
 
         guard let photoOutput else {
           DispatchQueue.main.async {
@@ -541,5 +550,40 @@ extension URL {
     FileManager.default.temporaryDirectory
       .appendingPathComponent(UUID().uuidString)
       .appendingPathExtension(for: .quickTimeMovie)
+  }
+}
+
+// MARK: - Live 영상 마무리 중 셔터 잠금
+extension CameraManager {
+  nonisolated private func livePhotoMovieDidStartRecording(_ uniqueID: Int64) {
+    DispatchQueue.main.async { [weak self] in
+      guard let self else { return }
+      recordingLivePhotoIDs.insert(uniqueID)
+      updateLivePhotoMovieFinishing()
+    }
+  }
+
+  /// 녹화 중으로 기록된 촬영만 마무리로 넘긴다. 이미 끝난 촬영이 다시 들어와 셔터가 잠긴 채 남지 않게 한다.
+  nonisolated private func livePhotoMovieDidFinishRecording(_ uniqueID: Int64) {
+    DispatchQueue.main.async { [weak self] in
+      guard let self, recordingLivePhotoIDs.remove(uniqueID) != nil else { return }
+      finishingLivePhotoIDs.insert(uniqueID)
+      updateLivePhotoMovieFinishing()
+    }
+  }
+
+  nonisolated private func livePhotoMovieDidEnd(_ uniqueID: Int64) {
+    DispatchQueue.main.async { [weak self] in
+      guard let self else { return }
+      recordingLivePhotoIDs.remove(uniqueID)
+      finishingLivePhotoIDs.remove(uniqueID)
+      updateLivePhotoMovieFinishing()
+    }
+  }
+
+  /// 다른 Live가 녹화 중이면 마무리가 뒤로 미뤄져 실패하지 않으므로, 녹화 중인 Live가 없을 때만 잠근다.
+  private func updateLivePhotoMovieFinishing() {
+    let isFinishing = recordingLivePhotoIDs.isEmpty && !finishingLivePhotoIDs.isEmpty
+    onLivePhotoMovieFinishingChange?(isFinishing)
   }
 }

@@ -23,7 +23,7 @@ extension CameraView.CameraPreviewArea {
           .frame(width: feedSize.width, height: feedSize.height)
           .onCameraCaptureEvent { event in
             if event.phase == .ended {
-              if cameraViewModel.isCaptureButtonEnabled {
+              if cameraViewModel.isShutterEnabled {
                 shutterActionEffect()
                 cameraViewModel.capturePhoto()
               }

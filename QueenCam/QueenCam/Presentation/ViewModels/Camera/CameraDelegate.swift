@@ -20,12 +20,16 @@ nonisolated final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate 
 
   private var isLivePhoto: Bool = false
   private var willCaptureLivePhoto: (() -> Void)?
+  private var didFinishRecordingLivePhotoMovie: (() -> Void)?
+  private var didFinishLivePhotoMovie: (() -> Void)?
 
   init(
     isCameraPosition: AVCaptureDevice.Position,
     aspectRatio: PhotoAspectRatio,
     aspectRatioCroppingService: PhotoAspectRatioCroppingServiceProtocol,
     willCaptureLivePhoto: (() -> Void)? = nil,
+    didFinishRecordingLivePhotoMovie: (() -> Void)? = nil,
+    didFinishLivePhotoMovie: (() -> Void)? = nil,
     photoOutputProcessor: ((PhotoOuput) -> PhotoOuput?)? = nil,
     completion: @escaping (PhotoOuput?, [PhotoOuput]) -> Void
   ) {
@@ -33,6 +37,8 @@ nonisolated final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate 
     self.aspectRatio = aspectRatio
     self.aspectRatioCroppingService = aspectRatioCroppingService
     self.willCaptureLivePhoto = willCaptureLivePhoto
+    self.didFinishRecordingLivePhotoMovie = didFinishRecordingLivePhotoMovie
+    self.didFinishLivePhotoMovie = didFinishLivePhotoMovie
     self.photoOutputProcessor = photoOutputProcessor
     self.completion = completion
   }
@@ -112,6 +118,8 @@ nonisolated final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate 
     resolvedSettings: AVCaptureResolvedPhotoSettings,
     error: Error?
   ) {
+    didFinishLivePhotoMovie?()
+
     guard error == nil else {
       logger.error("Error capturing Live Photo movie: \(error)")
       isLivePhotoMovieFailed = true
@@ -121,6 +129,14 @@ nonisolated final class CameraDelegate: NSObject, AVCapturePhotoCaptureDelegate 
 
     self.livePhotoMovieURL = outputFileURL
     saveLivePhotoIfReady()
+  }
+
+  func photoOutput(
+    _ output: AVCapturePhotoOutput,
+    didFinishRecordingLivePhotoMovieForEventualFileAt outputFileURL: URL,
+    resolvedSettings: AVCaptureResolvedPhotoSettings
+  ) {
+    didFinishRecordingLivePhotoMovie?()
   }
 
   /// 촬영마다 맨 마지막에 오는 콜백이다. 영상이 끝내 오지 않거나 읽을 수 없어 저장하지 못했으면 정지 사진이라도 남긴다.

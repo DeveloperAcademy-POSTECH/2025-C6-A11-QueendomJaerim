@@ -34,6 +34,12 @@ final class CameraViewModel {
   var isCaptureButtonEnabled: Bool = true
   
   var isCapturingLivePhoto: Bool = false
+
+  var isLivePhotoMovieFinishing: Bool = false
+
+  var isShutterEnabled: Bool {
+    isCaptureButtonEnabled && !isLivePhotoMovieFinishing
+  }
   
   // MARK: Thumbnail
   var thumbnailImage: UIImage?
@@ -92,6 +98,10 @@ final class CameraViewModel {
     
     cameraManager.onDidFinishCapture = { [weak self] in
       self?.isCapturingLivePhoto = false
+    }
+
+    cameraManager.onLivePhotoMovieFinishingChange = { [weak self] isFinishing in
+      self?.isLivePhotoMovieFinishing = isFinishing
     }
     
     photosLibraryObserver.onUpdate = { [weak self] image in
