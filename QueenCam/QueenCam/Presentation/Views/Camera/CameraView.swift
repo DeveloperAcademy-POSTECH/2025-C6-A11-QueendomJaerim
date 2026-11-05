@@ -391,6 +391,9 @@ extension CameraView: View {
       )
         .dynamicTypeSize(.medium) // FIXME: Dynamic Type 정책 결정 후 수정
     }
+    .onChange(of: connectionViewModel.role, initial: true) { _, role in
+      cameraViewModel.currentRole = role
+    }
     .onChange(of: connectionViewModel.connections) { oldValue, newValue in
       if !newValue.isEmpty && newValue.count > oldValue.count && connectionViewModel.role == .photographer {
         previewModel.startCapture()

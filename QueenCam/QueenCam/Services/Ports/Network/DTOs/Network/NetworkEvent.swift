@@ -37,6 +37,9 @@ enum NetworkEvent: Sendable {
   /// 프리뷰 렌더링 모드 (후면/전면)
   case previewRenderingMode(PreviewRenderingType)
 
+  /// 촬영 비율 (작가 -> 모델). 상대 버전 확인을 통과한 뒤에만 보낸다.
+  case photoAspectRatio(PhotoAspectRatio)
+
   /// 렌더링 상태 (모델 -> 작가)
   case renderState(RenderingState)
 

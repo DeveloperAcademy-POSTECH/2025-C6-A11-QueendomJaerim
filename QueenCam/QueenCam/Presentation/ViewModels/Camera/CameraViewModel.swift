@@ -24,6 +24,9 @@ final class CameraViewModel {
   var isFlashMode: FlashMode
   var photoAspectRatio: PhotoAspectRatio
 
+  /// 연결된 상대와의 관계에서 내 역할. 받은 비율은 모델일 때만 적용한다.
+  var currentRole: Role?
+
   /// 화면에 보이는 프리뷰 폭(pt). 펜 합성이 화면과 같은 두께로 그리는 데 쓴다.
   var previewWidth: CGFloat = 0
   
@@ -48,7 +51,9 @@ final class CameraViewModel {
 
   
   private let logger = QueenLogger(category: "CameraViewModel")
-  
+
+  private var cancellables: Set<AnyCancellable> = []
+
   // MARK: State Toast
   private let notificationService: NotificationServiceProtocol
   
@@ -111,6 +116,16 @@ final class CameraViewModel {
     photosLibraryObserver.getCurrentScale = { [weak self] in
       self?.displayScale ?? 1.0
      }
+
+    networkService.networkEventPublisher
+      .receive(on: RunLoop.main)
+      .compactMap { $0 }
+      .sink { [weak self] event in
+        if case .photoAspectRatio(let ratio) = event {
+          self?.handleReceivedPhotoAspectRatio(ratio)
+        }
+      }
+      .store(in: &cancellables)
   }
   
   func checkPermissions() async {
@@ -225,6 +240,25 @@ final class CameraViewModel {
   func switchPhotoAspectRatio() {
     photoAspectRatio = photoAspectRatio.next()
     cameraSettingsService.photoAspectRatio = photoAspectRatio
+
+    guard currentRole != .model, networkService.isCounterpartVersionVerified else { return }
+
+    let ratio = photoAspectRatio
+    logger.info("[AspectRatio] 모델에게 비율 \(ratio.rawValue) 전송")
+    Task {
+      await networkService.send(for: .photoAspectRatio(ratio))
+    }
+  }
+
+  private func handleReceivedPhotoAspectRatio(_ ratio: PhotoAspectRatio) {
+    guard currentRole == .model else {
+      logger.info("[AspectRatio] 모델이 아니라서 받은 비율 \(ratio.rawValue) 무시")
+      return
+    }
+
+    photoAspectRatio = ratio
+    cameraSettingsService.photoAspectRatio = ratio
+    logger.info("[AspectRatio] 작가 비율 \(ratio.rawValue) 받아 저장")
   }
 
   func setFocus(point: CGPoint) {
