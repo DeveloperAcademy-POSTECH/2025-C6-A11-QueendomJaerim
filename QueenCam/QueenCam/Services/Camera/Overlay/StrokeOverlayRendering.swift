@@ -72,40 +72,36 @@ enum StrokeRenderStyleResolver {
 }
 
 enum StrokeOverlayGeometry {
-  static let logicalCanvasAspectRatio = CGSize(width: 3, height: 4)
+  /// 프리뷰 기준 정규화 좌표를 방향이 적용된 저장 사진의 정규화 좌표로 바꾼다.
+  /// 화면은 세로로 고정이라 가로로 찍은 사진은 시계 방향으로 `quarterTurns`번 돌려야 같은 피사체 위에 온다.
+  static func photoPoint(fromPreview point: CGPoint, ratio: PhotoAspectRatio, quarterTurns: Int) -> CGPoint {
+    let portraitPoint = PhotoAspectRatioGeometry.outputPoint(fromPreview: point, ratio: ratio)
 
-  // CameraPreviewArea가 iPhone에서 기준으로 쓰는 3:4 캔버스 폭이다.
-  // 사진 원본은 기기/방향/해상도에 따라 크기가 달라서, 저장 합성 시에는 이 논리 캔버스를 원본 이미지에 aspect-fit한다.
-  private static let logicalCanvasWidth: CGFloat = 377
-
-  static func lineScale(for overlayRect: CGRect) -> CGFloat {
-    max(
-      overlayRect.width / logicalCanvasWidth,
-      overlayRect.height / (logicalCanvasWidth * logicalCanvasAspectRatio.height / logicalCanvasAspectRatio.width)
-    )
+    switch ((quarterTurns % 4) + 4) % 4 {
+    case 1:
+      return CGPoint(x: 1 - portraitPoint.y, y: portraitPoint.x)
+    case 2:
+      return CGPoint(x: 1 - portraitPoint.x, y: 1 - portraitPoint.y)
+    case 3:
+      return CGPoint(x: portraitPoint.y, y: 1 - portraitPoint.x)
+    default:
+      return portraitPoint
+    }
   }
 
-  static func aspectFitRect(aspectRatio: CGSize = logicalCanvasAspectRatio, in rect: CGRect) -> CGRect {
-    let targetRatio = aspectRatio.width / aspectRatio.height
-    let rectRatio = rect.width / rect.height
+  /// 사진 연결의 촬영 각도를 회전 수로 바꾼다. 세로 화면과 같은 90도가 0번이다.
+  /// 시계 방향이 맞는지는 실기기 촬영으로 확인한다.
+  static func quarterTurns(forVideoRotationAngle angle: CGFloat) -> Int {
+    let turns = Int(((angle - 90) / 90).rounded())
+    return ((turns % 4) + 4) % 4
+  }
 
-    if rectRatio > targetRatio {
-      let width = rect.height * targetRatio
-      return CGRect(
-        x: rect.midX - width / 2,
-        y: rect.minY,
-        width: width,
-        height: rect.height
-      )
-    } else {
-      let height = rect.width / targetRatio
-      return CGRect(
-        x: rect.minX,
-        y: rect.midY - height / 2,
-        width: rect.width,
-        height: height
-      )
-    }
+  /// 화면에서 보인 두께와 같아지도록 사진 픽셀에 곱할 배율.
+  /// 세 비율 모두 프리뷰 폭이 저장 사진의 짧은 변과 같다.
+  static func lineScale(imageSize: CGSize, previewWidth: CGFloat) -> CGFloat {
+    guard previewWidth.isFinite, previewWidth > 0 else { return 1 }
+
+    return min(imageSize.width, imageSize.height) / previewWidth
   }
 
   static func point(from normalizedPoint: CGPoint, in rect: CGRect) -> CGPoint {

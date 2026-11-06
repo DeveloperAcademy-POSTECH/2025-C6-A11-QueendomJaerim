@@ -19,6 +19,32 @@
 
 ### Security
 
+## [1.2.2] - 2026-11-06
+
+### Added
+
+- 1:1·16:9 촬영 비율 추가. 상단 비율 버튼으로 4:3 → 16:9 → 1:1 순서로 바꾸면 프리뷰 영역이 그 비율로 바뀌고, 일반 사진과 Live Photo를 셔터를 누른 순간의 비율로 저장한다. `사진에 펜 가이드 함께 저장`으로 만든 합성본도 같은 비율과 위치로 저장한다. 작가가 바꾼 비율은 모델 화면과 모델이 받는 사진에도 반영되고, 연결 시작·역할 교환·재연결 때 두 기기가 같은 비율로 맞춰진다
+
+### Changed
+
+- 카메라 화면 배치를 새 디자인으로 변경. 프리뷰를 뒤에 깔고 상단 툴바와 하단 부품을 화면 가장자리에 고정하며, 16:9에서는 가이드 도구 모음을 프리뷰 안 세로 모음으로 표시하고 바구니 버튼을 상단 툴바 아래에 둔다. 짧은 화면에서도 버튼이 겹치지 않게 했다
+- 새 기능에 쓰는 이벤트는 상대 앱 버전 확인을 통과한 뒤에만 보내도록 변경
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+- 앱을 처음 실행했을 때 Live Photo가 일반 사진으로 저장되고, LIVE를 나중에 켜면 소리가 녹음되지 않던 문제 수정
+- 연속으로 Live Photo를 찍을 때 일부 영상이 실패하던 문제 수정. 앞 영상을 마무리하는 약 0.3~0.9초 동안 셔터를 잠그고, 그래도 영상이 실패하면 정지 사진을 일반 사진으로 저장한다
+- Live Photo의 사진과 영상이 도착하는 순서와 관계없이 저장되도록 수정
+- 여러 스레드가 동시에 기록할 때 로거가 크래시하던 문제 수정
+- 두 번째 연결부터 상대 앱 버전 확인이 항상 통과 처리되던 문제 수정. 연결이 바뀔 때 확인 표시와 10초 알람을 함께 정리한다
+- 재연결 중 `연결 취소하기`를 눌러도 연결 전 화면으로 돌아가지 않고 이전 화면에 머물던 문제 수정
+
+### Security
+
 ## [1.2.1] - 2026-10-20
 
 ### Added
@@ -555,7 +581,8 @@
 - Wi-Fi Aware 연결 후, 라이브 포토 촬영 시 앱이 크래시되는 문제
 - 레퍼런스 삭제 후 재등록에 관한 상태 초기화 문제
 
-[Unreleased]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.2.1...HEAD
+[Unreleased]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.2.2...HEAD
+[1.2.2]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.12...v1.2.0
 [1.1.12]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.11...v1.1.12

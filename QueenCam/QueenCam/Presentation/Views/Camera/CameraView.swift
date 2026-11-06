@@ -117,6 +117,14 @@ extension CameraView {
     WACapabilities.supportedFeatures.contains(.wifiAware)
   }
 
+  private var previewRatio: PhotoAspectRatio {
+    cameraViewModel.photoAspectRatio
+  }
+
+  private func toggleGuidingTool(_ tool: ActiveTool) {
+    activeTool = activeTool == tool ? nil : tool
+  }
+
   private var releaseNoteItemBinding: Binding<ReleaseNote?> {
     Binding(
       get: { releaseNoteViewModel.releaseNoteItem },
@@ -156,15 +164,92 @@ extension CameraView: View {
       )
     }
     .frame(width: 377, height: 192)
-    .glassEffect(.clear.tint(Color.hex333333), in: .rect(cornerRadius: 59))
+    // tint만 쓰면 검은 화면 위에서 너무 어두워져 채움을 따로 둔다.
+    .background(Color.hex333333.opacity(0.9), in: .rect(cornerRadius: 59))
+    .glassEffect(.regular, in: .rect(cornerRadius: 59))
+  }
+
+  private var topToolBar: some View {
+    TopToolBarView(
+      connectedDeviceName: connectionViewModel.connectedDeviceName,
+      reconnectingDeviceName: connectionViewModel.reconnectingDeviceName,
+      role: connectionViewModel.role,
+      aspectRatioTitle: currentMode == .photographer ? cameraViewModel.photoAspectRatio.rawValue : nil,
+      indicatorMenuContent: {
+        Button("역할 바꾸기") {
+          changeRoleButtonDidTap()
+        }
+
+        Button("연결 종료하기", role: .destructive) {
+          isShowDisconnectAlert = true
+        }
+      },
+      connectedWithButtonDidTap: {
+        if isAvailableWifiAware {
+          isShowConnectionView = true
+        } else {
+          isShowWifiAwareUnsupportedAlert = true
+        }
+      },
+      aspectRatioButtonDidTap: {
+        cameraViewModel.switchPhotoAspectRatio()
+      },
+      settingsButtonDidTap: {
+        navigationRouter.push(.settings(.main(role: connectionViewModel.role, highlight: nil)))
+      }
+    )
+    .alert(
+      "연결이 불가능한 기기입니다.",
+      isPresented: $isShowWifiAwareUnsupportedAlert,
+      actions: {
+        Button(role: .cancel) {
+        } label: {
+          Text("확인했어요")
+        }
+      },
+      message: {
+        Text("이 기기는 다른 기기와의 연결이 어려워요. 대신 찍자의 여러 가이드 기능은 이용할 수 있어요.")
+      }
+    )
+    .alert(
+      "연결을 종료합니다.",
+      isPresented: $isShowDisconnectAlert,
+      actions: {
+        Button(role: .destructive) {
+          connectionViewModel.disconnectButtonDidTap()
+        } label: {
+          Text("연결 종료하기")
+        }
+
+        Button(role: .cancel) {
+        } label: {
+          Text("취소하기")
+        }
+      },
+      message: {
+        Text("친구와 연결을 끊고 촬영을 마칩니다.")
+      }
+    )
   }
 
   var body: some View {
     NavigationStack(path: $navigationRouter.path) {
-      ZStack {
-        Color.black.ignoresSafeArea()
+      GeometryReader { proxy in
+        let baseWidth = Self.previewWidth(in: proxy.size)
+        let previewSize = PhotoAspectRatioGeometry.previewSize(width: baseWidth, ratio: previewRatio)
+        let previewTopY = previewTop(previewWidth: baseWidth, ratio: previewRatio)
+        let previewBottomY = previewTopY + previewSize.height
+        // iPad는 하단 조작부를 줄여 쓰므로 지금처럼 16:9에서만 프리뷰 안에 두고 버튼도 올리지 않는다.
+        let isGuidingToolBarInPreview = DynamicModelUtils.isiPad
+          ? previewRatio == .ratio16x9
+          : Self.isGuidingToolBarInPreview(ratio: previewRatio, safeAreaSize: proxy.size)
+        let bottomControlsOverlap = DynamicModelUtils.isiPad
+          ? 0
+          : Self.bottomControlsOverlap(previewBottom: previewBottomY, safeAreaHeight: proxy.size.height)
 
-        VStack(spacing: .zero) {
+        ZStack {
+          Color.black.ignoresSafeArea()
+
           CameraPreviewArea(
             cameraViewModel: cameraViewModel,
             previewModel: previewModel,
@@ -177,12 +262,18 @@ extension CameraView: View {
             isShowCameraSettingTool: $isShowCameraSettingTool,
             isRemoteGuideHidden: $isRemoteGuideHidden,
             isReferenceLarge: $isReferenceLarge,
+            topToolBarOverlap: topToolBarOverlap(previewTop: previewTopY),
+            isGuidingToolBarInPreview: isGuidingToolBarInPreview,
+            bottomControlsOverlap: bottomControlsOverlap,
+            guidingToolToggle: toggleGuidingTool,
             currentRole: connectionViewModel.role,
             connectionLost: connectionViewModel.connectionLost,
             reconnectCancelButtonDidTap: connectionViewModel.reconnectCancelButtonDidTap,
             shutterActionEffect: flashScreen
           )
           .padding(DynamicModelUtils.isiPad ? 32 : 0)
+          .frame(width: previewSize.width, height: previewSize.height)
+          .position(x: proxy.size.width / 2, y: previewTopY + previewSize.height / 2)
 
           CameraBottomContainer(
             currentRole: connectionViewModel.role,
@@ -198,80 +289,26 @@ extension CameraView: View {
             isRemoteGuideHidden: $isRemoteGuideHidden,
             isShowPhotoPicker: $isShowPhotoPicker,
             isReferenceLarge: $isReferenceLarge,
-            shutterActionEffect: flashScreen
-          ) { targetTool in
-            activeTool = activeTool == targetTool ? nil : targetTool
-          }
+            shutterActionEffect: flashScreen,
+            isGuidingToolBarHidden: isGuidingToolBarInPreview,
+            swipeAreaMinHeight: max(0, proxy.size.height - Self.bottomContainerBottomInset - previewBottomY),
+            guidingToolToggle: toggleGuidingTool
+          )
           .minimize(DynamicModelUtils.isiPad)
+          .padding(.bottom, Self.bottomContainerBottomInset)
+          .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+
+          topToolBar
+            .padding(.horizontal, 12)
+            .padding(.top, Self.topToolBarTopInset)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        }
+        .onChange(of: previewSize.width, initial: true) { _, width in
+          cameraViewModel.previewWidth = width
         }
       }
-      .padding(.top, 21)
-      .navigationBarTitleDisplayMode(.inline)
+      .toolbar(.hidden, for: .navigationBar)
       .trackScreen(.camera, Self.self)
-      .toolbar {
-        ToolbarItem(placement: .principal) {
-          // 제일 위 연결 상태 뷰
-          TopToolBarView(
-            connectedDeviceName: connectionViewModel.connectedDeviceName,
-            reconnectingDeviceName: connectionViewModel.reconnectingDeviceName,
-            indicatorMenuContent: {
-              Button("역할 바꾸기") {
-                changeRoleButtonDidTap()
-              }
-
-              Button("연결 종료하기", role: .destructive) {
-                isShowDisconnectAlert = true
-              }
-            },
-            connectedWithButtonDidTap: {
-              if isAvailableWifiAware {
-                isShowConnectionView = true
-              } else {
-                isShowWifiAwareUnsupportedAlert = true
-              }
-            }
-          )
-          //        .padding() // 툴바로 들어가면서 안 먹힘
-          .alert(
-            "연결이 불가능한 기기입니다.",
-            isPresented: $isShowWifiAwareUnsupportedAlert,
-            actions: {
-              Button(role: .cancel) {
-              } label: {
-                Text("확인했어요")
-              }
-            },
-            message: {
-              Text("이 기기는 다른 기기와의 연결이 어려워요. 대신 찍자의 여러 가이드 기능은 이용할 수 있어요.")
-            }
-          )
-          .alert(
-            "연결을 종료합니다.",
-            isPresented: $isShowDisconnectAlert,
-            actions: {
-              Button(role: .destructive) {
-                connectionViewModel.disconnectButtonDidTap()
-              } label: {
-                Text("연결 종료하기")
-              }
-
-              Button(role: .cancel) {
-              } label: {
-                Text("취소하기")
-              }
-            },
-            message: {
-              Text("친구와 연결을 끊고 촬영을 마칩니다.")
-            }
-          )
-        }
-
-        ToolbarItem(placement: .topBarTrailing) {
-          Button("설정", systemImage: "gearshape") {
-            navigationRouter.push(.settings(.main(role: connectionViewModel.role, highlight: nil)))
-          }
-        }
-      }
       .navigationDestination(for: Route.self) { route in
         switch route {
         case let .settings(settingsRoute):
@@ -353,6 +390,9 @@ extension CameraView: View {
         previewStreamingViewModel: previewModel
       )
         .dynamicTypeSize(.medium) // FIXME: Dynamic Type 정책 결정 후 수정
+    }
+    .onChange(of: connectionViewModel.role, initial: true) { _, role in
+      cameraViewModel.currentRole = role
     }
     .onChange(of: connectionViewModel.connections) { oldValue, newValue in
       if !newValue.isEmpty && newValue.count > oldValue.count && connectionViewModel.role == .photographer {

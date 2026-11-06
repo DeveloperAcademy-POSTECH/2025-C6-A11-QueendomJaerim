@@ -22,6 +22,24 @@ final class CameraViewModel {
   var isLivePhotoOn: Bool
   var isShowGrid: Bool
   var isFlashMode: FlashMode
+  var photoAspectRatio: PhotoAspectRatio
+
+  /// 비율은 작가만 바꿀 수 있어서, 보내기와 받기 모두 이 역할로 막는다.
+  var currentRole: Role? {
+    didSet {
+      // 역할 교환으로 새 작가가 되면, 상대가 이전 작가의 늦은 값을 가질 수 있어 내 값을 다시 보낸다.
+      if oldValue == .model, currentRole == .photographer {
+        sendPhotoAspectRatioIfPhotographer(reason: "작가가 됨")
+      }
+      // 반대로 새 모델은 작가의 값을 요청한다. 새 작가의 전송이 내 역할이 바뀌기 전에 도착해 버려져도 맞출 수 있다.
+      if oldValue == .photographer, currentRole == .model {
+        requestPhotoAspectRatioIfModel()
+      }
+    }
+  }
+
+  /// 화면에 보이는 프리뷰 폭(pt). 펜 합성이 화면과 같은 두께로 그리는 데 쓴다.
+  var previewWidth: CGFloat = 0
   
   var cameraPostion: AVCaptureDevice.Position?
   
@@ -30,6 +48,12 @@ final class CameraViewModel {
   var isCaptureButtonEnabled: Bool = true
   
   var isCapturingLivePhoto: Bool = false
+
+  var isLivePhotoMovieFinishing: Bool = false
+
+  var isShutterEnabled: Bool {
+    isCaptureButtonEnabled && !(isLivePhotoOn && isLivePhotoMovieFinishing)
+  }
   
   // MARK: Thumbnail
   var thumbnailImage: UIImage?
@@ -38,7 +62,9 @@ final class CameraViewModel {
 
   
   private let logger = QueenLogger(category: "CameraViewModel")
-  
+
+  private var cancellables: Set<AnyCancellable> = []
+
   // MARK: State Toast
   private let notificationService: NotificationServiceProtocol
   
@@ -47,7 +73,8 @@ final class CameraViewModel {
     networkService: NetworkServiceProtocol,
     cameraSettingsService: CameraSettingsServiceProtocol,
     notificationService: NotificationServiceProtocol,
-    guidingStrokeRepository: GuidingStrokeRepositoryProtocol = DependencyContainer.defaultContainer.guidingStrokeRepository
+    guidingStrokeRepository: GuidingStrokeRepositoryProtocol = DependencyContainer.defaultContainer.guidingStrokeRepository,
+    notificationCenter: NotificationCenter = .default
   ) {
     self.networkService = networkService
     self.cameraSettingsService = cameraSettingsService
@@ -60,6 +87,7 @@ final class CameraViewModel {
     self.isLivePhotoOn = cameraSettingsService.livePhotoOn
     self.isShowGrid = cameraSettingsService.gridOn
     self.isFlashMode = cameraSettingsService.flashMode
+    self.photoAspectRatio = cameraSettingsService.photoAspectRatio
     
     self.notificationService = notificationService
  
@@ -88,6 +116,10 @@ final class CameraViewModel {
     cameraManager.onDidFinishCapture = { [weak self] in
       self?.isCapturingLivePhoto = false
     }
+
+    cameraManager.onLivePhotoMovieFinishingChange = { [weak self] isFinishing in
+      self?.isLivePhotoMovieFinishing = isFinishing
+    }
     
     photosLibraryObserver.onUpdate = { [weak self] image in
        self?.thumbnailImage = image
@@ -96,6 +128,32 @@ final class CameraViewModel {
     photosLibraryObserver.getCurrentScale = { [weak self] in
       self?.displayScale ?? 1.0
      }
+
+    networkService.networkEventPublisher
+      .receive(on: RunLoop.main)
+      .compactMap { $0 }
+      .sink { [weak self] event in
+        switch event {
+        case .photoAspectRatio(let ratio):
+          self?.handleReceivedPhotoAspectRatio(ratio)
+        case .requestPhotoAspectRatio:
+          self?.sendPhotoAspectRatioIfPhotographer(reason: "모델 요청에 답함")
+        case .myVersion:
+          // NetworkService가 통과 여부를 정한 뒤에 전달하므로, 통과했다면 연결 시작·재연결의 첫 비율을 이때 보낸다.
+          self?.sendPhotoAspectRatioIfPhotographer(reason: "버전 확인 통과")
+        default:
+          break
+        }
+      }
+      .store(in: &cancellables)
+
+    // 화면 갱신(onChange)까지 기다리면 그 틈에 이전 작가의 늦은 비율을 받아들여서, 역할이 바뀌는 순간 함께 바꾼다.
+    notificationCenter.publisher(for: .QueenCamRoleChangedNotification)
+      .compactMap { $0.userInfo?["newRole"] as? Role }
+      .sink { [weak self] role in
+        self?.currentRole = role
+      }
+      .store(in: &cancellables)
   }
   
   func checkPermissions() async {
@@ -145,11 +203,15 @@ final class CameraViewModel {
   func capturePhoto() {
     traceShutterPressedEvent()
     guard cameraSettingsService.saveGuidingOverlayImageOn else {
-      cameraManager.capturePhoto()
+      cameraManager.capturePhoto(aspectRatio: photoAspectRatio)
       return
     }
 
-    cameraManager.capturePhoto(drawableStrokes: guidingStrokeRepository.captureDrawableStrokes())
+    cameraManager.capturePhoto(
+      aspectRatio: photoAspectRatio,
+      drawableStrokes: guidingStrokeRepository.captureDrawableStrokes(),
+      previewWidth: previewWidth
+    )
   }
   
   func setZoom(factor: CGFloat, ramp: Bool) {
@@ -203,6 +265,42 @@ final class CameraViewModel {
     cameraManager.isLivePhotoOn = isLivePhotoOn
   }
   
+  func switchPhotoAspectRatio() {
+    photoAspectRatio = photoAspectRatio.next()
+    cameraSettingsService.photoAspectRatio = photoAspectRatio
+    sendPhotoAspectRatioIfPhotographer(reason: "비율 변경")
+  }
+
+  private func requestPhotoAspectRatioIfModel() {
+    guard currentRole == .model, networkService.isCounterpartVersionVerified else { return }
+
+    logger.info("[AspectRatio] 모델이 되어 작가에게 비율 요청")
+    Task {
+      await networkService.send(for: .requestPhotoAspectRatio)
+    }
+  }
+
+  private func sendPhotoAspectRatioIfPhotographer(reason: String) {
+    guard currentRole == .photographer, networkService.isCounterpartVersionVerified else { return }
+
+    let ratio = photoAspectRatio
+    logger.info("[AspectRatio] \(reason): 모델에게 비율 \(ratio.rawValue) 전송")
+    Task {
+      await networkService.send(for: .photoAspectRatio(ratio))
+    }
+  }
+
+  private func handleReceivedPhotoAspectRatio(_ ratio: PhotoAspectRatio) {
+    guard currentRole == .model else {
+      logger.info("[AspectRatio] 모델이 아니라서 받은 비율 \(ratio.rawValue) 무시")
+      return
+    }
+
+    photoAspectRatio = ratio
+    cameraSettingsService.photoAspectRatio = ratio
+    logger.info("[AspectRatio] 작가 비율 \(ratio.rawValue) 받아 저장")
+  }
+
   func setFocus(point: CGPoint) {
     cameraManager.focusAndExpose(at: point)
   }

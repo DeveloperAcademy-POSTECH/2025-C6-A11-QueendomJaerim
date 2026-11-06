@@ -24,6 +24,7 @@ final class CameraManager: NSObject {
   // 네트워크 송수신
   let networkService: NetworkServiceProtocol
   private let photoOverlayCompositingService: PhotoOverlayCompositingServiceProtocol
+  private let photoAspectRatioCroppingService: PhotoAspectRatioCroppingServiceProtocol
   var cancellables: Set<AnyCancellable> = []
 
   var position: AVCaptureDevice.Position = .back
@@ -36,6 +37,7 @@ final class CameraManager: NSObject {
 
   // 라이브 포토에 대한 컴플리션
   var onWillCaptureLivePhoto: (() -> Void)?
+  var onLivePhotoMovieFinishingChange: ((Bool) -> Void)?
   var onDidFinishCapture: (() -> Void)?
   var onPhotoCapture: ((UIImage) -> Void)?
   var onTapCameraSwitch: ((AVCaptureDevice.Position) -> Void)?
@@ -46,14 +48,20 @@ final class CameraManager: NSObject {
   // 렌즈 변경 상태를 관찰하기 위한 옵저버
   private var lensChangeObserver: NSKeyValueObservation?
 
+  // Live 영상이 녹화를 끝내고 마무리하는 동안 다음 Live를 찍으면 시스템이 그 영상을 실패시키므로 셔터를 잠근다.
+  private var recordingLivePhotoIDs: Set<Int64> = []
+  private var finishingLivePhotoIDs: Set<Int64> = []
+
   init(
     previewCaptureService: PreviewCaptureService,
     networkService: NetworkServiceProtocol,
-    photoOverlayCompositingService: PhotoOverlayCompositingServiceProtocol = PhotoOverlayCompositingService()
+    photoOverlayCompositingService: PhotoOverlayCompositingServiceProtocol = PhotoOverlayCompositingService(),
+    photoAspectRatioCroppingService: PhotoAspectRatioCroppingServiceProtocol = PhotoAspectRatioCroppingService()
   ) {
     self.previewCaptureService = previewCaptureService
     self.networkService = networkService
     self.photoOverlayCompositingService = photoOverlayCompositingService
+    self.photoAspectRatioCroppingService = photoAspectRatioCroppingService
 
     super.init()
 
@@ -79,6 +87,8 @@ final class CameraManager: NSObject {
           self.setupPreviewCaptureOutput()
 
           self.session.commitConfiguration()
+          self.enableLivePhotoCaptureIfSupported()
+
           self.startSession()
           isSessionConfigured = true
           continuation.resume()
@@ -98,23 +108,44 @@ final class CameraManager: NSObject {
     }
   }
 
-  func capturePhoto(drawableStrokes: [DrawableStroke] = []) {
+  func capturePhoto(aspectRatio: PhotoAspectRatio, drawableStrokes: [DrawableStroke] = [], previewWidth: CGFloat = 0) {
+    // 지연 처리된 사진은 나중에 시스템이 최종 사진으로 바꿔 넣어 가공 결과가 사라지므로, 가공할 때는 끈다.
+    let allowsDeferredPhotoDelivery = aspectRatio == .ratio4x3 && drawableStrokes.isEmpty
+
     guard !drawableStrokes.isEmpty else {
-      performCapturePhoto(allowsDeferredPhotoDelivery: true)
+      performCapturePhoto(aspectRatio: aspectRatio, allowsDeferredPhotoDelivery: allowsDeferredPhotoDelivery)
       return
     }
 
-    performCapturePhoto(allowsDeferredPhotoDelivery: false) { [photoOverlayCompositingService] photoOutput in
-      photoOverlayCompositingService.composite(photoOutput: photoOutput, strokes: drawableStrokes)
+    performCapturePhoto(
+      aspectRatio: aspectRatio,
+      allowsDeferredPhotoDelivery: allowsDeferredPhotoDelivery
+    ) { [photoOverlayCompositingService] quarterTurns in
+      { photoOutput in
+        photoOverlayCompositingService.composite(
+          photoOutput: photoOutput,
+          strokes: drawableStrokes,
+          aspectRatio: aspectRatio,
+          previewWidth: previewWidth,
+          quarterTurns: quarterTurns
+        )
+      }
     }
   }
 
   private func performCapturePhoto(
+    aspectRatio: PhotoAspectRatio,
     allowsDeferredPhotoDelivery: Bool,
-    photoOutputProcessor: ((PhotoOuput) -> PhotoOuput)? = nil
+    makePhotoOutputProcessor: ((_ quarterTurns: Int) -> (PhotoOuput) -> PhotoOuput?)? = nil
   ) {
     captureSessionQueue.async { [weak self] in
       guard let self else { return }
+
+      // 펜 위치를 사진과 같은 방향으로 돌리려면 셔터 순간의 사진 각도가 필요하다. 세로 화면과 같은 90도가 기본값이다.
+      let photoRotationAngle = self.photoOutput.connection(with: .video)?.videoRotationAngle ?? 90
+      let photoOutputProcessor = makePhotoOutputProcessor?(
+        StrokeOverlayGeometry.quarterTurns(forVideoRotationAngle: photoRotationAngle)
+      )
 
       var photoSettings = AVCapturePhotoSettings()
 
@@ -149,9 +180,14 @@ final class CameraManager: NSObject {
       // 2
       let delegate = CameraDelegate(
         isCameraPosition: self.position,
+        aspectRatio: aspectRatio,
+        aspectRatioCroppingService: self.photoAspectRatioCroppingService,
         willCaptureLivePhoto: { [weak self] in
           self?.onWillCaptureLivePhoto?()
+          self?.livePhotoMovieDidStartRecording(uniqueID)
         },
+        didFinishRecordingLivePhotoMovie: { [weak self] in self?.livePhotoMovieDidFinishRecording(uniqueID) },
+        didFinishLivePhotoMovie: { [weak self] in self?.livePhotoMovieDidEnd(uniqueID) },
         photoOutputProcessor: photoOutputProcessor
       ) { [weak self] photoOutput, photoOutputsToSend in
         guard let self else { return }
@@ -160,6 +196,7 @@ final class CameraManager: NSObject {
         self.captureSessionQueue.async {
           self.inTrackingCameraDelegate.removeValue(forKey: uniqueID)
         }
+        self.livePhotoMovieDidEnd(uniqueID)
 
         guard let photoOutput else {
           DispatchQueue.main.async {
@@ -177,10 +214,11 @@ final class CameraManager: NSObject {
             self.onPhotoCapture?(thumbnail)
           }
           self.onDidFinishCapture?()
-        }
 
-        photoOutputsToSend.forEach {
-          self.sendPhoto($0)
+          // 연결 상태는 메인에서만 읽을 수 있어 같은 블록에서 전송한다.
+          photoOutputsToSend.forEach {
+            self.sendPhoto($0)
+          }
         }
       }
 
@@ -272,9 +310,13 @@ extension CameraManager {
     }
   }
 
-  private func setupAudioInput() throws {
-    guard isLivePhotoOn else { return }
+  /// 세션 구성을 확정하면 Live 촬영 기능이 꺼질 수 있으므로, 확정할 때마다 다시 켠다.
+  private func enableLivePhotoCaptureIfSupported() {
+    photoOutput.isLivePhotoCaptureEnabled = photoOutput.isLivePhotoCaptureSupported
+  }
 
+  /// 실행 중에 마이크를 붙이면 세션을 다시 구성해 프리뷰가 멈추므로, LIVE 설정과 관계없이 세션 구성 때 붙여 둔다.
+  private func setupAudioInput() throws {
     guard audioDeviceInput == nil else { return }
 
     guard let audioDevice = AVCaptureDevice.default(for: .audio) else {
@@ -293,7 +335,6 @@ extension CameraManager {
     guard session.canAddOutput(photoOutput) else { return }
     session.addOutput(photoOutput)
 
-    photoOutput.isLivePhotoCaptureEnabled = photoOutput.isLivePhotoCaptureSupported
     photoOutput.maxPhotoQualityPrioritization = .quality
 
     if photoOutput.isResponsiveCaptureSupported {
@@ -404,8 +445,7 @@ extension CameraManager {
           setupPhotoOutput()
 
           session.commitConfiguration()
-
-          photoOutput.isLivePhotoCaptureEnabled = photoOutput.isLivePhotoCaptureSupported
+          enableLivePhotoCaptureIfSupported()
 
           logger.info("Switch -> photoOutput.isLivePhotoCaptureSupported: \(photoOutput.isLivePhotoCaptureSupported)")
           logger.info("Switch -> photoOutput.isLivePhotoCaptureEnabled: \(photoOutput.isLivePhotoCaptureEnabled)")
@@ -506,9 +546,44 @@ extension CameraManager {
 
 extension URL {
   /// 라이브 포토의 mov 파일을 위한 고유한 임시 경로 생성
-  static var movieFileURL: URL {
+  nonisolated static var movieFileURL: URL {
     FileManager.default.temporaryDirectory
       .appendingPathComponent(UUID().uuidString)
       .appendingPathExtension(for: .quickTimeMovie)
+  }
+}
+
+// MARK: - Live 영상 마무리 중 셔터 잠금
+extension CameraManager {
+  nonisolated private func livePhotoMovieDidStartRecording(_ uniqueID: Int64) {
+    DispatchQueue.main.async { [weak self] in
+      guard let self else { return }
+      recordingLivePhotoIDs.insert(uniqueID)
+      updateLivePhotoMovieFinishing()
+    }
+  }
+
+  /// 녹화 중으로 기록된 촬영만 마무리로 넘긴다. 이미 끝난 촬영이 다시 들어와 셔터가 잠긴 채 남지 않게 한다.
+  nonisolated private func livePhotoMovieDidFinishRecording(_ uniqueID: Int64) {
+    DispatchQueue.main.async { [weak self] in
+      guard let self, recordingLivePhotoIDs.remove(uniqueID) != nil else { return }
+      finishingLivePhotoIDs.insert(uniqueID)
+      updateLivePhotoMovieFinishing()
+    }
+  }
+
+  nonisolated private func livePhotoMovieDidEnd(_ uniqueID: Int64) {
+    DispatchQueue.main.async { [weak self] in
+      guard let self else { return }
+      recordingLivePhotoIDs.remove(uniqueID)
+      finishingLivePhotoIDs.remove(uniqueID)
+      updateLivePhotoMovieFinishing()
+    }
+  }
+
+  /// 다른 Live가 녹화 중이면 마무리가 뒤로 미뤄져 실패하지 않으므로, 녹화 중인 Live가 없을 때만 잠근다.
+  private func updateLivePhotoMovieFinishing() {
+    let isFinishing = recordingLivePhotoIDs.isEmpty && !finishingLivePhotoIDs.isEmpty
+    onLivePhotoMovieFinishingChange?(isFinishing)
   }
 }

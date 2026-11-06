@@ -22,7 +22,7 @@ extension CameraSettingButton: View {
         .tint(isActive ? Color.MiscellaneousWindowControlsMinimize : .black)
       }
     } else {
-      VStack(alignment: .center, spacing: 8) {
+      VStack(alignment: .center, spacing: 9) {
         Button(action: { tapAction() }) {
           Circle()
             .fill(.black.opacity(0.5))

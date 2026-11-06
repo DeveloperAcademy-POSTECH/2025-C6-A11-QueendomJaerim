@@ -7,6 +7,7 @@
 
 import Combine
 import Foundation
+import Network
 import OSLog
 import WiFiAware
 
@@ -128,7 +129,9 @@ final class NetworkService: NetworkServiceProtocol {
   
   // Checking Version Timer
   var versionCheckTimer: Timer?
-  var versionChecked: Bool = false
+  var isCounterpartVersionVerified: Bool = false
+  /// 지금 연결의 ID. 이전 연결의 늦은 종료 신호가 지금 연결의 상태를 지우지 않도록 비교하는 데 쓴다.
+  var currentConnectionID: WiFiAwareConnectionID?
 
   private let pairedDeviceRegistry: WAPairedDeviceRegistryProtocol
 
@@ -235,6 +238,7 @@ extension NetworkService {
 
     switch event {
     case .ready(let device, let connectionDetail):
+      currentConnectionID = connectionDetail.connection.id
       deviceConnections[device] = connectionDetail
       await pairedDeviceRegistry.recordConnection(to: device)
       if mode == .viewer {
@@ -268,6 +272,7 @@ extension NetworkService {
       }
 
       // 버전 체크 타이머 시작
+      versionCheckTimer?.invalidate()
       versionCheckTimer = Timer.scheduledTimer(withTimeInterval: versionCheckTimeout, repeats: false) { [weak self] _ in
         self?.handleVersionCheckTimer()
       }
@@ -277,7 +282,13 @@ extension NetworkService {
 
     case .stopped(let device, let connectionID, let error):
       logger.info("handle stopped event \(error)")
-      deviceConnections.removeValue(forKey: device)
+      if connectionID == currentConnectionID {
+        currentConnectionID = nil
+        resetVersionCheck()
+        deviceConnections.removeValue(forKey: device)
+      } else {
+        logger.info("지금 연결이 아닌 연결(\(connectionID))의 종료라 버전 확인 표시와 연결 목록은 그대로 둔다")
+      }
       await connectionManager.invalidate(connectionID)
 
       if let waError = error {
@@ -346,6 +357,8 @@ extension NetworkService {
   func run(for device: WAPairedDevice) {
     logger.debug("run() invoked")
 
+    resetVersionCheck()
+
     networkTask = Task {
       _ = try await withTaskCancellationHandler {
         try await mode == .host ? networkManager.listen(to: device) : networkManager.browse(for: device)
@@ -376,6 +389,7 @@ extension NetworkService {
       }
 
       isReconnecting = true
+      resetVersionCheck()
 
       networkTask?.cancel()
 
@@ -396,6 +410,7 @@ extension NetworkService {
   }
 
   func stop(byUser: Bool, userReason: String? = nil) {
+    resetVersionCheck()
     stopMonitoring()
     networkTask?.cancel()
 

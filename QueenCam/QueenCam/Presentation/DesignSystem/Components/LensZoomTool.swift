@@ -28,7 +28,7 @@ extension LensZoomTool: View {
       ForEach(zoomScaleItemList, id: \.self) { item in
         Button(action: { onZoomChange(item) }) {
           Circle()
-            .fill(item == activeZoom ? .black.opacity(0.6) : .clear)
+            .fill(item == activeZoom ? .black.opacity(0.5) : .clear)
             .frame(width: 38, height: 38)
             .overlay {
               Text(displayText(for: item))

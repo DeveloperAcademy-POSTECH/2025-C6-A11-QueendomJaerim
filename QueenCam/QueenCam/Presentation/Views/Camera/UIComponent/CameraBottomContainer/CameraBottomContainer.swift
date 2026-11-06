@@ -26,12 +26,13 @@ extension CameraView {
     // 캡처시 화면 깜빡임 액션관리
     let shutterActionEffect: () -> Void
 
+    let isGuidingToolBarHidden: Bool
+    // 프리뷰 아래 빈 곳 어디서든 위로 쓸어 바구니를 열 수 있게 하는 최소 높이
+    let swipeAreaMinHeight: CGFloat
+
     let guidingToolToggle: (_ selectedTool: ActiveTool) -> Void
     // 비율이 작은 기기를 위한 모드. true면 뷰 크기 조정
     var isMinimize = false
-
-    // 도구 버튼 토글 애니메이션을 위한 네임스페이스
-    @Namespace var toggledToolNamespace
   }
 }
 
@@ -42,14 +43,6 @@ extension CameraView.CameraBottomContainer {
 
   var isFrameActive: Bool {
     activeTool == .frame
-  }
-
-  var isPenActive: Bool {
-    activeTool == .pen
-  }
-
-  var isMagicPenActive: Bool {
-    activeTool == .maginPen
   }
 }
 
@@ -68,27 +61,19 @@ extension CameraView.CameraBottomContainer: View {
   }
 
   var body: some View {
-    VStack(spacing: 20) {
+    VStack(spacing: CameraView.bottomContainerSpacing) {
 
-      Group {
-        // 가이드를 선택했을 때 나오는 툴 별 서브 툴바
-        if let activeTool {
-          switch activeTool {
-          case .frame:
-            frameSubToolBar
-          case .pen:
-            penSubToolBar
-          case .maginPen:
-            magicPenSubToolBar
-          }
-        } else {
-          // 가이드를 아무것도 선택하지 않았을때
-          guidingTools
-        }
+      if !isGuidingToolBarHidden {
+        CameraView.GuidingToolBar(
+          axis: .horizontal,
+          currentRole: currentRole,
+          penViewModel: penViewModel,
+          frameViewModel: frameViewModel,
+          activeTool: $activeTool,
+          isRemoteGuideHidden: $isRemoteGuideHidden,
+          guidingToolToggle: guidingToolToggle
+        )
       }
-      .padding(.horizontal, 24)
-      .padding(.vertical, 12)
-      .glassEffect(.clear, in: .rect(cornerRadius: 99))
 
       // 썸네일, 촬영 버튼, 따봉 or 셀카
       HStack {
@@ -98,12 +83,11 @@ extension CameraView.CameraBottomContainer: View {
 
         captureButton
       }
-      .padding(.bottom, 51)
       .padding(.horizontal, 36)
     }
-    .padding(.top, 19)
-    .frame(maxWidth: isMinimize ? 300 : .infinity, maxHeight: isMinimize ? 120 : .infinity)
-    .background(.black)
+    .frame(maxWidth: isMinimize ? 300 : .infinity, maxHeight: isMinimize ? 120 : nil)
+    .frame(minHeight: isMinimize ? nil : swipeAreaMinHeight, alignment: .bottom)
+    .contentShape(.rect)
     .gesture(dragGesture)
     .animation(.easeInOut, value: activeTool)
     // 툴 사용중 레퍼런스 확대시 가이드 툴 해제

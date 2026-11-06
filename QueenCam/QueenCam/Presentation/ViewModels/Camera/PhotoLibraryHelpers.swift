@@ -10,7 +10,7 @@ import OSLog
 import Photos
 import UIKit
 
-struct PhotoLibraryHelpers {
+nonisolated struct PhotoLibraryHelpers {
   static let logger = QueenLogger(category: "PhotoLiberaryHelpers")
 
   static func saveToPhotoLibrary(_ imageData: Data) {
@@ -96,7 +96,7 @@ struct PhotoLibraryHelpers {
   }
 }
 
-private extension PhotoLibraryHelpers {
+nonisolated private extension PhotoLibraryHelpers {
   static func writeLivePhotoMovieDataToTemporaryFile(_ movieData: Data) throws -> URL {
     // Live Photo 저장은 paired video 파일을 Photos 라이브러리로 이동시킨다.
     // 원본 Live Photo와 오버레이 합성 Live Photo를 함께 저장할 때 같은 movie URL을 재사용하면

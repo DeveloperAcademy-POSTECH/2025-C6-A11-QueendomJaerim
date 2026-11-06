@@ -87,6 +87,7 @@ private final class AnalyticsCameraSettingsServiceStub: CameraSettingsServicePro
   var gridOn: Bool
   var flashMode: FlashMode
   var saveGuidingOverlayImageOn: Bool
+  var photoAspectRatio: PhotoAspectRatio = .ratio4x3
 
   init(
     livePhotoOn: Bool,

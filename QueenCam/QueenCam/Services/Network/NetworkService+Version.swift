@@ -12,8 +12,6 @@ extension NetworkService {
 
   // MARK: 최소 버전 확인
   func handleMyVersionEvent(for counterpartVersionInfo: VersionExchangePayload) {
-    defer { versionChecked = true }
-
     let counterpartVersion = counterpartVersionInfo.version
     let counterpartRequestedMinimumVersion = counterpartVersionInfo.requiredMinimumVersion
 
@@ -43,6 +41,8 @@ extension NetworkService {
       )
       return
     }
+
+    isCounterpartVersionVerified = true
   }
 
   func handleVersionCheckTimer() {
@@ -51,9 +51,16 @@ extension NetworkService {
       self.versionCheckTimer = nil
     }
 
-    guard versionChecked else {
+    guard isCounterpartVersionVerified else {
       self.stop(byUser: true, userReason: "친구 앱의 버전을 확인할 수 없습니다.\n친구 앱을 최신 버전으로 업데이트 해주세요.")
       return
     }
+  }
+
+  /// 이전 연결의 알람이 남으면 다음 연결 중에 울려 연결을 끊으므로, 통과 표시와 함께 지운다.
+  func resetVersionCheck() {
+    isCounterpartVersionVerified = false
+    versionCheckTimer?.invalidate()
+    versionCheckTimer = nil
   }
 }

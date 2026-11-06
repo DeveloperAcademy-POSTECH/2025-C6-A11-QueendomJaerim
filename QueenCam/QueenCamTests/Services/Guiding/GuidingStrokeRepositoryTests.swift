@@ -16,6 +16,7 @@ private final class MockGuidingNetworkService: NetworkServiceProtocol {
   var mode: NetworkType?
   var networkState: NetworkState?
   var lastStopReason: String?
+  var isCounterpartVersionVerified = false
 
   private let networkEventSubject = PassthroughSubject<NetworkEvent?, Never>()
   private(set) var sentEvents: [NetworkEvent] = []
