@@ -336,6 +336,109 @@ struct NetworkServiceTests {
 
     #expect(service.isCounterpartVersionVerified == false)
   }
+
+  @Test("stop()을 호출하면 버전 확인 알람이 꺼진다")
+  func stopInvalidatesVersionCheckTimer() {
+    let service = NetworkService(networkManager: MockNetworkManager(), connectionManager: MockConnectionManager())
+    let timer = Timer.scheduledTimer(withTimeInterval: 60, repeats: false) { _ in }
+    service.versionCheckTimer = timer
+
+    service.stop(byUser: true)
+
+    #expect(timer.isValid == false)
+    #expect(service.versionCheckTimer == nil)
+  }
+
+  @Test("run(for:)으로 새 연결을 시작하면 이전 버전 확인 알람이 꺼진다")
+  func runInvalidatesVersionCheckTimer() {
+    let service = NetworkService(networkManager: MockNetworkManager(), connectionManager: MockConnectionManager())
+    let timer = Timer.scheduledTimer(withTimeInterval: 60, repeats: false) { _ in }
+    service.versionCheckTimer = timer
+
+    service.mode = .host
+    service.run(for: makeDummyDevice())
+
+    #expect(timer.isValid == false)
+    #expect(service.versionCheckTimer == nil)
+  }
+
+  @Test("다시 연결하면 이전 연결의 버전 확인 알람이 울리지 않는다")
+  @MainActor
+  func reconnectSilencesPreviousVersionCheckTimer() async throws {
+    let service = NetworkService(networkManager: MockNetworkManager(), connectionManager: MockConnectionManager())
+    let previousAlarm = TimerFireRecorder()
+    let controlAlarm = TimerFireRecorder()
+    service.versionCheckTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: false) { _ in previousAlarm.fired = true }
+    let controlTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: false) { _ in controlAlarm.fired = true }
+
+    service.mode = .host
+    service.reconnect(for: makeDummyDevice())
+    try await Task.sleep(nanoseconds: 300_000_000)
+
+    // 같은 시간의 다른 알람은 울려야, 이전 알람이 울리지 않은 것을 믿을 수 있다.
+    #expect(controlAlarm.fired)
+    #expect(previousAlarm.fired == false)
+    controlTimer.invalidate()
+  }
+
+  @Test("연결 하나가 끝나면 통과 표시와 버전 확인 알람이 지워진다")
+  func stoppedConnectionResetsVersionCheck() async throws {
+    let mockNM = MockNetworkManager()
+    let mockCM = MockConnectionManager()
+    let service = NetworkService(networkManager: mockNM, connectionManager: mockCM)
+
+    mockNM.emitNetwork(.myVersion(VersionExchangePayload(version: VersionUtils.currentVersion, requiredMinimumVersion: 0)))
+    try await Task.sleep(nanoseconds: 50_000_000)
+    #expect(service.isCounterpartVersionVerified)
+    let timer = Timer.scheduledTimer(withTimeInterval: 60, repeats: false) { _ in }
+    service.versionCheckTimer = timer
+
+    mockCM.emitLocal(.connection(.stopped(makeDummyDevice(), "connection-1", nil)))
+    try await Task.sleep(nanoseconds: 50_000_000)
+
+    #expect(service.isCounterpartVersionVerified == false)
+    #expect(timer.isValid == false)
+  }
+
+  @Test("버전을 확인하기 전에 알람이 울리면 연결을 끊고 안내를 남긴다")
+  func versionCheckTimeoutStopsBeforeVerification() {
+    let service = NetworkService(networkManager: MockNetworkManager(), connectionManager: MockConnectionManager())
+
+    service.handleVersionCheckTimer()
+
+    #expect(service.lastStopReason?.contains("친구 앱의 버전을 확인할 수 없습니다") == true)
+  }
+
+  @Test("버전 확인을 통과한 뒤 알람이 울리면 연결을 유지한다")
+  func versionCheckTimeoutKeepsVerifiedConnection() async throws {
+    let mockNM = MockNetworkManager()
+    let service = NetworkService(networkManager: mockNM, connectionManager: MockConnectionManager())
+
+    mockNM.emitNetwork(.myVersion(VersionExchangePayload(version: VersionUtils.currentVersion, requiredMinimumVersion: 0)))
+    try await Task.sleep(nanoseconds: 50_000_000)
+    service.handleVersionCheckTimer()
+
+    #expect(service.lastStopReason == nil)
+    #expect(service.isCounterpartVersionVerified)
+  }
+
+  @Test("상대 버전이 낮아 연결을 끊으면 알람도 꺼져 안내가 바뀌지 않는다")
+  func outdatedVersionStopsVersionCheckTimer() async throws {
+    let mockNM = MockNetworkManager()
+    let service = NetworkService(networkManager: mockNM, connectionManager: MockConnectionManager())
+    let timer = Timer.scheduledTimer(withTimeInterval: 60, repeats: false) { _ in }
+    service.versionCheckTimer = timer
+
+    mockNM.emitNetwork(.myVersion(VersionExchangePayload(version: 0, requiredMinimumVersion: 0)))
+    try await Task.sleep(nanoseconds: 50_000_000)
+
+    #expect(timer.isValid == false)
+    #expect(service.lastStopReason?.contains("친구 앱의 버전이 낮아서") == true)
+  }
+}
+
+private final class TimerFireRecorder: @unchecked Sendable {
+  var fired = false
 }
 
 // 테스트 및 미리보기 전용 데이터를 관리하기 위한 확장
