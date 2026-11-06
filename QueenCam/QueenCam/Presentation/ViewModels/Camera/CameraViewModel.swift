@@ -121,8 +121,14 @@ final class CameraViewModel {
       .receive(on: RunLoop.main)
       .compactMap { $0 }
       .sink { [weak self] event in
-        if case .photoAspectRatio(let ratio) = event {
+        switch event {
+        case .photoAspectRatio(let ratio):
           self?.handleReceivedPhotoAspectRatio(ratio)
+        case .myVersion:
+          // NetworkService가 통과 여부를 정한 뒤에 전달하므로, 통과했다면 연결 시작·재연결의 첫 비율을 이때 보낸다.
+          self?.sendPhotoAspectRatioIfPhotographer(reason: "버전 확인 통과")
+        default:
+          break
         }
       }
       .store(in: &cancellables)
@@ -240,11 +246,14 @@ final class CameraViewModel {
   func switchPhotoAspectRatio() {
     photoAspectRatio = photoAspectRatio.next()
     cameraSettingsService.photoAspectRatio = photoAspectRatio
+    sendPhotoAspectRatioIfPhotographer(reason: "비율 변경")
+  }
 
-    guard currentRole != .model, networkService.isCounterpartVersionVerified else { return }
+  private func sendPhotoAspectRatioIfPhotographer(reason: String) {
+    guard currentRole == .photographer, networkService.isCounterpartVersionVerified else { return }
 
     let ratio = photoAspectRatio
-    logger.info("[AspectRatio] 모델에게 비율 \(ratio.rawValue) 전송")
+    logger.info("[AspectRatio] \(reason): 모델에게 비율 \(ratio.rawValue) 전송")
     Task {
       await networkService.send(for: .photoAspectRatio(ratio))
     }

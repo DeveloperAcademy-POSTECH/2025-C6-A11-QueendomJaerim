@@ -66,7 +66,43 @@ struct CameraViewModelAspectRatioSyncTests {
     #expect(viewModel.photoAspectRatio == .ratio4x3)
     #expect(settings.photoAspectRatio == .ratio4x3)
   }
+
+  @Test("작가는 상대 버전 확인을 통과하면 지금 비율을 한 번 보낸다")
+  func photographerSendsCurrentRatioWhenVersionVerified() async throws {
+    let (viewModel, network, _) = makeViewModel(role: .photographer, isVersionVerified: true)
+
+    network.emit(.myVersion(compatibleVersion))
+
+    #expect(await waitUntil { network.sentAspectRatios == [.ratio4x3] })
+    try await Task.sleep(for: .milliseconds(50))
+    #expect(network.sentAspectRatios == [.ratio4x3])
+    withExtendedLifetime(viewModel) {}
+  }
+
+  @Test("모델은 상대 버전 확인을 통과해도 비율을 보내지 않는다")
+  func modelDoesNotSendWhenVersionVerified() async throws {
+    let (viewModel, network, _) = makeViewModel(role: .model, isVersionVerified: true)
+
+    network.emit(.myVersion(compatibleVersion))
+    try await Task.sleep(for: .milliseconds(50))
+
+    #expect(network.sentAspectRatios.isEmpty)
+    withExtendedLifetime(viewModel) {}
+  }
+
+  @Test("상대 버전 확인에 실패하면 작가도 비율을 보내지 않는다")
+  func photographerDoesNotSendWhenVersionRejected() async throws {
+    let (viewModel, network, _) = makeViewModel(role: .photographer, isVersionVerified: false)
+
+    network.emit(.myVersion(compatibleVersion))
+    try await Task.sleep(for: .milliseconds(50))
+
+    #expect(network.sentAspectRatios.isEmpty)
+    withExtendedLifetime(viewModel) {}
+  }
 }
+
+private let compatibleVersion = VersionExchangePayload(version: VersionUtils.currentVersion, requiredMinimumVersion: 0)
 
 // MARK: - Helpers
 
