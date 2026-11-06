@@ -60,6 +60,28 @@ struct ConnectionViewModelTests {
     #expect(viewModel.selectedPairedDevice == nil)
     #expect(networkService.stopCallCount == stopCallCountBeforeReset + 1)
   }
+
+  @Test("재연결을 취소하면 연결 전 상태로 돌아가 역할과 재연결 정보를 비운다")
+  func cancellingReconnectReturnsToPreConnectionState() {
+    let networkService = FakeNetworkService()
+    let viewModel = ConnectionViewModel(
+      networkService: networkService,
+      notificationService: FakeNotificationService(),
+      pairedDeviceRegistry: FakePairedDeviceRegistry(devices: AsyncStream { _ in })
+    )
+    viewModel.selectRole(for: .model)
+    viewModel.connectionLost = true
+    viewModel.reconnectingDeviceName = "테스트 기기"
+    let stopCallCountBeforeCancel = networkService.stopCallCount
+
+    viewModel.reconnectCancelButtonDidTap()
+
+    #expect(viewModel.role == nil)
+    #expect(viewModel.lastConnectedDevice == nil)
+    #expect(viewModel.connectionLost == false)
+    #expect(viewModel.reconnectingDeviceName == nil)
+    #expect(networkService.stopCallCount == stopCallCountBeforeCancel + 1)
+  }
 }
 
 private final class FakePairedDeviceRegistry: WAPairedDeviceRegistryProtocol, @unchecked Sendable {

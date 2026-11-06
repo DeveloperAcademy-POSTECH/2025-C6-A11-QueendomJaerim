@@ -259,6 +259,7 @@ extension ConnectionViewModel {
 
   func reconnectCancelButtonDidTap() {
     networkService.stop(byUser: true, userReason: nil)
+    role = nil  // 연결 전 화면으로 돌아가야 해서 다른 종료 경로처럼 역할을 초기화한다
     lastConnectedDevice = nil
     connectionLost = false
     reconnectingDeviceName = nil
