@@ -400,6 +400,24 @@ struct NetworkServiceTests {
     #expect(timer.isValid == false)
   }
 
+  @Test("비율 동기화 이벤트는 실제 전송 형식(JSON)으로 보내고 다시 읽을 수 있다")
+  func aspectRatioEventsSurviveJSONRoundTrip() throws {
+    let encoder = JSONEncoder()
+    let decoder = JSONDecoder()
+
+    let request = try decoder.decode(NetworkEvent.self, from: encoder.encode(NetworkEvent.requestPhotoAspectRatio))
+    let ratio = try decoder.decode(NetworkEvent.self, from: encoder.encode(NetworkEvent.photoAspectRatio(.ratio16x9)))
+
+    guard case .requestPhotoAspectRatio = request else {
+      Issue.record("요청 이벤트를 읽지 못했습니다: \(request)")
+      return
+    }
+    guard case .photoAspectRatio(.ratio16x9) = ratio else {
+      Issue.record("비율 이벤트를 읽지 못했습니다: \(ratio)")
+      return
+    }
+  }
+
   @Test("버전을 확인하기 전에 알람이 울리면 연결을 끊고 안내를 남긴다")
   func versionCheckTimeoutStopsBeforeVerification() {
     let service = NetworkService(networkManager: MockNetworkManager(), connectionManager: MockConnectionManager())
