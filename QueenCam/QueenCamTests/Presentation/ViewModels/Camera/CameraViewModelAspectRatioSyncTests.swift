@@ -151,6 +151,92 @@ struct CameraViewModelAspectRatioSyncTests {
 
     #expect(viewModel.photoAspectRatio == .ratio4x3)
   }
+
+  @Test("작가가 모델이 되면 작가에게 비율을 요청한다")
+  func newModelRequestsRatio() async {
+    let (viewModel, network, _) = makeViewModel(role: .photographer, isVersionVerified: true)
+
+    viewModel.currentRole = .model
+
+    #expect(await waitUntil { network.requestCount == 1 })
+    #expect(network.sentAspectRatios.isEmpty)
+  }
+
+  @Test("버전 확인을 통과하기 전에는 모델이 되어도 요청하지 않는다")
+  func newModelDoesNotRequestBeforeVersionVerified() async throws {
+    let (viewModel, network, _) = makeViewModel(role: .photographer, isVersionVerified: false)
+
+    viewModel.currentRole = .model
+    try await Task.sleep(for: .milliseconds(50))
+
+    #expect(network.requestCount == 0)
+  }
+
+  @Test("처음 모델 역할을 고를 때는 요청하지 않는다")
+  func firstModelSelectionDoesNotRequest() async throws {
+    let (viewModel, network, _) = makeViewModel(role: nil, isVersionVerified: true)
+
+    viewModel.currentRole = .model
+    try await Task.sleep(for: .milliseconds(50))
+
+    #expect(network.requestCount == 0)
+  }
+
+  @Test("작가는 요청을 받으면 지금 비율로 답한다")
+  func photographerRepliesToRequest() async {
+    let (viewModel, network, _) = makeViewModel(role: .photographer, isVersionVerified: true)
+
+    network.emit(.requestPhotoAspectRatio)
+
+    #expect(await waitUntil { network.sentAspectRatios == [.ratio4x3] })
+    withExtendedLifetime(viewModel) {}
+  }
+
+  @Test("모델은 요청을 받아도 답하지 않는다")
+  func modelIgnoresRequest() async throws {
+    let (viewModel, network, _) = makeViewModel(role: .model, isVersionVerified: true)
+
+    network.emit(.requestPhotoAspectRatio)
+    try await Task.sleep(for: .milliseconds(50))
+
+    #expect(network.sentAspectRatios.isEmpty)
+    withExtendedLifetime(viewModel) {}
+  }
+
+  @Test("작가의 비율 변경과 상대의 역할 교환이 겹쳐 메시지가 엇갈려도 두 기기는 새 작가의 값으로 끝난다")
+  func overlappingRatioChangeAndRoleSwapConvergesToNewPhotographerRatio() async throws {
+    // A: 작가, B: 모델. 둘 다 4:3. 메시지는 테스트가 정한 순서로 전달한다.
+    let (deviceA, networkA, _) = makeViewModel(role: .photographer, isVersionVerified: true)
+    let (deviceB, networkB, _) = makeViewModel(role: .model, isVersionVerified: true)
+
+    // A가 비율 버튼을 누르고(16:9), 거의 동시에 B가 역할 교환으로 작가가 된다(4:3을 보냄)
+    deviceA.switchPhotoAspectRatio()
+    deviceB.currentRole = .photographer
+    #expect(await waitUntil { networkA.sentAspectRatios == [.ratio16x9] && networkB.sentAspectRatios == [.ratio4x3] })
+
+    // A의 16:9가 B에 도착: B는 이미 작가라서 버린다
+    networkB.emit(.photoAspectRatio(.ratio16x9))
+    try await Task.sleep(for: .milliseconds(50))
+    #expect(deviceB.photoAspectRatio == .ratio4x3)
+
+    // B의 4:3이 A의 역할이 바뀌기 전에 도착: A는 아직 작가라서 버린다
+    networkA.emit(.photoAspectRatio(.ratio4x3))
+    try await Task.sleep(for: .milliseconds(50))
+    #expect(deviceA.photoAspectRatio == .ratio16x9)
+
+    // 그 뒤에 A가 모델이 되어 요청을 보낸다
+    deviceA.currentRole = .model
+    #expect(await waitUntil { networkA.requestCount == 1 })
+
+    // 요청이 B에 도착하면 B가 지금 비율로 답하고, 그 답이 A에 도착한다
+    networkB.emit(.requestPhotoAspectRatio)
+    #expect(await waitUntil { networkB.sentAspectRatios == [.ratio4x3, .ratio4x3] })
+    networkA.emit(.photoAspectRatio(.ratio4x3))
+
+    #expect(await waitUntil { deviceA.photoAspectRatio == .ratio4x3 })
+    #expect(deviceB.photoAspectRatio == .ratio4x3)
+    #expect(networkA.requestCount == 1)
+  }
 }
 
 private let compatibleVersion = VersionExchangePayload(version: VersionUtils.currentVersion, requiredMinimumVersion: 0)
@@ -195,6 +281,7 @@ private final class FakeNetworkService: NetworkServiceProtocol {
 
   private let networkEventSubject = PassthroughSubject<NetworkEvent?, Never>()
   private(set) var sentAspectRatios: [PhotoAspectRatio] = []
+  private(set) var requestCount = 0
 
   var deviceConnectionsPublisher: AnyPublisher<[WAPairedDevice: ConnectionDetail], Never> {
     Empty().eraseToAnyPublisher()
@@ -222,8 +309,13 @@ private final class FakeNetworkService: NetworkServiceProtocol {
   func disconnect() {}
 
   func send(for event: NetworkEvent) async {
-    if case .photoAspectRatio(let ratio) = event {
+    switch event {
+    case .photoAspectRatio(let ratio):
       sentAspectRatios.append(ratio)
+    case .requestPhotoAspectRatio:
+      requestCount += 1
+    default:
+      break
     }
   }
 

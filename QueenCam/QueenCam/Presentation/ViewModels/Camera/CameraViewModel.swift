@@ -31,6 +31,10 @@ final class CameraViewModel {
       if oldValue == .model, currentRole == .photographer {
         sendPhotoAspectRatioIfPhotographer(reason: "작가가 됨")
       }
+      // 반대로 새 모델은 작가의 값을 요청한다. 새 작가의 전송이 내 역할이 바뀌기 전에 도착해 버려져도 맞출 수 있다.
+      if oldValue == .photographer, currentRole == .model {
+        requestPhotoAspectRatioIfModel()
+      }
     }
   }
 
@@ -131,6 +135,8 @@ final class CameraViewModel {
         switch event {
         case .photoAspectRatio(let ratio):
           self?.handleReceivedPhotoAspectRatio(ratio)
+        case .requestPhotoAspectRatio:
+          self?.sendPhotoAspectRatioIfPhotographer(reason: "모델 요청에 답함")
         case .myVersion:
           // NetworkService가 통과 여부를 정한 뒤에 전달하므로, 통과했다면 연결 시작·재연결의 첫 비율을 이때 보낸다.
           self?.sendPhotoAspectRatioIfPhotographer(reason: "버전 확인 통과")
@@ -254,6 +260,15 @@ final class CameraViewModel {
     photoAspectRatio = photoAspectRatio.next()
     cameraSettingsService.photoAspectRatio = photoAspectRatio
     sendPhotoAspectRatioIfPhotographer(reason: "비율 변경")
+  }
+
+  private func requestPhotoAspectRatioIfModel() {
+    guard currentRole == .model, networkService.isCounterpartVersionVerified else { return }
+
+    logger.info("[AspectRatio] 모델이 되어 작가에게 비율 요청")
+    Task {
+      await networkService.send(for: .requestPhotoAspectRatio)
+    }
   }
 
   private func sendPhotoAspectRatioIfPhotographer(reason: String) {
