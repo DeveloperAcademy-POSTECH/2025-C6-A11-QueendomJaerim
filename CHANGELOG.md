@@ -9,6 +9,20 @@
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [1.2.2] - 2026-11-06
+
+### Added
+
 - 1:1·16:9 촬영 비율 추가. 상단 비율 버튼으로 4:3 → 16:9 → 1:1 순서로 바꾸면 프리뷰 영역이 그 비율로 바뀌고, 일반 사진과 Live Photo를 셔터를 누른 순간의 비율로 저장한다. `사진에 펜 가이드 함께 저장`으로 만든 합성본도 같은 비율과 위치로 저장한다. 작가가 바꾼 비율은 모델 화면과 모델이 받는 사진에도 반영되고, 연결 시작·역할 교환·재연결 때 두 기기가 같은 비율로 맞춰진다
 
 ### Changed
@@ -567,7 +581,8 @@
 - Wi-Fi Aware 연결 후, 라이브 포토 촬영 시 앱이 크래시되는 문제
 - 레퍼런스 삭제 후 재등록에 관한 상태 초기화 문제
 
-[Unreleased]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.2.1...HEAD
+[Unreleased]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.2.2...HEAD
+[1.2.2]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.12...v1.2.0
 [1.1.12]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.11...v1.1.12
