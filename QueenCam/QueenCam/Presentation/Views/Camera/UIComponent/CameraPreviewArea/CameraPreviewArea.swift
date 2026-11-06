@@ -127,6 +127,9 @@ extension CameraView.CameraPreviewArea: View {
     .overlay(alignment: .bottom) {
       ThumbsUpView(trigger: $thumbsUpViewModel.animationTriger)
         .opacity(thumbsUpViewModel.isShowInitialView ? 1 : .zero)
+        // 애니메이션이 끝나면 프리뷰 아래 290pt에 멈추고 하단 조작부에 배경이 없어, 프리뷰 밖은 잘라 숨긴다.
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+        .clipped()
     }
   }
 }
