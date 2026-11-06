@@ -8,7 +8,7 @@
 import Foundation
 import UIKit
 
-enum PhotoOuput {
+nonisolated enum PhotoOuput {
   case basicPhoto(thumbnail: UIImage, imageData: Data)
   case livePhoto(thumbnail: UIImage, imageData: Data, videoData: Data)
 

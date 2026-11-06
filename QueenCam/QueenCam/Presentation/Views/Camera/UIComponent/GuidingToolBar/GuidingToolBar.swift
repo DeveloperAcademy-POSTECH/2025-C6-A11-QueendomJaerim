@@ -1,10 +1,92 @@
+//
+//  GuidingToolBar.swift
+//  QueenCam
+//
+//  Created by seungchan on 11/2/26.
+//
+
 import SwiftUI
 
-extension CameraView.CameraBottomContainer {
+extension CameraView {
+  struct GuidingToolBar {
+    let axis: Axis
+    let currentRole: Role?
+
+    let penViewModel: PenViewModel
+    let frameViewModel: FrameViewModel
+
+    @Binding var activeTool: ActiveTool?
+
+    /// 눈까리
+    @Binding var isRemoteGuideHidden: Bool
+
+    let guidingToolToggle: (_ selectedTool: ActiveTool) -> Void
+
+    // 도구 버튼 토글 애니메이션을 위한 네임스페이스
+    @Namespace var toggledToolNamespace
+  }
+}
+
+extension CameraView.GuidingToolBar {
+  var isVertical: Bool {
+    axis == .vertical
+  }
+
+  var isFrameActive: Bool {
+    activeTool == .frame
+  }
+
+  var isPenActive: Bool {
+    activeTool == .pen
+  }
+
+  var isMagicPenActive: Bool {
+    activeTool == .maginPen
+  }
+
+  var disabledByPeer: Bool {
+    frameViewModel.isFrameEnabled && frameViewModel.frameOwnerRole != currentRole
+  }
+
+  // 세로 모음에서 매직펜만 남으면 Figma처럼 원 모양이 된다.
+  private var verticalPadding: CGFloat {
+    activeTool == .maginPen ? 12 : 20
+  }
+}
+
+extension CameraView.GuidingToolBar: View {
+  var body: some View {
+    Group {
+      // 가이드를 선택했을 때 나오는 툴 별 서브 툴바
+      if let activeTool {
+        switch activeTool {
+        case .frame:
+          frameSubToolBar
+        case .pen:
+          penSubToolBar
+        case .maginPen:
+          magicPenSubToolBar
+        }
+      } else {
+        // 가이드를 아무것도 선택하지 않았을때
+        guidingTools
+      }
+    }
+    .padding(
+      isVertical
+        ? EdgeInsets(top: verticalPadding, leading: 12, bottom: verticalPadding, trailing: 12)
+        : EdgeInsets(top: 10, leading: 24, bottom: 12, trailing: 24)
+    )
+    .glassEffect(.clear, in: .rect(cornerRadius: 99))
+  }
+
   /// 어떤 가이딩 툴도 선택하지 않았을 때 나오는 툴바
   var guidingTools: some View {
-    let disabledByPeer = frameViewModel.isFrameEnabled && frameViewModel.frameOwnerRole != currentRole
-    return HStack(alignment: .center, spacing: 30) {
+    let layout = isVertical
+      ? AnyLayout(VStackLayout(spacing: 24))
+      : AnyLayout(HStackLayout(alignment: .center, spacing: 32))
+
+    return layout {
       // 프레임
       GuidingButton(
         role: currentRole,
@@ -14,11 +96,12 @@ extension CameraView.CameraBottomContainer {
           if isFrameActive {
             frameViewModel.selectedFrameID = nil
             frameViewModel.requestFrameOwnership(false, currentRole)
-          } else{
+          } else {
             frameViewModel.requestFrameOwnership(true, currentRole)
           }
         },
-        guidingButtonType: .frame
+        guidingButtonType: .frame,
+        isLabelHidden: isVertical
       )
       .matchedGeometryEffect(id: "frameButton", in: toggledToolNamespace)
       .disabled(disabledByPeer)
@@ -35,7 +118,8 @@ extension CameraView.CameraBottomContainer {
             isRemoteGuideHidden = false
           }
         },
-        guidingButtonType: .pen
+        guidingButtonType: .pen,
+        isLabelHidden: isVertical
       )
       .matchedGeometryEffect(id: "penButton", in: toggledToolNamespace)
 
@@ -51,7 +135,8 @@ extension CameraView.CameraBottomContainer {
             isRemoteGuideHidden = false
           }
         },
-        guidingButtonType: .magicPen
+        guidingButtonType: .magicPen,
+        isLabelHidden: isVertical
       )
       .matchedGeometryEffect(id: "magicPenButton", in: toggledToolNamespace)
     }
@@ -59,10 +144,7 @@ extension CameraView.CameraBottomContainer {
 
   /// 프레임을 선택했을 때 나오는 프레임 서브 툴바
   var frameSubToolBar: some View {
-    /// 프레임 버튼 비활성화 조건
-    let disabledByPeer = frameViewModel.isFrameEnabled && frameViewModel.frameOwnerRole != currentRole
-
-    return SubToolBar {
+    SubToolBar(axis: axis) {
       GuidingButton(
         role: currentRole,
         isActive: isFrameActive,
@@ -71,7 +153,8 @@ extension CameraView.CameraBottomContainer {
           // 프레임 소유권 초기화
           frameViewModel.requestFrameOwnership(false, currentRole)  // 상대편 프레임 비활성화 상태 제거(소유자 해제 전파)
         },
-        guidingButtonType: .frameChecked
+        guidingButtonType: .frameChecked,
+        isLabelHidden: isVertical
       )
       .matchedGeometryEffect(id: "frameButton", in: toggledToolNamespace)
     } commandButtons: {
@@ -85,7 +168,7 @@ extension CameraView.CameraBottomContainer {
           .font(.system(size: 18, weight: .light))
           .frame(height: 21)
           .foregroundStyle(frameViewModel.frames.isEmpty ? .offWhite : .gray600)
-          .padding(.trailing, 8)
+          .padding(.trailing, isVertical ? 0 : 8)
       }
       .disabled(!frameViewModel.frames.isEmpty)
 
@@ -104,7 +187,7 @@ extension CameraView.CameraBottomContainer {
 
   /// 펜을 선택했을 때 나오는 펜 서브 툴바
   var penSubToolBar: some View {
-    SubToolBar {
+    SubToolBar(axis: axis) {
       GuidingButton(
         role: currentRole,
         isActive: isPenActive,
@@ -118,12 +201,13 @@ extension CameraView.CameraBottomContainer {
             penViewModel.saveStroke()
           }
         },
-        guidingButtonType: .penChecked
+        guidingButtonType: .penChecked,
+        isLabelHidden: isVertical
       )
       .matchedGeometryEffect(id: "penButton", in: toggledToolNamespace)
     } commandButtons: {
       // MARK: - 펜 툴바 Undo / clearAll
-      PenToolBar(penViewModel: penViewModel) { action in
+      PenToolBar(penViewModel: penViewModel, axis: axis) { action in
         switch action {
         case .deleteAll:
           penViewModel.deleteAll()
@@ -147,27 +231,43 @@ extension CameraView.CameraBottomContainer {
           isRemoteGuideHidden = false
         }
       },
-      guidingButtonType: .magicPenChecked
+      guidingButtonType: .magicPenChecked,
+      isLabelHidden: isVertical
     )
     .matchedGeometryEffect(id: "magicPenButton", in: toggledToolNamespace)
   }
 }
 
-private extension CameraView.CameraBottomContainer {
+private extension CameraView.GuidingToolBar {
   struct SubToolBar<PrimaryButton: View, CommandButtons: View>: View {
+    let axis: Axis
     @ViewBuilder let primaryButton: () -> PrimaryButton
     @ViewBuilder let commandButtons: () -> CommandButtons
 
     var body: some View {
-      HStack(spacing: 20) {
-        primaryButton()
+      if axis == .vertical {
+        VStack(spacing: 17) {
+          primaryButton()
 
-        Rectangle()
-          .fill(.gray900)
-          .frame(width: 1, height: 39)
+          Rectangle()
+            .fill(.gray900)
+            .frame(width: 22, height: 1)
 
-        HStack(spacing: 26) {
-          commandButtons()
+          VStack(spacing: 16) {
+            commandButtons()
+          }
+        }
+      } else {
+        HStack(spacing: 20) {
+          primaryButton()
+
+          Rectangle()
+            .fill(.gray900)
+            .frame(width: 1, height: 39)
+
+          HStack(spacing: 26) {
+            commandButtons()
+          }
         }
       }
     }

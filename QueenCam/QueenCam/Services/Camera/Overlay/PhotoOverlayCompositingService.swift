@@ -12,21 +12,42 @@ import UIKit
 import UniformTypeIdentifiers
 
 final class PhotoOverlayCompositingService: PhotoOverlayCompositingServiceProtocol {
+  private let logger = QueenLogger(category: "PhotoOverlayCompositingService")
   private static let livePhotoMakerAppleAssetIdentifierKey = "17"
   private static let quickTimeContentIdentifierKey = "com.apple.quicktime.content.identifier"
   private static let jpegCompressionQuality = 0.95
 
   // 호출부는 프로토콜을 통해 테스트 대역으로 교체할 수 있도록 인스턴스 메서드만 바라본다.
   // 실제 합성 과정 중 인스턴스 상태가 필요 없는 metadata/JPEG 변환 로직은 static helper로 분리한다.
-  func composite(photoOutput: PhotoOuput, strokes: [DrawableStroke]) -> PhotoOuput {
+  func composite(
+    photoOutput: PhotoOuput,
+    strokes: [DrawableStroke],
+    aspectRatio: PhotoAspectRatio,
+    previewWidth: CGFloat,
+    quarterTurns: Int
+  ) -> PhotoOuput? {
     guard !strokes.isEmpty else { return photoOutput }
+
+    let makeImage = { (imageData: Data) in
+      self.makeCompositeImage(
+        from: imageData,
+        strokes: strokes,
+        aspectRatio: aspectRatio,
+        previewWidth: previewWidth,
+        quarterTurns: quarterTurns
+      )
+    }
 
     switch photoOutput {
     case .basicPhoto(_, let imageData):
-      guard
-        let image = makeCompositeImage(from: imageData, strokes: strokes),
-        let compositeData = Self.makeJPEGData(from: image, originalImageData: imageData)
-      else { return photoOutput }
+      guard let image = makeImage(imageData) else {
+        logger.error("[PenComposite] 사진 합성 실패 원인: 사진을 읽지 못했거나 그리지 못함(비율이 맞지 않아 건너뛴 경우는 위 로그)")
+        return nil
+      }
+      guard let compositeData = Self.makeJPEGData(from: image, originalImageData: imageData) else {
+        logger.error("[PenComposite] 사진 합성 실패 원인: JPEG로 쓰지 못함")
+        return nil
+      }
 
       return .basicPhoto(thumbnail: image, imageData: compositeData)
     case .livePhoto(_, let imageData, let videoData):
@@ -36,15 +57,24 @@ final class PhotoOverlayCompositingService: PhotoOverlayCompositingServiceProtoc
       let assetIdentifier = Self.livePhotoAssetIdentifier(from: imageData)
         ?? Self.livePhotoAssetIdentifier(fromVideoData: videoData)
 
+      guard let assetIdentifier else {
+        logger.error("[PenComposite] Live 합성 실패 원인: 사진과 영상 모두에서 짝 식별자를 찾지 못함")
+        return nil
+      }
+      guard let image = makeImage(imageData) else {
+        logger.error("[PenComposite] Live 합성 실패 원인: 정지 사진을 읽지 못했거나 그리지 못함(비율이 맞지 않아 건너뛴 경우는 위 로그)")
+        return nil
+      }
       guard
-        let assetIdentifier,
-        let image = makeCompositeImage(from: imageData, strokes: strokes),
         let compositeData = Self.makeJPEGData(
           from: image,
           originalImageData: imageData,
           livePhotoAssetIdentifier: assetIdentifier
         )
-      else { return photoOutput }
+      else {
+        logger.error("[PenComposite] Live 합성 실패 원인: 짝 식별자를 넣은 JPEG를 쓰지 못함")
+        return nil
+      }
 
       return .livePhoto(thumbnail: image, imageData: compositeData, videoData: videoData)
     }
@@ -52,8 +82,20 @@ final class PhotoOverlayCompositingService: PhotoOverlayCompositingServiceProtoc
 }
 
 private extension PhotoOverlayCompositingService {
-  func makeCompositeImage(from imageData: Data, strokes: [DrawableStroke]) -> UIImage? {
+  func makeCompositeImage(
+    from imageData: Data,
+    strokes: [DrawableStroke],
+    aspectRatio: PhotoAspectRatio,
+    previewWidth: CGFloat,
+    quarterTurns: Int
+  ) -> UIImage? {
     guard let image = UIImage(data: imageData) else { return nil }
+
+    // 펜 좌표는 사진이 선택한 비율로 잘려 있다는 전제로 계산한다. 자르기가 실패해 원본이 왔다면 위치가 어긋나므로 합성하지 않는다.
+    guard PhotoAspectRatioGeometry.matches(imageSize: image.size, ratio: aspectRatio) else {
+      logger.error("[PenComposite] 합성 건너뜀 원인: 사진 크기 \(image.size)가 \(aspectRatio.rawValue) 비율과 다름(자르기 실패한 원본일 수 있음)")
+      return nil
+    }
 
     let format = UIGraphicsImageRendererFormat()
     format.scale = image.scale
@@ -61,8 +103,7 @@ private extension PhotoOverlayCompositingService {
 
     let imageSize = image.size
     let imageRect = CGRect(origin: .zero, size: imageSize)
-    let overlayRect = StrokeOverlayGeometry.aspectFitRect(in: imageRect)
-    let lineScale = StrokeOverlayGeometry.lineScale(for: overlayRect)
+    let lineScale = StrokeOverlayGeometry.lineScale(imageSize: imageSize, previewWidth: previewWidth)
 
     return UIGraphicsImageRenderer(size: imageSize, format: format).image { rendererContext in
       image.draw(in: imageRect)
@@ -70,10 +111,12 @@ private extension PhotoOverlayCompositingService {
       let context = rendererContext.cgContext
       for stroke in strokes {
         drawNormalStroke(
-          points: stroke.points,
+          points: stroke.points.map {
+            StrokeOverlayGeometry.photoPoint(fromPreview: $0, ratio: aspectRatio, quarterTurns: quarterTurns)
+          },
           author: stroke.author,
           in: context,
-          overlayRect: overlayRect,
+          overlayRect: imageRect,
           lineScale: lineScale
         )
       }

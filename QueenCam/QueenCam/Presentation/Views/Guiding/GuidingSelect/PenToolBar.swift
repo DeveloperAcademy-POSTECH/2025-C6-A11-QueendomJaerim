@@ -9,6 +9,7 @@ import SwiftUI
 
 struct PenToolBar: View {
   var penViewModel: PenViewModel
+  var axis: Axis = .horizontal
   var onAction: (ToolBarAction) -> Void
 
   private var myRole: Role {
@@ -41,7 +42,9 @@ struct PenToolBar: View {
 
   var body: some View {
 
-    HStack(spacing: .zero) {
+    let layout = axis == .vertical ? AnyLayout(VStackLayout(spacing: 16)) : AnyLayout(HStackLayout(spacing: 26))
+
+    return layout {
       // 실행 취소(내가 그린 현재 strokes가 있거나, 내가 방금 전체삭제한 기록이 있으면 활성)
       PenToolButton(
         penToolType: .undo,
@@ -49,7 +52,6 @@ struct PenToolBar: View {
       ) {
         onAction(.undo)
       }
-      .padding(.trailing, 26)
 
       // 전체 삭제(내가 그린 것만 존재할 때 활성)
       PenToolButton(

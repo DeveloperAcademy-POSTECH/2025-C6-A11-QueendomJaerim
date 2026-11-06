@@ -8,5 +8,14 @@
 import Foundation
 
 protocol PhotoOverlayCompositingServiceProtocol {
-  func composite(photoOutput: PhotoOuput, strokes: [DrawableStroke]) -> PhotoOuput
+  /// 합성에 실패하면 nil을 돌려준다. 펜이 없으면 사진을 그대로 돌려준다.
+  /// `strokes`는 프리뷰 기준 좌표다. `previewWidth`는 펜을 그릴 때 화면에 있던 프리뷰 폭(pt)이고,
+  /// `quarterTurns`는 셔터 순간 사진이 화면 기준으로 시계 방향 몇 번 돌아 저장됐는지다.
+  func composite(
+    photoOutput: PhotoOuput,
+    strokes: [DrawableStroke],
+    aspectRatio: PhotoAspectRatio,
+    previewWidth: CGFloat,
+    quarterTurns: Int
+  ) -> PhotoOuput?
 }

@@ -49,9 +49,9 @@ struct ConnectionViewModelTests {
 
     viewModel.selectRole(for: .photographer)
     viewModel.connectButtonDidTap(for: device)
-    try await Task.sleep(for: .milliseconds(150))
+    let selectedDevice = await waitUntil { viewModel.selectedPairedDevice == device }
 
-    #expect(viewModel.selectedPairedDevice == device)
+    #expect(selectedDevice)
     let stopCallCountBeforeReset = networkService.stopCallCount
 
     viewModel.selectRole(for: nil)
@@ -59,6 +59,28 @@ struct ConnectionViewModelTests {
     #expect(viewModel.role == nil)
     #expect(viewModel.selectedPairedDevice == nil)
     #expect(networkService.stopCallCount == stopCallCountBeforeReset + 1)
+  }
+
+  @Test("재연결을 취소하면 연결 전 상태로 돌아가 역할과 재연결 정보를 비운다")
+  func cancellingReconnectReturnsToPreConnectionState() {
+    let networkService = FakeNetworkService()
+    let viewModel = ConnectionViewModel(
+      networkService: networkService,
+      notificationService: FakeNotificationService(),
+      pairedDeviceRegistry: FakePairedDeviceRegistry(devices: AsyncStream { _ in })
+    )
+    viewModel.selectRole(for: .model)
+    viewModel.connectionLost = true
+    viewModel.reconnectingDeviceName = "테스트 기기"
+    let stopCallCountBeforeCancel = networkService.stopCallCount
+
+    viewModel.reconnectCancelButtonDidTap()
+
+    #expect(viewModel.role == nil)
+    #expect(viewModel.lastConnectedDevice == nil)
+    #expect(viewModel.connectionLost == false)
+    #expect(viewModel.reconnectingDeviceName == nil)
+    #expect(networkService.stopCallCount == stopCallCountBeforeCancel + 1)
   }
 }
 
@@ -76,6 +98,7 @@ private final class FakeNetworkService: NetworkServiceProtocol {
   var mode: NetworkType?
   var networkState: NetworkState?
   var lastStopReason: String?
+  var isCounterpartVersionVerified = false
   private(set) var stopCallCount = 0
 
   var deviceConnectionsPublisher: AnyPublisher<[WAPairedDevice: ConnectionDetail], Never> {
@@ -132,10 +155,11 @@ private final class FakeNotificationService: NotificationServiceProtocol {
 }
 
 @MainActor
+/// 조건이 맞을 때까지 최대 2초 기다린다. 뷰모델이 일정 시간 기다린 뒤 값을 바꾸는 경우도 시간으로 기다려야 한다.
 private func waitUntil(_ condition: () -> Bool) async -> Bool {
-  for _ in 0..<100 {
+  for _ in 0..<200 {
     if condition() { return true }
-    await Task.yield()
+    try? await Task.sleep(for: .milliseconds(10))
   }
   return false
 }

@@ -5,13 +5,15 @@ final class CameraSettingsService: CameraSettingsServiceProtocol {
   private let gridKey = "gridOn"
   private let flashKey = "flashMode"
   private let saveGuidingOverlayImageKey = "saveGuidingOverlayImageOn"
+  private let photoAspectRatioKey = "photoAspectRatio"
 
   init() {
     UserDefaults.standard.register(defaults: [
       livePhotoKey: false,
       gridKey: false,
       flashKey: FlashMode.off.rawValue,
-      saveGuidingOverlayImageKey: false
+      saveGuidingOverlayImageKey: false,
+      photoAspectRatioKey: PhotoAspectRatio.ratio4x3.rawValue
     ])
   }
 
@@ -48,6 +50,15 @@ final class CameraSettingsService: CameraSettingsServiceProtocol {
     }
     set {
       UserDefaults.standard.set(newValue, forKey: saveGuidingOverlayImageKey)
+    }
+  }
+
+  var photoAspectRatio: PhotoAspectRatio {
+    get {
+      UserDefaults.standard.string(forKey: photoAspectRatioKey).flatMap(PhotoAspectRatio.init(rawValue:)) ?? .ratio4x3
+    }
+    set {
+      UserDefaults.standard.set(newValue.rawValue, forKey: photoAspectRatioKey)
     }
   }
 }

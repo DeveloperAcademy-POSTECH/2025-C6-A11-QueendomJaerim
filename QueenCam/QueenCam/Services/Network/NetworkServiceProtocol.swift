@@ -36,6 +36,9 @@ protocol NetworkServiceProtocol: AnyObject {
   /// 마지막 종료 이유 (사용자에게 알려야할 때 할당)
   var lastStopReason: String? { get }
 
+  /// 상대 앱 버전 확인을 통과했는지. 통과한 뒤에만 새 이벤트를 보낼 수 있다.
+  var isCounterpartVersionVerified: Bool { get }
+
   // MARK: - Methods
   /// 네트워크 서비스를 시작합니다.
   func run(for device: WAPairedDevice)

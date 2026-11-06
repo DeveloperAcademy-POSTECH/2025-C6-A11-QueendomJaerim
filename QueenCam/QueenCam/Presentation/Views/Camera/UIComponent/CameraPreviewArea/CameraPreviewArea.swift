@@ -33,6 +33,11 @@ extension CameraView {
     @Binding var isRemoteGuideHidden: Bool
     @Binding var isReferenceLarge: Bool  // 레퍼런스 확대 축소 프로퍼티
 
+    let topToolBarOverlap: CGFloat
+    let isGuidingToolBarInPreview: Bool
+    let bottomControlsOverlap: CGFloat
+    let guidingToolToggle: (_ selectedTool: ActiveTool) -> Void
+
     // connectionViewModel -> 프로퍼티 변환
     let currentRole: Role?
     let connectionLost: Bool
@@ -89,6 +94,11 @@ extension CameraView.CameraPreviewArea: View {
       // MARK: 카메라 바구니 토글 버튼과 눈까리 버튼
       toggleButtonsLayer
 
+      // MARK: 16:9 세로 가이드 도구 모음
+      if isGuidingToolBarInPreview {
+        verticalGuidingToolLayer
+      }
+
       // MARK: 레퍼런스 이미지가 isLarge 모드일 때 뒤에 깔리는 디밍
       largeReferenceImageDimmingLayer
 
@@ -103,16 +113,8 @@ extension CameraView.CameraPreviewArea: View {
         ReconnectingView(didCancelButtonTap: reconnectCancelButtonDidTap)
       }
     }
-    .aspectRatio(3 / 4, contentMode: .fill)
     .clipped()
-    .clipShape(.rect(cornerRadius: 5))
     // MARK: Overlays
-    // MARK: Overlays - 테두리 그래픽 요소
-    .overlay {
-      RoundedRectangle(cornerRadius: 5)
-        .inset(by: 0.5)
-        .stroke(Color.gray900, lineWidth: 1)
-    }
     // MARK: Overlays - 토스트 오버레이
     .overlay(alignment: .center) {
       if !connectionLost {
@@ -125,7 +127,9 @@ extension CameraView.CameraPreviewArea: View {
     .overlay(alignment: .bottom) {
       ThumbsUpView(trigger: $thumbsUpViewModel.animationTriger)
         .opacity(thumbsUpViewModel.isShowInitialView ? 1 : .zero)
+        // 애니메이션이 끝나면 프리뷰 아래 290pt에 멈추고 하단 조작부에 배경이 없어, 프리뷰 밖은 잘라 숨긴다.
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+        .clipped()
     }
-    .padding(.horizontal, 16)
   }
 }

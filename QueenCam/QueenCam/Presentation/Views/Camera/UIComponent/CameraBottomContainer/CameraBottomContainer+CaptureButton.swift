@@ -18,7 +18,7 @@ extension CameraView.CameraBottomContainer {
               .frame(width: isMinimize ? 28 : 68, height: isMinimize ? 28 : 68)
           }
         }
-        .disabled(!cameraViewModel.isCaptureButtonEnabled)
+        .disabled(!cameraViewModel.isShutterEnabled)
 
         Spacer()
 

@@ -11,4 +11,5 @@ protocol CameraSettingsServiceProtocol: AnyObject {
   var gridOn: Bool { get set }
   var flashMode: FlashMode { get set }
   var saveGuidingOverlayImageOn: Bool { get set }
+  var photoAspectRatio: PhotoAspectRatio { get set }
 }
