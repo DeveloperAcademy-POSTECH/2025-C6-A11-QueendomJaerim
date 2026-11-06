@@ -100,6 +100,57 @@ struct CameraViewModelAspectRatioSyncTests {
     #expect(network.sentAspectRatios.isEmpty)
     withExtendedLifetime(viewModel) {}
   }
+
+  @Test("역할 교환으로 모델이 작가가 되면 지금 비율을 보낸다")
+  func newPhotographerSendsCurrentRatio() async {
+    let (viewModel, network, _) = makeViewModel(role: .model, isVersionVerified: true)
+
+    viewModel.currentRole = .photographer
+
+    #expect(await waitUntil { network.sentAspectRatios == [.ratio4x3] })
+  }
+
+  @Test("버전 확인을 통과하기 전에는 작가가 되어도 보내지 않는다")
+  func newPhotographerDoesNotSendBeforeVersionVerified() async throws {
+    let (viewModel, network, _) = makeViewModel(role: .model, isVersionVerified: false)
+
+    viewModel.currentRole = .photographer
+    try await Task.sleep(for: .milliseconds(50))
+
+    #expect(network.sentAspectRatios.isEmpty)
+  }
+
+  @Test("처음 역할을 고르는 것은 역할 교환이 아니라서 보내지 않는다")
+  func firstRoleSelectionDoesNotSend() async throws {
+    let (viewModel, network, _) = makeViewModel(role: nil, isVersionVerified: true)
+
+    viewModel.currentRole = .photographer
+    try await Task.sleep(for: .milliseconds(50))
+
+    #expect(network.sentAspectRatios.isEmpty)
+  }
+
+  @Test("모델이 되면 보내지 않고, 작가였다가 모델이 되어도 받은 늦은 값은 적용한다")
+  func becomingModelDoesNotSendAndAppliesReceivedRatio() async throws {
+    let (viewModel, network, _) = makeViewModel(role: .photographer, isVersionVerified: true)
+
+    viewModel.currentRole = .model
+    network.emit(.photoAspectRatio(.ratio1x1))
+
+    #expect(await waitUntil { viewModel.photoAspectRatio == .ratio1x1 })
+    #expect(network.sentAspectRatios.isEmpty)
+  }
+
+  @Test("새 작가가 된 뒤 도착한 이전 작가의 늦은 값은 버린다")
+  func newPhotographerIgnoresLateRatioFromPreviousPhotographer() async throws {
+    let (viewModel, network, _) = makeViewModel(role: .model, isVersionVerified: true)
+
+    viewModel.currentRole = .photographer
+    network.emit(.photoAspectRatio(.ratio16x9))
+    try await Task.sleep(for: .milliseconds(50))
+
+    #expect(viewModel.photoAspectRatio == .ratio4x3)
+  }
 }
 
 private let compatibleVersion = VersionExchangePayload(version: VersionUtils.currentVersion, requiredMinimumVersion: 0)

@@ -25,7 +25,14 @@ final class CameraViewModel {
   var photoAspectRatio: PhotoAspectRatio
 
   /// 비율은 작가만 바꿀 수 있어서, 보내기와 받기 모두 이 역할로 막는다.
-  var currentRole: Role?
+  var currentRole: Role? {
+    didSet {
+      // 역할 교환으로 새 작가가 되면, 상대가 이전 작가의 늦은 값을 가질 수 있어 내 값을 다시 보낸다.
+      if oldValue == .model, currentRole == .photographer {
+        sendPhotoAspectRatioIfPhotographer(reason: "작가가 됨")
+      }
+    }
+  }
 
   /// 화면에 보이는 프리뷰 폭(pt). 펜 합성이 화면과 같은 두께로 그리는 데 쓴다.
   var previewWidth: CGFloat = 0
