@@ -152,6 +152,29 @@ struct CameraViewModelAspectRatioSyncTests {
     #expect(viewModel.photoAspectRatio == .ratio4x3)
   }
 
+  @Test("역할 알림으로 작가가 되면 화면 갱신을 기다리지 않고 그 뒤에 처리되는 이전 작가의 늦은 값을 버린다")
+  func roleNotificationClosesGapBeforeLateRatio() async {
+    let notificationCenter = NotificationCenter()
+    let (viewModel, network, settings) = makeViewModel(
+      role: .model,
+      isVersionVerified: true,
+      notificationCenter: notificationCenter
+    )
+
+    // 이전 작가의 16:9가 이미 도착해 처리를 기다리는 중에 역할이 바뀐다
+    network.emit(.photoAspectRatio(.ratio16x9))
+    notificationCenter.post(
+      name: .QueenCamRoleChangedNotification,
+      object: nil,
+      userInfo: ["newRole": Role.photographer as Any]
+    )
+
+    #expect(viewModel.currentRole == .photographer)
+    #expect(await waitUntil { network.sentAspectRatios == [.ratio4x3] })
+    #expect(viewModel.photoAspectRatio == .ratio4x3)
+    #expect(settings.photoAspectRatio == .ratio4x3)
+  }
+
   @Test("작가가 모델이 되면 작가에게 비율을 요청한다")
   func newModelRequestsRatio() async {
     let (viewModel, network, _) = makeViewModel(role: .photographer, isVersionVerified: true)
@@ -246,7 +269,8 @@ private let compatibleVersion = VersionExchangePayload(version: VersionUtils.cur
 @MainActor
 private func makeViewModel(
   role: Role?,
-  isVersionVerified: Bool
+  isVersionVerified: Bool,
+  notificationCenter: NotificationCenter = NotificationCenter()
 ) -> (CameraViewModel, FakeNetworkService, FakeCameraSettingsService) {
   let network = FakeNetworkService()
   network.isCounterpartVersionVerified = isVersionVerified
@@ -257,7 +281,8 @@ private func makeViewModel(
     networkService: network,
     cameraSettingsService: settings,
     notificationService: FakeNotificationService(),
-    guidingStrokeRepository: GuidingStrokeRepository(networkService: network)
+    guidingStrokeRepository: GuidingStrokeRepository(networkService: network),
+    notificationCenter: notificationCenter
   )
   viewModel.currentRole = role
 

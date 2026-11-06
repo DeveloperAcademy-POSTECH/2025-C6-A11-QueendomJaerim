@@ -73,7 +73,8 @@ final class CameraViewModel {
     networkService: NetworkServiceProtocol,
     cameraSettingsService: CameraSettingsServiceProtocol,
     notificationService: NotificationServiceProtocol,
-    guidingStrokeRepository: GuidingStrokeRepositoryProtocol = DependencyContainer.defaultContainer.guidingStrokeRepository
+    guidingStrokeRepository: GuidingStrokeRepositoryProtocol = DependencyContainer.defaultContainer.guidingStrokeRepository,
+    notificationCenter: NotificationCenter = .default
   ) {
     self.networkService = networkService
     self.cameraSettingsService = cameraSettingsService
@@ -143,6 +144,14 @@ final class CameraViewModel {
         default:
           break
         }
+      }
+      .store(in: &cancellables)
+
+    // 화면 갱신(onChange)까지 기다리면 그 틈에 이전 작가의 늦은 비율을 받아들여서, 역할이 바뀌는 순간 함께 바꾼다.
+    notificationCenter.publisher(for: .QueenCamRoleChangedNotification)
+      .compactMap { $0.userInfo?["newRole"] as? Role }
+      .sink { [weak self] role in
+        self?.currentRole = role
       }
       .store(in: &cancellables)
   }
