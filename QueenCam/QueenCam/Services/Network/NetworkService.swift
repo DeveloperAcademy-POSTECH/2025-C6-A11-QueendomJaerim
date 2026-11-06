@@ -7,6 +7,7 @@
 
 import Combine
 import Foundation
+import Network
 import OSLog
 import WiFiAware
 
@@ -129,6 +130,8 @@ final class NetworkService: NetworkServiceProtocol {
   // Checking Version Timer
   var versionCheckTimer: Timer?
   var isCounterpartVersionVerified: Bool = false
+  /// 지금 연결의 ID. 이전 연결의 늦은 종료 신호가 지금 연결의 상태를 지우지 않도록 비교하는 데 쓴다.
+  var currentConnectionID: WiFiAwareConnectionID?
 
   private let pairedDeviceRegistry: WAPairedDeviceRegistryProtocol
 
@@ -235,6 +238,7 @@ extension NetworkService {
 
     switch event {
     case .ready(let device, let connectionDetail):
+      currentConnectionID = connectionDetail.connection.id
       deviceConnections[device] = connectionDetail
       await pairedDeviceRegistry.recordConnection(to: device)
       if mode == .viewer {
@@ -278,8 +282,13 @@ extension NetworkService {
 
     case .stopped(let device, let connectionID, let error):
       logger.info("handle stopped event \(error)")
-      resetVersionCheck()
-      deviceConnections.removeValue(forKey: device)
+      if connectionID == currentConnectionID {
+        currentConnectionID = nil
+        resetVersionCheck()
+        deviceConnections.removeValue(forKey: device)
+      } else {
+        logger.info("지금 연결이 아닌 연결(\(connectionID))의 종료라 버전 확인 표시와 연결 목록은 그대로 둔다")
+      }
       await connectionManager.invalidate(connectionID)
 
       if let waError = error {

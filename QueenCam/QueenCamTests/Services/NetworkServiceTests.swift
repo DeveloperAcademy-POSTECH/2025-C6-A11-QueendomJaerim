@@ -392,12 +392,37 @@ struct NetworkServiceTests {
     #expect(service.isCounterpartVersionVerified)
     let timer = Timer.scheduledTimer(withTimeInterval: 60, repeats: false) { _ in }
     service.versionCheckTimer = timer
+    service.currentConnectionID = "connection-1"
 
     mockCM.emitLocal(.connection(.stopped(makeDummyDevice(), "connection-1", nil)))
     try await Task.sleep(nanoseconds: 50_000_000)
 
     #expect(service.isCounterpartVersionVerified == false)
     #expect(timer.isValid == false)
+    #expect(service.currentConnectionID == nil)
+  }
+
+  @Test("지금 연결이 아닌 이전 연결의 종료 신호는 통과 표시와 버전 확인 알람을 지우지 않는다")
+  func stoppedPreviousConnectionKeepsVersionCheck() async throws {
+    let mockNM = MockNetworkManager()
+    let mockCM = MockConnectionManager()
+    let service = NetworkService(networkManager: mockNM, connectionManager: mockCM)
+
+    mockNM.emitNetwork(.myVersion(VersionExchangePayload(version: VersionUtils.currentVersion, requiredMinimumVersion: 0)))
+    try await Task.sleep(nanoseconds: 50_000_000)
+    #expect(service.isCounterpartVersionVerified)
+    let timer = Timer.scheduledTimer(withTimeInterval: 60, repeats: false) { _ in }
+    service.versionCheckTimer = timer
+    service.currentConnectionID = "connection-2"
+
+    mockCM.emitLocal(.connection(.stopped(makeDummyDevice(), "connection-1", nil)))
+    try await Task.sleep(nanoseconds: 50_000_000)
+
+    #expect(service.isCounterpartVersionVerified)
+    #expect(timer.isValid)
+    #expect(service.currentConnectionID == "connection-2")
+    #expect(mockCM.invalidateCalledWith == ["connection-1"])
+    timer.invalidate()
   }
 
   @Test("비율 동기화 이벤트는 실제 전송 형식(JSON)으로 보내고 다시 읽을 수 있다")
