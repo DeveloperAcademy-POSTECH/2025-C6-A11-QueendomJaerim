@@ -1,4 +1,5 @@
 require "tmpdir"
+require_relative "qa_version"
 
 default_platform(:ios)
 
@@ -7,6 +8,69 @@ platform :ios do
   lane :verify do
     build_and_check
     UI.success("검증 완료. 업로드는 수행하지 않았다.")
+  end
+
+  desc "/qa가 올릴 앱 버전을 정한다. 애플에서 읽기만 하고 아무것도 바꾸지 않는다"
+  lane :qa_version do
+    app_store_connect_api_key(
+      key_id: ENV.fetch("APP_STORE_CONNECT_KEY_ID"),
+      issuer_id: ENV.fetch("APP_STORE_CONNECT_ISSUER_ID"),
+      key_content: ENV.fetch("APP_STORE_CONNECT_PRIVATE_KEY")
+    )
+
+    # fastlane은 레인을 fastlane/ 폴더에서 실행하므로 저장소 루트는 한 단계 위다.
+    develop_version = File.read("../QueenCam/QueenCam.xcodeproj/project.pbxproj")[/MARKETING_VERSION = ([^;]+);/, 1]
+    UI.user_error!("project.pbxproj에서 MARKETING_VERSION을 읽지 못했습니다.") if develop_version.nil?
+
+    app = Spaceship::ConnectAPI::App.find("com.queendom.QueenCam")
+    UI.user_error!("App Store Connect에서 앱을 찾지 못했습니다.") if app.nil?
+
+    versions = app.get_app_store_versions(filter: { platform: "IOS" })
+
+    # 어느 필드에 상태가 채워지는지 실행으로 확인하려고 둘 다 남긴다.
+    UI.message("── App Store Connect 버전 목록 ──")
+    versions.each do |v|
+      UI.message("  #{v.version_string}: app_version_state=#{v.app_version_state.inspect} app_store_state=#{v.app_store_state.inspect}")
+    end
+
+    store_versions = versions.map { |v| [v.version_string, v.app_version_state || v.app_store_state] }
+    result = QaVersion.decide(develop_version, store_versions)
+
+    highest_state = store_versions.find { |version, _| version == result[:highest_submitted] }&.last
+    summary = "develop=#{develop_version}, 제출된 최고 버전=#{result[:highest_submitted] || '없음'}(#{highest_state}) → " \
+              "#{result[:bumped] ? '앱 버전을 올림' : '앱 버전 유지'}: #{result[:version]}"
+    UI.success(summary)
+
+    # fastlane 출력을 해석하지 않고 워크플로 환경 변수로 직접 넘긴다.
+    if ENV["GITHUB_ENV"]
+      File.open(ENV["GITHUB_ENV"], "a") do |f|
+        f.puts("QA_APP_VERSION=#{result[:version]}")
+        f.puts("QA_VERSION_BUMPED=#{result[:bumped]}")
+        f.puts("QA_HIGHEST_SUBMITTED=#{result[:highest_submitted]}(#{highest_state})")
+        f.puts("QA_PREVIOUS_VERSION=#{develop_version}")
+      end
+    end
+  end
+
+  desc "verify가 만든 IPA를 TestFlight에 올린다. Archive는 하지 않는다"
+  lane :upload_build do
+    # gym이 출력 폴더를 저장소 루트와 fastlane/ 중 어느 쪽 기준으로 푸는지 실행으로 확인하기 전이라 둘 다 찾는다.
+    ipa = ["../build/QueenCam.ipa", "build/QueenCam.ipa"].find { |path| File.exist?(path) }
+    UI.user_error!("build/QueenCam.ipa가 없습니다. Archive 단계가 먼저 성공해야 합니다.") if ipa.nil?
+    UI.message("업로드할 IPA: #{File.expand_path(ipa)}")
+
+    api_key = app_store_connect_api_key(
+      key_id: ENV.fetch("APP_STORE_CONNECT_KEY_ID"),
+      issuer_id: ENV.fetch("APP_STORE_CONNECT_ISSUER_ID"),
+      key_content: ENV.fetch("APP_STORE_CONNECT_PRIVATE_KEY")
+    )
+
+    upload_to_testflight(
+      api_key: api_key,
+      ipa: ipa,
+      skip_waiting_for_build_processing: true,
+      skip_submission: true
+    )
   end
 
   desc "Archive QueenCam and upload the resulting IPA to TestFlight"
@@ -57,7 +121,7 @@ platform :ios do
     check_entitlements(ipa_path: ipa_path)
   end
 
-  # 서명 없이 Archive하므로 권한 주입이 조용히 누락될 수 있다. 빠져도 빌드와 업로드는
+  # Archive와 export를 거치며 권한 주입이 조용히 누락될 수 있다. 빠져도 빌드와 업로드는
   # 성공하고 해당 기능만 동작하지 않아, 실기기에서 써보기 전에는 드러나지 않는다.
   private_lane :check_entitlements do |options|
     ipa_path = options[:ipa_path]
