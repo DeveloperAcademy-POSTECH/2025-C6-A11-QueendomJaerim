@@ -115,8 +115,11 @@ jobs:
           if [ "$QA_VERSION_BUMPED" = "true" ]; then
             sed -i '' "s/MARKETING_VERSION = .*/MARKETING_VERSION = $QA_APP_VERSION;/g" "$XCODE_PROJ_PATH"
 
-            # 일부 빌드 설정만 바뀌면 타겟마다 앱 버전이 달라진다.
-            if grep "MARKETING_VERSION =" "$XCODE_PROJ_PATH" | grep -qv "= $QA_APP_VERSION;"; then
+            # 형식이 다른 줄은 sed가 건너뛰어 타겟마다 앱 버전이 달라진다.
+            # 버전 줄 전체 수와 새 버전으로 바뀐 줄 수를 비교한다.
+            ALL_LINES=$(grep -c "MARKETING_VERSION" "$XCODE_PROJ_PATH")
+            DONE_LINES=$(grep -c "MARKETING_VERSION = $QA_APP_VERSION;" "$XCODE_PROJ_PATH")
+            if [ "$ALL_LINES" != "$DONE_LINES" ]; then
               echo "::error::MARKETING_VERSION을 ${QA_APP_VERSION}(으)로 모두 바꾸지 못했습니다. project.pbxproj 형식을 확인해 주세요."
               exit 1
             fi
