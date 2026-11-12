@@ -18,7 +18,8 @@ platform :ios do
       key_content: ENV.fetch("APP_STORE_CONNECT_PRIVATE_KEY")
     )
 
-    develop_version = File.read("QueenCam/QueenCam.xcodeproj/project.pbxproj")[/MARKETING_VERSION = ([^;]+);/, 1]
+    # fastlane은 레인을 fastlane/ 폴더에서 실행하므로 저장소 루트는 한 단계 위다.
+    develop_version = File.read("../QueenCam/QueenCam.xcodeproj/project.pbxproj")[/MARKETING_VERSION = ([^;]+);/, 1]
     UI.user_error!("project.pbxproj에서 MARKETING_VERSION을 읽지 못했습니다.") if develop_version.nil?
 
     app = Spaceship::ConnectAPI::App.find("com.queendom.QueenCam")
@@ -53,8 +54,10 @@ platform :ios do
 
   desc "verify가 만든 IPA를 TestFlight에 올린다. Archive는 하지 않는다"
   lane :upload_build do
-    ipa = "build/QueenCam.ipa"
-    UI.user_error!("#{ipa}가 없습니다. Archive 단계가 먼저 성공해야 합니다.") unless File.exist?(ipa)
+    # gym이 출력 폴더를 저장소 루트와 fastlane/ 중 어느 쪽 기준으로 푸는지 실행으로 확인하기 전이라 둘 다 찾는다.
+    ipa = ["../build/QueenCam.ipa", "build/QueenCam.ipa"].find { |path| File.exist?(path) }
+    UI.user_error!("build/QueenCam.ipa가 없습니다. Archive 단계가 먼저 성공해야 합니다.") if ipa.nil?
+    UI.message("업로드할 IPA: #{File.expand_path(ipa)}")
 
     api_key = app_store_connect_api_key(
       key_id: ENV.fetch("APP_STORE_CONNECT_KEY_ID"),
