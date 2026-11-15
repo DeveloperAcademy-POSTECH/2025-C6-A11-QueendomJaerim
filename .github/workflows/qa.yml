@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: "검증만 = Archive와 번들 검사까지 (애플에 전송하지 않고 빌드 번호도 올리지 않음). 업로드 = TestFlight 전송까지"
+        description: "검증만 = 앱 버전 확인과 Archive·번들 검사까지 (애플에 전송하지 않고 버전·빌드 번호도 올리지 않음). 업로드 = TestFlight 전송까지"
         type: choice
         default: 검증만
         options:
@@ -72,11 +72,28 @@ jobs:
           ssh-key: ${{ secrets.DEPLOY_KEY_SECRET }}
           fetch-depth: 0
 
-      # 빌드 번호를 먼저 올려 push한다. Archive가 뒤에 실패하면 번호에 구멍이 나지만
+      # 버전 확인에 fastlane을 쓰므로 Archive 준비 단계보다 먼저 설치한다.
+      - name: Set up Ruby and Fastlane
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+
+      # 앱 버전이 이미 심사에 제출됐으면 애플은 그 버전으로 올리는 새 빌드를 거부한다.
+      # 그 사실을 Archive가 끝난 뒤 업로드에서야 알면 시간만 쓰므로, 시작하기 전에 묻는다.
+      # 읽기만 하므로 검증만 모드에서도 실행한다. 결과는 QA_* 환경 변수로 넘어온다.
+      - name: Check app version
+        id: version_check
+        run: bundle exec fastlane ios qa_version
+
+      # 버전과 빌드 번호를 먼저 올려 push한다. Archive가 뒤에 실패하면 번호에 구멍이 나지만
       # 애플은 증가만 요구하므로 무해하다. 반대로 업로드 뒤에 push하면 업로드된 번호가
       # develop에 남지 않아, 다음 실행이 같은 번호를 다시 올리고 애플이 중복으로 거부한다.
-      # DeployKey와 bypass 설정이 틀렸을 때 20분짜리 Archive 전에 빨리 실패하는 이점도 있다.
-      - name: Bump build number
+      # 앱 버전을 올린 경우도 같은 이유로 push가 먼저다. 다시 실행하면 새 버전은 애플에
+      # 기록이 없으므로 버전은 그대로 두고 빌드 번호만 오른다.
+      # DeployKey와 bypass 설정이 틀렸을 때 Archive 전에 빨리 실패하는 이점도 있다.
+      - name: Bump version and build number
+        id: bump_push
         # 수동 실행은 develop이 아닌 브랜치를 고를 수 있으므로 push하지 않는다.
         if: github.event_name == 'issue_comment'
         run: |
@@ -86,7 +103,7 @@ jobs:
 
           # 읽기에 실패하면 빈 값이 되고, $(( + 1))은 오류가 아니라 1을 만든다.
           # 그대로 두면 빌드 번호가 1로 떨어진 채 커밋되고 Archive를 다 마친 뒤
-          # 애플이 거부한다. 20분을 쓰기 전에 여기서 멈춘다.
+          # 애플이 거부한다. 시간을 쓰기 전에 여기서 멈춘다.
           if ! echo "$OLD_BUILD_NUMBER" | grep -qE '^[0-9]+$'; then
             echo "::error::project.pbxproj에서 CURRENT_PROJECT_VERSION을 읽지 못했습니다. (읽은 값: '$OLD_BUILD_NUMBER')"
             exit 1
@@ -95,22 +112,44 @@ jobs:
           NEW_BUILD_NUMBER=$((OLD_BUILD_NUMBER + 1))
           sed -i '' "s/CURRENT_PROJECT_VERSION = .*/CURRENT_PROJECT_VERSION = $NEW_BUILD_NUMBER;/g" "$XCODE_PROJ_PATH"
 
+          if [ "$QA_VERSION_BUMPED" = "true" ]; then
+            sed -i '' "s/MARKETING_VERSION = .*/MARKETING_VERSION = $QA_APP_VERSION;/g" "$XCODE_PROJ_PATH"
+
+            # 형식이 다른 줄은 sed가 건너뛰어 타겟마다 앱 버전이 달라진다.
+            # 버전 줄 전체 수와 새 버전으로 바뀐 줄 수를 비교한다.
+            ALL_LINES=$(grep -c "MARKETING_VERSION" "$XCODE_PROJ_PATH")
+            DONE_LINES=$(grep -c "MARKETING_VERSION = $QA_APP_VERSION;" "$XCODE_PROJ_PATH")
+            if [ "$ALL_LINES" != "$DONE_LINES" ]; then
+              echo "::error::MARKETING_VERSION을 ${QA_APP_VERSION}(으)로 모두 바꾸지 못했습니다. project.pbxproj 형식을 확인해 주세요."
+              exit 1
+            fi
+          fi
+
           # sed가 빗나가면 커밋할 것이 없어 다음 단계가 애매하게 실패한다.
           if git diff --quiet -- "$XCODE_PROJ_PATH"; then
-            echo "::error::빌드 번호를 $NEW_BUILD_NUMBER로 바꾸지 못했습니다. project.pbxproj 형식을 확인해 주세요."
+            echo "::error::빌드 번호를 ${NEW_BUILD_NUMBER}(으)로 바꾸지 못했습니다. project.pbxproj 형식을 확인해 주세요."
             exit 1
+          fi
+
+          if [ "$QA_VERSION_BUMPED" = "true" ]; then
+            COMMIT_TITLE="[Chore] cd: 확인용 빌드 앱 버전 ${QA_PREVIOUS_VERSION} → ${QA_APP_VERSION}, 빌드 번호 증가 (${NEW_BUILD_NUMBER}) (#${{ github.event.issue.number }})"
+          else
+            COMMIT_TITLE="[Chore] cd: 확인용 빌드 번호 증가 (${NEW_BUILD_NUMBER}) (#${{ github.event.issue.number }})"
           fi
 
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add "$XCODE_PROJ_PATH"
-          git commit -m "[Chore] cd: 확인용 빌드 번호 $NEW_BUILD_NUMBER로 증가 (#${{ github.event.issue.number }})"
+          git commit -m "$COMMIT_TITLE"
           git push origin HEAD:develop
 
-          echo "BUILD_NUMBER=$NEW_BUILD_NUMBER" >> "$GITHUB_ENV"
-          # 이 커밋이 실제로 Archive되는 develop 상태다. 어느 빌드가 어느 상태였는지
+          # BUILD_COMMIT은 실제로 Archive되는 develop 상태다. 어느 빌드가 어느 상태였는지
           # 되짚을 수 있게 완료 댓글에 남긴다.
-          echo "BUILD_COMMIT=$(git rev-parse --short HEAD)" >> "$GITHUB_ENV"
+          {
+            echo "APP_VERSION=$QA_APP_VERSION"
+            echo "BUILD_NUMBER=$NEW_BUILD_NUMBER"
+            echo "BUILD_COMMIT=$(git rev-parse --short HEAD)"
+          } >> "$GITHUB_ENV"
 
       # 저장소에 없는 파일이라, 빠지면 FirebaseApp.configure()에서 실행 즉시 죽는다.
       # 동기화 그룹이라 제자리에 쓰기만 하면 번들에 자동 포함된다.
@@ -135,12 +174,6 @@ jobs:
           sudo xcode-select -s "$LATEST"
           echo "DEVELOPER_DIR=$LATEST/Contents/Developer" >> "$GITHUB_ENV"
           xcodebuild -version
-
-      - name: Set up Ruby and Fastlane
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: "3.3"
-          bundler-cache: true
 
       - name: Install signing assets
         run: |
@@ -167,7 +200,9 @@ jobs:
           mkdir -p "$PROFILE_DIR"
           cp "$APPSTORE_PROFILE_PATH" "$ADHOC_PROFILE_PATH" "$PROFILE_DIR"
 
-      - name: Archive and upload to TestFlight
+      # 애플에 아무것도 보내지 않는 단계다. 여기서 실패해도 빌드 번호는 소모되지 않는다.
+      - name: Archive
+        id: archive
         env:
           # SwiftLint 플러그인은 Xcode 신뢰 승인이 필요한데 CI에는 그 상태가 없다.
           # 서명 설정은 여기 넣지 않는다. xcargs는 SPM 타겟에도 전역 적용되어 실패하고,
@@ -176,35 +211,95 @@ jobs:
           GYM_EXPORT_TEAM_ID: D22ZM93S77
           # SPM 패키지가 16개라 xcodebuild -showBuildSettings가 기본 3초 안에 끝나지 않는다.
           FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT: "180"
-        run: |
-          if [ "${{ inputs.mode }}" = "검증만" ]; then
-            bundle exec fastlane ios verify
-          else
-            bundle exec fastlane ios testflight
-          fi
+        run: bundle exec fastlane ios verify
+
+      # Archive와 나눠 둔 이유는 실패 댓글이 어느 쪽에서 멈췄는지 알려 주기 위해서다.
+      - name: Upload to TestFlight
+        id: upload
+        if: github.event_name == 'issue_comment' || inputs.mode == '업로드'
+        run: bundle exec fastlane ios upload_build
 
       - name: Post QA Success Comment
         if: success() && github.event_name == 'issue_comment'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh issue comment "${{ github.event.issue.number }}" --body "✅ **확인용 빌드를 TestFlight에 올렸습니다. (빌드 $BUILD_NUMBER)**
+          if [ "$QA_VERSION_BUMPED" = "true" ]; then
+            VERSION_NOTE="- **앱 버전:** 제출된 최고 버전이 ${QA_HIGHEST_SUBMITTED}라서 ${QA_PREVIOUS_VERSION}에서 ${APP_VERSION}(으)로 올렸습니다."
+          else
+            VERSION_NOTE="- **앱 버전:** ${APP_VERSION} (제출된 최고 버전: ${QA_HIGHEST_SUBMITTED}, 올리지 않음)"
+          fi
+
+          gh issue comment "${{ github.event.issue.number }}" --body "✅ **확인용 빌드를 TestFlight에 올렸습니다. (${APP_VERSION} (${BUILD_NUMBER}))**
 
           App Store Connect 처리가 끝나면 내부 테스터에게 자동으로 전달됩니다.
 
+          $VERSION_NOTE
           - **Archive한 develop 커밋:** \`$BUILD_COMMIT\`
           - **Actions:** $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
 
+      # 단계 이름은 사람이 읽는 안내와 Claude에게 넘기는 분석 정보가 같은 값을 쓰게 한다.
       - name: Post QA Failure Comment
         if: failure() && github.event_name == 'issue_comment'
         env:
           GH_TOKEN: ${{ github.token }}
+          VERSION_CHECK_OUTCOME: ${{ steps.version_check.outcome }}
+          BUMP_PUSH_OUTCOME: ${{ steps.bump_push.outcome }}
+          ARCHIVE_OUTCOME: ${{ steps.archive.outcome }}
+          UPLOAD_OUTCOME: ${{ steps.upload.outcome }}
         run: |
-          gh issue comment "${{ github.event.issue.number }}" --body "❌ **확인용 빌드 Archive 또는 업로드 중 오류가 발생했습니다.**
+          if [ "$VERSION_CHECK_OUTCOME" = "failure" ]; then
+            FAILED_STEP="version_check"
+            LABEL="버전 확인 (Apple에 버전 상태 묻기)"
+            MEANING="Apple에 버전 상태를 묻지 못했습니다."
+            TODO="App Store Connect API 키의 권한과 Apple 서버 상태를 확인하세요."
+          elif [ "$BUMP_PUSH_OUTCOME" = "failure" ]; then
+            FAILED_STEP="bump_push"
+            LABEL="버전 커밋 (develop에 push)"
+            MEANING="develop에 버전 커밋을 올리지 못했습니다."
+            TODO="같은 시간에 develop이 바뀌었으면 다시 /qa를 실행하세요. 계속 실패하면 DeployKey 설정을 확인하세요."
+          elif [ "$ARCHIVE_OUTCOME" = "failure" ]; then
+            FAILED_STEP="archive"
+            LABEL="빌드 (Archive)"
+            MEANING="develop 코드에 빌드 오류가 있습니다."
+            TODO="오류를 고친 뒤 다시 /qa를 실행하세요. 빌드 번호가 건너뛰어도 문제없습니다."
+          elif [ "$UPLOAD_OUTCOME" = "failure" ]; then
+            FAILED_STEP="upload"
+            LABEL="업로드 (TestFlight)"
+            MEANING="Apple이 업로드를 거부했습니다."
+            TODO="로그에 있는 Apple 메시지를 확인하세요."
+          else
+            FAILED_STEP="other"
+            LABEL="준비 단계"
+            MEANING="Firebase 설정, Xcode 선택, 서명 파일 설치 같은 준비 단계에서 실패했습니다."
+            TODO="다시 /qa를 실행하고, 또 실패하면 이 댓글 링크를 Claude에게 전달해 분석을 요청하세요."
+          fi
 
-          Actions 로그를 확인해 주세요.
+          DEVELOP_COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo "알 수 없음")
 
-          - **Actions:** $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          gh issue comment "${{ github.event.issue.number }}" --body "❌ **확인용 빌드를 올리지 못했습니다.**
+
+          - **실패한 단계:** $LABEL
+          - **뜻:** $MEANING
+          - **할 일:** $TODO
+
+          QA 빌드를 만들려고 \`/start\`를 쓰지 마세요. \`/start\`는 태그와 main 머지 같은 출시 기록을 남깁니다.
+
+          - **Actions:** $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
+
+          <details>
+          <summary>분석용 정보</summary>
+
+          \`\`\`
+          failed_step: $FAILED_STEP
+          run_id: $GITHUB_RUN_ID
+          develop_commit: $DEVELOP_COMMIT
+          app_version: ${APP_VERSION:-${QA_APP_VERSION:-미확인}}
+          build_number: ${BUILD_NUMBER:-미확인}
+          version_check: 제출된 최고 버전=${QA_HIGHEST_SUBMITTED:-미확인}, 정한 버전=${QA_APP_VERSION:-미확인}
+          \`\`\`
+
+          </details>"
 
       - name: Remove temporary signing assets
         if: always()

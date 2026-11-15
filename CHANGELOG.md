@@ -19,6 +19,26 @@
 
 ### Security
 
+## [1.2.3] - 2026-11-15
+
+### Added
+
+- 기획자가 제공한 영어 번역 36개를 반영해 기기 연결·페어링 안내와 펜 가이드 저장 안내의 영어 지원 추가
+
+### Changed
+
+- `/qa` 확인용 빌드가 Archive 전에 앱 버전이 이미 심사에 제출됐는지 App Store Connect에서 확인하고, 제출됐으면 앱 버전의 마지막 자리를 올려 TestFlight에 올리도록 변경. 출시된 버전으로 올리다 Apple이 거부하던 문제를 막고, 실패 댓글에 실패 단계와 대처 안내를 추가했으며 성공 댓글에 앱 버전을 함께 표시한다. 배포 문서와 QA 이슈 템플릿도 새 규칙으로 정리
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+- `/qa` 워크플로의 커밋 제목과 에러 메시지에서 빌드 번호가 깨지는 문제 수정
+
+### Security
+
 ## [1.2.2] - 2026-11-06
 
 ### Added
@@ -581,7 +601,8 @@
 - Wi-Fi Aware 연결 후, 라이브 포토 촬영 시 앱이 크래시되는 문제
 - 레퍼런스 삭제 후 재등록에 관한 상태 초기화 문제
 
-[Unreleased]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.2.2...HEAD
+[Unreleased]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.2.3...HEAD
+[1.2.3]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.2.2...v1.2.3
 [1.2.2]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.12...v1.2.0
