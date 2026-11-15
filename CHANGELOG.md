@@ -9,6 +9,20 @@
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [1.2.3] - 2026-11-15
+
+### Added
+
 - 기획자가 제공한 영어 번역 36개를 반영해 기기 연결·페어링 안내와 펜 가이드 저장 안내의 영어 지원 추가
 
 ### Changed
@@ -587,7 +601,8 @@
 - Wi-Fi Aware 연결 후, 라이브 포토 촬영 시 앱이 크래시되는 문제
 - 레퍼런스 삭제 후 재등록에 관한 상태 초기화 문제
 
-[Unreleased]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.2.2...HEAD
+[Unreleased]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.2.3...HEAD
+[1.2.3]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.2.2...v1.2.3
 [1.2.2]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/DeveloperAcademy-POSTECH/2025-C6-A11-QueendomJaerim/compare/v1.1.12...v1.2.0
