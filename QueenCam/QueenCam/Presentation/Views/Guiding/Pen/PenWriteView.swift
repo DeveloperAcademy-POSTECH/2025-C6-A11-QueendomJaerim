@@ -26,6 +26,8 @@ struct PenWriteView: View {
   /// 작성 중인 스트로크 ID
   @State private var currentStrokeID: UUID?
 
+  @Environment(\.guideAspectRatio) private var ratio
+
   var body: some View {
     GeometryReader { preview in
       ZStack {
@@ -50,7 +52,7 @@ struct PenWriteView: View {
         let author = role ?? .photographer
         // 1) 일반펜
         if tempPoints.count > 1, !isMagicPen {
-          Canvas { context, _ in
+          GuideCanvas { context, _ in
             drawNormalTempPoints(context: context, size: geo.size, points: tempPoints, author: author)
           }
           .background(.clear)
@@ -58,7 +60,7 @@ struct PenWriteView: View {
 
         // 2) 매직펜 전용
         // 매직펜 Blur 레이어
-        Canvas { context, _ in
+        GuideCanvas { context, _ in
           if tempPoints.count > 1, isMagicPen {
             let outerColor = author == .model ? Color.modelPrimary : .photographerPrimary
             drawTempPoints(
@@ -76,7 +78,7 @@ struct PenWriteView: View {
         .blur(radius: 4)
 
         // 매직펜 !Blur 레이어
-        Canvas { context, _ in
+        GuideCanvas { context, _ in
           if tempPoints.count > 1, isMagicPen {
             drawTempPoints(
               context: context,
@@ -135,13 +137,7 @@ struct PenWriteView: View {
 
   /// 보이는 프리뷰 안의 터치 위치를 4:3 가이드 영역 기준 정규화 좌표로 바꾼다.
   private func guidePoint(from location: CGPoint, previewSize: CGSize) -> CGPoint {
-    let box = PhotoAspectRatioGeometry.previewSize(width: previewSize.width, ratio: .ratio4x3)
-    guard box.width > 0, box.height > 0 else { return .zero }
-
-    return CGPoint(
-      x: location.x / box.width,
-      y: (location.y - (previewSize.height - box.height) / 2) / box.height
-    )
+    GuideLayout(previewSize: previewSize, ratio: ratio).guidePoint(from: location)
   }
 }
 

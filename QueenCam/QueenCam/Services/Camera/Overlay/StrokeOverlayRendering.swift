@@ -90,8 +90,8 @@ enum StrokeOverlayGeometry {
   }
 
   /// 4:3 프리뷰 영역 기준으로 저장한 가이드 좌표를 저장 사진의 정규화 좌표로 바꾼다.
-  static func photoPoint(fromGuide point: CGPoint, ratio: PhotoAspectRatio, quarterTurns: Int) -> CGPoint {
-    let previewPoint = PhotoAspectRatioGeometry.previewPoint(fromGuide: point, ratio: ratio)
+  static func photoPoint(fromGuide point: CGPoint, ratio: PhotoAspectRatio, previewWidth: CGFloat, quarterTurns: Int) -> CGPoint {
+    let previewPoint = PhotoAspectRatioGeometry.previewPoint(fromGuide: point, ratio: ratio, previewWidth: previewWidth)
 
     return photoPoint(fromPreview: previewPoint, ratio: ratio, quarterTurns: quarterTurns)
   }

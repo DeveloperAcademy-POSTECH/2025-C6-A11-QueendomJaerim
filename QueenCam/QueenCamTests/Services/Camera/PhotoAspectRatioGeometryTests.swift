@@ -127,6 +127,50 @@ struct PhotoAspectRatioGeometryTests {
     #expect(isClose(square.height, rect.height * 520.0 / 390.0))
   }
 
+  @Test("16:9만 가이드 영역 가운데가 프리뷰 가운데보다 약 8pt 위에 있고, 4:3·1:1은 같다")
+  func guideCenterOffsetOnlyOnWideRatio() {
+    #expect(PhotoAspectRatioGeometry.guideCenterOffset(previewWidth: 390, ratio: .ratio4x3) == 0)
+    #expect(PhotoAspectRatioGeometry.guideCenterOffset(previewWidth: 390, ratio: .ratio1x1) == 0)
+
+    // 가이드 가운데 = 56 + 520/2 = 316, 16:9 프리뷰 가운데 = -6 + (390 * 15.23 / 9) / 2
+    let expected = 316 - (-6 + 390 * 15.23 / 9 / 2)
+    #expect(isClose(PhotoAspectRatioGeometry.guideCenterOffset(previewWidth: 390, ratio: .ratio16x9), expected))
+    #expect(expected < 0)
+  }
+
+  @Test("가운데 차이는 레이아웃 상수와 같은 값을 쓴다")
+  func guideCenterOffsetUsesLayoutConstants() {
+    #expect(CameraView.previewTopOffset == 56)
+    #expect(CameraView.widePreviewTopOffset == -6)
+  }
+
+  @Test("16:9에서 가이드 가운데는 가운데 차이만큼 정규화 좌표가 어긋난다")
+  func previewPointIncludesCenterOffsetOnWideRatio() {
+    let width: CGFloat = 390
+    let height = PhotoAspectRatioGeometry.previewSize(width: width, ratio: .ratio16x9).height
+    let offset = PhotoAspectRatioGeometry.guideCenterOffset(previewWidth: width, ratio: .ratio16x9)
+
+    let center = PhotoAspectRatioGeometry.previewPoint(fromGuide: CGPoint(x: 0.5, y: 0.5), ratio: .ratio16x9, previewWidth: width)
+    #expect(isClose(center.y, 0.5 + offset / height))
+
+    let same = PhotoAspectRatioGeometry.previewPoint(fromGuide: CGPoint(x: 0.5, y: 0.2), ratio: .ratio1x1, previewWidth: width)
+    #expect(isClose(same.y, PhotoAspectRatioGeometry.previewPoint(fromGuide: CGPoint(x: 0.5, y: 0.2), ratio: .ratio1x1).y))
+  }
+
+  @Test("보이는 가이드 범위는 16:9에서 가운데 차이만큼 이동한다")
+  func visibleGuideBoundsShiftOnWideRatio() {
+    let width: CGFloat = 390
+    let plain = PhotoAspectRatioGeometry.guideRect(fromPreview: CGRect(x: 0, y: 0, width: 1, height: 1), ratio: .ratio16x9)
+    let bounds = PhotoAspectRatioGeometry.visibleGuideBounds(ratio: .ratio16x9, previewWidth: width)
+    let offset = PhotoAspectRatioGeometry.guideCenterOffset(previewWidth: width, ratio: .ratio16x9)
+
+    #expect(isClose(bounds.height, plain.height))
+    #expect(isClose(bounds.minY, plain.minY - offset / 520))
+    let square = PhotoAspectRatioGeometry.visibleGuideBounds(ratio: .ratio1x1, previewWidth: width)
+    let squarePlain = PhotoAspectRatioGeometry.guideRect(fromPreview: CGRect(x: 0, y: 0, width: 1, height: 1), ratio: .ratio1x1)
+    #expect(square == squarePlain)
+  }
+
   // MARK: - 프리뷰에 보이는 저장 범위
 
   @Test("4:3과 1:1은 저장 이미지 전체가 프리뷰에 보인다")

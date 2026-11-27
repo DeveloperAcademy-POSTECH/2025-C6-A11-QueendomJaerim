@@ -35,18 +35,18 @@ struct StrokeOverlayGeometryTests {
   @Test("가이드 좌표는 4:3에서 사진 좌표와 같고, 1:1에서는 프리뷰 맨 위에 해당하는 값이 사진 맨 위가 된다")
   func photoPointFromGuideCoordinate() {
     let point = CGPoint(x: 0.2, y: 0.9)
-    let same = StrokeOverlayGeometry.photoPoint(fromGuide: point, ratio: .ratio4x3, quarterTurns: 0)
+    let same = StrokeOverlayGeometry.photoPoint(fromGuide: point, ratio: .ratio4x3, previewWidth: 390, quarterTurns: 0)
     #expect(abs(same.x - point.x) < 1e-9)
     #expect(abs(same.y - point.y) < 1e-9)
 
     // 1:1 프리뷰는 4:3 영역의 세로 0.125~0.875만 보인다.
-    let top = StrokeOverlayGeometry.photoPoint(fromGuide: CGPoint(x: 0.5, y: 0.125), ratio: .ratio1x1, quarterTurns: 0)
-    let bottom = StrokeOverlayGeometry.photoPoint(fromGuide: CGPoint(x: 0.5, y: 0.875), ratio: .ratio1x1, quarterTurns: 0)
+    let top = StrokeOverlayGeometry.photoPoint(fromGuide: CGPoint(x: 0.5, y: 0.125), ratio: .ratio1x1, previewWidth: 390, quarterTurns: 0)
+    let bottom = StrokeOverlayGeometry.photoPoint(fromGuide: CGPoint(x: 0.5, y: 0.875), ratio: .ratio1x1, previewWidth: 390, quarterTurns: 0)
     #expect(abs(top.y - 0) < 1e-9)
     #expect(abs(bottom.y - 1) < 1e-9)
 
     // 프리뷰 밖(4:3 맨 위)은 사진 밖(0 미만)이라 합성에서 잘린다.
-    let outside = StrokeOverlayGeometry.photoPoint(fromGuide: CGPoint(x: 0.5, y: 0), ratio: .ratio1x1, quarterTurns: 0)
+    let outside = StrokeOverlayGeometry.photoPoint(fromGuide: CGPoint(x: 0.5, y: 0), ratio: .ratio1x1, previewWidth: 390, quarterTurns: 0)
     #expect(outside.y < 0)
   }
 

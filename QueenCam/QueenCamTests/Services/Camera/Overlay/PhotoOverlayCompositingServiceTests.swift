@@ -55,10 +55,7 @@ struct PhotoOverlayCompositingServiceTests {
     // 펜 좌표는 4:3 가이드 영역 기준이라 프리뷰 맨 위·가운데를 가이드 좌표로 바꿔 넣는다.
     let output = composite(
       imageSize: CGSize(width: 225, height: 400),
-      points: [
-        PhotoAspectRatioGeometry.guidePoint(fromPreview: CGPoint(x: 0.5, y: 0), ratio: .ratio16x9),
-        PhotoAspectRatioGeometry.guidePoint(fromPreview: CGPoint(x: 0.5, y: 0.5), ratio: .ratio16x9)
-      ],
+      points: [guidePoint(forPreview: CGPoint(x: 0.5, y: 0)), guidePoint(forPreview: CGPoint(x: 0.5, y: 0.5))],
       ratio: .ratio16x9,
       quarterTurns: 0
     )
@@ -255,6 +252,14 @@ private extension PhotoOverlayCompositingServiceTests {
     else { return nil }
 
     return makerApple["17"] as? String
+  }
+
+  /// 프리뷰(16:9, 폭 225 = 사진 짧은 변)의 정규화 좌표가 되는 가이드 좌표. 가운데 차이까지 거꾸로 반영한다.
+  func guidePoint(forPreview point: CGPoint) -> CGPoint {
+    let height = PhotoAspectRatioGeometry.previewSize(width: 225, ratio: .ratio16x9).height
+    let offset = PhotoAspectRatioGeometry.guideCenterOffset(previewWidth: 225, ratio: .ratio16x9)
+    let shifted = CGPoint(x: point.x, y: point.y - offset / height)
+    return PhotoAspectRatioGeometry.guidePoint(fromPreview: shifted, ratio: .ratio16x9)
   }
 
   func composite(

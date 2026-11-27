@@ -39,15 +39,16 @@ extension CameraView.CameraPreviewArea {
         FrameEditorView(
           frameViewModel: frameViewModel,
           currentRole: currentMode,
-          visibleBounds: PhotoAspectRatioGeometry.guideRect(
-            fromPreview: CGRect(x: 0, y: 0, width: 1, height: 1),
-            ratio: cameraViewModel.photoAspectRatio
+          visibleBounds: PhotoAspectRatioGeometry.visibleGuideBounds(
+            ratio: cameraViewModel.photoAspectRatio,
+            previewWidth: cameraViewModel.previewWidth
           )
         )
       } else {
         GuideCoordinateSpace { FrameDisplayView(frameViewModel: frameViewModel) }
       }
     }
+    .environment(\.guideAspectRatio, cameraViewModel.photoAspectRatio)
     .opacity(isRemoteGuideHidden ? .zero : 1)
   }
 
