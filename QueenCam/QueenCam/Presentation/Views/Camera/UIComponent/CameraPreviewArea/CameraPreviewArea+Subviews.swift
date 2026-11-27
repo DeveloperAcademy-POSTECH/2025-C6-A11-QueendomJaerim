@@ -33,14 +33,22 @@ extension CameraView.CameraPreviewArea {
         )
         .gesture(magnificationGesture)
       } else {
-        PenDisplayView(penViewModel: penViewModel)
+        GuideCoordinateSpace { PenDisplayView(penViewModel: penViewModel) }
       }
       if isFrameActive {
-        FrameEditorView(frameViewModel: frameViewModel, currentRole: currentMode)
+        FrameEditorView(
+          frameViewModel: frameViewModel,
+          currentRole: currentMode,
+          visibleBounds: PhotoAspectRatioGeometry.visibleGuideBounds(
+            ratio: cameraViewModel.photoAspectRatio,
+            previewWidth: cameraViewModel.previewWidth
+          )
+        )
       } else {
-        FrameDisplayView(frameViewModel: frameViewModel)
+        GuideCoordinateSpace { FrameDisplayView(frameViewModel: frameViewModel) }
       }
     }
+    .environment(\.guideAspectRatio, cameraViewModel.photoAspectRatio)
     .opacity(isRemoteGuideHidden ? .zero : 1)
   }
 

@@ -12,6 +12,10 @@ import CoreGraphics
 nonisolated enum PhotoAspectRatioGeometry {
   /// 16:9 프리뷰는 저장 비율보다 세로를 약 5% 줄인 15.23:9 영역에 표시한다.
   private static let widePreviewLongSide: CGFloat = 15.23
+  /// 4:3·1:1 프리뷰의 위 끝(안전 영역 기준). `CameraView.previewTopOffset`과 같은 값이다.
+  private static let guideAreaTopOffset: CGFloat = 56
+  /// 16:9 프리뷰의 위 끝. `CameraView.widePreviewTopOffset`과 같은 값이다.
+  private static let widePreviewTopOffset: CGFloat = -6
   /// 세션 프리셋 `.photo`의 세로 영상은 너비:높이 3:4다.
   private static let cameraFeedHeightPerWidth: CGFloat = 4.0 / 3.0
   /// 잘린 사진의 크기가 비율과 맞는지 볼 때 허용하는 상대 오차
@@ -51,6 +55,60 @@ nonisolated enum PhotoAspectRatioGeometry {
       x: visibleRect.minX + point.x * visibleRect.width,
       y: visibleRect.minY + point.y * visibleRect.height
     )
+  }
+
+  /// 가이드(펜·프레임) 좌표를 4:3 프리뷰 영역 기준으로 저장하고, 그릴 때 현재 프리뷰 영역으로 바꾼다.
+  /// 세 비율의 프리뷰 영역은 폭과 가운데가 같아서, 가운데 기준으로 세로만 배율을 곱하면 그린 자리와 크기가 그대로 남는다.
+  /// 현재 프리뷰 밖에 걸친 좌표는 0 미만·1 초과 값으로 남는다.
+  static func previewPoint(fromGuide point: CGPoint, ratio: PhotoAspectRatio) -> CGPoint {
+    CGPoint(x: point.x, y: 0.5 + (point.y - 0.5) * guideToPreviewScale(ratio: ratio))
+  }
+
+  /// `previewPoint(fromGuide:ratio:)`의 반대 방향. 현재 프리뷰 정규화 좌표를 저장용 가이드 좌표로 바꾼다.
+  static func guidePoint(fromPreview point: CGPoint, ratio: PhotoAspectRatio) -> CGPoint {
+    CGPoint(x: point.x, y: 0.5 + (point.y - 0.5) / guideToPreviewScale(ratio: ratio))
+  }
+
+  static func previewRect(fromGuide rect: CGRect, ratio: PhotoAspectRatio) -> CGRect {
+    let scale = guideToPreviewScale(ratio: ratio)
+
+    return CGRect(x: rect.minX, y: 0.5 + (rect.minY - 0.5) * scale, width: rect.width, height: rect.height * scale)
+  }
+
+  static func guideRect(fromPreview rect: CGRect, ratio: PhotoAspectRatio) -> CGRect {
+    let scale = guideToPreviewScale(ratio: ratio)
+
+    return CGRect(x: rect.minX, y: 0.5 + (rect.minY - 0.5) / scale, width: rect.width, height: rect.height / scale)
+  }
+
+  /// 가이드 영역(4:3·1:1이 공유하는 가운데)이 지금 프리뷰 가운데보다 아래로 얼마나 내려가 있는지(pt). 음수면 위에 있다.
+  /// 4:3과 1:1은 가운데가 같지만, 16:9는 Figma 배치가 위 끝 -6에서 시작해 가운데가 약 8.5pt 아래에 있다.
+  /// 가이드를 화면에서 그린 자리에 두려면 이 차이만큼 가이드 영역을 옮긴다.
+  static func guideCenterOffset(previewWidth: CGFloat, ratio: PhotoAspectRatio) -> CGFloat {
+    guard ratio == .ratio16x9, previewWidth.isFinite, previewWidth > 0 else { return 0 }
+
+    let guideHeight = previewSize(width: previewWidth, ratio: .ratio4x3).height
+    let previewHeight = previewSize(width: previewWidth, ratio: ratio).height
+    return (guideAreaTopOffset + guideHeight / 2) - (widePreviewTopOffset + previewHeight / 2)
+  }
+
+  /// `previewPoint(fromGuide:ratio:)`에 가운데 차이(`guideCenterOffset`)까지 반영한 값
+  static func previewPoint(fromGuide point: CGPoint, ratio: PhotoAspectRatio, previewWidth: CGFloat) -> CGPoint {
+    let base = previewPoint(fromGuide: point, ratio: ratio)
+    let height = previewSize(width: previewWidth, ratio: ratio).height
+    guard height > 0 else { return base }
+
+    return CGPoint(x: base.x, y: base.y + guideCenterOffset(previewWidth: previewWidth, ratio: ratio) / height)
+  }
+
+  /// 지금 프리뷰에 보이는 범위를 가이드 좌표로 나타낸 영역(가운데 차이 반영)
+  static func visibleGuideBounds(ratio: PhotoAspectRatio, previewWidth: CGFloat) -> CGRect {
+    let bounds = guideRect(fromPreview: CGRect(x: 0, y: 0, width: 1, height: 1), ratio: ratio)
+    let guideHeight = previewSize(width: previewWidth, ratio: .ratio4x3).height
+    guard guideHeight > 0 else { return bounds }
+
+    let shift = guideCenterOffset(previewWidth: previewWidth, ratio: ratio) / guideHeight
+    return CGRect(x: bounds.minX, y: bounds.minY - shift, width: bounds.width, height: bounds.height)
   }
 
   /// 이미지 크기가 비율대로 잘린 크기인지 본다. 방향과 무관하게 긴 변÷짧은 변을 비교하고, 반올림 차이를 위해 1%까지 허용한다.
@@ -105,6 +163,14 @@ nonisolated enum PhotoAspectRatioGeometry {
 }
 
 nonisolated private extension PhotoAspectRatioGeometry {
+  /// 가이드 좌표의 세로 1은 4:3 프리뷰 높이다. 그 값을 현재 프리뷰 높이에 대한 비율로 바꾸는 배율이다.
+  static func guideToPreviewScale(ratio: PhotoAspectRatio) -> CGFloat {
+    let guideHeightPerWidth = previewLongSide(for: .ratio4x3) / CGFloat(PhotoAspectRatio.ratio4x3.shortSide)
+    let previewHeightPerWidth = previewLongSide(for: ratio) / CGFloat(ratio.shortSide)
+
+    return guideHeightPerWidth / previewHeightPerWidth
+  }
+
   static func previewLongSide(for ratio: PhotoAspectRatio) -> CGFloat {
     ratio == .ratio16x9 ? widePreviewLongSide : CGFloat(ratio.longSide)
   }

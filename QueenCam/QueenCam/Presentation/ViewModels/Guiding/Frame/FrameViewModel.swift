@@ -39,6 +39,8 @@ final class FrameViewModel {
   }
   /// 컨테이너 크기
   var containerSize: CGSize?
+  /// 지금 프리뷰에 보이는 범위를 가이드 좌표(4:3 영역 기준)로 나타낸 영역. 프레임은 이 안에서만 움직이고 크기를 바꾼다.
+  var visibleBounds = CGRect(x: 0, y: 0, width: 1, height: 1)
 
   // MARK: - 네트워크
   let networkService: NetworkServiceProtocol
@@ -82,7 +84,7 @@ final class FrameViewModel {
   func addFrame(at origin: CGPoint, size: CGSize = .init(width: frameWidth, height: frameHeight)) {
     guard frames.count < maxFrames else { return }
     let newX = min(max(origin.x, 0), 1 - size.width)
-    let newY = min(max(origin.y, 0), 1 - size.height)
+    let newY = min(max(origin.y, visibleBounds.minY), visibleBounds.maxY - size.height)
     let rect = CGRect(origin: .init(x: newX, y: newY), size: size)
     let frame = Frame(rect: rect)
     frames.append(frame)
@@ -107,7 +109,7 @@ final class FrameViewModel {
     new.origin.x += dx
     new.origin.y += dy
     new.origin.x = min(max(new.origin.x, 0), 1 - new.size.width)
-    new.origin.y = min(max(new.origin.y, 0), 1 - new.size.height)
+    new.origin.y = min(max(new.origin.y, visibleBounds.minY), visibleBounds.maxY - new.size.height)
     frames[frameIndex].rect = new
 
     // Send to network
@@ -120,13 +122,13 @@ final class FrameViewModel {
 
     var new = start
     new.size.width = min(max(start.size.width * scale, minimumFrameWidth), 1.0)
-    new.size.height = min(max(start.size.height * scale, minimumFrameHeight), 1.0)
+    new.size.height = min(max(start.size.height * scale, minimumFrameHeight), visibleBounds.height)
     let dx = (start.size.width - new.size.width) / 2
     let dy = (start.size.height - new.size.height) / 2
     new.origin.x += dx
     new.origin.y += dy
     new.origin.x = min(max(new.origin.x, 0), 1 - new.size.width)
-    new.origin.y = min(max(new.origin.y, 0), 1 - new.size.height)
+    new.origin.y = min(max(new.origin.y, visibleBounds.minY), visibleBounds.maxY - new.size.height)
     frames[frameIndex].rect = new
 
     // Send to network
@@ -155,7 +157,7 @@ final class FrameViewModel {
       minY = min(minY, maxY - minimumFrameHeight)
 
       minX = max(minX, 0)
-      minY = max(minY, 0)
+      minY = max(minY, visibleBounds.minY)
     case .topRight:
       maxX = start.maxX + dx
       minY = start.minY + dy
@@ -164,7 +166,7 @@ final class FrameViewModel {
       minY = min(minY, maxY - minimumFrameHeight)
 
       maxX = min(maxX, 1)
-      minY = max(minY, 0)
+      minY = max(minY, visibleBounds.minY)
     case .bottomLeft:
       minX = start.minX + dx
       maxY = start.maxY + dy
@@ -173,7 +175,7 @@ final class FrameViewModel {
       maxY = max(maxY, minY + minimumFrameHeight)
 
       minX = max(minX, 0)
-      maxY = min(maxY, 1)
+      maxY = min(maxY, visibleBounds.maxY)
     case .bottomRight:
       maxX = start.maxX + dx
       maxY = start.maxY + dy
@@ -182,7 +184,7 @@ final class FrameViewModel {
       maxY = max(maxY, minY + minimumFrameHeight)
 
       maxX = min(maxX, 1)
-      maxY = min(maxY, 1)
+      maxY = min(maxY, visibleBounds.maxY)
     }
 
     new = CGRect(x: minX, y: minY, width: maxX - minX, height: maxY - minY)
@@ -191,6 +193,23 @@ final class FrameViewModel {
 
     // Send to network
     sendFrameCommand(command: .modify(frame: frames[frameIndex]))
+  }
+
+  // MARK: - 잘린 프레임을 프리뷰 안으로
+  /// 프리뷰 밖으로 걸친 프레임을 만지는 순간 안으로 들인다. 프리뷰보다 큰 프레임은 세로만 프리뷰 높이에 맞춘다.
+  /// 바뀐 뒤의 영역을 돌려준다.
+  @discardableResult
+  func fitInsideVisibleBounds(id: UUID) -> CGRect? {
+    guard let frameIndex = frames.firstIndex(where: { $0.id == id }) else { return nil }
+
+    var new = frames[frameIndex].rect
+    new.size.height = min(new.size.height, visibleBounds.height)
+    new.origin.y = min(max(new.origin.y, visibleBounds.minY), visibleBounds.maxY - new.size.height)
+    guard new != frames[frameIndex].rect else { return new }
+
+    frames[frameIndex].rect = new
+    sendFrameCommand(command: .modify(frame: frames[frameIndex]))
+    return new
   }
 
   // MARK: - 프레임의 삭제

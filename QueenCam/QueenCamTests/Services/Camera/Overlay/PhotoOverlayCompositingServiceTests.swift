@@ -51,10 +51,11 @@ struct PhotoOverlayCompositingServiceTests {
 
   @Test("16:9는 화면에서 숨긴 위아래만큼 펜을 안쪽으로 옮긴다")
   func shiftsStrokeInsideHiddenBandFor16x9() throws {
-    // 9:16 저장 사진(225x400). 프리뷰 맨 위(y=0)는 사진 위에서 약 2.4% 아래(y≈9.5)에 해당한다.
+    // 9:16 저장 사진(225x400). 프리뷰 맨 위는 사진 위에서 약 2.4% 아래(y≈9.5)에 해당한다.
+    // 펜 좌표는 4:3 가이드 영역 기준이라 프리뷰 맨 위·가운데를 가이드 좌표로 바꿔 넣는다.
     let output = composite(
       imageSize: CGSize(width: 225, height: 400),
-      points: [CGPoint(x: 0.5, y: 0), CGPoint(x: 0.5, y: 0.5)],
+      points: [guidePoint(forPreview: CGPoint(x: 0.5, y: 0)), guidePoint(forPreview: CGPoint(x: 0.5, y: 0.5))],
       ratio: .ratio16x9,
       quarterTurns: 0
     )
@@ -251,6 +252,14 @@ private extension PhotoOverlayCompositingServiceTests {
     else { return nil }
 
     return makerApple["17"] as? String
+  }
+
+  /// 프리뷰(16:9, 폭 225 = 사진 짧은 변)의 정규화 좌표가 되는 가이드 좌표. 가운데 차이까지 거꾸로 반영한다.
+  func guidePoint(forPreview point: CGPoint) -> CGPoint {
+    let height = PhotoAspectRatioGeometry.previewSize(width: 225, ratio: .ratio16x9).height
+    let offset = PhotoAspectRatioGeometry.guideCenterOffset(previewWidth: 225, ratio: .ratio16x9)
+    let shifted = CGPoint(x: point.x, y: point.y - offset / height)
+    return PhotoAspectRatioGeometry.guidePoint(fromPreview: shifted, ratio: .ratio16x9)
   }
 
   func composite(

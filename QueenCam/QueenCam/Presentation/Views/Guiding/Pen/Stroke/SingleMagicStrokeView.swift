@@ -29,10 +29,12 @@ struct SingleMagicStrokeView: View {
     ZStack {
       // 매직펜의 Blur 레이어
 
-      Canvas { context, _ in
+      GuideCanvas { context, _ in
         var path = Path()
         path.addLines(stroke.absolutePoints(in: geoSize))
 
+        // drawingGroup은 4:3 영역만 굽기 때문에 위아래 띠에서 번짐이 잘려 캔버스 필터로 블러한다.
+        context.addFilter(.blur(radius: 4))
         context.stroke(
           path,
           with: .color(outerColor),
@@ -44,11 +46,9 @@ struct SingleMagicStrokeView: View {
           style: StrokeStyle(lineWidth: 5, lineCap: .round, lineJoin: .round)
         )
       }
-      .drawingGroup()
-      .blur(radius: 4)
 
       // 매직펜의 !Blur 레이어
-      Canvas { context, _ in
+      GuideCanvas { context, _ in
         var path = Path()
         path.addLines(stroke.absolutePoints(in: geoSize))
 

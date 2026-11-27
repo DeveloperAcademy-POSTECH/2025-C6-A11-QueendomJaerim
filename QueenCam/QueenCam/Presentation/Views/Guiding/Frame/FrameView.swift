@@ -68,7 +68,7 @@ struct FrameView: View {
         .gesture(  // 프레임 이동
           DragGesture(minimumDistance: 2)
             .onChanged { value in
-              if frameMove == nil { frameMove = frame.rect }
+              if frameMove == nil { frameMove = frameViewModel.fitInsideVisibleBounds(id: frame.id) ?? frame.rect }
               guard let start = frameMove else { return }
               frameViewModel.moveFrame(
                 id: frame.id,
@@ -84,7 +84,7 @@ struct FrameView: View {
         .simultaneousGesture(  // 프레임 확대 및 축소
           MagnifyGesture()
             .onChanged { value in
-              if frameScale == nil { frameScale = frame.rect }
+              if frameScale == nil { frameScale = frameViewModel.fitInsideVisibleBounds(id: frame.id) ?? frame.rect }
               guard let start = frameScale else { return }
               frameViewModel.resizeFrame(
                 id: frame.id,
@@ -100,22 +100,14 @@ struct FrameView: View {
       // Dimming+ 3x3 그리드 표시 + Corner 핸들
       // 사용자가 프레임 제어 모드에 있는 경우
       if isSelected {
-        // Dimming 효과
-        GeometryReader { geo in
-          ZStack {
-            Rectangle()
-              .fill(Color.black.opacity(0.5))
-
-            // 프레임 영역을 제외
-            Rectangle()
-              .frame(width: width + 1, height: height + 1)
-              .position(x: x, y: y)
-              .blendMode(.destinationOut)
-          }
-          .compositingGroup()
-          .allowsHitTesting(false)
-          .frame(width: geo.size.width, height: geo.size.height)
+        // Dimming 효과: 프레임 영역만 비우고 나머지를 어둡게. 가이드 영역(4:3)보다 긴 프리뷰도 덮는다.
+        GuideCanvas { context, _ in
+          let wide = CGRect(x: -containerSize.width, y: -containerSize.height, width: containerSize.width * 3, height: containerSize.height * 3)
+          var dimming = Path(wide)
+          dimming.addRect(CGRect(x: x - width / 2 - 0.5, y: y - height / 2 - 0.5, width: width + 1, height: height + 1))
+          context.fill(dimming, with: .color(Color.black.opacity(0.5)), style: FillStyle(eoFill: true))
         }
+        .allowsHitTesting(false)
         // 3x3 그리드
         let minX = rect.minX * containerSize.width
         let minY = rect.minY * containerSize.height
@@ -153,7 +145,7 @@ struct FrameView: View {
             .gesture(
               DragGesture(minimumDistance: 0)
                 .onChanged { value in
-                  if cornerScale == nil { cornerScale = frame.rect }
+                  if cornerScale == nil { cornerScale = frameViewModel.fitInsideVisibleBounds(id: frame.id) ?? frame.rect }
                   guard let start = cornerScale else { return }
                   frameViewModel.resizeCorner(
                     id: frame.id,
