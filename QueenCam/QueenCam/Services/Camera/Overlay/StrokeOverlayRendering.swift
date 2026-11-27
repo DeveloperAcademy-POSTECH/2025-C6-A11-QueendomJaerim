@@ -89,6 +89,13 @@ enum StrokeOverlayGeometry {
     }
   }
 
+  /// 4:3 프리뷰 영역 기준으로 저장한 가이드 좌표를 저장 사진의 정규화 좌표로 바꾼다.
+  static func photoPoint(fromGuide point: CGPoint, ratio: PhotoAspectRatio, quarterTurns: Int) -> CGPoint {
+    let previewPoint = PhotoAspectRatioGeometry.previewPoint(fromGuide: point, ratio: ratio)
+
+    return photoPoint(fromPreview: previewPoint, ratio: ratio, quarterTurns: quarterTurns)
+  }
+
   /// 사진 연결의 촬영 각도를 회전 수로 바꾼다. 세로 화면과 같은 90도가 0번이다.
   /// 시계 방향이 맞는지는 실기기 촬영으로 확인한다.
   static func quarterTurns(forVideoRotationAngle angle: CGFloat) -> Int {

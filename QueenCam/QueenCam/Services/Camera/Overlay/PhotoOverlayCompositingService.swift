@@ -112,7 +112,7 @@ private extension PhotoOverlayCompositingService {
       for stroke in strokes {
         drawNormalStroke(
           points: stroke.points.map {
-            StrokeOverlayGeometry.photoPoint(fromPreview: $0, ratio: aspectRatio, quarterTurns: quarterTurns)
+            StrokeOverlayGeometry.photoPoint(fromGuide: $0, ratio: aspectRatio, quarterTurns: quarterTurns)
           },
           author: stroke.author,
           in: context,
