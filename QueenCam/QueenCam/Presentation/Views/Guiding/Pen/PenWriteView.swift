@@ -27,6 +27,20 @@ struct PenWriteView: View {
   @State private var currentStrokeID: UUID?
 
   var body: some View {
+    GeometryReader { preview in
+      ZStack {
+        GuideCoordinateSpace { canvas }
+
+        // 그리기 입력은 보이는 프리뷰 영역에서만 받는다.
+        Color.clear
+          .contentShape(.rect)
+          .gesture(drawGesture(previewSize: preview.size))
+      }
+    }
+  }
+
+  /// 4:3 가이드 영역 안에 놓이는 그림. 크기는 가이드 영역 기준이다.
+  private var canvas: some View {
     GeometryReader { geo in
       ZStack {
         // MARK: - 세션전 저장된 Stroke + 세션 중 그리기 완료된 Stroke
@@ -81,44 +95,53 @@ struct PenWriteView: View {
           currentStrokeID = nil  // 현재 그리는 중이던 선 ID 초기화
         }
       }
-      .gesture(
-        DragGesture(minimumDistance: 0)
-          .onChanged { value in
-            // 핀치로 줌이 아닐때만 드래그 실행
-            guard !isZooming else { return }
-
-            let author = role ?? .photographer
-            let relativePoint = CGPoint(
-              x: geo.size.width > 0 ? value.location.x / geo.size.width : 0,
-              y: geo.size.height > 0 ? value.location.y / geo.size.height : 0
-            )
-            tempPoints.append(relativePoint)
-
-            if currentStrokeID == nil {
-              currentStrokeID = penViewModel.add(initialPoints: tempPoints, isMagicPen: isMagicPen, author: author)
-            } else if let id = currentStrokeID {
-              penViewModel.updateStroke(id: id, points: tempPoints, endDrawing: false)
-            }
-          }
-          .onEnded { _ in
-            // 줌 중이라면 종료 로직도 무시
-            guard !isZooming else {
-              tempPoints.removeAll()
-              currentStrokeID = nil
-              return
-            }
-
-            guard let id = currentStrokeID, !tempPoints.isEmpty else {
-              tempPoints.removeAll()
-              currentStrokeID = nil
-              return
-            }
-            penViewModel.updateStroke(id: id, points: tempPoints, endDrawing: true)
-            tempPoints.removeAll()
-            currentStrokeID = nil
-          }
-      )
     }
+  }
+
+  private func drawGesture(previewSize: CGSize) -> some Gesture {
+    DragGesture(minimumDistance: 0)
+      .onChanged { value in
+        // 핀치로 줌이 아닐때만 드래그 실행
+        guard !isZooming else { return }
+
+        let author = role ?? .photographer
+        let relativePoint = guidePoint(from: value.location, previewSize: previewSize)
+        tempPoints.append(relativePoint)
+
+        if currentStrokeID == nil {
+          currentStrokeID = penViewModel.add(initialPoints: tempPoints, isMagicPen: isMagicPen, author: author)
+        } else if let id = currentStrokeID {
+          penViewModel.updateStroke(id: id, points: tempPoints, endDrawing: false)
+        }
+      }
+      .onEnded { _ in
+        // 줌 중이라면 종료 로직도 무시
+        guard !isZooming else {
+          tempPoints.removeAll()
+          currentStrokeID = nil
+          return
+        }
+
+        guard let id = currentStrokeID, !tempPoints.isEmpty else {
+          tempPoints.removeAll()
+          currentStrokeID = nil
+          return
+        }
+        penViewModel.updateStroke(id: id, points: tempPoints, endDrawing: true)
+        tempPoints.removeAll()
+        currentStrokeID = nil
+      }
+  }
+
+  /// 보이는 프리뷰 안의 터치 위치를 4:3 가이드 영역 기준 정규화 좌표로 바꾼다.
+  private func guidePoint(from location: CGPoint, previewSize: CGSize) -> CGPoint {
+    let box = PhotoAspectRatioGeometry.previewSize(width: previewSize.width, ratio: .ratio4x3)
+    guard box.width > 0, box.height > 0 else { return .zero }
+
+    return CGPoint(
+      x: location.x / box.width,
+      y: (location.y - (previewSize.height - box.height) / 2) / box.height
+    )
   }
 }
 

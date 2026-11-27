@@ -33,7 +33,7 @@ extension CameraView.CameraPreviewArea {
         )
         .gesture(magnificationGesture)
       } else {
-        PenDisplayView(penViewModel: penViewModel)
+        GuideCoordinateSpace { PenDisplayView(penViewModel: penViewModel) }
       }
       if isFrameActive {
         FrameEditorView(frameViewModel: frameViewModel, currentRole: currentMode)
