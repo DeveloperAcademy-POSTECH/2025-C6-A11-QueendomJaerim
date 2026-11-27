@@ -106,6 +106,7 @@ extension CameraView.CameraPreviewArea: View {
       ReferenceView(referenceViewModel: referenceViewModel, isLarge: $isReferenceLarge)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(8)
+        .padding(.top, topToolBarOverlap)
         .clipped()
 
       // MARK: 연결 유실시 재연결 뷰
@@ -119,7 +120,7 @@ extension CameraView.CameraPreviewArea: View {
     .overlay(alignment: .center) {
       if !connectionLost {
         StateToastContainer()
-          .padding(.top, 16)
+          .padding(.top, 16 + topToolBarOverlap)
       }
     }
     // MARK: Overlays - 따봉 버튼 애니메이션
