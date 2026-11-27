@@ -29,7 +29,7 @@ struct SingleMagicStrokeView: View {
     ZStack {
       // 매직펜의 Blur 레이어
 
-      Canvas { context, _ in
+      GuideCanvas { context, _ in
         var path = Path()
         path.addLines(stroke.absolutePoints(in: geoSize))
 
@@ -48,7 +48,7 @@ struct SingleMagicStrokeView: View {
       .blur(radius: 4)
 
       // 매직펜의 !Blur 레이어
-      Canvas { context, _ in
+      GuideCanvas { context, _ in
         var path = Path()
         path.addLines(stroke.absolutePoints(in: geoSize))
 

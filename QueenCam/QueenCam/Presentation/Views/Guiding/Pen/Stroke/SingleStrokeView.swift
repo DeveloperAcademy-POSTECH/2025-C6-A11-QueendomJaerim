@@ -15,7 +15,7 @@ struct SingleStrokeView: View {
   let stroke: Stroke
 
   var body: some View {
-    Canvas { context, _ in
+    GuideCanvas { context, _ in
       let style = StrokeRenderStyleResolver.normalStrokeStyle(for: stroke.author)
       let path = StrokeOverlayGeometry.path(from: stroke.points, in: geoSize)
       context.stroke(
