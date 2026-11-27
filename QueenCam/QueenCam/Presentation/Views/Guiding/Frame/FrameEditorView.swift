@@ -12,10 +12,11 @@ struct FrameEditorView: View {
   var frameViewModel: FrameViewModel
   var currentRole: Role?
 
-  init(frameViewModel: FrameViewModel, currentRole: Role?) {
+  init(frameViewModel: FrameViewModel, currentRole: Role?, visibleBounds: CGRect) {
     self.frameViewModel = frameViewModel
     self.currentRole = currentRole
     self.frameViewModel.currentRole = currentRole
+    self.frameViewModel.visibleBounds = visibleBounds
   }
 
   var body: some View {
@@ -24,17 +25,19 @@ struct FrameEditorView: View {
       if frameViewModel.frames.isEmpty {
         Color.black.opacity(0.5)
       }
-      GeometryReader { geo in
-        ForEach(frameViewModel.frames) { frame in
-          FrameView(
-            frameViewModel: frameViewModel,
-            frame: frame,
-            containerSize: geo.size,
-            isSelected: frameViewModel.isSelected(frame.id),
-            currentRole: currentRole
-          )
+      GuideCoordinateSpace {
+        GeometryReader { geo in
+          ForEach(frameViewModel.frames) { frame in
+            FrameView(
+              frameViewModel: frameViewModel,
+              frame: frame,
+              containerSize: geo.size,
+              isSelected: frameViewModel.isSelected(frame.id),
+              currentRole: currentRole
+            )
+          }
+          .contentShape(Rectangle())
         }
-        .contentShape(Rectangle())
       }
     }
   }

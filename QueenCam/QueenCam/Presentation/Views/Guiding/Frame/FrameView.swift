@@ -68,7 +68,7 @@ struct FrameView: View {
         .gesture(  // 프레임 이동
           DragGesture(minimumDistance: 2)
             .onChanged { value in
-              if frameMove == nil { frameMove = frame.rect }
+              if frameMove == nil { frameMove = frameViewModel.fitInsideVisibleBounds(id: frame.id) ?? frame.rect }
               guard let start = frameMove else { return }
               frameViewModel.moveFrame(
                 id: frame.id,
@@ -84,7 +84,7 @@ struct FrameView: View {
         .simultaneousGesture(  // 프레임 확대 및 축소
           MagnifyGesture()
             .onChanged { value in
-              if frameScale == nil { frameScale = frame.rect }
+              if frameScale == nil { frameScale = frameViewModel.fitInsideVisibleBounds(id: frame.id) ?? frame.rect }
               guard let start = frameScale else { return }
               frameViewModel.resizeFrame(
                 id: frame.id,
@@ -103,8 +103,10 @@ struct FrameView: View {
         // Dimming 효과
         GeometryReader { geo in
           ZStack {
+            // 가이드 영역(4:3)보다 긴 프리뷰도 덮도록 위아래로 넉넉히 늘린다. 바깥은 프리뷰 영역에서 잘린다.
             Rectangle()
               .fill(Color.black.opacity(0.5))
+              .frame(width: geo.size.width, height: geo.size.height + geo.size.width)
 
             // 프레임 영역을 제외
             Rectangle()
@@ -153,7 +155,7 @@ struct FrameView: View {
             .gesture(
               DragGesture(minimumDistance: 0)
                 .onChanged { value in
-                  if cornerScale == nil { cornerScale = frame.rect }
+                  if cornerScale == nil { cornerScale = frameViewModel.fitInsideVisibleBounds(id: frame.id) ?? frame.rect }
                   guard let start = cornerScale else { return }
                   frameViewModel.resizeCorner(
                     id: frame.id,
