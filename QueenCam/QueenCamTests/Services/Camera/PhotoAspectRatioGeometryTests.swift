@@ -35,6 +35,98 @@ struct PhotoAspectRatioGeometryTests {
     #expect(PhotoAspectRatioGeometry.previewSize(width: -10, ratio: .ratio16x9) == .zero)
   }
 
+  // MARK: - 가이드 좌표(4:3 프리뷰 영역 기준)
+
+  @Test("4:3에서는 가이드 좌표와 프리뷰 좌표가 같다")
+  func guideAndPreviewAreSameOn4x3() {
+    let point = CGPoint(x: 0.3, y: 0.8)
+
+    #expect(PhotoAspectRatioGeometry.previewPoint(fromGuide: point, ratio: .ratio4x3) == point)
+    #expect(PhotoAspectRatioGeometry.guidePoint(fromPreview: point, ratio: .ratio4x3) == point)
+  }
+
+  @Test("가이드 좌표의 가운데는 어느 비율에서도 프리뷰 가운데다")
+  func guideCenterStaysCentered() {
+    for ratio in PhotoAspectRatio.allCases {
+      let point = PhotoAspectRatioGeometry.previewPoint(fromGuide: CGPoint(x: 0.5, y: 0.5), ratio: ratio)
+
+      #expect(isClose(point.x, 0.5))
+      #expect(isClose(point.y, 0.5))
+    }
+  }
+
+  @Test("1:1 프리뷰는 4:3 프리뷰보다 짧아 4:3 맨 위 좌표가 프리뷰 밖(0 미만)에 놓인다")
+  func guidePointOutsideShorterPreview() {
+    // 4:3 높이 520pt, 1:1 높이 390pt, 폭 390pt 기준. 4:3 맨 위(y=0)는 가운데에서 260pt 위, 1:1 프리뷰는 가운데에서 195pt까지다.
+    let top = PhotoAspectRatioGeometry.previewPoint(fromGuide: CGPoint(x: 0.4, y: 0), ratio: .ratio1x1)
+
+    #expect(isClose(top.x, 0.4))
+    #expect(isClose(top.y, 0.5 - 260.0 / 390.0))
+    #expect(top.y < 0)
+  }
+
+  @Test("16:9 프리뷰는 4:3보다 길어 4:3 영역이 프리뷰 안쪽에 들어온다")
+  func guidePointInsideLongerPreview() {
+    let top = PhotoAspectRatioGeometry.previewPoint(fromGuide: CGPoint(x: 0.4, y: 0), ratio: .ratio16x9)
+    let wideHeight = 390 * 15.23 / 9
+
+    #expect(isClose(top.y, 0.5 - 260.0 / wideHeight))
+    #expect(top.y > 0)
+  }
+
+  @Test("화면에서 그린 자리의 크기는 비율을 바꿔도 같다(폭 390pt 기준 pt로 환산)")
+  func drawnSizeStaysSameInPoints() {
+    let width: CGFloat = 390
+    let guideTop = CGPoint(x: 0.2, y: 0.4)
+    let guideBottom = CGPoint(x: 0.2, y: 0.6)
+    let guideHeightInPoints = (guideBottom.y - guideTop.y) * 520
+
+    for ratio in PhotoAspectRatio.allCases {
+      let height = PhotoAspectRatioGeometry.previewSize(width: width, ratio: ratio).height
+      let top = PhotoAspectRatioGeometry.previewPoint(fromGuide: guideTop, ratio: ratio)
+      let bottom = PhotoAspectRatioGeometry.previewPoint(fromGuide: guideBottom, ratio: ratio)
+
+      #expect(isClose((bottom.y - top.y) * height, guideHeightInPoints))
+    }
+  }
+
+  @Test("가이드 좌표와 프리뷰 좌표는 세 비율 모두 왕복하면 원래 값으로 돌아온다")
+  func guidePointRoundTrip() {
+    let points = [CGPoint(x: 0, y: -0.2), CGPoint(x: 0.5, y: 0.5), CGPoint(x: 1, y: 1.3)]
+
+    for ratio in PhotoAspectRatio.allCases {
+      for point in points {
+        let preview = PhotoAspectRatioGeometry.previewPoint(fromGuide: point, ratio: ratio)
+        let back = PhotoAspectRatioGeometry.guidePoint(fromPreview: preview, ratio: ratio)
+
+        #expect(isClose(back.x, point.x))
+        #expect(isClose(back.y, point.y))
+      }
+    }
+  }
+
+  @Test("가이드 영역(프레임)도 같은 규칙으로 변환되고 왕복하면 원래 값으로 돌아온다")
+  func guideRectConversion() {
+    let rect = CGRect(x: 0.24, y: 0.15, width: 0.55, height: 0.69)
+
+    let same = PhotoAspectRatioGeometry.previewRect(fromGuide: rect, ratio: .ratio4x3)
+    #expect(isClose(same.minY, rect.minY))
+    #expect(isClose(same.height, rect.height))
+
+    for ratio in PhotoAspectRatio.allCases {
+      let preview = PhotoAspectRatioGeometry.previewRect(fromGuide: rect, ratio: ratio)
+      let back = PhotoAspectRatioGeometry.guideRect(fromPreview: preview, ratio: ratio)
+
+      #expect(isClose(preview.width, rect.width))
+      #expect(isClose(back.minY, rect.minY))
+      #expect(isClose(back.height, rect.height))
+    }
+
+    // 1:1에서 높이는 4:3 높이의 390/520 배가 아니라 520/390 배로 커진다(프리뷰가 짧아 정규화 값이 커진다).
+    let square = PhotoAspectRatioGeometry.previewRect(fromGuide: rect, ratio: .ratio1x1)
+    #expect(isClose(square.height, rect.height * 520.0 / 390.0))
+  }
+
   // MARK: - 프리뷰에 보이는 저장 범위
 
   @Test("4:3과 1:1은 저장 이미지 전체가 프리뷰에 보인다")

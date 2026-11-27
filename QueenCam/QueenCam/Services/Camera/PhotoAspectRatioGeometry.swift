@@ -53,6 +53,30 @@ nonisolated enum PhotoAspectRatioGeometry {
     )
   }
 
+  /// 가이드(펜·프레임) 좌표를 4:3 프리뷰 영역 기준으로 저장하고, 그릴 때 현재 프리뷰 영역으로 바꾼다.
+  /// 세 비율의 프리뷰 영역은 폭과 가운데가 같아서, 가운데 기준으로 세로만 배율을 곱하면 그린 자리와 크기가 그대로 남는다.
+  /// 현재 프리뷰 밖에 걸친 좌표는 0 미만·1 초과 값으로 남는다.
+  static func previewPoint(fromGuide point: CGPoint, ratio: PhotoAspectRatio) -> CGPoint {
+    CGPoint(x: point.x, y: 0.5 + (point.y - 0.5) * guideToPreviewScale(ratio: ratio))
+  }
+
+  /// `previewPoint(fromGuide:ratio:)`의 반대 방향. 현재 프리뷰 정규화 좌표를 저장용 가이드 좌표로 바꾼다.
+  static func guidePoint(fromPreview point: CGPoint, ratio: PhotoAspectRatio) -> CGPoint {
+    CGPoint(x: point.x, y: 0.5 + (point.y - 0.5) / guideToPreviewScale(ratio: ratio))
+  }
+
+  static func previewRect(fromGuide rect: CGRect, ratio: PhotoAspectRatio) -> CGRect {
+    let scale = guideToPreviewScale(ratio: ratio)
+
+    return CGRect(x: rect.minX, y: 0.5 + (rect.minY - 0.5) * scale, width: rect.width, height: rect.height * scale)
+  }
+
+  static func guideRect(fromPreview rect: CGRect, ratio: PhotoAspectRatio) -> CGRect {
+    let scale = guideToPreviewScale(ratio: ratio)
+
+    return CGRect(x: rect.minX, y: 0.5 + (rect.minY - 0.5) / scale, width: rect.width, height: rect.height / scale)
+  }
+
   /// 이미지 크기가 비율대로 잘린 크기인지 본다. 방향과 무관하게 긴 변÷짧은 변을 비교하고, 반올림 차이를 위해 1%까지 허용한다.
   /// 세 비율의 긴 변÷짧은 변(1, 1.78, 1.33)은 서로 25% 넘게 떨어져 있어 다른 비율과 헷갈리지 않는다.
   static func matches(imageSize: CGSize, ratio: PhotoAspectRatio) -> Bool {
@@ -105,6 +129,14 @@ nonisolated enum PhotoAspectRatioGeometry {
 }
 
 nonisolated private extension PhotoAspectRatioGeometry {
+  /// 가이드 좌표의 세로 1은 4:3 프리뷰 높이다. 그 값을 현재 프리뷰 높이에 대한 비율로 바꾸는 배율이다.
+  static func guideToPreviewScale(ratio: PhotoAspectRatio) -> CGFloat {
+    let guideHeightPerWidth = previewLongSide(for: .ratio4x3) / CGFloat(PhotoAspectRatio.ratio4x3.shortSide)
+    let previewHeightPerWidth = previewLongSide(for: ratio) / CGFloat(ratio.shortSide)
+
+    return guideHeightPerWidth / previewHeightPerWidth
+  }
+
   static func previewLongSide(for ratio: PhotoAspectRatio) -> CGFloat {
     ratio == .ratio16x9 ? widePreviewLongSide : CGFloat(ratio.longSide)
   }
